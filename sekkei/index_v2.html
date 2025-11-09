@@ -4086,27 +4086,6 @@ function renderDesignerTabs() {
       });
       const count = designerProjects.length;
 
-      console.log(`🔍 ${designer.name}の案件カウント:`, {
-        designerName: `"${designer.name}"`,
-        designerNameLength: designer.name.length,
-        count: count,
-        matchingProjects: designerProjects.map(p => ({
-          customer: p.customer,
-          assigned_to: `"${p.assigned_to}"`,
-          assigned_to_trimmed: `"${(p.assigned_to || '').trim()}"`,
-          assigned_to_length: p.assigned_to?.length,
-          match: (p.assigned_to || '').trim() === designer.name.trim()
-        })),
-        allProjects: projects.map(p => ({
-          customer: p.customer,
-          assigned_to: `"${p.assigned_to}"`,
-          assigned_to_trimmed: `"${(p.assigned_to || '').trim()}"`,
-          status: p.status,
-          is_archived: p.is_archived,
-          match: (p.assigned_to || '').trim() === designer.name.trim() && p.status !== 'completed' && !p.is_archived
-        }))
-      });
-
       html += `<button class="designer-tab ${currentDesignerTab === designer.name ? 'active' : ''}" onclick="setDesignerTab('${designer.name}')">${designer.name} (${count})</button>`;
     });
   } else {
@@ -4126,33 +4105,6 @@ function renderDesignerTabs() {
         return (assigned === designerName || icAssigned === designerName) && p.status !== 'completed' && !p.is_archived;
       });
       const count = designerProjects.length;
-
-      console.log(`🔍 ${designer.name}の案件カウント(IC):`, {
-        designerName: `"${designer.name}"`,
-        designerNameLength: designer.name.length,
-        count: count,
-        matchingProjects: designerProjects.map(p => ({
-          customer: p.customer,
-          assigned_to: `"${p.assigned_to}"`,
-          ic_assignee: `"${p.ic_assignee}"`,
-          ic_assignee_trimmed: `"${(p.ic_assignee || '').trim()}"`,
-          ic_assignee_length: p.ic_assignee?.length,
-          match: (p.ic_assignee || '').trim() === designer.name.trim()
-        })),
-        allProjects: projects.map(p => ({
-          customer: p.customer,
-          assigned_to: `"${p.assigned_to}"`,
-          ic_assignee: `"${p.ic_assignee}"`,
-          ic_assignee_trimmed: `"${(p.ic_assignee || '').trim()}"`,
-          status: p.status,
-          is_archived: p.is_archived,
-          matchAssigned: (p.assigned_to || '').trim() === designer.name.trim(),
-          matchIC: (p.ic_assignee || '').trim() === designer.name.trim(),
-          statusOK: p.status !== 'completed',
-          archivedOK: !p.is_archived,
-          finalMatch: ((p.assigned_to || '').trim() === designer.name.trim() || (p.ic_assignee || '').trim() === designer.name.trim()) && p.status !== 'completed' && !p.is_archived
-        }))
-      });
 
       html += `<button class="designer-tab ${currentDesignerTab === designer.name ? 'active' : ''}" onclick="setDesignerTab('${designer.name}')">${designer.name} (${count})</button>`;
     });
@@ -4248,18 +4200,6 @@ function renderProjectCard(project) {
     const showEmailButton = taskDef.has_email_button !== false && hasVendor; // has_email_buttonがundefinedの場合もtrueとして扱う
     const emailBtn = showEmailButton ?
       `<button class="task-email-btn" onclick="openEmailFromTask('${project.id}', '${key}')" title="メール作成">📧</button>` : '';
-
-    // デバッグ: メールボタンが表示される条件を確認
-    if (taskDef.task_key === 'ventilation' || taskDef.task_key === 'plumbing') {
-      console.log('📧 メールボタン判定:', {
-        taskKey: taskDef.task_key,
-        taskName: taskDef.task_name,
-        taskId: taskDef.id,
-        hasVendor: hasVendor,
-        taskVendorMappingsCount: taskVendorMappings.length,
-        matchingMappings: taskVendorMappings.filter(m => m.task_id === taskDef.id)
-      });
-    }
 
     // 状態セレクトの生成（タスクに状態管理が有効な場合のみ）
     let stateSelect = '';
