@@ -2259,6 +2259,95 @@ let vendorsV2 = [];
 let taskVendorMappings = [];
 let products = [];
 
+// マルチテナント対応（SaaS版）
+let currentOrganization = null;
+let currentSubscription = null;
+let organizationSettings = null;
+
+// 組織情報を読み込む
+async function loadOrganization() {
+  try {
+    const { data: memberData } = await supabase
+      .from('organization_members')
+      .select('organization_id')
+      .eq('user_id', currentUser.id)
+      .eq('status', 'active')
+      .single();
+
+    if (memberData) {
+      const { data: orgData } = await supabase
+        .from('organizations')
+        .select('*')
+        .eq('id', memberData.organization_id)
+        .single();
+
+      if (orgData) {
+        currentOrganization = orgData;
+        applyWhiteLabel(orgData);
+
+        // サブスクリプション情報
+        const { data: subData } = await supabase
+          .from('subscriptions')
+          .select('*')
+          .eq('organization_id', orgData.id)
+          .single();
+
+        currentSubscription = subData;
+        checkSubscriptionStatus(subData);
+      }
+    }
+  } catch (error) {
+    console.log('組織情報の読み込みをスキップ（テーブル未作成の可能性）');
+  }
+}
+
+// ホワイトラベル適用
+function applyWhiteLabel(org) {
+  if (!org) return;
+
+  // ロゴ変更
+  if (org.logo_url) {
+    const logoElements = document.querySelectorAll('.logo, .sidebar-logo');
+    logoElements.forEach(el => {
+      if (el.tagName === 'IMG') {
+        el.src = org.logo_url;
+      }
+    });
+  }
+
+  // カラー変更
+  if (org.primary_color) {
+    document.documentElement.style.setProperty('--primary-color', org.primary_color);
+  }
+  if (org.secondary_color) {
+    document.documentElement.style.setProperty('--secondary-color', org.secondary_color);
+  }
+
+  // タイトル変更
+  if (org.name) {
+    document.title = `ArchiDeck | ${org.name}`;
+  }
+}
+
+// サブスクリプション状態チェック
+function checkSubscriptionStatus(sub) {
+  if (!sub) return;
+
+  if (sub.status === 'trial') {
+    const trialEnd = new Date(sub.trial_ends_at);
+    const now = new Date();
+    const daysLeft = Math.ceil((trialEnd - now) / (1000 * 60 * 60 * 24));
+
+    if (daysLeft <= 3 && daysLeft > 0) {
+      showToast(`トライアル期間があと${daysLeft}日で終了します`, 'warning');
+    } else if (daysLeft <= 0) {
+      showToast('トライアル期間が終了しました。プランをアップグレードしてください。', 'error');
+    }
+  } else if (sub.status === 'past_due') {
+    showToast('お支払いが遅延しています。管理画面で確認してください。', 'error');
+  }
+}
+
 // 無限ループ防止フラグ
 let isHandlingHashChange = false;
 
@@ -2535,6 +2624,9 @@ async function init() {
   showStatus('読み込み中...', 'saving');
 
   try {
+    // マルチテナント: 組織情報を先に読み込む
+    await loadOrganization();
+
     console.log('📦 データ読み込み開始...');
     const results = await Promise.allSettled([
       loadDesigners(),

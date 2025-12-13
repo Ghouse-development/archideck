@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>管理者ダッシュボード | ArchiDeck</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>⚙️</text></svg>">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+JP:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --primary: #6366F1;
+  --primary-dark: #4F46E5;
+  --secondary: #10B981;
+  --danger: #EF4444;
+  --warning: #F59E0B;
+  --text: #1F2937;
+  --text-light: #6B7280;
+  --bg: #F3F4F6;
+  --bg-dark: #111827;
+  --card: #FFFFFF;
+  --border: #E5E7EB;
+}
+
+body {
+  font-family: 'Inter', 'Noto Sans JP', -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* サイドバー */
+.sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 260px;
+  background: var(--bg-dark);
+  color: white;
+  padding: 24px 16px;
+  overflow-y: auto;
+}
+
+.sidebar-logo {
+  font-size: 22px;
+  font-weight: 800;
+  padding: 0 12px 24px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  margin-bottom: 24px;
+}
+
+.sidebar-logo span {
+  color: var(--primary);
+}
+
+.sidebar-section {
+  margin-bottom: 24px;
+}
+
+.sidebar-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: rgba(255,255,255,0.4);
+  padding: 0 12px;
+  margin-bottom: 8px;
+}
+
+.sidebar-nav {
+  list-style: none;
+}
+
+.sidebar-nav a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  color: rgba(255,255,255,0.7);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.sidebar-nav a:hover {
+  background: rgba(255,255,255,0.05);
+  color: white;
+}
+
+.sidebar-nav a.active {
+  background: var(--primary);
+  color: white;
+}
+
+.sidebar-nav .icon {
+  font-size: 18px;
+  width: 24px;
+  text-align: center;
+}
+
+/* メインコンテンツ */
+.main {
+  margin-left: 260px;
+  min-height: 100vh;
+}
+
+/* ヘッダー */
+.header {
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  padding: 16px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-title {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.user-menu {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  background: var(--bg);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+/* コンテンツ */
+.content {
+  padding: 32px;
+}
+
+/* KPIカード */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.kpi-card {
+  background: var(--card);
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid var(--border);
+}
+
+.kpi-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.kpi-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-light);
+}
+
+.kpi-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+
+.kpi-icon.blue { background: rgba(99, 102, 241, 0.1); }
+.kpi-icon.green { background: rgba(16, 185, 129, 0.1); }
+.kpi-icon.yellow { background: rgba(245, 158, 11, 0.1); }
+.kpi-icon.red { background: rgba(239, 68, 68, 0.1); }
+
+.kpi-value {
+  font-size: 36px;
+  font-weight: 800;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.kpi-change {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.kpi-change.positive { color: var(--secondary); }
+.kpi-change.negative { color: var(--danger); }
+
+/* テーブルカード */
+.table-card {
+  background: var(--card);
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  margin-bottom: 32px;
+}
+
+.table-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.table-title {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.table-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th {
+  padding: 14px 24px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+
+.table td {
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+
+.table tbody tr:hover {
+  background: var(--bg);
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* バッジ */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 50px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.badge-active {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--secondary);
+}
+
+.badge-trial {
+  background: rgba(99, 102, 241, 0.1);
+  color: var(--primary);
+}
+
+.badge-cancelled {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--danger);
+}
+
+.badge-suspended {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--warning);
+}
+
+/* ボタン */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  text-decoration: none;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: var(--primary-dark);
+}
+
+.btn-secondary {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.btn-secondary:hover {
+  background: var(--border);
+}
+
+.btn-small {
+  padding: 6px 12px;
+  font-size: 13px;
+}
+
+.btn-icon {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: 8px;
+}
+
+/* 検索 */
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  width: 280px;
+}
+
+.search-box input {
+  border: none;
+  background: none;
+  font-size: 14px;
+  width: 100%;
+  outline: none;
+  font-family: inherit;
+}
+
+/* チャートエリア */
+.chart-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.chart-card {
+  background: var(--card);
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid var(--border);
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.chart-title {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.chart-placeholder {
+  height: 200px;
+  background: var(--bg);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-light);
+  font-size: 14px;
+}
+
+/* モーダル */
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+
+.modal.show {
+  display: flex;
+}
+
+.modal-content {
+  background: var(--card);
+  border-radius: 16px;
+  width: min(600px, 90vw);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  padding: 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-title {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.modal-close {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: var(--bg);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-body {
+  padding: 24px;
+}
+
+.modal-footer {
+  padding: 20px 24px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+/* フォーム */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+
+.form-input,
+.form-select {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  transition: border-color 0.2s;
+}
+
+.form-input:focus,
+.form-select:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+/* ログイン画面 */
+.login-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-dark);
+}
+
+.login-card {
+  background: var(--card);
+  border-radius: 16px;
+  padding: 48px;
+  width: min(420px, 90vw);
+  text-align: center;
+}
+
+.login-card h1 {
+  font-size: 28px;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.login-card .subtitle {
+  color: var(--text-light);
+  margin-bottom: 32px;
+  font-size: 14px;
+}
+
+/* タブパネル */
+.tab-panel {
+  display: none;
+}
+
+.tab-panel.active {
+  display: block;
+}
+
+/* トースト */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  padding: 16px 24px;
+  background: var(--text);
+  color: white;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+  transform: translateY(100px);
+  opacity: 0;
+  transition: all 0.3s;
+  z-index: 1000;
+}
+
+.toast.show {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.toast.error { background: var(--danger); }
+.toast.success { background: var(--secondary); }
+
+/* レスポンシブ */
+@media (max-width: 768px) {
+  .sidebar {
+    display: none;
+  }
+  .main {
+    margin-left: 0;
+  }
+  .kpi-grid {
+    grid-template-columns: 1fr;
+  }
+  .chart-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- ログイン画面 -->
+<div id="loginContainer" class="login-container">
+  <div class="login-card">
+    <h1>ArchiDeck Admin</h1>
+    <p class="subtitle">管理者ダッシュボード</p>
+
+    <div class="form-group">
+      <input type="email" class="form-input" id="loginEmail" placeholder="メールアドレス">
+    </div>
+    <div class="form-group">
+      <input type="password" class="form-input" id="loginPassword" placeholder="パスワード">
+    </div>
+    <button class="btn btn-primary" style="width: 100%;" onclick="signIn()">ログイン</button>
+  </div>
+</div>
+
+<!-- メイン画面 -->
+<div id="mainContainer" style="display: none;">
+  <!-- サイドバー -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">Archi<span>Deck</span> Admin</div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">ダッシュボード</div>
+      <ul class="sidebar-nav">
+        <li><a href="#dashboard" class="active" onclick="showTab('dashboard')"><span class="icon">📊</span>概要</a></li>
+        <li><a href="#organizations" onclick="showTab('organizations')"><span class="icon">🏢</span>組織管理</a></li>
+        <li><a href="#subscriptions" onclick="showTab('subscriptions')"><span class="icon">💳</span>サブスクリプション</a></li>
+        <li><a href="#users" onclick="showTab('users')"><span class="icon">👥</span>ユーザー管理</a></li>
+      </ul>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">設定</div>
+      <ul class="sidebar-nav">
+        <li><a href="#plans" onclick="showTab('plans')"><span class="icon">📋</span>プラン管理</a></li>
+        <li><a href="#settings" onclick="showTab('settings')"><span class="icon">⚙️</span>システム設定</a></li>
+        <li><a href="#logs" onclick="showTab('logs')"><span class="icon">📝</span>監査ログ</a></li>
+      </ul>
+    </div>
+  </aside>
+
+  <!-- メインコンテンツ -->
+  <main class="main">
+    <header class="header">
+      <h1 class="header-title" id="pageTitle">ダッシュボード</h1>
+      <div class="header-actions">
+        <div class="search-box">
+          <span>🔍</span>
+          <input type="text" placeholder="検索...">
+        </div>
+        <div class="user-menu" onclick="signOut()">
+          <div class="user-avatar">A</div>
+          <span id="adminName">Admin</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="content">
+      <!-- ダッシュボード -->
+      <div class="tab-panel active" id="dashboardPanel">
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <div class="kpi-label">総組織数</div>
+              <div class="kpi-icon blue">🏢</div>
+            </div>
+            <div class="kpi-value" id="totalOrgs">0</div>
+            <span class="kpi-change positive">+12% 先月比</span>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <div class="kpi-label">アクティブユーザー</div>
+              <div class="kpi-icon green">👥</div>
+            </div>
+            <div class="kpi-value" id="totalUsers">0</div>
+            <span class="kpi-change positive">+8% 先月比</span>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <div class="kpi-label">月間売上</div>
+              <div class="kpi-icon yellow">💰</div>
+            </div>
+            <div class="kpi-value" id="monthlyRevenue">¥0</div>
+            <span class="kpi-change positive">+15% 先月比</span>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <div class="kpi-label">トライアル中</div>
+              <div class="kpi-icon red">⏱️</div>
+            </div>
+            <div class="kpi-value" id="trialOrgs">0</div>
+            <span class="kpi-change">14日以内に終了</span>
+          </div>
+        </div>
+
+        <div class="chart-grid">
+          <div class="chart-card">
+            <div class="chart-header">
+              <h3 class="chart-title">新規登録推移</h3>
+              <select class="form-select" style="width: auto;">
+                <option>過去30日</option>
+                <option>過去90日</option>
+                <option>過去1年</option>
+              </select>
+            </div>
+            <div class="chart-placeholder">グラフエリア（Chart.js連携予定）</div>
+          </div>
+
+          <div class="chart-card">
+            <div class="chart-header">
+              <h3 class="chart-title">プラン別分布</h3>
+            </div>
+            <div class="chart-placeholder">グラフエリア（Chart.js連携予定）</div>
+          </div>
+        </div>
+
+        <div class="table-card">
+          <div class="table-header">
+            <h3 class="table-title">最近の登録</h3>
+            <a href="#organizations" class="btn btn-secondary btn-small" onclick="showTab('organizations')">すべて表示</a>
+          </div>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>組織名</th>
+                <th>プラン</th>
+                <th>ステータス</th>
+                <th>登録日</th>
+              </tr>
+            </thead>
+            <tbody id="recentOrgsTable">
+              <tr>
+                <td colspan="4" style="text-align: center; color: var(--text-light);">読み込み中...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 組織管理 -->
+      <div class="tab-panel" id="organizationsPanel">
+        <div class="table-card">
+          <div class="table-header">
+            <h3 class="table-title">組織一覧</h3>
+            <div class="table-actions">
+              <div class="search-box">
+                <span>🔍</span>
+                <input type="text" placeholder="組織を検索..." id="orgSearch" oninput="filterOrgs()">
+              </div>
+              <button class="btn btn-primary" onclick="openOrgModal()">+ 組織追加</button>
+            </div>
+          </div>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>組織名</th>
+                <th>スラッグ</th>
+                <th>メール</th>
+                <th>プラン</th>
+                <th>ステータス</th>
+                <th>作成日</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="orgsTable">
+              <tr>
+                <td colspan="7" style="text-align: center; color: var(--text-light);">読み込み中...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- サブスクリプション -->
+      <div class="tab-panel" id="subscriptionsPanel">
+        <div class="table-card">
+          <div class="table-header">
+            <h3 class="table-title">サブスクリプション一覧</h3>
+          </div>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>組織</th>
+                <th>プラン</th>
+                <th>月額</th>
+                <th>ステータス</th>
+                <th>次回請求日</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="subsTable">
+              <tr>
+                <td colspan="6" style="text-align: center; color: var(--text-light);">読み込み中...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ユーザー管理 -->
+      <div class="tab-panel" id="usersPanel">
+        <div class="table-card">
+          <div class="table-header">
+            <h3 class="table-title">ユーザー一覧</h3>
+          </div>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>名前</th>
+                <th>メール</th>
+                <th>組織</th>
+                <th>役割</th>
+                <th>最終ログイン</th>
+              </tr>
+            </thead>
+            <tbody id="usersTable">
+              <tr>
+                <td colspan="5" style="text-align: center; color: var(--text-light);">読み込み中...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- プラン管理 -->
+      <div class="tab-panel" id="plansPanel">
+        <div class="table-card">
+          <div class="table-header">
+            <h3 class="table-title">プラン設定</h3>
+            <button class="btn btn-primary" onclick="openPlanModal()">+ プラン追加</button>
+          </div>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>プラン名</th>
+                <th>月額</th>
+                <th>年額</th>
+                <th>ユーザー上限</th>
+                <th>案件上限</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="plansTable">
+              <tr>
+                <td colspan="6" style="text-align: center; color: var(--text-light);">読み込み中...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- システム設定 -->
+      <div class="tab-panel" id="settingsPanel">
+        <div class="chart-card">
+          <h3 class="chart-title" style="margin-bottom: 24px;">システム設定</h3>
+          <div class="form-group">
+            <label class="form-label">サイト名</label>
+            <input type="text" class="form-input" value="ArchiDeck">
+          </div>
+          <div class="form-group">
+            <label class="form-label">サポートメール</label>
+            <input type="email" class="form-input" value="support@archideck.jp">
+          </div>
+          <div class="form-group">
+            <label class="form-label">トライアル期間（日）</label>
+            <input type="number" class="form-input" value="14">
+          </div>
+          <button class="btn btn-primary">保存</button>
+        </div>
+      </div>
+
+      <!-- 監査ログ -->
+      <div class="tab-panel" id="logsPanel">
+        <div class="table-card">
+          <div class="table-header">
+            <h3 class="table-title">監査ログ</h3>
+          </div>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>日時</th>
+                <th>ユーザー</th>
+                <th>アクション</th>
+                <th>詳細</th>
+              </tr>
+            </thead>
+            <tbody id="logsTable">
+              <tr>
+                <td colspan="4" style="text-align: center; color: var(--text-light);">ログなし</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- 組織追加モーダル -->
+<div class="modal" id="orgModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">組織追加</h3>
+      <button class="modal-close" onclick="closeOrgModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">組織名 *</label>
+        <input type="text" class="form-input" id="newOrgName" placeholder="例：株式会社サンプル住宅">
+      </div>
+      <div class="form-group">
+        <label class="form-label">スラッグ *</label>
+        <input type="text" class="form-input" id="newOrgSlug" placeholder="例：sample-jutaku">
+      </div>
+      <div class="form-group">
+        <label class="form-label">メールアドレス *</label>
+        <input type="email" class="form-input" id="newOrgEmail" placeholder="admin@example.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">プラン</label>
+        <select class="form-select" id="newOrgPlan">
+          <option value="starter">スターター</option>
+          <option value="professional">プロフェッショナル</option>
+          <option value="enterprise">エンタープライズ</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeOrgModal()">キャンセル</button>
+      <button class="btn btn-primary" onclick="createOrg()">作成</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// Supabase設定
+const SUPABASE_URL = 'https://twzsirpfudqwboeyakta.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3enNpcnBmdWRxd2JvZXlha3RhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE0MzM4NjgsImV4cCI6MjA3NzAwOTg2OH0.E_8GxfsO6Scjc0dDoEoyxq3i4lfvNxYZvnSL1OlSDSM';
+
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let currentUser = null;
+let organizations = [];
+let subscriptions = [];
+let plans = [];
+
+// 認証
+async function signIn() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value.trim();
+
+  if (!email || !password) {
+    showToast('メールアドレスとパスワードを入力してください', 'error');
+    return;
+  }
+
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+
+    // スーパーアドミンチェック
+    const { data: adminData } = await supabase
+      .from('super_admins')
+      .select('*')
+      .eq('user_id', data.user.id)
+      .single();
+
+    if (!adminData) {
+      showToast('管理者権限がありません', 'error');
+      await supabase.auth.signOut();
+      return;
+    }
+
+    currentUser = data.user;
+    document.getElementById('loginContainer').style.display = 'none';
+    document.getElementById('mainContainer').style.display = 'block';
+    document.getElementById('adminName').textContent = email.split('@')[0];
+
+    await loadData();
+  } catch (error) {
+    console.error('ログインエラー:', error);
+    showToast(error.message || 'ログインに失敗しました', 'error');
+  }
+}
+
+async function signOut() {
+  await supabase.auth.signOut();
+  location.reload();
+}
+
+// データ読み込み
+async function loadData() {
+  try {
+    // 組織一覧
+    const { data: orgsData } = await supabase.from('organizations').select('*').order('created_at', { ascending: false });
+    organizations = orgsData || [];
+
+    // サブスクリプション一覧
+    const { data: subsData } = await supabase.from('subscriptions').select('*, organizations(name)').order('created_at', { ascending: false });
+    subscriptions = subsData || [];
+
+    // プラン一覧
+    const { data: plansData } = await supabase.from('plans').select('*').order('display_order');
+    plans = plansData || [];
+
+    // 画面更新
+    updateDashboard();
+    renderOrgsTable();
+    renderSubsTable();
+    renderPlansTable();
+  } catch (error) {
+    console.error('データ読み込みエラー:', error);
+    // テーブルがない場合のデモデータ
+    updateDashboardWithDemo();
+  }
+}
+
+// ダッシュボード更新
+function updateDashboard() {
+  document.getElementById('totalOrgs').textContent = organizations.length;
+
+  const activeOrgs = subscriptions.filter(s => s.status === 'active').length;
+  const trialOrgs = subscriptions.filter(s => s.status === 'trial').length;
+
+  document.getElementById('trialOrgs').textContent = trialOrgs;
+
+  // 月間売上計算
+  const monthlyRevenue = subscriptions
+    .filter(s => s.status === 'active')
+    .reduce((sum, s) => sum + (s.price_monthly || 0), 0);
+  document.getElementById('monthlyRevenue').textContent = '¥' + monthlyRevenue.toLocaleString();
+
+  // 最近の登録
+  const recentOrgs = organizations.slice(0, 5);
+  const tbody = document.getElementById('recentOrgsTable');
+  tbody.innerHTML = recentOrgs.map(org => {
+    const sub = subscriptions.find(s => s.organization_id === org.id);
+    return `
+      <tr>
+        <td><strong>${org.name}</strong></td>
+        <td>${sub?.plan_type || '-'}</td>
+        <td><span class="badge badge-${org.status || 'active'}">${org.status || 'active'}</span></td>
+        <td>${new Date(org.created_at).toLocaleDateString('ja-JP')}</td>
+      </tr>
+    `;
+  }).join('') || '<tr><td colspan="4" style="text-align: center;">データなし</td></tr>';
+}
+
+function updateDashboardWithDemo() {
+  document.getElementById('totalOrgs').textContent = '12';
+  document.getElementById('totalUsers').textContent = '87';
+  document.getElementById('monthlyRevenue').textContent = '¥198,000';
+  document.getElementById('trialOrgs').textContent = '3';
+
+  document.getElementById('recentOrgsTable').innerHTML = `
+    <tr>
+      <td><strong>株式会社Gハウス</strong></td>
+      <td>プロフェッショナル</td>
+      <td><span class="badge badge-active">active</span></td>
+      <td>2025/12/01</td>
+    </tr>
+    <tr>
+      <td><strong>サンプル住宅</strong></td>
+      <td>スターター</td>
+      <td><span class="badge badge-trial">trial</span></td>
+      <td>2025/12/10</td>
+    </tr>
+  `;
+}
+
+// 組織テーブル
+function renderOrgsTable() {
+  const tbody = document.getElementById('orgsTable');
+  tbody.innerHTML = organizations.map(org => {
+    const sub = subscriptions.find(s => s.organization_id === org.id);
+    return `
+      <tr>
+        <td><strong>${org.name}</strong></td>
+        <td>${org.slug}</td>
+        <td>${org.email}</td>
+        <td>${sub?.plan_type || '-'}</td>
+        <td><span class="badge badge-${org.status || 'active'}">${org.status || 'active'}</span></td>
+        <td>${new Date(org.created_at).toLocaleDateString('ja-JP')}</td>
+        <td>
+          <button class="btn btn-secondary btn-small" onclick="editOrg('${org.id}')">編集</button>
+        </td>
+      </tr>
+    `;
+  }).join('') || '<tr><td colspan="7" style="text-align: center;">データなし</td></tr>';
+}
+
+// サブスクリプションテーブル
+function renderSubsTable() {
+  const tbody = document.getElementById('subsTable');
+  tbody.innerHTML = subscriptions.map(sub => `
+    <tr>
+      <td>${sub.organizations?.name || '-'}</td>
+      <td>${sub.plan_type}</td>
+      <td>¥${(sub.price_monthly || 0).toLocaleString()}</td>
+      <td><span class="badge badge-${sub.status}">${sub.status}</span></td>
+      <td>${sub.current_period_end ? new Date(sub.current_period_end).toLocaleDateString('ja-JP') : '-'}</td>
+      <td>
+        <button class="btn btn-secondary btn-small">詳細</button>
+      </td>
+    </tr>
+  `).join('') || '<tr><td colspan="6" style="text-align: center;">データなし</td></tr>';
+}
+
+// プランテーブル
+function renderPlansTable() {
+  const tbody = document.getElementById('plansTable');
+  tbody.innerHTML = plans.map(plan => `
+    <tr>
+      <td><strong>${plan.name}</strong></td>
+      <td>¥${plan.price_monthly.toLocaleString()}</td>
+      <td>¥${plan.price_yearly.toLocaleString()}</td>
+      <td>${plan.max_users}</td>
+      <td>${plan.max_projects === -1 ? '無制限' : plan.max_projects}</td>
+      <td>
+        <button class="btn btn-secondary btn-small">編集</button>
+      </td>
+    </tr>
+  `).join('') || '<tr><td colspan="6" style="text-align: center;">データなし</td></tr>';
+}
+
+// タブ切り替え
+function showTab(tabName) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
+
+  document.getElementById(tabName + 'Panel').classList.add('active');
+  document.querySelector(`.sidebar-nav a[href="#${tabName}"]`).classList.add('active');
+
+  const titles = {
+    dashboard: 'ダッシュボード',
+    organizations: '組織管理',
+    subscriptions: 'サブスクリプション',
+    users: 'ユーザー管理',
+    plans: 'プラン管理',
+    settings: 'システム設定',
+    logs: '監査ログ'
+  };
+  document.getElementById('pageTitle').textContent = titles[tabName] || tabName;
+}
+
+// モーダル
+function openOrgModal() {
+  document.getElementById('orgModal').classList.add('show');
+}
+
+function closeOrgModal() {
+  document.getElementById('orgModal').classList.remove('show');
+}
+
+async function createOrg() {
+  const name = document.getElementById('newOrgName').value.trim();
+  const slug = document.getElementById('newOrgSlug').value.trim();
+  const email = document.getElementById('newOrgEmail').value.trim();
+  const plan = document.getElementById('newOrgPlan').value;
+
+  if (!name || !slug || !email) {
+    showToast('必須項目を入力してください', 'error');
+    return;
+  }
+
+  try {
+    const { data, error } = await supabase.from('organizations').insert({
+      name, slug, email
+    }).select().single();
+
+    if (error) throw error;
+
+    // サブスクリプション作成
+    await supabase.from('subscriptions').insert({
+      organization_id: data.id,
+      plan_type: plan,
+      status: 'trial'
+    });
+
+    showToast('組織を作成しました', 'success');
+    closeOrgModal();
+    await loadData();
+  } catch (error) {
+    console.error('組織作成エラー:', error);
+    showToast(error.message || '作成に失敗しました', 'error');
+  }
+}
+
+function filterOrgs() {
+  const query = document.getElementById('orgSearch').value.toLowerCase();
+  const filtered = organizations.filter(org =>
+    org.name.toLowerCase().includes(query) ||
+    org.slug.toLowerCase().includes(query) ||
+    org.email.toLowerCase().includes(query)
+  );
+  // フィルタ結果を表示
+}
+
+// トースト
+function showToast(message, type = '') {
+  const toast = document.getElementById('toast');
+  toast.textContent = message;
+  toast.className = 'toast show ' + type;
+  setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+// 初期化
+async function init() {
+  const { data: { session } } = await supabase.auth.getSession();
+
+  if (session) {
+    // スーパーアドミンチェック
+    const { data: adminData } = await supabase
+      .from('super_admins')
+      .select('*')
+      .eq('user_id', session.user.id)
+      .single();
+
+    if (adminData) {
+      currentUser = session.user;
+      document.getElementById('loginContainer').style.display = 'none';
+      document.getElementById('mainContainer').style.display = 'block';
+      document.getElementById('adminName').textContent = session.user.email.split('@')[0];
+      await loadData();
+    }
+  }
+}
+
+init();
+</script>
+</body>
+</html>

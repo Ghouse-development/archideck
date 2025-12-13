@@ -1,12 +1,16 @@
-# ArchiDeck - Gハウス 設計業務管理システム
+# ArchiDeck - 住宅設計業務管理SaaS
 
-住宅案件管理とメール発注業務を統合した、設計士・インテリアコーディネーター・外構担当向けの業務効率化システムです。
+住宅案件管理とメール発注業務を統合した、設計士・インテリアコーディネーター・外構担当向けの業務効率化SaaSです。
 
-## デプロイURL
+**100社への販売を目指したマルチテナント対応SaaS版**
 
-**本番環境**: https://archideck.vercel.app/archideck/index.html
+## URL
 
-**GitHub**: https://github.com/Ghouse-development/archideck
+- **ランディングページ**: https://archideck.vercel.app/
+- **アプリケーション**: https://archideck.vercel.app/archideck/index.html
+- **新規登録**: https://archideck.vercel.app/signup.html
+- **管理者ダッシュボード**: https://archideck.vercel.app/admin/
+- **GitHub**: https://github.com/Ghouse-development/archideck
 
 ---
 
@@ -51,13 +55,20 @@
 
 ```
 archideck/
+├── landing.html                # ランディングページ（新規顧客向け）
+├── signup.html                 # 会社登録ページ
+├── vercel.json                 # Vercelルーティング設定
+├── admin/
+│   └── index.html              # スーパーアドミンダッシュボード
 ├── archideck/
 │   ├── index.html              # メインアプリケーション
 │   ├── README.md               # アプリ詳細ドキュメント
 │   ├── UPDATE_V3_ARCHIDECK.md  # v3.0更新履歴
 │   ├── sankou/                 # 参考資料
 │   └── sql/
-│       ├── migrations/         # マイグレーションSQL
+│       ├── migrations/
+│       │   ├── v3_archideck_upgrade.sql    # v3.0マイグレーション
+│       │   └── v4_saas_multitenant.sql     # v4.0 SaaS対応
 │       └── production/         # 本番用SQL
 ├── .claude/                    # Claude Code設定
 ├── .vercel/                    # Vercel設定
@@ -65,6 +76,14 @@ archideck/
 ├── CHANGELOG.md                # 開発履歴
 └── README.md                   # このファイル
 ```
+
+## 料金プラン
+
+| プラン | 月額 | ユーザー | 案件 | 主な機能 |
+|-------|------|---------|------|---------|
+| スターター | ¥9,800 | 5名 | 100件 | 基本機能 |
+| プロフェッショナル | ¥19,800 | 15名 | 500件 | kintone連携、API |
+| エンタープライズ | ¥49,800 | 50名 | 無制限 | ホワイトラベル、専任サポート |
 
 ---
 

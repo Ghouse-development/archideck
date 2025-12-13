@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ArchiDeck | 住宅設計業務を劇的に効率化</title>
+<meta name="description" content="ArchiDeckは住宅会社向けの設計業務管理SaaS。案件管理、タスク進捗、メール発注を一元化。14日間無料トライアル。">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🏠</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+JP:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --primary: #4A90E2;
+  --primary-dark: #357ABD;
+  --secondary: #50E3C2;
+  --accent: #F5A623;
+  --dark: #1a1a2e;
+  --text: #2C3E50;
+  --text-light: #7F8C8D;
+  --bg: #FFFFFF;
+  --bg-light: #F8F9FA;
+  --border: #E1E8ED;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', 'Noto Sans JP', -apple-system, sans-serif;
+  color: var(--text);
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ナビゲーション */
+.nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  z-index: 1000;
+  padding: 16px 0;
+}
+
+.nav-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.nav-logo {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--primary);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nav-links {
+  display: flex;
+  gap: 32px;
+  align-items: center;
+}
+
+.nav-link {
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 15px;
+  transition: color 0.2s;
+}
+
+.nav-link:hover {
+  color: var(--primary);
+}
+
+.nav-cta {
+  display: flex;
+  gap: 12px;
+}
+
+/* ボタン */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-decoration: none;
+  border: none;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white;
+  box-shadow: 0 4px 14px rgba(74, 144, 226, 0.35);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(74, 144, 226, 0.45);
+}
+
+.btn-secondary {
+  background: white;
+  color: var(--text);
+  border: 2px solid var(--border);
+}
+
+.btn-secondary:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.btn-large {
+  padding: 16px 32px;
+  font-size: 17px;
+}
+
+/* ヒーローセクション */
+.hero {
+  padding: 160px 24px 100px;
+  background: linear-gradient(180deg, #F0F7FF 0%, white 100%);
+  text-align: center;
+}
+
+.hero-container {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(74, 144, 226, 0.1);
+  border-radius: 50px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--primary);
+  margin-bottom: 24px;
+}
+
+.hero h1 {
+  font-size: clamp(36px, 5vw, 56px);
+  font-weight: 800;
+  line-height: 1.2;
+  margin-bottom: 24px;
+  letter-spacing: -0.02em;
+}
+
+.hero h1 span {
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero p {
+  font-size: 20px;
+  color: var(--text-light);
+  margin-bottom: 40px;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.hero-cta {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 48px;
+}
+
+.hero-stats {
+  display: flex;
+  gap: 48px;
+  justify-content: center;
+  flex-wrap: wrap;
+  padding-top: 48px;
+  border-top: 1px solid var(--border);
+}
+
+.stat {
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 42px;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+.stat-label {
+  font-size: 14px;
+  color: var(--text-light);
+  margin-top: 4px;
+}
+
+/* 機能セクション */
+.features {
+  padding: 120px 24px;
+  background: white;
+}
+
+.section-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 64px;
+}
+
+.section-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 16px;
+}
+
+.section-title {
+  font-size: 40px;
+  font-weight: 800;
+  margin-bottom: 16px;
+  letter-spacing: -0.02em;
+}
+
+.section-desc {
+  font-size: 18px;
+  color: var(--text-light);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 32px;
+}
+
+.feature-card {
+  padding: 40px;
+  background: var(--bg-light);
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  transition: all 0.3s;
+}
+
+.feature-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+  border-color: var(--primary);
+}
+
+.feature-icon {
+  width: 64px;
+  height: 64px;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  margin-bottom: 24px;
+}
+
+.feature-title {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.feature-desc {
+  color: var(--text-light);
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+/* 料金セクション */
+.pricing {
+  padding: 120px 24px;
+  background: var(--bg-light);
+}
+
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 32px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.pricing-card {
+  background: white;
+  border-radius: 24px;
+  padding: 40px;
+  border: 2px solid var(--border);
+  position: relative;
+  transition: all 0.3s;
+}
+
+.pricing-card.popular {
+  border-color: var(--primary);
+  transform: scale(1.05);
+  box-shadow: 0 20px 60px rgba(74, 144, 226, 0.2);
+}
+
+.pricing-card.popular::before {
+  content: '人気';
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: white;
+  padding: 6px 20px;
+  border-radius: 50px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.pricing-name {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.pricing-desc {
+  font-size: 14px;
+  color: var(--text-light);
+  margin-bottom: 24px;
+}
+
+.pricing-price {
+  margin-bottom: 24px;
+}
+
+.pricing-amount {
+  font-size: 48px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.pricing-currency {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.pricing-period {
+  font-size: 14px;
+  color: var(--text-light);
+}
+
+.pricing-features {
+  list-style: none;
+  margin-bottom: 32px;
+}
+
+.pricing-features li {
+  padding: 10px 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 15px;
+  border-bottom: 1px solid var(--border);
+}
+
+.pricing-features li:last-child {
+  border-bottom: none;
+}
+
+.pricing-features .check {
+  color: var(--secondary);
+  font-size: 18px;
+}
+
+.pricing-features .cross {
+  color: #ccc;
+  font-size: 18px;
+}
+
+/* 導入事例 */
+.testimonials {
+  padding: 120px 24px;
+  background: white;
+}
+
+.testimonials-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 32px;
+}
+
+.testimonial-card {
+  padding: 40px;
+  background: var(--bg-light);
+  border-radius: 20px;
+  border: 1px solid var(--border);
+}
+
+.testimonial-text {
+  font-size: 17px;
+  line-height: 1.8;
+  margin-bottom: 24px;
+  font-style: italic;
+}
+
+.testimonial-author {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.testimonial-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 20px;
+}
+
+.testimonial-info h4 {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.testimonial-info p {
+  font-size: 14px;
+  color: var(--text-light);
+}
+
+/* CTA セクション */
+.cta {
+  padding: 120px 24px;
+  background: linear-gradient(135deg, var(--dark) 0%, #16213e 100%);
+  text-align: center;
+  color: white;
+}
+
+.cta h2 {
+  font-size: 40px;
+  font-weight: 800;
+  margin-bottom: 16px;
+}
+
+.cta p {
+  font-size: 18px;
+  opacity: 0.8;
+  margin-bottom: 40px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.cta-buttons {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* フッター */
+.footer {
+  padding: 80px 24px 40px;
+  background: var(--dark);
+  color: white;
+}
+
+.footer-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 64px;
+  margin-bottom: 64px;
+}
+
+.footer-brand {
+  font-size: 28px;
+  font-weight: 800;
+  margin-bottom: 16px;
+}
+
+.footer-desc {
+  font-size: 14px;
+  opacity: 0.7;
+  line-height: 1.8;
+}
+
+.footer-title {
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 20px;
+  opacity: 0.5;
+}
+
+.footer-links {
+  list-style: none;
+}
+
+.footer-links a {
+  color: white;
+  text-decoration: none;
+  font-size: 15px;
+  opacity: 0.8;
+  display: block;
+  padding: 8px 0;
+  transition: opacity 0.2s;
+}
+
+.footer-links a:hover {
+  opacity: 1;
+}
+
+.footer-bottom {
+  padding-top: 40px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  opacity: 0.6;
+}
+
+/* モバイル対応 */
+@media (max-width: 768px) {
+  .nav-links {
+    display: none;
+  }
+
+  .hero {
+    padding: 120px 24px 80px;
+  }
+
+  .hero h1 {
+    font-size: 32px;
+  }
+
+  .hero p {
+    font-size: 16px;
+  }
+
+  .hero-stats {
+    gap: 24px;
+  }
+
+  .stat-value {
+    font-size: 32px;
+  }
+
+  .section-title {
+    font-size: 28px;
+  }
+
+  .features-grid,
+  .pricing-grid,
+  .testimonials-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pricing-card.popular {
+    transform: none;
+  }
+
+  .footer-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  .footer-bottom {
+    flex-direction: column;
+    gap: 16px;
+    text-align: center;
+  }
+}
+
+/* アニメーション */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+</style>
+</head>
+<body>
+
+<!-- ナビゲーション -->
+<nav class="nav">
+  <div class="nav-container">
+    <a href="#" class="nav-logo">ArchiDeck</a>
+    <div class="nav-links">
+      <a href="#features" class="nav-link">機能</a>
+      <a href="#pricing" class="nav-link">料金</a>
+      <a href="#testimonials" class="nav-link">導入事例</a>
+      <a href="https://archideck.notion.site" class="nav-link" target="_blank">ヘルプ</a>
+    </div>
+    <div class="nav-cta">
+      <a href="archideck/index.html" class="btn btn-secondary">ログイン</a>
+      <a href="#signup" class="btn btn-primary">無料で始める</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ヒーロー -->
+<section class="hero">
+  <div class="hero-container">
+    <div class="hero-badge">14日間無料トライアル</div>
+    <h1>住宅設計業務を<br><span>劇的に効率化</span></h1>
+    <p>案件管理、タスク進捗、業者への発注メールを一元管理。<br>設計士・IC・外構担当のチーム全体の生産性を向上させます。</p>
+    <div class="hero-cta">
+      <a href="#signup" class="btn btn-primary btn-large">14日間無料で試す</a>
+      <a href="#demo" class="btn btn-secondary btn-large">デモを見る</a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat">
+        <div class="stat-value">100+</div>
+        <div class="stat-label">導入企業数</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">50%</div>
+        <div class="stat-label">業務時間削減</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">98%</div>
+        <div class="stat-label">顧客満足度</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 機能 -->
+<section class="features" id="features">
+  <div class="section-container">
+    <div class="section-header">
+      <div class="section-label">Features</div>
+      <h2 class="section-title">設計業務に必要な機能がすべて揃う</h2>
+      <p class="section-desc">ArchiDeckは住宅会社の設計部門のために開発された、オールインワンの業務管理ツールです。</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">📋</div>
+        <h3 class="feature-title">案件管理</h3>
+        <p class="feature-desc">お客様情報、担当者、進捗状況を一目で把握。17種類のタスクをチェックボックスで管理し、申請GO条件も自動チェック。</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">✉️</div>
+        <h3 class="feature-title">メール発注</h3>
+        <p class="feature-desc">業者ごとのメールテンプレートを登録。ワンクリックで発注メールを作成し、業務の手間を大幅に削減。</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">👥</div>
+        <h3 class="feature-title">チーム管理</h3>
+        <p class="feature-desc">設計士・IC・外構担当をそれぞれ管理。担当者ごとの案件数や進捗を可視化し、業務の偏りを防止。</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h3 class="feature-title">進捗可視化</h3>
+        <p class="feature-desc">サイドバーで担当者別の案件数を色分け表示。4件以下は青、5件以上は黄色、7件以上は赤色で警告。</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔗</div>
+        <h3 class="feature-title">kintone連携</h3>
+        <p class="feature-desc">kintoneとの連携設定が可能。既存のワークフローを活かしながらArchiDeckを導入できます。</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📁</div>
+        <h3 class="feature-title">議事録・引継書</h3>
+        <p class="feature-desc">打合せ議事録のアップロード、引継書の作成・共有が可能。IC・外構担当とも情報をスムーズに共有。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 料金 -->
+<section class="pricing" id="pricing">
+  <div class="section-container">
+    <div class="section-header">
+      <div class="section-label">Pricing</div>
+      <h2 class="section-title">シンプルな料金プラン</h2>
+      <p class="section-desc">チームの規模に合わせて選べる3つのプラン。すべて14日間無料でお試しいただけます。</p>
+    </div>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <div class="pricing-name">スターター</div>
+        <div class="pricing-desc">小規模チーム向け</div>
+        <div class="pricing-price">
+          <span class="pricing-currency">¥</span>
+          <span class="pricing-amount">9,800</span>
+          <span class="pricing-period">/月</span>
+        </div>
+        <ul class="pricing-features">
+          <li><span class="check">✓</span>ユーザー5名まで</li>
+          <li><span class="check">✓</span>案件100件まで</li>
+          <li><span class="check">✓</span>ストレージ5GB</li>
+          <li><span class="check">✓</span>メールサポート</li>
+          <li><span class="cross">×</span>kintone連携</li>
+          <li><span class="cross">×</span>API連携</li>
+        </ul>
+        <a href="#signup" class="btn btn-secondary" style="width: 100%;">無料で始める</a>
+      </div>
+      <div class="pricing-card popular">
+        <div class="pricing-name">プロフェッショナル</div>
+        <div class="pricing-desc">成長するチーム向け</div>
+        <div class="pricing-price">
+          <span class="pricing-currency">¥</span>
+          <span class="pricing-amount">19,800</span>
+          <span class="pricing-period">/月</span>
+        </div>
+        <ul class="pricing-features">
+          <li><span class="check">✓</span>ユーザー15名まで</li>
+          <li><span class="check">✓</span>案件500件まで</li>
+          <li><span class="check">✓</span>ストレージ20GB</li>
+          <li><span class="check">✓</span>優先サポート</li>
+          <li><span class="check">✓</span>kintone連携</li>
+          <li><span class="check">✓</span>API連携</li>
+        </ul>
+        <a href="#signup" class="btn btn-primary" style="width: 100%;">無料で始める</a>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-name">エンタープライズ</div>
+        <div class="pricing-desc">大規模組織向け</div>
+        <div class="pricing-price">
+          <span class="pricing-currency">¥</span>
+          <span class="pricing-amount">49,800</span>
+          <span class="pricing-period">/月</span>
+        </div>
+        <ul class="pricing-features">
+          <li><span class="check">✓</span>ユーザー50名まで</li>
+          <li><span class="check">✓</span>案件無制限</li>
+          <li><span class="check">✓</span>ストレージ100GB</li>
+          <li><span class="check">✓</span>専任サポート</li>
+          <li><span class="check">✓</span>カスタムドメイン</li>
+          <li><span class="check">✓</span>ホワイトラベル</li>
+        </ul>
+        <a href="#signup" class="btn btn-secondary" style="width: 100%;">お問い合わせ</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 導入事例 -->
+<section class="testimonials" id="testimonials">
+  <div class="section-container">
+    <div class="section-header">
+      <div class="section-label">Testimonials</div>
+      <h2 class="section-title">導入企業の声</h2>
+      <p class="section-desc">ArchiDeckを導入いただいた住宅会社様からの声をご紹介します。</p>
+    </div>
+    <div class="testimonials-grid">
+      <div class="testimonial-card">
+        <p class="testimonial-text">「案件ごとのタスク管理が一目でわかるようになり、申請漏れがなくなりました。業者への発注メールも効率化でき、月に10時間以上の時間削減になっています。」</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">T</div>
+          <div class="testimonial-info">
+            <h4>田中様</h4>
+            <p>A住宅株式会社 設計部長</p>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <p class="testimonial-text">「ICと設計の情報共有がスムーズになりました。共有メモ機能のおかげで、お客様への対応も迅速になり、顧客満足度が向上しています。」</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">S</div>
+          <div class="testimonial-info">
+            <h4>佐藤様</h4>
+            <p>B工務店 IC担当</p>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <p class="testimonial-text">「導入前は担当者ごとの案件数が把握できず、業務の偏りが問題でした。ArchiDeckのサイドバーで一目で確認でき、適切な業務分担ができるようになりました。」</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">Y</div>
+          <div class="testimonial-info">
+            <h4>山本様</h4>
+            <p>Cホーム株式会社 代表取締役</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta" id="signup">
+  <div class="section-container">
+    <h2>今すぐ無料で始めましょう</h2>
+    <p>14日間のトライアル期間中はすべての機能を無料でご利用いただけます。<br>クレジットカードの登録は不要です。</p>
+    <div class="cta-buttons">
+      <a href="signup.html" class="btn btn-primary btn-large">無料トライアルを開始</a>
+      <a href="mailto:support@archideck.jp" class="btn btn-secondary btn-large" style="background: transparent; color: white; border-color: rgba(255,255,255,0.3);">お問い合わせ</a>
+    </div>
+  </div>
+</section>
+
+<!-- フッター -->
+<footer class="footer">
+  <div class="footer-container">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-brand">ArchiDeck</div>
+        <p class="footer-desc">住宅設計業務を劇的に効率化するクラウドサービス。案件管理、タスク進捗、メール発注を一元管理。</p>
+      </div>
+      <div>
+        <div class="footer-title">製品</div>
+        <ul class="footer-links">
+          <li><a href="#features">機能</a></li>
+          <li><a href="#pricing">料金</a></li>
+          <li><a href="#">アップデート情報</a></li>
+          <li><a href="#">ロードマップ</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-title">サポート</div>
+        <ul class="footer-links">
+          <li><a href="#">ヘルプセンター</a></li>
+          <li><a href="#">導入ガイド</a></li>
+          <li><a href="#">APIドキュメント</a></li>
+          <li><a href="#">お問い合わせ</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-title">会社情報</div>
+        <ul class="footer-links">
+          <li><a href="#">会社概要</a></li>
+          <li><a href="#">プライバシーポリシー</a></li>
+          <li><a href="#">利用規約</a></li>
+          <li><a href="#">特定商取引法</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2025 ArchiDeck. All rights reserved.</p>
+      <p>Made with Claude Code</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+// スムーズスクロール
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+  anchor.addEventListener('click', function (e) {
+    e.preventDefault();
+    const target = document.querySelector(this.getAttribute('href'));
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+});
+
+// ナビゲーションの背景変更
+window.addEventListener('scroll', () => {
+  const nav = document.querySelector('.nav');
+  if (window.scrollY > 50) {
+    nav.style.boxShadow = '0 4px 20px rgba(0,0,0,0.08)';
+  } else {
+    nav.style.boxShadow = 'none';
+  }
+});
+</script>
+</body>
+</html>
