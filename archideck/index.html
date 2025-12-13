@@ -5918,6 +5918,22 @@ function renderSidebar() {
     </div>
   `;
 
+  // 件数による色分けヘルパー関数
+  function getCountStyle(count) {
+    if (count >= 7) {
+      return 'color: #dc2626; font-weight: 700;'; // 赤色（危険）
+    } else if (count >= 5) {
+      return 'color: #d97706; font-weight: 600;'; // 黄色（注意）
+    }
+    return ''; // 通常（4件以下）
+  }
+
+  function getCountBadgeClass(count) {
+    if (count >= 7) return 'badge-danger';
+    if (count >= 5) return 'badge-warning';
+    return 'badge-primary';
+  }
+
   if (sekkeiDesigners.length > 0) {
     html += '<div class="sidebar-section"><div class="sidebar-section-title">📐 設計担当</div>';
     sekkeiDesigners.forEach(designer => {
@@ -5926,10 +5942,12 @@ function renderSidebar() {
         const designerName = designer.name.trim();
         return assigned === designerName && p.status !== 'completed' && !p.is_archived;
       }).length;
+      const nameStyle = getCountStyle(count);
+      const badgeClass = getCountBadgeClass(count);
       html += `
         <div class="sidebar-item ${currentDesignerTab === designer.name ? 'active' : ''}" onclick="selectDesigner('${designer.name}')">
-          <span class="sidebar-item-label">${designer.name}</span>
-          <span class="sidebar-item-count">${count}</span>
+          <span class="sidebar-item-label" style="${nameStyle}">${designer.name}</span>
+          <span class="sidebar-item-count ${badgeClass}">${count}</span>
         </div>
       `;
     });
@@ -5945,10 +5963,12 @@ function renderSidebar() {
         const designerName = designer.name.trim();
         return (assigned === designerName || icAssigned === designerName) && p.status !== 'completed' && !p.is_archived;
       }).length;
+      const nameStyle = getCountStyle(count);
+      const badgeClass = getCountBadgeClass(count);
       html += `
         <div class="sidebar-item ${currentDesignerTab === designer.name ? 'active' : ''}" onclick="selectDesigner('${designer.name}')">
-          <span class="sidebar-item-label">${designer.name}</span>
-          <span class="sidebar-item-count">${count}</span>
+          <span class="sidebar-item-label" style="${nameStyle}">${designer.name}</span>
+          <span class="sidebar-item-count ${badgeClass}">${count}</span>
         </div>
       `;
     });
@@ -8865,7 +8885,7 @@ renderSidebar = function() {
     html += '</div>';
   }
 
-  // IC担当セクション
+  // IC担当セクション（色分け付き）
   if (icDesigners.length > 0) {
     html += '<div class="sidebar-section"><div class="sidebar-section-title">🎨 IC担当</div>';
     icDesigners.forEach(designer => {
@@ -8875,18 +8895,29 @@ renderSidebar = function() {
         const designerName = designer.name.trim();
         return (assigned === designerName || icAssigned === designerName) && p.status !== 'completed' && !p.is_archived;
       }).length;
+
+      // 色分けロジック（IC用）
+      let countClass = 'count-blue';
+      let nameClass = '';
+      if (count >= 7) {
+        nameClass = 'name-red';
+        countClass = 'count-yellow';
+      } else if (count >= 5) {
+        countClass = 'count-yellow';
+      }
+
       html += `
         <div class="sidebar-item ${currentDesignerTab === designer.name ? 'active' : ''}" onclick="selectDesigner('${designer.name}')">
-          <span class="sidebar-item-label">${designer.name}</span>
+          <span class="sidebar-item-label ${nameClass}">${designer.name}</span>
           <button class="sidebar-task-btn" onclick="event.stopPropagation(); openStaffTasksModal('${designer.name}')" title="タスク一覧">📋</button>
-          <span class="sidebar-item-count">${count}</span>
+          <span class="sidebar-item-count ${countClass}">${count}</span>
         </div>
       `;
     });
     html += '</div>';
   }
 
-  // 外構担当セクション
+  // 外構担当セクション（色分け付き）
   if (exteriorDesigners.length > 0) {
     html += '<div class="sidebar-section sidebar-section-exterior"><div class="sidebar-section-title">🌳 外構担当</div>';
     exteriorDesigners.forEach(designer => {
@@ -8895,11 +8926,22 @@ renderSidebar = function() {
         const designerName = designer.name.trim();
         return exteriorAssigned === designerName && p.status !== 'completed' && !p.is_archived;
       }).length;
+
+      // 色分けロジック（外構用）
+      let countClass = 'count-blue';
+      let nameClass = '';
+      if (count >= 7) {
+        nameClass = 'name-red';
+        countClass = 'count-yellow';
+      } else if (count >= 5) {
+        countClass = 'count-yellow';
+      }
+
       html += `
         <div class="sidebar-item ${currentDesignerTab === designer.name ? 'active' : ''}" onclick="selectDesigner('${designer.name}')">
-          <span class="sidebar-item-label">${designer.name}</span>
+          <span class="sidebar-item-label ${nameClass}">${designer.name}</span>
           <button class="sidebar-task-btn" onclick="event.stopPropagation(); openStaffTasksModal('${designer.name}')" title="タスク一覧">📋</button>
-          <span class="sidebar-item-count">${count}</span>
+          <span class="sidebar-item-count ${countClass}">${count}</span>
         </div>
       `;
     });
