@@ -2806,6 +2806,8 @@ body {
           <button onclick="switchCategory('admin')">👑 管理者</button>
         </div>
       </div>
+      <button class="btn btn-ghost btn-small" onclick="forceReloadData()" title="データを再読み込み">🔄</button>
+      <button class="btn btn-ghost btn-small" onclick="showDebugInfo()" title="デバッグ情報">🔍</button>
       <button class="btn btn-ghost btn-small" onclick="signOut()">ログアウト</button>
     </div>
   </header>
@@ -2971,7 +2973,8 @@ body {
           <button class="sub-tab-btn active" onclick="switchSubTab('staff', this)">👥 スタッフ管理</button>
           <button class="sub-tab-btn" onclick="switchSubTab('vendors', this)">🏢 業者・メール管理</button>
           <button class="sub-tab-btn" onclick="switchSubTab('categories', this)">🏷️ カテゴリ管理</button>
-          <button class="sub-tab-btn" onclick="switchSubTab('tasks', this)">✅ タスク管理</button>
+          <button class="sub-tab-btn" onclick="switchSubTab('tasks', this)">🏠 設計業務管理</button>
+          <button class="sub-tab-btn" onclick="switchSubTab('exteriorTasks', this)">🌳 外構業務管理</button>
           <button class="sub-tab-btn" onclick="switchSubTab('products', this)">📦 商品管理</button>
           <button class="sub-tab-btn" onclick="switchSubTab('customize', this)">🎨 カスタマイズ</button>
           <button class="sub-tab-btn" onclick="switchSubTab('kintone', this)">🔗 kintone連携</button>
@@ -3027,7 +3030,7 @@ body {
           </div>
         </div>
 
-        <!-- タスク管理 -->
+        <!-- 設計業務管理 -->
         <div id="tasksPanel" class="sub-tab-panel">
           <div class="toolbar" style="padding-bottom: 16px; border-bottom: 1px solid var(--border-color); margin-bottom: 24px;">
             <div class="toolbar-left">
@@ -3042,6 +3045,20 @@ body {
             </div>
           </div>
           <div id="tasksGrid"></div>
+        </div>
+
+        <!-- 外構業務管理 -->
+        <div id="exteriorTasksPanel" class="sub-tab-panel">
+          <div class="toolbar" style="padding-bottom: 16px; border-bottom: 1px solid var(--border-color); margin-bottom: 24px;">
+            <div class="toolbar-left">
+              <h3 style="margin: 0; font-size: 18px;">🌳 外構業務タスク管理</h3>
+            </div>
+            <div class="toolbar-right">
+              <button class="btn btn-primary" onclick="openExteriorTaskModal()">+ 外構タスク追加</button>
+            </div>
+          </div>
+          <p style="margin-bottom: 24px; color: var(--text-secondary);">外構設計の業務フローを管理します。</p>
+          <div id="exteriorTasksGrid"></div>
         </div>
 
         <!-- 商品管理 -->
@@ -3604,6 +3621,36 @@ body {
 
 <script>
 // ============================================
+// バージョン管理 & キャッシュクリア
+// ============================================
+const APP_VERSION = '4.3.1-' + Date.now();
+console.log('🚀 ArchiDeck バージョン:', APP_VERSION);
+
+// 起動時にキャッシュを強制クリア
+(async function forceClearCache() {
+  try {
+    // Service Worker のキャッシュをクリア
+    const cacheNames = await caches.keys();
+    for (const name of cacheNames) {
+      await caches.delete(name);
+      console.log('🗑️ キャッシュ削除:', name);
+    }
+
+    // Service Worker を更新
+    if ('serviceWorker' in navigator) {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      for (const reg of registrations) {
+        await reg.update();
+        console.log('🔄 Service Worker 更新');
+      }
+    }
+    console.log('✅ キャッシュクリア完了');
+  } catch (e) {
+    console.log('キャッシュクリアエラー（無視可）:', e);
+  }
+})();
+
+// ============================================
 // Supabase初期化
 // ============================================
 const SUPABASE_URL = 'https://twzsirpfudqwboeyakta.supabase.co';
@@ -4094,6 +4141,67 @@ async function init() {
     showStatus('エラー', 'error');
     showToast('データの読み込みに失敗しました: ' + error.message, 'error');
   }
+}
+
+// ============================================
+// データ強制リロード
+// ============================================
+async function forceReloadData() {
+  showToast('データを再読み込み中...', 'info');
+  showStatus('読み込み中...', 'saving');
+
+  // キャッシュをクリア
+  try {
+    const cacheNames = await caches.keys();
+    for (const name of cacheNames) {
+      await caches.delete(name);
+    }
+  } catch (e) {}
+
+  // データを再読み込み
+  await init();
+
+  showToast(`データを再読み込みしました。案件数: ${projects.length}件`, 'success');
+}
+
+// ============================================
+// デバッグ情報表示（ポップアップ）
+// ============================================
+function showDebugInfo() {
+  const info = `
+ArchiDeck デバッグ情報
+========================
+バージョン: ${APP_VERSION}
+ユーザー: ${currentUser?.email || '未ログイン'}
+カテゴリ: ${currentUserCategory || '未選択'}
+担当タブ: ${currentDesignerTab}
+
+データ状況
+----------
+案件数: ${projects.length}件
+設計士数: ${designers.length}人
+タスク数: ${tasksV2.length}件
+業者数: ${vendorsV2.length}件
+
+案件詳細
+--------
+${projects.slice(0, 5).map(p => `・${p.customer} (設計:${p.assigned_to || '未割当'}, IC:${p.ic_assignee || '未割当'})`).join('\n')}
+${projects.length > 5 ? `...他${projects.length - 5}件` : ''}
+
+アーカイブ状況
+--------------
+アクティブ: ${projects.filter(p => !p.is_archived).length}件
+完了済み: ${projects.filter(p => p.is_archived).length}件
+
+フィルター
+----------
+アーカイブフィルター: ${document.getElementById('archiveFilter')?.value || '不明'}
+検索: ${document.getElementById('searchQuery')?.value || 'なし'}
+商品: ${document.getElementById('specFilter')?.value || '全て'}
+  `.trim();
+
+  alert(info);
+  console.log(info);
 }
 
 // ============================================
@@ -5675,6 +5783,9 @@ function switchSubTab(panelName, element) {
       break;
     case 'tasks':
       renderTasksManagement();
+      break;
+    case 'exteriorTasks':
+      renderExteriorTasksManagement();
       break;
     case 'products':
       renderProductsList();
