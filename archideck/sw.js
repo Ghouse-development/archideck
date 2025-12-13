@@ -1,5 +1,5 @@
-// ArchiDeck Service Worker v1.0
-const CACHE_NAME = 'archideck-v1';
+// ArchiDeck Service Worker v2.0 - 2025-12-13
+const CACHE_NAME = 'archideck-v2';
 const urlsToCache = [
   '/archideck/index.html',
   '/archideck/manifest.json'
@@ -74,4 +74,11 @@ self.addEventListener('notificationclick', event => {
   event.waitUntil(
     clients.openWindow(event.notification.data)
   );
+});
+
+// SKIP_WAITINGメッセージを受信したら即座にアクティベート
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });

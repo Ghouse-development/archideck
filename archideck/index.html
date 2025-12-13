@@ -10028,10 +10028,32 @@ window.addEventListener('DOMContentLoaded', () => {
   checkAuth();
   // URL直接アクセスの処理はcheckAuth() → init()完了後に自動実行される
 
-  // Service Worker登録（PWA対応）
+  // Service Worker登録（PWA対応）- 強制更新
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js')
-      .then(reg => console.log('✅ Service Worker registered:', reg.scope))
+    // 古いキャッシュを全てクリア
+    caches.keys().then(cacheNames => {
+      cacheNames.forEach(cacheName => {
+        caches.delete(cacheName);
+        console.log('🗑️ キャッシュをクリア:', cacheName);
+      });
+    });
+
+    // 既存のService Workerを更新
+    navigator.serviceWorker.getRegistrations().then(registrations => {
+      registrations.forEach(registration => {
+        registration.update();
+        console.log('🔄 Service Worker更新を確認');
+      });
+    });
+
+    navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
+      .then(reg => {
+        console.log('✅ Service Worker registered:', reg.scope);
+        // 新しいService Workerがあれば即座にアクティベート
+        if (reg.waiting) {
+          reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+        }
+      })
       .catch(err => console.log('❌ Service Worker registration failed:', err));
   }
 
