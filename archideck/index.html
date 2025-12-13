@@ -310,6 +310,10 @@ body {
   gap: 32px;
 }
 
+.sidebar-toggle {
+  display: none;
+}
+
 .logo {
   font-size: 22px;
   font-weight: 700;
@@ -1333,10 +1337,10 @@ input:checked + .toggle-slider:before {
   color: #92400E;
 }
 
-.task-state-select.state-green {
-  background: var(--success-light);
-  border-color: #22C55E;
-  color: #166534;
+.task-state-select.state-blue {
+  background: var(--primary-light);
+  border-color: #3B82F6;
+  color: #1E40AF;
 }
 
 .task-label {
@@ -1874,6 +1878,21 @@ input:checked + .toggle-slider:before {
 
   .sidebar-overlay.show {
     display: block;
+  }
+
+  .sidebar-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 8px;
+    font-size: 20px;
+    cursor: pointer;
+    margin-right: 8px;
   }
 
   .add-task-form {
@@ -2898,6 +2917,7 @@ input:checked + .toggle-slider:before {
   <!-- ヘッダー -->
   <header class="header">
     <div class="header-left">
+      <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
       <div class="logo">ArchiDeck</div>
     </div>
     <div class="header-right">
@@ -2928,8 +2948,10 @@ input:checked + .toggle-slider:before {
 
   <!-- アプリレイアウト -->
   <div class="app-layout">
+    <!-- サイドバーオーバーレイ（モバイル用） -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
     <!-- サイドバー -->
-    <aside class="sidebar">
+    <aside class="sidebar" id="sidebar">
       <div id="sidebarContent"></div>
     </aside>
 
@@ -6700,7 +6722,12 @@ function renderProjectCard(project) {
     let stateSelect = '';
     const stateOptions = getTaskStateOptions(key);
     if (stateOptions && Array.isArray(stateOptions)) {
-      const stateClass = task.state?.includes('済') || task.state?.includes('GO') ? 'state-green' : task.state ? 'state-yellow' : '';
+      // ステータス色分け: 最後の選択肢=青、空/-=白、その他=黄
+      const lastOption = stateOptions[stateOptions.length - 1];
+      let stateClass = '';
+      if (task.state && task.state !== '-' && task.state !== '') {
+        stateClass = task.state === lastOption ? 'state-blue' : 'state-yellow';
+      }
       stateSelect = `<select class="task-state-select ${stateClass}" onchange="updateTaskState('${project.id}', '${key}', this.value)">${stateOptions.map(state => `<option value="${state}" ${task.state === state ? 'selected' : ''}>${state || '-'}</option>`).join('')}</select>`;
     }
 
@@ -6712,7 +6739,6 @@ function renderProjectCard(project) {
     const dueInput = `<input type="date" class="task-due-input" value="${task.due_date || ''}" onchange="updateTaskDueDate('${project.id}', '${key}', this.value)" title="期限を設定">`;
 
     return `<div class="task-item ${disabledClass} ${dueClass}" ${isApplicationGo && !applicationGoEnabled ? 'title="太陽光:営業共有済、給排水:保存済、換気:保存済、サッシ:保存済 が必要"' : ''}>
-      <input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''} ${disabledClass ? 'disabled' : ''} onchange="updateTaskStatus('${project.id}', '${key}', this.checked)">
       <span class="task-label">${taskDef.task_name}</span>${stateSelect}${emailBtn}${dueBadge}${dueInput}</div>`;
   }).join('');
 
@@ -6732,7 +6758,7 @@ function renderProjectCard(project) {
 
     <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">✅ タスク</span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><div id="projectTasksList_${project.id}" class="project-task-list"></div><div class="add-task-form"><input type="text" id="newTaskName_${project.id}" placeholder="タスク名" inputmode="text"><input type="date" id="newTaskDue_${project.id}"><button class="btn btn-small btn-primary" onclick="addProjectTask('${project.id}', document.getElementById('newTaskName_${project.id}').value, document.getElementById('newTaskDue_${project.id}').value)">追加</button></div></div></div>
 
-    <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">📝 メモ欄 <span style="font-size:11px;color:var(--text-muted)">(IC・外構共通)</span></span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><textarea class="shared-memo-area" id="sharedMemo_${project.id}" placeholder="IC・外構担当と共有するメモ...">${project.shared_memo || ''}</textarea><button class="btn btn-small btn-ghost" style="margin-top:8px" onclick="saveSharedMemo('${project.id}')">メモを保存</button></div></div>
+    <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">📝 メモ欄</span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><textarea class="shared-memo-area" id="sharedMemo_${project.id}" placeholder="メモを入力...">${project.shared_memo || ''}</textarea><button class="btn btn-small btn-ghost" style="margin-top:8px" onclick="saveSharedMemo('${project.id}')">メモを保存</button></div></div>
 
     <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">📄 議事録</span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><div id="minutesList_${project.id}" class="minutes-list"></div><div style="margin-bottom:12px;padding:12px;background:var(--bg-tertiary);border-radius:8px;"><label style="font-size:12px;color:var(--text-secondary);display:block;margin-bottom:6px;">打合せ日</label><input type="date" id="meetingDate_${project.id}" style="width:100%;padding:8px 12px;border:1px solid var(--border-color);border-radius:6px;font-size:14px;"></div><div class="minutes-upload-area" id="minutesDropArea_${project.id}" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDropWithDate(event, '${project.id}')" onclick="triggerMinutesUpload('${project.id}')"><input type="file" id="minutesUpload_${project.id}" style="display:none" accept=".pdf,.doc,.docx,.xls,.xlsx" onchange="uploadMinutesWithDate('${project.id}', this.files[0])"><span>📁 クリックまたはドラッグ&ドロップ</span><div style="font-size:12px;color:var(--text-muted);margin-top:4px">PDF, Word, Excel対応</div></div></div></div>
 
@@ -9398,6 +9424,21 @@ function canPressApplicationGo(project) {
 function toggleCardSection(element) {
   const section = element.closest('.card-section');
   section.classList.toggle('collapsed');
+}
+
+// モバイルサイドバー開閉
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  sidebar.classList.toggle('open');
+  overlay.classList.toggle('show');
+}
+
+function closeSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  sidebar.classList.remove('open');
+  overlay.classList.remove('show');
 }
 
 // ドラッグ&ドロップ関数
