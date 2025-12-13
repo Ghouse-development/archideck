@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="ArchiDeck">
 <meta name="description" content="住宅設計業務を革新的に効率化するタスク管理システム">
-<link rel="manifest" href="manifest.json">
+<link rel="manifest" href="/archideck/manifest.json">
 <title>ArchiDeck | Gハウス 設計業務管理システム</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🏠</text></svg>">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%232563EB' width='100' height='100' rx='20'/><text x='50' y='68' font-size='50' text-anchor='middle' fill='white'>A</text></svg>">
@@ -4053,7 +4053,8 @@ async function selectAccountType(category) {
   document.getElementById('accountSelectContainer').style.display = 'none';
   document.getElementById('mainContainer').classList.add('show');
 
-  const displayName = currentUser.email.split('@')[0];
+  // デモモード対応: currentUserがnullの場合は'demo'を使用
+  const displayName = currentUser?.email ? currentUser.email.split('@')[0] : 'demo';
   document.getElementById('userName').textContent = displayName;
   document.getElementById('userAvatar').src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(displayName) + '&background=4A90E2&color=fff&size=32';
 
@@ -10480,7 +10481,7 @@ window.addEventListener('DOMContentLoaded', () => {
       });
     });
 
-    navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
+    navigator.serviceWorker.register('/archideck/sw.js', { updateViaCache: 'none' })
       .then(reg => {
         console.log('✅ Service Worker registered:', reg.scope);
         // 新しいService Workerがあれば即座にアクティベート
