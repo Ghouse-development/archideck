@@ -2,15 +2,11 @@
   "rewrites": [
     {
       "source": "/",
-      "destination": "/landing.html"
-    },
-    {
-      "source": "/app",
       "destination": "/archideck/index.html"
     },
     {
-      "source": "/app/(.*)",
-      "destination": "/archideck/$1"
+      "source": "/admin",
+      "destination": "/admin/index.html"
     }
   ],
   "headers": [

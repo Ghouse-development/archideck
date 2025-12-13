@@ -13,25 +13,80 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 :root {
-  --primary-color: #4A90E2;
-  --primary-hover: #357ABD;
-  --secondary-color: #50E3C2;
-  --danger-color: #E94B3C;
-  --warning-color: #F5A623;
-  --success-color: #7ED321;
-  --text-primary: #2C3E50;
-  --text-secondary: #7F8C8D;
-  --text-muted: #BDC3C7;
+  /* Primary - Deep Ocean Blue */
+  --primary-color: #2563EB;
+  --primary-hover: #1D4ED8;
+  --primary-light: #DBEAFE;
+  --primary-dark: #1E40AF;
+
+  /* Secondary - Emerald Green */
+  --secondary-color: #059669;
+  --secondary-hover: #047857;
+  --secondary-light: #D1FAE5;
+
+  /* Accent - Violet */
+  --accent-color: #7C3AED;
+  --accent-light: #EDE9FE;
+
+  /* Status Colors */
+  --danger-color: #DC2626;
+  --danger-light: #FEE2E2;
+  --warning-color: #D97706;
+  --warning-light: #FEF3C7;
+  --success-color: #16A34A;
+  --success-light: #DCFCE7;
+  --info-color: #0891B2;
+  --info-light: #CFFAFE;
+
+  /* Text Colors */
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --text-muted: #94A3B8;
+  --text-light: #CBD5E1;
+
+  /* Background Colors */
   --bg-primary: #FFFFFF;
-  --bg-secondary: #F8F9FA;
-  --bg-tertiary: #ECF0F1;
-  --border-color: #E1E8ED;
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
-  --shadow-md: 0 4px 6px rgba(0,0,0,0.07);
-  --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
+  --bg-secondary: #F8FAFC;
+  --bg-tertiary: #F1F5F9;
+  --bg-hover: #E2E8F0;
+
+  /* Border Colors */
+  --border-color: #E2E8F0;
+  --border-light: #F1F5F9;
+  --border-focus: #93C5FD;
+
+  /* Shadows - More refined */
+  --shadow-xs: 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.08), 0 2px 4px -2px rgba(0,0,0,0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -4px rgba(0,0,0,0.03);
+  --shadow-xl: 0 20px 25px -5px rgba(0,0,0,0.08), 0 8px 10px -6px rgba(0,0,0,0.03);
+  --shadow-2xl: 0 25px 50px -12px rgba(0,0,0,0.15);
+  --shadow-inner: inset 0 2px 4px rgba(0,0,0,0.04);
+  --shadow-glow: 0 0 20px rgba(37, 99, 235, 0.15);
+
+  /* Border Radius */
+  --radius-xs: 4px;
   --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
+  --radius-full: 9999px;
+
+  /* Transitions */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-bounce: 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
 }
 
 body {
@@ -43,38 +98,175 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ログイン画面 */
+/* Global Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* Focus Visible - Accessibility */
+:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* Selection Styling */
+::selection {
+  background: var(--primary-light);
+  color: var(--primary-dark);
+}
+
+/* Utility Classes */
+.text-primary { color: var(--text-primary); }
+.text-secondary { color: var(--text-secondary); }
+.text-muted { color: var(--text-muted); }
+.text-success { color: var(--success-color); }
+.text-danger { color: var(--danger-color); }
+.text-warning { color: var(--warning-color); }
+
+.bg-primary { background: var(--primary-light); }
+.bg-success { background: var(--success-light); }
+.bg-danger { background: var(--danger-light); }
+.bg-warning { background: var(--warning-light); }
+
+.font-medium { font-weight: 500; }
+.font-semibold { font-weight: 600; }
+.font-bold { font-weight: 700; }
+
+.rounded { border-radius: var(--radius-md); }
+.rounded-lg { border-radius: var(--radius-lg); }
+.rounded-full { border-radius: var(--radius-full); }
+
+.shadow-sm { box-shadow: var(--shadow-sm); }
+.shadow-md { box-shadow: var(--shadow-md); }
+.shadow-lg { box-shadow: var(--shadow-lg); }
+
+/* Animation Classes */
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.2s ease-out;
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ログイン画面 - Premium Design */
 .login-container {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #FFFFFF;
+  background: linear-gradient(135deg, var(--bg-secondary) 0%, #E8F4FE 100%);
   padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.login-container::before {
+  content: '';
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.08) 0%, transparent 70%);
+  top: -200px;
+  right: -200px;
+  pointer-events: none;
+}
+
+.login-container::after {
+  content: '';
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(5, 150, 105, 0.06) 0%, transparent 70%);
+  bottom: -100px;
+  left: -100px;
+  pointer-events: none;
 }
 
 .login-card {
   background: white;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255,255,255,0.8);
+  border-radius: var(--radius-2xl);
   padding: 48px;
-  box-shadow: var(--shadow-md);
-  max-width: 420px;
+  box-shadow: var(--shadow-xl), 0 0 40px rgba(37, 99, 235, 0.06);
+  max-width: 440px;
   width: 100%;
   text-align: center;
+  position: relative;
+  z-index: 1;
+}
+
+.login-logo {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 20px;
+  background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+  border-radius: var(--radius-xl);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.2);
 }
 
 .login-card h1 {
-  font-size: 28px;
+  font-size: 26px;
   font-weight: 700;
   color: var(--text-primary);
-  margin-bottom: 12px;
+  margin-bottom: 8px;
+  letter-spacing: -0.02em;
 }
 
 .login-card p {
   color: var(--text-secondary);
-  margin-bottom: 24px;
-  font-size: 15px;
+  margin-bottom: 32px;
+  font-size: 14px;
+  line-height: 1.5;
 }
 
 /* メインコンテナ */
@@ -90,11 +282,12 @@ body {
   display: block;
 }
 
-/* ヘッダー */
+/* ヘッダー - Premium Design */
 .header {
   background: white;
   border-bottom: 1px solid var(--border-color);
-  padding: 16px 32px;
+  padding: 0 32px;
+  height: 64px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -107,40 +300,100 @@ body {
 .header-left {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 32px;
 }
 
 .logo {
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 700;
-  color: var(--primary-color);
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  letter-spacing: -0.02em;
+}
+
+.logo-icon {
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
+}
+
+.logo-text {
+  background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .header-right {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
+}
+
+.header-action-btn {
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.header-action-btn:hover {
+  background: var(--bg-secondary);
+  color: var(--primary-color);
 }
 
 .user-info {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 8px 16px;
+  padding: 6px 12px 6px 6px;
   background: var(--bg-secondary);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.user-info:hover {
+  background: var(--bg-hover);
 }
 
 .user-avatar {
   width: 32px;
   height: 32px;
   border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .user-name {
   font-size: 14px;
   font-weight: 500;
   color: var(--text-primary);
+}
+
+.user-role {
+  font-size: 11px;
+  color: var(--text-muted);
 }
 
 /* カテゴリ切り替えメニュー */
@@ -287,86 +540,195 @@ body {
   border-color: var(--primary-color);
 }
 
-/* ボタン */
+/* ボタン - Premium Design */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 10px 20px;
+  padding: 11px 22px;
   border: none;
   border-radius: var(--radius-md);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all var(--transition-normal);
   white-space: nowrap;
+  position: relative;
+  overflow: hidden;
+  letter-spacing: 0.01em;
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,0.12) 0%, transparent 50%);
+  pointer-events: none;
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--primary-color), #357ABD);
+  background: var(--primary-color);
   color: white;
-  box-shadow: 0 2px 8px rgba(74, 144, 226, 0.2);
+  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2), 0 1px 2px rgba(37, 99, 235, 0.12);
 }
 
 .btn-primary:hover {
-  background: linear-gradient(135deg, var(--primary-hover), #2E6BA8);
-  box-shadow: 0 4px 16px rgba(74, 144, 226, 0.3);
-  transform: translateY(-2px);
+  background: var(--primary-hover);
+  box-shadow: 0 8px 16px rgba(37, 99, 235, 0.25), 0 3px 6px rgba(37, 99, 235, 0.15);
+  transform: translateY(-1px);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
 }
 
 .btn-secondary {
   background: var(--secondary-color);
   color: white;
+  box-shadow: 0 2px 4px rgba(5, 150, 105, 0.2);
 }
 
 .btn-secondary:hover {
-  opacity: 0.9;
+  background: var(--secondary-hover);
+  box-shadow: 0 8px 16px rgba(5, 150, 105, 0.25);
+  transform: translateY(-1px);
 }
 
 .btn-ghost {
   background: transparent;
-  border: 1px solid var(--border-color);
+  border: 1.5px solid var(--border-color);
   color: var(--text-primary);
+}
+
+.btn-ghost::before {
+  display: none;
 }
 
 .btn-ghost:hover {
   background: var(--bg-secondary);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1.5px solid var(--primary-color);
+  color: var(--primary-color);
+}
+
+.btn-outline::before {
+  display: none;
+}
+
+.btn-outline:hover {
+  background: var(--primary-light);
 }
 
 .btn-danger {
   background: var(--danger-color);
   color: white;
+  box-shadow: 0 2px 4px rgba(220, 38, 38, 0.2);
 }
 
 .btn-danger:hover {
-  opacity: 0.9;
+  background: #B91C1C;
+  box-shadow: 0 8px 16px rgba(220, 38, 38, 0.25);
+  transform: translateY(-1px);
+}
+
+.btn-soft {
+  background: var(--primary-light);
+  color: var(--primary-color);
+  border: none;
+}
+
+.btn-soft::before {
+  display: none;
+}
+
+.btn-soft:hover {
+  background: var(--border-focus);
 }
 
 .btn-small {
-  padding: 6px 12px;
+  padding: 7px 14px;
   font-size: 13px;
 }
 
-/* 入力フィールド */
+.btn-large {
+  padding: 14px 28px;
+  font-size: 16px;
+}
+
+.btn-icon {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: var(--radius-md);
+}
+
+.btn-icon.btn-small {
+  width: 32px;
+  height: 32px;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* 入力フィールド - Premium Design */
 .input, .select {
-  padding: 10px 14px;
-  border: 1px solid var(--border-color);
+  padding: 11px 16px;
+  border: 1.5px solid var(--border-color);
   border-radius: var(--radius-md);
   font-size: 14px;
   font-family: inherit;
   background: white;
-  transition: all 0.2s;
+  transition: all var(--transition-normal);
+  color: var(--text-primary);
+}
+
+.input:hover, .select:hover {
+  border-color: var(--text-muted);
 }
 
 .input:focus, .select:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  background: #FAFBFF;
+}
+
+.input::placeholder {
+  color: var(--text-muted);
 }
 
 .input {
   min-width: 200px;
+}
+
+.input-group {
+  position: relative;
+}
+
+.input-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.input-group .input {
+  padding-left: 42px;
 }
 
 /* カードグリッド */
@@ -380,14 +742,14 @@ body {
   gap: 24px;
 }
 
-/* プロジェクトカード */
+/* プロジェクトカード - Premium Design */
 .project-card {
   background: white;
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-xl);
   padding: 24px;
   box-shadow: var(--shadow-sm);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all var(--transition-slow);
   position: relative;
   overflow: hidden;
 }
@@ -397,17 +759,17 @@ body {
   position: absolute;
   top: 0;
   left: 0;
-  width: 4px;
-  height: 100%;
-  background: linear-gradient(180deg, var(--primary-color), var(--secondary-color));
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary-color), var(--accent-color), var(--secondary-color));
   opacity: 0;
-  transition: opacity 0.3s;
+  transition: opacity var(--transition-normal);
 }
 
 .project-card:hover {
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-  transform: translateY(-4px);
-  border-color: var(--primary-color);
+  box-shadow: var(--shadow-lg), var(--shadow-glow);
+  transform: translateY(-2px);
+  border-color: transparent;
 }
 
 .project-card:hover::before {
@@ -420,11 +782,11 @@ body {
   align-items: flex-start;
   margin-bottom: 20px;
   padding-bottom: 16px;
-  border-bottom: 1px solid var(--bg-secondary);
+  border-bottom: 1px solid var(--border-light);
 }
 
 .card-title {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 700;
   color: var(--text-primary);
   margin-bottom: 6px;
@@ -435,39 +797,81 @@ body {
   letter-spacing: -0.02em;
 }
 
-.card-subtitle {
-  font-size: 14px;
-  color: var(--text-secondary);
-  font-weight: 500;
+.card-title:hover {
+  color: var(--primary-color);
 }
 
+.card-subtitle {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card-subtitle::before {
+  content: '';
+  display: inline-block;
+  width: 4px;
+  height: 4px;
+  background: var(--text-muted);
+  border-radius: 50%;
+}
+
+/* バッジ - Premium Design */
 .badge {
   display: inline-flex;
   align-items: center;
-  padding: 5px 14px;
-  border-radius: 20px;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: var(--radius-full);
   font-size: 12px;
   font-weight: 600;
-  letter-spacing: 0.3px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  letter-spacing: 0.02em;
+  border: none;
 }
 
 .badge-primary {
-  background: linear-gradient(135deg, #E8F4FD, #D6EBFF);
+  background: var(--primary-light);
   color: var(--primary-color);
-  border: 1px solid rgba(74, 144, 226, 0.2);
 }
 
 .badge-success {
-  background: linear-gradient(135deg, #E6F9F0, #D1F2E6);
+  background: var(--success-light);
   color: var(--success-color);
-  border: 1px solid rgba(80, 200, 120, 0.2);
+}
+
+.badge-warning {
+  background: var(--warning-light);
+  color: var(--warning-color);
+}
+
+.badge-danger {
+  background: var(--danger-light);
+  color: var(--danger-color);
 }
 
 .badge-secondary {
-  background: linear-gradient(135deg, #F0F0F0, #E5E5E5);
+  background: var(--bg-tertiary);
   color: var(--text-secondary);
-  border: 1px solid rgba(100, 100, 100, 0.2);
+}
+
+.badge-info {
+  background: var(--info-light);
+  color: var(--info-color);
+}
+
+.badge-accent {
+  background: var(--accent-light);
+  color: var(--accent-color);
+}
+
+.badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
 }
 
 /* 業者カード */
@@ -564,43 +968,54 @@ body {
   color: var(--text-primary);
 }
 
-/* 進捗バー */
+/* 進捗バー - Premium Design */
 .progress-section {
   margin-bottom: 20px;
+  padding: 16px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
 }
 
 .progress-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 .progress-label {
-  font-size: 14px;
+  font-size: 13px;
+  font-weight: 500;
   color: var(--text-secondary);
 }
 
 .progress-value {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 700;
   color: var(--primary-color);
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+}
+
+.progress-value-unit {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
 }
 
 .progress-bar {
-  height: 10px;
-  background: var(--bg-secondary);
-  border-radius: 999px;
+  height: 8px;
+  background: var(--bg-hover);
+  border-radius: var(--radius-full);
   overflow: hidden;
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #4A90E2, #50C878);
-  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-  border-radius: 999px;
-  box-shadow: 0 0 8px rgba(74, 144, 226, 0.4);
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: var(--radius-full);
   position: relative;
 }
 
@@ -611,8 +1026,8 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-  animation: shimmer 2s infinite;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%);
+  animation: shimmer 2s ease-in-out infinite;
 }
 
 @keyframes shimmer {
@@ -620,31 +1035,34 @@ body {
   100% { transform: translateX(100%); }
 }
 
-/* タスクリスト */
+.progress-fill.complete {
+  background: var(--success-color);
+}
+
+/* タスクリスト - Premium Design */
 .tasks-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 10px;
   margin-bottom: 20px;
 }
 
 .task-item {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   padding: 12px 16px;
-  background: var(--bg-secondary);
+  background: white;
   border-radius: var(--radius-md);
   font-size: 14px;
-  transition: all 0.2s;
-  border: 1px solid transparent;
+  transition: all var(--transition-fast);
+  border: 1px solid var(--border-light);
 }
 
 .task-item:hover {
-  background: white;
+  background: var(--bg-secondary);
   border-color: var(--border-color);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  transform: translateX(4px);
+  box-shadow: var(--shadow-sm);
 }
 
 .task-checkbox {
@@ -652,37 +1070,50 @@ body {
   height: 18px;
   cursor: pointer;
   accent-color: var(--primary-color);
+  border-radius: var(--radius-xs);
 }
 
 .task-state-select {
-  height: 30px;
-  padding: 0 8px;
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
-  background: #fff;
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background: white;
   font-size: 12px;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
-  min-width: 80px;
+  transition: all var(--transition-fast);
+  min-width: 90px;
   flex-shrink: 0;
 }
 
+.task-state-select:hover {
+  border-color: var(--primary-color);
+}
+
+.task-state-select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
 .task-state-select.state-yellow {
-  background: #fff8d6;
-  border-color: #f4e2a0;
-  color: #7a5b00;
+  background: var(--warning-light);
+  border-color: #F59E0B;
+  color: #92400E;
 }
 
 .task-state-select.state-green {
-  background: #e8f7e8;
-  border-color: #b9e4b9;
-  color: #0f5132;
+  background: var(--success-light);
+  border-color: #22C55E;
+  color: #166534;
 }
 
 .task-label {
   flex: 1;
   color: var(--text-primary);
   font-weight: 500;
+  font-size: 13px;
 }
 
 .task-email-btn {
@@ -725,36 +1156,45 @@ body {
   transform: translateX(4px);
 }
 
-/* モーダル */
+/* モーダル - Premium Design */
 .modal {
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(15, 23, 42, 0.6);
   z-index: 1000;
   align-items: center;
   justify-content: center;
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(8px);
+  padding: 20px;
 }
 
 .modal.show {
   display: flex;
+  animation: modalBgFadeIn 0.2s ease-out;
+}
+
+@keyframes modalBgFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .modal-content {
   background: white;
-  border-radius: 16px;
-  width: min(800px, 90vw);
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  animation: modalSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: var(--radius-2xl);
+  width: min(800px, 100%);
+  max-height: calc(100vh - 40px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-2xl), 0 0 60px rgba(0, 0, 0, 0.15);
+  animation: modalSlideIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 @keyframes modalSlideIn {
   from {
     opacity: 0;
-    transform: translateY(-20px) scale(0.95);
+    transform: translateY(-24px) scale(0.96);
   }
   to {
     opacity: 1;
@@ -763,94 +1203,164 @@ body {
 }
 
 .modal-header {
-  padding: 28px 32px;
-  border-bottom: 2px solid var(--bg-secondary);
+  padding: 24px 28px;
+  border-bottom: 1px solid var(--border-light);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: linear-gradient(180deg, #fafbfc, white);
+  background: white;
+  flex-shrink: 0;
 }
 
 .modal-title {
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--text-primary);
-}
-
-.close {
-  width: 32px;
-  height: 32px;
-  border: none;
-  background: transparent;
-  color: var(--text-secondary);
-  font-size: 24px;
-  cursor: pointer;
-  border-radius: var(--radius-sm);
-  transition: all 0.2s;
-}
-
-.close:hover {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-}
-
-.modal-body {
-  padding: 32px;
-}
-
-.modal-footer {
-  padding: 20px 32px;
-  border-top: 1px solid var(--border-color);
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
   gap: 12px;
 }
 
-/* フォーム */
+.modal-title-icon {
+  width: 36px;
+  height: 36px;
+  background: var(--primary-light);
+  color: var(--primary-color);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.close {
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-size: 20px;
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close:hover {
+  background: var(--danger-light);
+  color: var(--danger-color);
+}
+
+.modal-body {
+  padding: 28px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+
+.modal-footer {
+  padding: 20px 28px;
+  border-top: 1px solid var(--border-light);
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  background: var(--bg-secondary);
+  flex-shrink: 0;
+}
+
+/* フォーム - Premium Design */
 .form-group {
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .form-label {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 6px;
   margin-bottom: 8px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--text-primary);
+}
+
+.form-label-required {
+  color: var(--danger-color);
+  font-size: 12px;
 }
 
 .form-input, .form-select, .form-textarea {
   width: 100%;
   padding: 12px 16px;
-  border: 2px solid var(--border-color);
+  border: 1.5px solid var(--border-color);
   border-radius: var(--radius-md);
   font-size: 14px;
   font-family: inherit;
-  transition: all 0.2s;
+  transition: all var(--transition-fast);
   background: white;
+  color: var(--text-primary);
 }
 
 .form-input:hover, .form-select:hover, .form-textarea:hover {
-  border-color: #c5d1de;
+  border-color: var(--text-muted);
 }
 
 .form-input:focus, .form-select:focus, .form-textarea:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 4px rgba(74, 144, 226, 0.12);
-  background: #fafbfc;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  background: #FAFBFF;
+}
+
+.form-input::placeholder {
+  color: var(--text-muted);
 }
 
 .form-textarea {
-  min-height: 120px;
+  min-height: 100px;
   resize: vertical;
+  line-height: 1.5;
 }
 
 .form-hint {
   margin-top: 6px;
-  font-size: 13px;
+  font-size: 12px;
   color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.form-divider {
+  height: 1px;
+  background: var(--border-light);
+  margin: 24px 0;
+}
+
+.form-section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 /* ステータスインジケーター */
@@ -1227,30 +1737,31 @@ body {
   cursor: grabbing;
 }
 
-/* トースト通知 */
+/* トースト通知 - Premium Design */
 .toast {
   position: fixed;
   bottom: 24px;
   right: 24px;
   background: white;
-  border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
-  padding: 16px 24px;
-  box-shadow: var(--shadow-lg);
+  padding: 16px 20px;
+  box-shadow: var(--shadow-xl);
   display: none;
   align-items: center;
   gap: 12px;
   z-index: 2000;
+  max-width: 400px;
+  border: 1px solid var(--border-color);
 }
 
 .toast.show {
   display: flex;
-  animation: slideIn 0.3s ease;
+  animation: toastSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-@keyframes slideIn {
+@keyframes toastSlideIn {
   from {
-    transform: translateX(100%);
+    transform: translateX(120%);
     opacity: 0;
   }
   to {
@@ -1259,19 +1770,52 @@ body {
   }
 }
 
+.toast-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 14px;
+}
+
 .toast-success {
   border-left: 4px solid var(--success-color);
+}
+
+.toast-success .toast-icon {
+  background: var(--success-light);
+  color: var(--success-color);
 }
 
 .toast-error {
   border-left: 4px solid var(--danger-color);
 }
 
+.toast-error .toast-icon {
+  background: var(--danger-light);
+  color: var(--danger-color);
+}
+
 .toast-warning {
   border-left: 4px solid var(--warning-color);
 }
 
-/* サイドバーレイアウト */
+.toast-warning .toast-icon {
+  background: var(--warning-light);
+  color: var(--warning-color);
+}
+
+.toast-message {
+  font-size: 14px;
+  color: var(--text-primary);
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+/* サイドバーレイアウト - Premium Design */
 .app-layout {
   display: flex;
   height: calc(100vh - 64px);
@@ -1280,24 +1824,51 @@ body {
 
 .sidebar {
   width: 280px;
-  background: white;
-  border-right: 2px solid var(--border-color);
+  background: linear-gradient(180deg, white 0%, var(--bg-secondary) 100%);
+  border-right: 1px solid var(--border-color);
   overflow-y: auto;
   flex-shrink: 0;
 }
 
+.sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+.sidebar-header {
+  padding: 20px 16px;
+  border-bottom: 1px solid var(--border-light);
+}
+
 .sidebar-section {
   padding: 16px;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.sidebar-section:last-child {
+  border-bottom: none;
 }
 
 .sidebar-section-title {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
-  color: var(--text-secondary);
+  color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.8px;
   margin-bottom: 12px;
+  padding-left: 4px;
 }
 
 .sidebar-item {
@@ -1307,34 +1878,66 @@ body {
   padding: 10px 12px;
   border-radius: var(--radius-md);
   cursor: pointer;
-  transition: all 0.2s;
-  margin-bottom: 4px;
+  transition: all var(--transition-fast);
+  margin-bottom: 2px;
   font-size: 14px;
   font-weight: 500;
+  color: var(--text-secondary);
 }
 
 .sidebar-item:hover {
-  background: var(--bg-secondary);
+  background: var(--bg-hover);
+  color: var(--text-primary);
 }
 
 .sidebar-item.active {
-  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  background: var(--primary-color);
   color: white;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
 }
 
 .sidebar-item-label {
   flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sidebar-item-icon {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7;
+}
+
+.sidebar-item.active .sidebar-item-icon {
+  opacity: 1;
 }
 
 .sidebar-item-count {
-  font-size: 12px;
+  font-size: 11px;
+  font-weight: 600;
   padding: 2px 8px;
-  border-radius: 12px;
-  background: rgba(0, 0, 0, 0.1);
+  border-radius: var(--radius-full);
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
 }
 
 .sidebar-item.active .sidebar-item-count {
   background: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.sidebar-item-count.warning {
+  background: var(--warning-light);
+  color: var(--warning-color);
+}
+
+.sidebar-item-count.danger {
+  background: var(--danger-light);
+  color: var(--danger-color);
 }
 
 .main-content {
@@ -1344,14 +1947,23 @@ body {
   overflow: hidden;
 }
 
-/* サブタブナビゲーション */
+/* サブタブナビゲーション - Premium Design */
 .sub-tabs-nav {
   display: flex;
-  gap: 8px;
-  padding: 16px 24px 0 24px;
+  gap: 4px;
+  padding: 12px 24px 0 24px;
   background: white;
-  border-bottom: 2px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
   overflow-x: auto;
+}
+
+.sub-tabs-nav::-webkit-scrollbar {
+  height: 4px;
+}
+
+.sub-tabs-nav::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 2px;
 }
 
 .sub-tab-btn {
@@ -1359,23 +1971,26 @@ body {
   border: none;
   background: transparent;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--text-secondary);
-  border-bottom: 3px solid transparent;
-  transition: all 0.2s;
+  border-bottom: 2px solid transparent;
+  transition: all var(--transition-fast);
   white-space: nowrap;
+  position: relative;
 }
 
 .sub-tab-btn:hover {
   color: var(--primary-color);
-  background: var(--bg-secondary);
+  background: var(--primary-light);
   border-radius: var(--radius-md) var(--radius-md) 0 0;
 }
 
 .sub-tab-btn.active {
   color: var(--primary-color);
   border-bottom-color: var(--primary-color);
+  background: var(--primary-light);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
 }
 
 .sub-tab-panel {
@@ -1457,42 +2072,99 @@ body {
 
 /* ===== ArchiDeck v3.0 新機能スタイル ===== */
 
-/* 5部構成カードセクション */
+/* 5部構成カードセクション - Premium Design */
 .card-section {
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  margin-bottom: 16px;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  margin-bottom: 12px;
   overflow: hidden;
+  background: white;
+  transition: all var(--transition-fast);
+}
+
+.card-section:hover {
+  border-color: var(--border-color);
+}
+
+.card-section:last-child {
+  margin-bottom: 0;
 }
 
 .card-section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 16px;
+  padding: 14px 18px;
   background: var(--bg-secondary);
   cursor: pointer;
   user-select: none;
-  transition: background 0.2s;
+  transition: all var(--transition-fast);
+  border-bottom: 1px solid transparent;
 }
 
 .card-section-header:hover {
   background: var(--bg-tertiary);
 }
 
+.card-section:not(.collapsed) .card-section-header {
+  border-bottom-color: var(--border-light);
+}
+
 .card-section-title {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--text-primary);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+}
+
+.card-section-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  background: var(--primary-light);
+  color: var(--primary-color);
+}
+
+.card-section:nth-child(2) .card-section-icon {
+  background: var(--accent-light);
+  color: var(--accent-color);
+}
+
+.card-section:nth-child(3) .card-section-icon {
+  background: var(--warning-light);
+  color: var(--warning-color);
+}
+
+.card-section:nth-child(4) .card-section-icon {
+  background: var(--info-light);
+  color: var(--info-color);
+}
+
+.card-section:nth-child(5) .card-section-icon {
+  background: var(--success-light);
+  color: var(--success-color);
 }
 
 .card-section-toggle {
-  font-size: 12px;
+  font-size: 10px;
   color: var(--text-muted);
-  transition: transform 0.2s;
+  transition: transform var(--transition-fast);
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+}
+
+.card-section-header:hover .card-section-toggle {
+  background: var(--bg-hover);
 }
 
 .card-section.collapsed .card-section-toggle {
@@ -1500,8 +2172,9 @@ body {
 }
 
 .card-section-content {
-  padding: 16px;
+  padding: 18px;
   display: block;
+  background: white;
 }
 
 .card-section.collapsed .card-section-content {
@@ -1874,7 +2547,9 @@ body {
           <button class="sub-tab-btn" onclick="switchSubTab('categories', this)">🏷️ カテゴリ管理</button>
           <button class="sub-tab-btn" onclick="switchSubTab('tasks', this)">✅ タスク管理</button>
           <button class="sub-tab-btn" onclick="switchSubTab('products', this)">📦 商品管理</button>
+          <button class="sub-tab-btn" onclick="switchSubTab('customize', this)">🎨 カスタマイズ</button>
           <button class="sub-tab-btn" onclick="switchSubTab('kintone', this)">🔗 kintone連携</button>
+          <button class="sub-tab-btn" onclick="switchSubTab('backup', this)">💾 バックアップ</button>
         </nav>
 
         <!-- スタッフ管理 -->
@@ -1959,6 +2634,79 @@ body {
           </div>
         </div>
 
+        <!-- カスタマイズ -->
+        <div id="customizePanel" class="sub-tab-panel">
+          <div style="max-width: 800px; margin: 0 auto;">
+            <h2 style="margin-bottom: 20px; font-size: 24px; font-weight: 700;">外観カスタマイズ</h2>
+            <p style="margin-bottom: 32px; color: var(--text-secondary);">会社のブランドに合わせてシステムの外観をカスタマイズできます。コーディング不要で簡単に変更できます。</p>
+
+            <div style="display: grid; grid-template-columns: 1fr 300px; gap: 32px;">
+              <div>
+                <div class="form-group">
+                  <label class="form-label">会社名</label>
+                  <input type="text" class="form-input" id="customOrgName" placeholder="例：株式会社サンプル工務店" style="width: 100%;">
+                  <div class="form-hint">ヘッダーのタイトルに表示されます</div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">ロゴURL</label>
+                  <input type="text" class="form-input" id="customLogoUrl" placeholder="https://example.com/logo.png" style="width: 100%;">
+                  <div class="form-hint">推奨サイズ: 150x40px（PNG/SVG形式）</div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                  <div class="form-group">
+                    <label class="form-label">メインカラー</label>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                      <input type="color" id="customPrimaryColor" value="#2563EB" style="width: 50px; height: 40px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); cursor: pointer;">
+                      <input type="text" class="form-input" id="customPrimaryColorText" value="#2563EB" style="flex: 1;" oninput="document.getElementById('customPrimaryColor').value = this.value">
+                    </div>
+                    <div class="form-hint">ボタンやリンクの色</div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label">アクセントカラー</label>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                      <input type="color" id="customSecondaryColor" value="#059669" style="width: 50px; height: 40px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); cursor: pointer;">
+                      <input type="text" class="form-input" id="customSecondaryColorText" value="#059669" style="flex: 1;" oninput="document.getElementById('customSecondaryColor').value = this.value">
+                    </div>
+                    <div class="form-hint">成功状態やサブボタンの色</div>
+                  </div>
+                </div>
+
+                <div style="display: flex; gap: 12px; margin-top: 24px;">
+                  <button class="btn btn-primary" onclick="saveCustomization()">カスタマイズを保存</button>
+                  <button class="btn btn-ghost" onclick="previewCustomization()">プレビュー</button>
+                  <button class="btn btn-ghost" onclick="resetCustomization()">リセット</button>
+                </div>
+
+                <div id="customizeStatus" style="margin-top: 16px;"></div>
+              </div>
+
+              <div style="padding: 20px; background: var(--bg-secondary); border-radius: var(--radius-lg); height: fit-content;">
+                <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 16px;">プレビュー</h3>
+                <div id="customizePreview" style="padding: 16px; background: white; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                    <div id="previewLogo" style="width: 32px; height: 32px; background: linear-gradient(135deg, var(--primary-color), var(--accent-color)); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px;">🏠</div>
+                    <span id="previewTitle" style="font-weight: 600; font-size: 14px;">ArchiDeck</span>
+                  </div>
+                  <button class="btn btn-primary btn-small" style="margin-right: 8px;">メインボタン</button>
+                  <button class="btn btn-secondary btn-small">サブボタン</button>
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-top: 32px; padding: 16px; background: var(--primary-light); border-radius: var(--radius-md); border-left: 4px solid var(--primary-color);">
+              <h4 style="font-size: 14px; font-weight: 600; color: var(--primary-color); margin-bottom: 8px;">ヒント</h4>
+              <ul style="font-size: 13px; color: var(--text-secondary); margin: 0; padding-left: 20px;">
+                <li>ロゴはURLを入力するか、画像をホスティングサービスにアップロードしてください</li>
+                <li>カラーは会社のブランドカラーに合わせることをお勧めします</li>
+                <li>変更は「プレビュー」で確認してから保存してください</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
         <!-- kintone連携 -->
         <div id="kintonePanel" class="sub-tab-panel">
           <div style="max-width: 800px; margin: 0 auto;">
@@ -2009,6 +2757,53 @@ body {
             </div>
 
             <div id="kintoneStatus" style="margin-top: 16px;"></div>
+
+            <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border-color);">
+              <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">データ連携</h3>
+              <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                <button class="btn btn-ghost" onclick="importFromKintone()">📥 kintoneからインポート（CSV）</button>
+                <button class="btn btn-ghost" onclick="exportToKintone()">📤 CSVエクスポート</button>
+              </div>
+              <p style="font-size: 12px; color: var(--text-muted); margin-top: 12px;">
+                kintoneからエクスポートしたCSVファイルをインポートできます。<br>
+                顧客名/邸名、建築地、レコードIDカラムが自動認識されます。
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- バックアップ -->
+        <div id="backupPanel" class="sub-tab-panel">
+          <div style="max-width: 800px; margin: 0 auto;">
+            <h2 style="margin-bottom: 20px; font-size: 24px; font-weight: 700;">データバックアップ</h2>
+            <p style="margin-bottom: 32px; color: var(--text-secondary);">システム全体のデータをバックアップ・復元できます。定期的なバックアップをお勧めします。</p>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+              <div style="padding: 24px; background: var(--bg-secondary); border-radius: var(--radius-md); text-align: center;">
+                <div style="font-size: 48px; margin-bottom: 16px;">📤</div>
+                <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">バックアップ作成</h3>
+                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">全データをJSONファイルとしてダウンロードします</p>
+                <button class="btn btn-primary" onclick="createBackup()">バックアップを作成</button>
+              </div>
+
+              <div style="padding: 24px; background: var(--bg-secondary); border-radius: var(--radius-md); text-align: center;">
+                <div style="font-size: 48px; margin-bottom: 16px;">📥</div>
+                <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">バックアップ復元</h3>
+                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">JSONファイルからデータを復元します</p>
+                <button class="btn btn-ghost" onclick="restoreBackup()">復元ファイルを選択</button>
+              </div>
+            </div>
+
+            <div style="margin-top: 32px; padding: 16px; background: rgba(245, 166, 35, 0.1); border-radius: var(--radius-md); border-left: 4px solid var(--warning-color);">
+              <h4 style="font-size: 14px; font-weight: 600; color: var(--warning-color); margin-bottom: 8px;">⚠️ 注意事項</h4>
+              <ul style="font-size: 13px; color: var(--text-secondary); margin: 0; padding-left: 20px;">
+                <li>復元を行うと既存データが上書きされます</li>
+                <li>復元前に必ず現在のバックアップを作成してください</li>
+                <li>バックアップファイルは安全な場所に保管してください</li>
+              </ul>
+            </div>
+
+            <div id="backupStatus" style="margin-top: 24px;"></div>
           </div>
         </div>
       </div>
@@ -4874,7 +5669,7 @@ function renderProjectCard(project) {
 
     <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">📋 引継書</span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><textarea class="handover-content" id="handover_${project.id}" placeholder="引継書の内容を入力..."></textarea><button class="btn btn-small btn-ghost" style="margin-top:8px" onclick="saveHandover('${project.id}')">引継書を保存</button></div></div>
 
-    <div class="card-section"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">📋 業務内容</span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><div class="tasks-grid">${tasksHtml}</div></div></div>
+    <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">📋 業務内容</span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><div class="tasks-grid">${tasksHtml}</div></div></div>
 
     <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--bg-secondary);display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;color:var(--text-muted)">更新: ${formatDateTime(project.updated_at)}</span><button class="btn btn-danger btn-small" onclick="deleteProject('${project.id}')">削除</button></div>
   </div>`;
@@ -7449,70 +8244,413 @@ async function saveHandover(projectId) {
 
 // 議事録アップロード
 async function uploadMinutes(projectId, file) {
-  if (!file) return;
-
-  // Supabase Storageにアップロード
-  const fileName = `${projectId}/${Date.now()}_${file.name}`;
-  const { data: uploadData, error: uploadError } = await supabase.storage
-    .from('minutes')
-    .upload(fileName, file);
-
-  if (uploadError) {
-    showToast('アップロードに失敗しました', 'error');
+  if (!file) {
+    showToast('ファイルを選択してください', 'error');
     return;
   }
 
-  // URLを取得
-  const { data: urlData } = supabase.storage
-    .from('minutes')
-    .getPublicUrl(fileName);
-
-  // DBに登録
-  const { error: dbError } = await supabase
-    .from('project_minutes')
-    .insert({
-      project_id: projectId,
-      file_name: file.name,
-      file_url: urlData.publicUrl,
-      file_size: file.size,
-      uploaded_by: currentUser?.email
-    });
-
-  if (dbError) {
-    showToast('議事録登録に失敗しました', 'error');
+  // ファイルサイズチェック（10MB上限）
+  const maxSize = 10 * 1024 * 1024;
+  if (file.size > maxSize) {
+    showToast('ファイルサイズは10MB以下にしてください', 'error');
     return;
   }
 
-  // 通知を送信
-  const project = projects.find(p => p.id === projectId);
-  if (project) {
-    const notifyEmails = [];
-    if (project.assigned_to) {
-      const designer = designers.find(d => d.name === project.assigned_to);
-      if (designer?.email) notifyEmails.push(designer.email);
-    }
-    if (project.ic_assignee) {
-      const icDesigner = designers.find(d => d.name === project.ic_assignee);
-      if (icDesigner?.email) notifyEmails.push(icDesigner.email);
-    }
-    if (project.exterior_assignee) {
-      const extDesigner = designers.find(d => d.name === project.exterior_assignee);
-      if (extDesigner?.email) notifyEmails.push(extDesigner.email);
+  // 対応ファイル形式チェック
+  const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
+  if (!allowedTypes.includes(file.type) && !file.name.match(/\.(pdf|doc|docx|xls|xlsx)$/i)) {
+    showToast('PDF, Word, Excelファイルのみ対応しています', 'error');
+    return;
+  }
+
+  showToast('アップロード中...', 'info');
+
+  try {
+    // Supabase Storageにアップロード
+    const fileName = `${projectId}/${Date.now()}_${file.name}`;
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('minutes')
+      .upload(fileName, file);
+
+    if (uploadError) {
+      console.error('Storage upload error:', uploadError);
+      // バケットが存在しない場合のエラーメッセージ
+      if (uploadError.message?.includes('bucket') || uploadError.statusCode === '404') {
+        showToast('ストレージが設定されていません。管理者に連絡してください。', 'error');
+      } else if (uploadError.message?.includes('policy')) {
+        showToast('アップロード権限がありません。', 'error');
+      } else {
+        showToast('アップロードに失敗しました: ' + (uploadError.message || 'Unknown error'), 'error');
+      }
+      return;
     }
 
-    // 通知をDBに登録
-    for (const email of notifyEmails) {
-      await supabase.from('notifications').insert({
-        user_email: email,
-        title: '新しい議事録がアップロードされました',
-        message: `${project.customer}様の議事録「${file.name}」がアップロードされました`,
-        link: `#projects?id=${projectId}`
+    // URLを取得
+    const { data: urlData } = supabase.storage
+      .from('minutes')
+      .getPublicUrl(fileName);
+
+    // DBに登録
+    const { error: dbError } = await supabase
+      .from('project_minutes')
+      .insert({
+        project_id: projectId,
+        file_name: file.name,
+        file_url: urlData.publicUrl,
+        file_size: file.size,
+        uploaded_by: currentUser?.email || 'demo@archideck.jp'
       });
+
+    if (dbError) {
+      console.error('DB insert error:', dbError);
+      showToast('議事録登録に失敗しました: ' + (dbError.message || 'Unknown error'), 'error');
+      return;
     }
+
+    // 通知を送信
+    const project = projects.find(p => p.id === projectId);
+    if (project) {
+      const notifyEmails = [];
+      if (project.assigned_to) {
+        const designer = designers.find(d => d.name === project.assigned_to);
+        if (designer?.email) notifyEmails.push(designer.email);
+      }
+      if (project.ic_assignee) {
+        const icDesigner = designers.find(d => d.name === project.ic_assignee);
+        if (icDesigner?.email) notifyEmails.push(icDesigner.email);
+      }
+      if (project.exterior_assignee) {
+        const extDesigner = designers.find(d => d.name === project.exterior_assignee);
+        if (extDesigner?.email) notifyEmails.push(extDesigner.email);
+      }
+
+      // 通知をDBに登録（エラーは無視）
+      for (const email of notifyEmails) {
+        await supabase.from('notifications').insert({
+          user_email: email,
+          title: '新しい議事録がアップロードされました',
+          message: `${project.customer}様の議事録「${file.name}」がアップロードされました`,
+          link: `#projects?id=${projectId}`
+        }).catch(() => {});
+      }
+    }
+
+    showToast('議事録をアップロードしました', 'success');
+    await loadMinutesList(projectId);
+  } catch (error) {
+    console.error('Upload error:', error);
+    showToast('アップロードに失敗しました', 'error');
+  }
+}
+
+// 議事録一覧読み込み
+async function loadMinutesList(projectId) {
+  const container = document.getElementById(`minutesList_${projectId}`);
+  if (!container) return;
+
+  try {
+    const { data: minutes, error } = await supabase
+      .from('project_minutes')
+      .select('*')
+      .eq('project_id', projectId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Load minutes error:', error);
+      container.innerHTML = '<div style="color: var(--text-muted); font-size: 12px;">議事録の読み込みに失敗しました</div>';
+      return;
+    }
+
+    if (!minutes || minutes.length === 0) {
+      container.innerHTML = '<div style="color: var(--text-muted); font-size: 12px;">アップロードされた議事録はありません</div>';
+      return;
+    }
+
+    container.innerHTML = minutes.map(m => `
+      <div class="minute-item" style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: var(--bg-secondary); border-radius: 6px; margin-bottom: 8px;">
+        <div style="flex: 1; min-width: 0;">
+          <a href="${m.file_url}" target="_blank" style="color: var(--primary-color); text-decoration: none; font-size: 13px; font-weight: 500; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+            📄 ${escapeHtml(m.file_name)}
+          </a>
+          <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">
+            ${formatFileSize(m.file_size)} • ${formatDate(m.created_at)}
+          </div>
+        </div>
+        <button class="btn btn-small btn-ghost" onclick="deleteMinute('${m.id}', '${projectId}')" style="flex-shrink: 0; padding: 4px 8px; font-size: 12px; color: var(--danger-color);">削除</button>
+      </div>
+    `).join('');
+  } catch (error) {
+    console.error('Load minutes error:', error);
+    container.innerHTML = '<div style="color: var(--text-muted); font-size: 12px;">議事録の読み込みに失敗しました</div>';
+  }
+}
+
+// 議事録削除
+async function deleteMinute(minuteId, projectId) {
+  if (!confirm('この議事録を削除しますか？')) return;
+
+  try {
+    const { error } = await supabase
+      .from('project_minutes')
+      .delete()
+      .eq('id', minuteId);
+
+    if (error) throw error;
+    showToast('議事録を削除しました', 'success');
+    await loadMinutesList(projectId);
+  } catch (error) {
+    console.error('Delete minute error:', error);
+    showToast('削除に失敗しました', 'error');
+  }
+}
+
+// ファイルサイズフォーマット
+function formatFileSize(bytes) {
+  if (!bytes) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+}
+
+// 日付フォーマット
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`;
+}
+
+// HTMLエスケープ
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+// ============================================
+// カスタマイズ機能（FC向けノーコード）
+// ============================================
+function loadCustomization() {
+  if (!currentOrganization) return;
+
+  document.getElementById('customOrgName').value = currentOrganization.name || '';
+  document.getElementById('customLogoUrl').value = currentOrganization.logo_url || '';
+  document.getElementById('customPrimaryColor').value = currentOrganization.primary_color || '#2563EB';
+  document.getElementById('customPrimaryColorText').value = currentOrganization.primary_color || '#2563EB';
+  document.getElementById('customSecondaryColor').value = currentOrganization.secondary_color || '#059669';
+  document.getElementById('customSecondaryColorText').value = currentOrganization.secondary_color || '#059669';
+
+  updatePreview();
+}
+
+function previewCustomization() {
+  const primaryColor = document.getElementById('customPrimaryColor').value;
+  const secondaryColor = document.getElementById('customSecondaryColor').value;
+  const name = document.getElementById('customOrgName').value;
+  const logoUrl = document.getElementById('customLogoUrl').value;
+
+  // CSSカスタムプロパティを更新
+  document.documentElement.style.setProperty('--primary-color', primaryColor);
+  document.documentElement.style.setProperty('--secondary-color', secondaryColor);
+
+  // タイトルを更新
+  if (name) {
+    document.title = `ArchiDeck | ${name}`;
   }
 
-  showToast('議事録をアップロードしました', 'success');
-  renderProjects();
+  // プレビュー領域を更新
+  updatePreview();
+  showToast('プレビューを適用しました', 'success');
+}
+
+function updatePreview() {
+  const primaryColor = document.getElementById('customPrimaryColor').value;
+  const secondaryColor = document.getElementById('customSecondaryColor').value;
+  const name = document.getElementById('customOrgName').value;
+  const logoUrl = document.getElementById('customLogoUrl').value;
+
+  const previewLogo = document.getElementById('previewLogo');
+  const previewTitle = document.getElementById('previewTitle');
+
+  if (logoUrl) {
+    previewLogo.innerHTML = `<img src="${logoUrl}" style="max-width: 32px; max-height: 32px; object-fit: contain;">`;
+  } else {
+    previewLogo.innerHTML = '🏠';
+    previewLogo.style.background = `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`;
+  }
+
+  previewTitle.textContent = name || 'ArchiDeck';
+}
+
+async function saveCustomization() {
+  if (!currentOrganization) {
+    showToast('組織情報が見つかりません', 'error');
+    return;
+  }
+
+  const statusEl = document.getElementById('customizeStatus');
+  statusEl.innerHTML = '<span style="color: var(--text-muted);">保存中...</span>';
+
+  const updates = {
+    name: document.getElementById('customOrgName').value,
+    logo_url: document.getElementById('customLogoUrl').value,
+    primary_color: document.getElementById('customPrimaryColor').value,
+    secondary_color: document.getElementById('customSecondaryColor').value,
+    updated_at: new Date().toISOString()
+  };
+
+  const { error } = await supabase
+    .from('organizations')
+    .update(updates)
+    .eq('id', currentOrganization.id);
+
+  if (error) {
+    statusEl.innerHTML = `<span style="color: var(--danger-color);">保存に失敗しました: ${error.message}</span>`;
+    return;
+  }
+
+  // ローカルの組織情報を更新
+  Object.assign(currentOrganization, updates);
+
+  // 画面に適用
+  applyWhiteLabel(currentOrganization);
+
+  statusEl.innerHTML = '<span style="color: var(--success-color);">保存しました</span>';
+  showToast('カスタマイズを保存しました', 'success');
+
+  setTimeout(() => {
+    statusEl.innerHTML = '';
+  }, 3000);
+}
+
+function resetCustomization() {
+  document.getElementById('customOrgName').value = '';
+  document.getElementById('customLogoUrl').value = '';
+  document.getElementById('customPrimaryColor').value = '#2563EB';
+  document.getElementById('customPrimaryColorText').value = '#2563EB';
+  document.getElementById('customSecondaryColor').value = '#059669';
+  document.getElementById('customSecondaryColorText').value = '#059669';
+
+  // CSSカスタムプロパティをデフォルトにリセット
+  document.documentElement.style.setProperty('--primary-color', '#2563EB');
+  document.documentElement.style.setProperty('--secondary-color', '#059669');
+  document.title = 'ArchiDeck | Gハウス 設計業務管理システム';
+
+  updatePreview();
+  showToast('デフォルト設定にリセットしました', 'success');
+}
+
+// カラーピッカーの同期
+document.addEventListener('DOMContentLoaded', function() {
+  const primaryColorPicker = document.getElementById('customPrimaryColor');
+  const primaryColorText = document.getElementById('customPrimaryColorText');
+  const secondaryColorPicker = document.getElementById('customSecondaryColor');
+  const secondaryColorText = document.getElementById('customSecondaryColorText');
+
+  if (primaryColorPicker && primaryColorText) {
+    primaryColorPicker.addEventListener('input', function() {
+      primaryColorText.value = this.value;
+      updatePreview();
+    });
+  }
+
+  if (secondaryColorPicker && secondaryColorText) {
+    secondaryColorPicker.addEventListener('input', function() {
+      secondaryColorText.value = this.value;
+      updatePreview();
+    });
+  }
+});
+
+// バックアップ作成
+async function createBackup() {
+  const statusEl = document.getElementById('backupStatus');
+  statusEl.innerHTML = '<span style="color: var(--text-muted);">バックアップを作成中...</span>';
+
+  try {
+    const backup = {
+      version: '4.1',
+      created_at: new Date().toISOString(),
+      data: {
+        projects: projects,
+        designers: designers,
+        tasksV2: tasksV2,
+        vendors: vendors,
+        emailTemplates: emailTemplates,
+        products: products,
+        vendorCategories: vendorCategories,
+        taskVendorMappings: taskVendorMappings
+      }
+    };
+
+    const json = JSON.stringify(backup, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `archideck_backup_${new Date().toISOString().split('T')[0]}.json`;
+    link.click();
+
+    statusEl.innerHTML = '<span style="color: var(--success-color);">✅ バックアップを作成しました</span>';
+    showToast('バックアップファイルをダウンロードしました', 'success');
+  } catch (error) {
+    console.error('Backup error:', error);
+    statusEl.innerHTML = '<span style="color: var(--danger-color);">❌ バックアップの作成に失敗しました</span>';
+    showToast('バックアップの作成に失敗しました', 'error');
+  }
+}
+
+// バックアップ復元
+function restoreBackup() {
+  const fileInput = document.createElement('input');
+  fileInput.type = 'file';
+  fileInput.accept = '.json';
+  fileInput.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!confirm('現在のデータが上書きされます。本当に復元しますか？')) return;
+
+    const statusEl = document.getElementById('backupStatus');
+    statusEl.innerHTML = '<span style="color: var(--text-muted);">復元中...</span>';
+
+    try {
+      const text = await file.text();
+      const backup = JSON.parse(text);
+
+      if (!backup.version || !backup.data) {
+        throw new Error('無効なバックアップファイルです');
+      }
+
+      // 各テーブルを復元
+      const tables = ['projects', 'designers', 'vendors', 'email_templates', 'products', 'vendor_categories'];
+      const dataMap = {
+        projects: backup.data.projects,
+        designers: backup.data.designers,
+        vendors: backup.data.vendors,
+        email_templates: backup.data.emailTemplates,
+        products: backup.data.products,
+        vendor_categories: backup.data.vendorCategories
+      };
+
+      for (const table of tables) {
+        const data = dataMap[table];
+        if (data && data.length > 0) {
+          // 既存データを削除して復元
+          await supabase.from(table).delete().neq('id', '00000000-0000-0000-0000-000000000000');
+          for (const item of data) {
+            await supabase.from(table).insert(item).catch(() => {});
+          }
+        }
+      }
+
+      statusEl.innerHTML = '<span style="color: var(--success-color);">✅ 復元が完了しました。ページを再読み込みしてください。</span>';
+      showToast('復元が完了しました', 'success');
+    } catch (error) {
+      console.error('Restore error:', error);
+      statusEl.innerHTML = '<span style="color: var(--danger-color);">❌ 復元に失敗しました: ' + error.message + '</span>';
+      showToast('復元に失敗しました', 'error');
+    }
+  };
+  fileInput.click();
 }
 
 // kintone連携設定保存
@@ -7583,6 +8721,119 @@ async function loadKintoneSettings() {
     document.getElementById('kintoneAppId').value = data.app_id || '';
     // APIトークンは表示しない（セキュリティ）
   }
+}
+
+// kintoneからインポート（CSVベース）
+async function importFromKintone() {
+  const fileInput = document.createElement('input');
+  fileInput.type = 'file';
+  fileInput.accept = '.csv';
+  fileInput.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const text = await file.text();
+    const lines = text.split('\n');
+    const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+
+    const customerIdx = headers.findIndex(h => h.includes('顧客') || h.includes('邸名') || h.includes('customer'));
+    const addressIdx = headers.findIndex(h => h.includes('建築地') || h.includes('住所') || h.includes('address'));
+    const recordIdIdx = headers.findIndex(h => h.includes('レコード') || h.includes('record') || h === '$id');
+
+    if (customerIdx === -1) {
+      showToast('顧客名/邸名カラムが見つかりません', 'error');
+      return;
+    }
+
+    let importCount = 0;
+    for (let i = 1; i < lines.length; i++) {
+      const cols = lines[i].split(',').map(c => c.trim().replace(/"/g, ''));
+      if (!cols[customerIdx]) continue;
+
+      const customer = cols[customerIdx];
+      const address = addressIdx >= 0 ? cols[addressIdx] : '';
+      const kintoneRecordId = recordIdIdx >= 0 ? cols[recordIdIdx] : '';
+
+      // 既存チェック
+      const existing = projects.find(p => p.customer === customer);
+      if (existing) continue;
+
+      // 新規作成
+      const { error } = await supabase.from('projects').insert({
+        customer,
+        building_address: address,
+        kintone_record_id: kintoneRecordId,
+        assigned_to: designers.find(d => d.category === '設計')?.name || '',
+        specifications: 'LIFE',
+        status: 'active',
+        progress: {}
+      });
+
+      if (!error) importCount++;
+    }
+
+    showToast(`${importCount}件の案件をインポートしました`, 'success');
+    await loadProjects();
+    renderProjects();
+  };
+  fileInput.click();
+}
+
+// kintoneへエクスポート（CSV）
+function exportToKintone() {
+  const headers = ['案件ID', 'kintone_record_id', '顧客名', '建築地', '設計担当', '商品', '進捗率', '間取確定日', '着工許可日', '変更契約前会議日', '更新日'];
+  const rows = projects.map(p => [
+    p.id,
+    p.kintone_record_id || '',
+    p.customer,
+    p.building_address || '',
+    p.assigned_to,
+    p.specifications,
+    calculateProgress(p) + '%',
+    p.layout_confirmed_date || '',
+    p.construction_permit_date || '',
+    p.pre_contract_meeting_date || '',
+    p.updated_at
+  ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(','));
+
+  const csv = [headers.join(','), ...rows].join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `archideck_export_${new Date().toISOString().split('T')[0]}.csv`;
+  link.click();
+  showToast('CSVをエクスポートしました', 'success');
+}
+
+// kintone同期対象フィールドを更新
+async function syncToKintone(projectId) {
+  const project = projects.find(p => p.id === projectId);
+  if (!project || !project.kintone_record_id) {
+    showToast('kintone record IDが設定されていません', 'error');
+    return;
+  }
+
+  if (!kintoneSettings?.domain || !kintoneSettings?.api_token) {
+    showToast('kintone設定が完了していません', 'error');
+    return;
+  }
+
+  // 実際のAPIコールはCORS制限のためサーバーサイドで実行が必要
+  // ここではUIフィードバックのみ
+  showToast('kintone同期をリクエストしました（サーバーサイド処理待ち）', 'info');
+
+  // 同期リクエストをDBに記録
+  await supabase.from('kintone_sync_queue').insert({
+    project_id: projectId,
+    kintone_record_id: project.kintone_record_id,
+    sync_type: 'push',
+    status: 'pending',
+    data: {
+      layout_confirmed_date: project.layout_confirmed_date,
+      construction_permit_date: project.construction_permit_date,
+      pre_contract_meeting_date: project.pre_contract_meeting_date
+    }
+  }).catch(() => {});
 }
 
 // 外構担当ドロップダウンを設定
