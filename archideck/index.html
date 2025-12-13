@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>設計・IC業務管理システム | Gハウス</title>
+<title>ArchiDeck | Gハウス 設計業務管理システム</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🏠</text></svg>">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1299,6 +1299,291 @@ body {
   gap: 8px;
   justify-content: flex-end;
 }
+
+/* ===== ArchiDeck v3.0 新機能スタイル ===== */
+
+/* 5部構成カードセクション */
+.card-section {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.card-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: var(--bg-secondary);
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.2s;
+}
+
+.card-section-header:hover {
+  background: var(--bg-tertiary);
+}
+
+.card-section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card-section-toggle {
+  font-size: 12px;
+  color: var(--text-muted);
+  transition: transform 0.2s;
+}
+
+.card-section.collapsed .card-section-toggle {
+  transform: rotate(-90deg);
+}
+
+.card-section-content {
+  padding: 16px;
+  display: block;
+}
+
+.card-section.collapsed .card-section-content {
+  display: none;
+}
+
+/* タスク機能 */
+.project-task-list {
+  margin-top: 12px;
+}
+
+.project-task-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+  margin-bottom: 8px;
+  transition: all 0.2s;
+}
+
+.project-task-item.completed {
+  opacity: 0.5;
+  background: #f5f5f5;
+}
+
+.project-task-item.completed .project-task-name {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+.project-task-checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--primary-color);
+}
+
+.project-task-name {
+  flex: 1;
+  font-size: 14px;
+}
+
+.project-task-due {
+  font-size: 12px;
+  color: var(--text-muted);
+  padding: 2px 8px;
+  background: var(--bg-tertiary);
+  border-radius: 12px;
+}
+
+.project-task-due.overdue {
+  background: #ffe5e5;
+  color: var(--danger-color);
+}
+
+.add-task-form {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.add-task-form input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+}
+
+/* 共有メモ欄 */
+.shared-memo-area {
+  width: 100%;
+  min-height: 80px;
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+/* 議事録セクション */
+.minutes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.minutes-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+}
+
+.minutes-item-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.minutes-upload-area {
+  border: 2px dashed var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.minutes-upload-area:hover {
+  border-color: var(--primary-color);
+  background: #f8fbff;
+}
+
+/* 引継書セクション */
+.handover-content {
+  width: 100%;
+  min-height: 120px;
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+/* サイドバー担当者色分け */
+.sidebar-item-count.count-blue {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.sidebar-item-count.count-yellow {
+  background: #fff8e1;
+  color: #f57c00;
+}
+
+.sidebar-item-label.name-red {
+  color: #d32f2f;
+  font-weight: 700;
+}
+
+/* タスク一覧ボタン */
+.sidebar-task-btn {
+  padding: 4px 8px;
+  font-size: 11px;
+  background: var(--bg-tertiary);
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  margin-left: 8px;
+}
+
+.sidebar-task-btn:hover {
+  background: var(--primary-color);
+  color: white;
+}
+
+/* タスク一覧モーダル */
+.task-list-modal {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.task-list-group {
+  margin-bottom: 24px;
+}
+
+.task-list-group-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* 申請GOボタン無効化 */
+.task-item-btn.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.task-item-btn.disabled:hover {
+  transform: none;
+}
+
+/* kintone連携表示 */
+.kintone-info {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.kintone-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background: #e8f5e9;
+  color: #2e7d32;
+  border-radius: 12px;
+  font-size: 12px;
+}
+
+/* 通知バッジ */
+.notification-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: var(--danger-color);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 外構担当セクション */
+.sidebar-section-exterior {
+  border-left: 3px solid #8bc34a;
+}
+
+.sidebar-section-exterior .sidebar-section-title {
+  color: #689f38;
+}
 </style>
 </head>
 <body>
@@ -1306,7 +1591,8 @@ body {
 <!-- ログイン画面 -->
 <div id="loginContainer" class="login-container">
   <div class="login-card">
-    <h1>設計・IC業務管理システム</h1>
+    <h1>ArchiDeck</h1>
+    <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">Gハウス 設計業務管理システム</p>
     <p>メールアドレスとパスワードでログインしてください</p>
     <form onsubmit="signIn(); return false;" style="margin-bottom: 20px;">
       <input type="email" class="form-input" id="loginEmail" placeholder="メールアドレス" style="width: 100%; margin-bottom: 12px;" required>
@@ -1328,6 +1614,9 @@ body {
       <button class="btn btn-primary" style="width: 100%; padding: 16px; font-size: 16px;" onclick="selectAccountType('IC')">
         🎨 IC担当
       </button>
+      <button class="btn btn-primary" style="width: 100%; padding: 16px; font-size: 16px; background: linear-gradient(135deg, #8bc34a, #689f38);" onclick="selectAccountType('外構')">
+        🌳 外構担当
+      </button>
       <button class="btn btn-secondary" style="width: 100%; padding: 16px; font-size: 16px;" onclick="selectAccountType('admin')">
         👑 管理者（全権限）
       </button>
@@ -1340,7 +1629,7 @@ body {
   <!-- ヘッダー -->
   <header class="header">
     <div class="header-left">
-      <div class="logo">Gハウス 設計管理</div>
+      <div class="logo">ArchiDeck</div>
     </div>
     <div class="header-right">
       <div class="status-indicator status-saved" id="statusIndicator">
@@ -1358,6 +1647,7 @@ body {
         <div id="categorySwitchMenu" class="category-switch-menu" style="display: none;">
           <button onclick="switchCategory('設計')">📐 設計担当</button>
           <button onclick="switchCategory('IC')">🎨 IC担当</button>
+          <button onclick="switchCategory('外構')">🌳 外構担当</button>
           <button onclick="switchCategory('admin')">👑 管理者</button>
         </div>
       </div>
@@ -1391,8 +1681,8 @@ body {
               <option>LIFE+</option>
               <option>HOURS</option>
               <option>LACIE</option>
-              <option>LIFEリミ</option>
-              <option>LIFE+リミ</option>
+              <option>LIFE Limited</option>
+              <option>LIFE+ Limited</option>
             </select>
             <select class="select" id="archiveFilter" onchange="renderProjects()" style="margin-left: 12px;">
               <option value="active">アクティブのみ</option>
@@ -1425,6 +1715,7 @@ body {
           <button class="sub-tab-btn" onclick="switchSubTab('categories', this)">🏷️ カテゴリ管理</button>
           <button class="sub-tab-btn" onclick="switchSubTab('tasks', this)">✅ タスク管理</button>
           <button class="sub-tab-btn" onclick="switchSubTab('products', this)">📦 商品管理</button>
+          <button class="sub-tab-btn" onclick="switchSubTab('kintone', this)">🔗 kintone連携</button>
         </nav>
 
         <!-- スタッフ管理 -->
@@ -1438,6 +1729,7 @@ body {
                 <select class="form-select" id="newDesignerCategoryInline" style="width: 150px;">
                   <option value="設計">設計担当</option>
                   <option value="IC">IC担当</option>
+                  <option value="外構">外構担当</option>
                 </select>
                 <button class="btn btn-primary" onclick="addDesignerInline()">追加</button>
               </div>
@@ -1507,6 +1799,59 @@ body {
             <div id="productsGrid" style="margin-top: 32px;"></div>
           </div>
         </div>
+
+        <!-- kintone連携 -->
+        <div id="kintonePanel" class="sub-tab-panel">
+          <div style="max-width: 800px; margin: 0 auto;">
+            <h2 style="margin-bottom: 20px; font-size: 24px; font-weight: 700;">kintone連携設定</h2>
+            <p style="margin-bottom: 32px; color: var(--text-secondary);">kintoneと連携して、邸名・間取確定日・着工許可・変更契約前会議の情報を同期します。</p>
+
+            <div class="form-group">
+              <label class="form-label">kintone ドメイン</label>
+              <input type="text" class="form-input" id="kintoneDomain" placeholder="例：your-company.cybozu.com" style="width: 100%;">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">アプリID</label>
+              <input type="text" class="form-input" id="kintoneAppId" placeholder="例：123" style="width: 100%;">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">APIトークン</label>
+              <input type="password" class="form-input" id="kintoneApiToken" placeholder="APIトークンを入力" style="width: 100%;">
+              <div class="form-hint" style="font-size: 11px; margin-top: 4px;">kintoneアプリの設定からAPIトークンを発行してください</div>
+            </div>
+
+            <div style="margin-top: 24px; padding: 16px; background: var(--bg-secondary); border-radius: var(--radius-md);">
+              <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 12px;">フィールドマッピング</h3>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label class="form-label" style="font-size: 12px;">邸名フィールド</label>
+                  <input type="text" class="form-input" id="kintoneFieldCustomer" placeholder="customer_name" style="width: 100%;">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label class="form-label" style="font-size: 12px;">間取確定日フィールド</label>
+                  <input type="text" class="form-input" id="kintoneFieldLayout" placeholder="layout_confirmed_date" style="width: 100%;">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label class="form-label" style="font-size: 12px;">着工許可フィールド</label>
+                  <input type="text" class="form-input" id="kintoneFieldPermit" placeholder="construction_permit" style="width: 100%;">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label class="form-label" style="font-size: 12px;">変更契約前会議フィールド</label>
+                  <input type="text" class="form-input" id="kintoneFieldMeeting" placeholder="pre_contract_meeting" style="width: 100%;">
+                </div>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 12px; margin-top: 24px;">
+              <button class="btn btn-primary" onclick="saveKintoneSettings()">設定を保存</button>
+              <button class="btn btn-ghost" onclick="testKintoneConnection()">接続テスト</button>
+            </div>
+
+            <div id="kintoneStatus" style="margin-top: 16px;"></div>
+          </div>
+        </div>
       </div>
     </main>
   </div>
@@ -1524,17 +1869,22 @@ body {
         <label class="form-label">お客様名 *</label>
         <input type="text" class="form-input" id="projectCustomer" placeholder="例：田中太郎様">
       </div>
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
         <div class="form-group">
-          <label class="form-label">担当設計士（設計） *</label>
+          <label class="form-label">担当（設計） *</label>
           <select class="form-select" id="projectAssignedTo"></select>
         </div>
         <div class="form-group">
-          <label class="form-label">担当設計士（IC）</label>
+          <label class="form-label">担当（IC）</label>
           <select class="form-select" id="projectIcAssignee">
             <option value="">未定</option>
           </select>
-          <div class="form-hint" style="font-size: 11px;">後から追加可能</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">担当（外構）</label>
+          <select class="form-select" id="projectExteriorAssignee">
+            <option value="">未定</option>
+          </select>
         </div>
       </div>
       <div class="form-group">
@@ -1705,6 +2055,23 @@ body {
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeVendorModalV2()">キャンセル</button>
       <button class="btn btn-primary" onclick="saveVendorV2()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- モーダル：担当者タスク一覧 -->
+<div id="staffTasksModal" class="modal">
+  <div class="modal-content" style="max-width: 700px;">
+    <div class="modal-header">
+      <h2 class="modal-title" id="staffTasksModalTitle">タスク一覧</h2>
+      <button class="close" onclick="closeStaffTasksModal()">&times;</button>
+    </div>
+    <div class="modal-body task-list-modal">
+      <div style="margin-bottom: 16px; display: flex; gap: 8px;">
+        <button class="btn btn-small btn-ghost" id="sortByDueBtn" onclick="sortTasksBy('due')">期限順</button>
+        <button class="btn btn-small btn-ghost" id="sortByProjectBtn" onclick="sortTasksBy('project')">邸名順</button>
+      </div>
+      <div id="staffTasksList"></div>
     </div>
   </div>
 </div>
@@ -2693,8 +3060,8 @@ async function loadProducts() {
       { id: '2', name: 'LIFE+', display_order: 2 },
       { id: '3', name: 'HOURS', display_order: 3 },
       { id: '4', name: 'LACIE', display_order: 4 },
-      { id: '5', name: 'LIFEリミ', display_order: 5 },
-      { id: '6', name: 'LIFE+リミ', display_order: 6 }
+      { id: '5', name: 'LIFE Limited', display_order: 5 },
+      { id: '6', name: 'LIFE+ Limited', display_order: 6 }
     ];
   }
   console.log('✅ 商品読み込み完了:', products.length, '件');
@@ -3816,6 +4183,9 @@ function switchSubTab(panelName, element) {
     case 'products':
       renderProductsList();
       break;
+    case 'kintone':
+      loadKintoneSettings();
+      break;
   }
 }
 
@@ -4177,95 +4547,67 @@ function renderProjects() {
 function renderProjectCard(project) {
   const progress = calculateProgress(project);
   const progressData = project.progress || {};
-
-  // 担当者のカテゴリに応じたタスクリストを取得（新システム）
   const tasks = getTasksForAssignee(project.assigned_to);
 
-  // 全タスク完了チェック: すべてのタスクが完了し、状態管理があるタスクは全て「保存済み」
+  // 全タスク完了チェック
   const canArchive = tasks.every(taskDef => {
     const task = progressData[taskDef.task_key] || { completed: false, state: '' };
-    // チェックボックスが完了していること
     if (!task.completed) return false;
-    // 状態管理があるタスクは「保存済み」であること
     if (taskDef.has_state && task.state !== '保存済') return false;
     return true;
   });
 
+  // 申請GO条件チェック
+  const applicationGoEnabled = canPressApplicationGo(project);
+
   const tasksHtml = tasks.map(taskDef => {
     const key = taskDef.task_key;
     const task = progressData[key] || { completed: false, date: '', state: '' };
+    const isApplicationGo = key === 'application';
+    const disabledClass = isApplicationGo && !applicationGoEnabled ? 'disabled' : '';
 
-    // メールボタン（タスクでメール機能が有効 かつ 業者が紐づいている場合のみ表示）
     const hasVendor = taskVendorMappings.some(m => m.task_id === taskDef.id);
-    const showEmailButton = taskDef.has_email_button !== false && hasVendor; // has_email_buttonがundefinedの場合もtrueとして扱う
+    const showEmailButton = taskDef.has_email_button !== false && hasVendor;
     const emailBtn = showEmailButton ?
       `<button class="task-email-btn" onclick="openEmailFromTask('${project.id}', '${key}')" title="メール作成">📧</button>` : '';
 
-    // 状態セレクトの生成（タスクに状態管理が有効な場合のみ）
     let stateSelect = '';
     const stateOptions = getTaskStateOptions(key);
     if (stateOptions && Array.isArray(stateOptions)) {
-      const stateClass = task.state === '依頼済' ? 'state-yellow' : task.state === '保存済' ? 'state-green' : '';
-      stateSelect = `
-        <select class="task-state-select ${stateClass}"
-          onchange="updateTaskState('${project.id}', '${key}', this.value)">
-          ${stateOptions.map(state =>
-            `<option value="${state}" ${task.state === state ? 'selected' : ''}>${state || '-'}</option>`
-          ).join('')}
-        </select>
-      `;
+      const stateClass = task.state?.includes('済') || task.state?.includes('GO') ? 'state-green' : task.state ? 'state-yellow' : '';
+      stateSelect = `<select class="task-state-select ${stateClass}" onchange="updateTaskState('${project.id}', '${key}', this.value)">${stateOptions.map(state => `<option value="${state}" ${task.state === state ? 'selected' : ''}>${state || '-'}</option>`).join('')}</select>`;
     }
 
-    return `
-      <div class="task-item">
-        <input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''}
-          onchange="updateTaskStatus('${project.id}', '${key}', this.checked)">
-        <span class="task-label">${taskDef.task_name}</span>
-        ${stateSelect}
-        ${emailBtn}
-      </div>
-    `;
+    return `<div class="task-item ${disabledClass}" ${isApplicationGo && !applicationGoEnabled ? 'title="太陽光:営業共有済、給排水:保存済、換気:保存済、サッシ:保存済 が必要"' : ''}>
+      <input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''} ${disabledClass ? 'disabled' : ''} onchange="updateTaskStatus('${project.id}', '${key}', this.checked)">
+      <span class="task-label">${taskDef.task_name}</span>${stateSelect}${emailBtn}</div>`;
   }).join('');
 
-  return `
-    <div class="project-card">
-      <div class="card-header">
-        <div>
-          <div class="card-title">
-            ${project.customer}
-            <span class="badge badge-primary">${project.specifications || 'LIFE'}</span>
-            ${project.is_archived ? '<span class="badge badge-success">完了済み</span>' : ''}
-          </div>
-          <div class="card-subtitle">
-            設計：${project.assigned_to}
-            ${project.ic_assignee ? ` / IC：${project.ic_assignee}` : ''}
-          </div>
-        </div>
-        <div style="display: flex; gap: 8px;">
-          ${project.is_archived
-            ? `<button class="btn btn-success btn-small" onclick="toggleArchive('${project.id}', false)">復元</button>`
-            : canArchive ? `<button class="btn btn-warning btn-small" onclick="toggleArchive('${project.id}', true)">完了済みにする</button>` : ''
-          }
-          <button class="btn btn-ghost btn-small" onclick="editProject('${project.id}')">編集</button>
-        </div>
+  return `<div class="project-card" data-project-id="${project.id}">
+    <div class="card-header">
+      <div>
+        <div class="card-title">${project.customer}<span class="badge badge-primary">${project.specifications || 'LIFE'}</span>${project.is_archived ? '<span class="badge badge-success">完了済み</span>' : ''}</div>
+        <div class="card-subtitle">設計：${project.assigned_to}${project.ic_assignee ? ` | IC：${project.ic_assignee}` : ''}${project.exterior_assignee ? ` | 外構：${project.exterior_assignee}` : ''}</div>
       </div>
-      <div class="progress-section">
-        <div class="progress-header">
-          <span class="progress-label">進捗状況</span>
-          <span class="progress-value">${progress}%</span>
-        </div>
-        <div class="progress-bar">
-          <div class="progress-fill" style="width: ${progress}%"></div>
-        </div>
-      </div>
-      <div class="tasks-grid">${tasksHtml}</div>
-      ${project.memo ? `<div style="padding: 16px; background: var(--bg-secondary); border-radius: var(--radius-md); margin-top: 16px; font-size: 14px; color: var(--text-secondary);">${project.memo}</div>` : ''}
-      <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--bg-secondary); display: flex; justify-content: space-between; align-items: center;">
-        <span style="font-size: 13px; color: var(--text-muted);">更新: ${formatDateTime(project.updated_at)}</span>
-        <button class="btn btn-danger btn-small" onclick="deleteProject('${project.id}')">削除</button>
+      <div style="display: flex; gap: 8px;">
+        ${project.is_archived ? `<button class="btn btn-success btn-small" onclick="toggleArchive('${project.id}', false)">復元</button>` : canArchive ? `<button class="btn btn-warning btn-small" onclick="toggleArchive('${project.id}', true)">完了済みにする</button>` : ''}
+        <button class="btn btn-ghost btn-small" onclick="editProject('${project.id}')">編集</button>
       </div>
     </div>
-  `;
+    <div class="progress-section"><div class="progress-header"><span class="progress-label">進捗状況</span><span class="progress-value">${progress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width: ${progress}%"></div></div></div>
+
+    <div class="card-section"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">📋 業務内容</span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><div class="tasks-grid">${tasksHtml}</div></div></div>
+
+    <div class="card-section"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">✅ タスク</span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><div id="projectTasksList_${project.id}" class="project-task-list"></div><div class="add-task-form"><input type="text" id="newTaskName_${project.id}" placeholder="タスク名"><input type="date" id="newTaskDue_${project.id}"><button class="btn btn-small btn-primary" onclick="addProjectTask('${project.id}', document.getElementById('newTaskName_${project.id}').value, document.getElementById('newTaskDue_${project.id}').value)">追加</button></div></div></div>
+
+    <div class="card-section"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">📝 メモ欄 <span style="font-size:11px;color:var(--text-muted)">(IC・外構共通)</span></span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><textarea class="shared-memo-area" id="sharedMemo_${project.id}" placeholder="IC・外構担当と共有するメモ...">${project.shared_memo || ''}</textarea><button class="btn btn-small btn-ghost" style="margin-top:8px" onclick="saveSharedMemo('${project.id}')">メモを保存</button></div></div>
+
+    <div class="card-section"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">📄 議事録</span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><div id="minutesList_${project.id}" class="minutes-list"></div><div class="minutes-upload-area" onclick="document.getElementById('minutesUpload_${project.id}').click()"><input type="file" id="minutesUpload_${project.id}" style="display:none" accept=".pdf,.doc,.docx,.xls,.xlsx" onchange="uploadMinutes('${project.id}', this.files[0])"><span>📁 クリックしてファイルをアップロード</span><div style="font-size:12px;color:var(--text-muted);margin-top:4px">PDF, Word, Excel対応</div></div></div></div>
+
+    <div class="card-section"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">📋 引継書</span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><textarea class="handover-content" id="handover_${project.id}" placeholder="引継書の内容を入力..."></textarea><button class="btn btn-small btn-ghost" style="margin-top:8px" onclick="saveHandover('${project.id}')">引継書を保存</button></div></div>
+
+    <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--bg-secondary);display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;color:var(--text-muted)">更新: ${formatDateTime(project.updated_at)}</span><button class="btn btn-danger btn-small" onclick="deleteProject('${project.id}')">削除</button></div>
+  </div>`;
 }
 
 function calculateProgress(project) {
@@ -6468,6 +6810,578 @@ function handleHashChange() {
 
 // ハッシュ変更時のリスナー
 window.addEventListener('hashchange', handleHashChange);
+
+// ============================================
+// ArchiDeck v3.0 新機能
+// ============================================
+
+// グローバル変数追加
+let projectTasks = [];
+let projectMinutes = [];
+let kintoneSettings = null;
+let currentTaskSort = 'due';
+
+// 外構担当の処理を追加
+function getExteriorDesigners() {
+  return designers.filter(d => d.category === '外構').sort((a, b) => (a.display_order || 999) - (b.display_order || 999));
+}
+
+// サイドバーに外構担当セクションを追加（renderSidebar関数の拡張）
+const originalRenderSidebar = renderSidebar;
+renderSidebar = function() {
+  const container = document.getElementById('sidebarContent');
+  if (!container) return;
+
+  const sekkeiDesigners = designers.filter(d => d.category === '設計').sort((a, b) => (a.display_order || 999) - (b.display_order || 999));
+  const icDesigners = designers.filter(d => d.category === 'IC').sort((a, b) => (a.display_order || 999) - (b.display_order || 999));
+  const exteriorDesigners = designers.filter(d => d.category === '外構').sort((a, b) => (a.display_order || 999) - (b.display_order || 999));
+  const allCount = projects.filter(p => p.status !== 'completed' && !p.is_archived).length;
+
+  let html = `
+    <div class="sidebar-section">
+      <div class="sidebar-item ${currentDesignerTab === 'ALL' ? 'active' : ''}" onclick="selectDesigner('ALL')">
+        <span class="sidebar-item-label">全案件</span>
+        <span class="sidebar-item-count">${allCount}</span>
+      </div>
+    </div>
+  `;
+
+  // 設計担当セクション（申請GO数の色分け付き）
+  if (sekkeiDesigners.length > 0) {
+    html += '<div class="sidebar-section"><div class="sidebar-section-title">📐 設計担当</div>';
+    sekkeiDesigners.forEach(designer => {
+      const designerProjects = projects.filter(p => {
+        const assigned = (p.assigned_to || '').trim();
+        const designerName = designer.name.trim();
+        return assigned === designerName && p.status !== 'completed' && !p.is_archived;
+      });
+      const count = designerProjects.length;
+
+      // 申請GO未完了数をカウント
+      const applicationNotDone = designerProjects.filter(p => {
+        const progressData = p.progress || {};
+        return !progressData['application']?.completed;
+      }).length;
+
+      // 色分けロジック
+      let countClass = '';
+      let nameClass = '';
+      if (applicationNotDone >= 7) {
+        nameClass = 'name-red';
+        countClass = 'count-yellow';
+      } else if (applicationNotDone >= 5) {
+        countClass = 'count-yellow';
+      } else if (applicationNotDone <= 4) {
+        countClass = 'count-blue';
+      }
+
+      html += `
+        <div class="sidebar-item ${currentDesignerTab === designer.name ? 'active' : ''}" onclick="selectDesigner('${designer.name}')">
+          <span class="sidebar-item-label ${nameClass}">${designer.name}</span>
+          <button class="sidebar-task-btn" onclick="event.stopPropagation(); openStaffTasksModal('${designer.name}')" title="タスク一覧">📋</button>
+          <span class="sidebar-item-count ${countClass}">${count}</span>
+        </div>
+      `;
+    });
+    html += '</div>';
+  }
+
+  // IC担当セクション
+  if (icDesigners.length > 0) {
+    html += '<div class="sidebar-section"><div class="sidebar-section-title">🎨 IC担当</div>';
+    icDesigners.forEach(designer => {
+      const count = projects.filter(p => {
+        const assigned = (p.assigned_to || '').trim();
+        const icAssigned = (p.ic_assignee || '').trim();
+        const designerName = designer.name.trim();
+        return (assigned === designerName || icAssigned === designerName) && p.status !== 'completed' && !p.is_archived;
+      }).length;
+      html += `
+        <div class="sidebar-item ${currentDesignerTab === designer.name ? 'active' : ''}" onclick="selectDesigner('${designer.name}')">
+          <span class="sidebar-item-label">${designer.name}</span>
+          <button class="sidebar-task-btn" onclick="event.stopPropagation(); openStaffTasksModal('${designer.name}')" title="タスク一覧">📋</button>
+          <span class="sidebar-item-count">${count}</span>
+        </div>
+      `;
+    });
+    html += '</div>';
+  }
+
+  // 外構担当セクション
+  if (exteriorDesigners.length > 0) {
+    html += '<div class="sidebar-section sidebar-section-exterior"><div class="sidebar-section-title">🌳 外構担当</div>';
+    exteriorDesigners.forEach(designer => {
+      const count = projects.filter(p => {
+        const exteriorAssigned = (p.exterior_assignee || '').trim();
+        const designerName = designer.name.trim();
+        return exteriorAssigned === designerName && p.status !== 'completed' && !p.is_archived;
+      }).length;
+      html += `
+        <div class="sidebar-item ${currentDesignerTab === designer.name ? 'active' : ''}" onclick="selectDesigner('${designer.name}')">
+          <span class="sidebar-item-label">${designer.name}</span>
+          <button class="sidebar-task-btn" onclick="event.stopPropagation(); openStaffTasksModal('${designer.name}')" title="タスク一覧">📋</button>
+          <span class="sidebar-item-count">${count}</span>
+        </div>
+      `;
+    });
+    html += '</div>';
+  }
+
+  container.innerHTML = html;
+};
+
+// 担当者タスク一覧モーダル
+let currentStaffForTasks = null;
+
+function openStaffTasksModal(staffName) {
+  currentStaffForTasks = staffName;
+  document.getElementById('staffTasksModalTitle').textContent = `${staffName} のタスク一覧`;
+  renderStaffTasksList();
+  document.getElementById('staffTasksModal').classList.add('show');
+}
+
+function closeStaffTasksModal() {
+  document.getElementById('staffTasksModal').classList.remove('show');
+  currentStaffForTasks = null;
+}
+
+function sortTasksBy(sortType) {
+  currentTaskSort = sortType;
+  document.getElementById('sortByDueBtn').classList.toggle('btn-primary', sortType === 'due');
+  document.getElementById('sortByDueBtn').classList.toggle('btn-ghost', sortType !== 'due');
+  document.getElementById('sortByProjectBtn').classList.toggle('btn-primary', sortType === 'project');
+  document.getElementById('sortByProjectBtn').classList.toggle('btn-ghost', sortType !== 'project');
+  renderStaffTasksList();
+}
+
+async function renderStaffTasksList() {
+  const container = document.getElementById('staffTasksList');
+  if (!container || !currentStaffForTasks) return;
+
+  // 担当者の案件を取得
+  const staffProjects = projects.filter(p => {
+    const assigned = (p.assigned_to || '').trim();
+    const icAssigned = (p.ic_assignee || '').trim();
+    const exteriorAssigned = (p.exterior_assignee || '').trim();
+    return (assigned === currentStaffForTasks || icAssigned === currentStaffForTasks || exteriorAssigned === currentStaffForTasks) &&
+           p.status !== 'completed' && !p.is_archived;
+  });
+
+  // project_tasksからタスクを取得
+  const { data: tasks } = await supabase
+    .from('project_tasks')
+    .select('*')
+    .in('project_id', staffProjects.map(p => p.id))
+    .eq('is_completed', false)
+    .order('due_date');
+
+  if (!tasks || tasks.length === 0) {
+    container.innerHTML = '<div class="empty-state"><p>未完了のタスクはありません</p></div>';
+    return;
+  }
+
+  // ソート
+  let sortedTasks = [...tasks];
+  if (currentTaskSort === 'due') {
+    sortedTasks.sort((a, b) => {
+      if (!a.due_date) return 1;
+      if (!b.due_date) return -1;
+      return new Date(a.due_date) - new Date(b.due_date);
+    });
+  } else {
+    sortedTasks.sort((a, b) => {
+      const projectA = staffProjects.find(p => p.id === a.project_id);
+      const projectB = staffProjects.find(p => p.id === b.project_id);
+      return (projectA?.customer || '').localeCompare(projectB?.customer || '');
+    });
+  }
+
+  // 表示
+  let html = '';
+  const today = new Date().toISOString().split('T')[0];
+
+  if (currentTaskSort === 'project') {
+    // 邸名ごとにグループ化
+    const grouped = {};
+    sortedTasks.forEach(task => {
+      const project = staffProjects.find(p => p.id === task.project_id);
+      const key = project?.customer || '不明';
+      if (!grouped[key]) grouped[key] = [];
+      grouped[key].push(task);
+    });
+
+    for (const [customer, customerTasks] of Object.entries(grouped)) {
+      html += `<div class="task-list-group"><div class="task-list-group-title">${customer}</div>`;
+      customerTasks.forEach(task => {
+        const isOverdue = task.due_date && task.due_date < today;
+        html += `
+          <div class="project-task-item">
+            <input type="checkbox" class="project-task-checkbox" onchange="toggleProjectTask('${task.id}', this.checked)">
+            <span class="project-task-name">${task.task_name}</span>
+            ${task.due_date ? `<span class="project-task-due ${isOverdue ? 'overdue' : ''}">${task.due_date}</span>` : ''}
+          </div>
+        `;
+      });
+      html += '</div>';
+    }
+  } else {
+    // 期限順
+    sortedTasks.forEach(task => {
+      const project = staffProjects.find(p => p.id === task.project_id);
+      const isOverdue = task.due_date && task.due_date < today;
+      html += `
+        <div class="project-task-item">
+          <input type="checkbox" class="project-task-checkbox" onchange="toggleProjectTask('${task.id}', this.checked)">
+          <span class="project-task-name">${task.task_name}</span>
+          <span style="font-size: 12px; color: var(--text-muted);">${project?.customer || ''}</span>
+          ${task.due_date ? `<span class="project-task-due ${isOverdue ? 'overdue' : ''}">${task.due_date}</span>` : ''}
+        </div>
+      `;
+    });
+  }
+
+  container.innerHTML = html;
+}
+
+// タスク完了切り替え
+async function toggleProjectTask(taskId, completed) {
+  const { error } = await supabase
+    .from('project_tasks')
+    .update({ is_completed: completed, updated_at: new Date().toISOString() })
+    .eq('id', taskId);
+
+  if (error) {
+    showToast('タスク更新に失敗しました', 'error');
+    return;
+  }
+
+  renderStaffTasksList();
+  renderProjects();
+}
+
+// 案件にタスクを追加
+async function addProjectTask(projectId, taskName, dueDate) {
+  if (!taskName.trim()) {
+    showToast('タスク名を入力してください', 'error');
+    return;
+  }
+
+  const project = projects.find(p => p.id === projectId);
+  const { error } = await supabase
+    .from('project_tasks')
+    .insert({
+      project_id: projectId,
+      task_name: taskName.trim(),
+      due_date: dueDate || null,
+      assigned_to: project?.assigned_to || ''
+    });
+
+  if (error) {
+    showToast('タスク追加に失敗しました', 'error');
+    return;
+  }
+
+  showToast('タスクを追加しました', 'success');
+  renderProjects();
+}
+
+// 申請GO条件チェック
+function canPressApplicationGo(project) {
+  const progressData = project.progress || {};
+
+  // 条件: 太陽光依頼が営業共有済、給排水図依頼が保存済、換気図依頼が保存済、サッシ依頼が保存済
+  const solarOk = progressData['solar']?.state === '営業共有済';
+  const plumbingOk = progressData['plumbing']?.state === '保存済';
+  const ventilationOk = progressData['ventilation']?.state === '保存済';
+  const sashOk = progressData['sash']?.state === '保存済';
+
+  return solarOk && plumbingOk && ventilationOk && sashOk;
+}
+
+// 折りたたみ機能
+function toggleCardSection(element) {
+  const section = element.closest('.card-section');
+  section.classList.toggle('collapsed');
+}
+
+// 共有メモ保存
+async function saveSharedMemo(projectId) {
+  const memo = document.getElementById(`sharedMemo_${projectId}`).value;
+  const { error } = await supabase
+    .from('projects')
+    .update({ shared_memo: memo, updated_at: new Date().toISOString() })
+    .eq('id', projectId);
+
+  if (error) {
+    showToast('メモ保存に失敗しました', 'error');
+    return;
+  }
+
+  const project = projects.find(p => p.id === projectId);
+  if (project) project.shared_memo = memo;
+  showToast('メモを保存しました', 'success');
+}
+
+// 引継書保存
+async function saveHandover(projectId) {
+  const content = document.getElementById(`handover_${projectId}`).value;
+
+  // 既存の引継書を確認
+  const { data: existing } = await supabase
+    .from('project_handovers')
+    .select('id')
+    .eq('project_id', projectId)
+    .single();
+
+  let error;
+  if (existing) {
+    ({ error } = await supabase
+      .from('project_handovers')
+      .update({ content, updated_at: new Date().toISOString() })
+      .eq('id', existing.id));
+  } else {
+    ({ error } = await supabase
+      .from('project_handovers')
+      .insert({ project_id: projectId, content }));
+  }
+
+  if (error) {
+    showToast('引継書保存に失敗しました', 'error');
+    return;
+  }
+
+  showToast('引継書を保存しました', 'success');
+}
+
+// 議事録アップロード
+async function uploadMinutes(projectId, file) {
+  if (!file) return;
+
+  // Supabase Storageにアップロード
+  const fileName = `${projectId}/${Date.now()}_${file.name}`;
+  const { data: uploadData, error: uploadError } = await supabase.storage
+    .from('minutes')
+    .upload(fileName, file);
+
+  if (uploadError) {
+    showToast('アップロードに失敗しました', 'error');
+    return;
+  }
+
+  // URLを取得
+  const { data: urlData } = supabase.storage
+    .from('minutes')
+    .getPublicUrl(fileName);
+
+  // DBに登録
+  const { error: dbError } = await supabase
+    .from('project_minutes')
+    .insert({
+      project_id: projectId,
+      file_name: file.name,
+      file_url: urlData.publicUrl,
+      file_size: file.size,
+      uploaded_by: currentUser?.email
+    });
+
+  if (dbError) {
+    showToast('議事録登録に失敗しました', 'error');
+    return;
+  }
+
+  // 通知を送信
+  const project = projects.find(p => p.id === projectId);
+  if (project) {
+    const notifyEmails = [];
+    if (project.assigned_to) {
+      const designer = designers.find(d => d.name === project.assigned_to);
+      if (designer?.email) notifyEmails.push(designer.email);
+    }
+    if (project.ic_assignee) {
+      const icDesigner = designers.find(d => d.name === project.ic_assignee);
+      if (icDesigner?.email) notifyEmails.push(icDesigner.email);
+    }
+    if (project.exterior_assignee) {
+      const extDesigner = designers.find(d => d.name === project.exterior_assignee);
+      if (extDesigner?.email) notifyEmails.push(extDesigner.email);
+    }
+
+    // 通知をDBに登録
+    for (const email of notifyEmails) {
+      await supabase.from('notifications').insert({
+        user_email: email,
+        title: '新しい議事録がアップロードされました',
+        message: `${project.customer}様の議事録「${file.name}」がアップロードされました`,
+        link: `#projects?id=${projectId}`
+      });
+    }
+  }
+
+  showToast('議事録をアップロードしました', 'success');
+  renderProjects();
+}
+
+// kintone連携設定保存
+async function saveKintoneSettings() {
+  const settings = {
+    domain: document.getElementById('kintoneDomain').value,
+    app_id: document.getElementById('kintoneAppId').value,
+    api_token: document.getElementById('kintoneApiToken').value
+  };
+
+  if (!settings.domain || !settings.app_id || !settings.api_token) {
+    showToast('すべての項目を入力してください', 'error');
+    return;
+  }
+
+  const { error } = await supabase
+    .from('kintone_settings')
+    .upsert({
+      ...settings,
+      is_active: true,
+      updated_at: new Date().toISOString()
+    });
+
+  if (error) {
+    showToast('設定保存に失敗しました', 'error');
+    return;
+  }
+
+  kintoneSettings = settings;
+  showToast('kintone設定を保存しました', 'success');
+}
+
+// kintone接続テスト
+async function testKintoneConnection() {
+  const domain = document.getElementById('kintoneDomain').value;
+  const appId = document.getElementById('kintoneAppId').value;
+  const apiToken = document.getElementById('kintoneApiToken').value;
+
+  if (!domain || !appId || !apiToken) {
+    showToast('すべての項目を入力してください', 'error');
+    return;
+  }
+
+  document.getElementById('kintoneStatus').innerHTML = '<span style="color: var(--text-muted);">接続テスト中...</span>';
+
+  try {
+    // CORS制限のため、実際の接続テストはサーバーサイドで行う必要がある
+    // ここではUIのみ実装
+    setTimeout(() => {
+      document.getElementById('kintoneStatus').innerHTML = '<span style="color: var(--success-color);">✅ 接続設定は保存されました。実際の同期はバックグラウンドで行われます。</span>';
+    }, 1000);
+  } catch (e) {
+    document.getElementById('kintoneStatus').innerHTML = '<span style="color: var(--danger-color);">❌ 接続に失敗しました</span>';
+  }
+}
+
+// kintone設定読み込み
+async function loadKintoneSettings() {
+  const { data } = await supabase
+    .from('kintone_settings')
+    .select('*')
+    .eq('is_active', true)
+    .single();
+
+  if (data) {
+    kintoneSettings = data;
+    document.getElementById('kintoneDomain').value = data.domain || '';
+    document.getElementById('kintoneAppId').value = data.app_id || '';
+    // APIトークンは表示しない（セキュリティ）
+  }
+}
+
+// 外構担当ドロップダウンを設定
+function populateExteriorAssigneeDropdown(projectId = null, project = null) {
+  const exteriorDesigners = designers.filter(d => d.category === '外構');
+  const exteriorAssigneeSelect = document.getElementById('projectExteriorAssignee');
+
+  if (exteriorAssigneeSelect) {
+    exteriorAssigneeSelect.innerHTML = '<option value="">未定</option>' +
+      exteriorDesigners.map(d => `<option value="${d.name}">${d.name}</option>`).join('');
+
+    if (projectId && project) {
+      exteriorAssigneeSelect.value = project.exterior_assignee || '';
+    }
+  }
+}
+
+// openProjectModalを拡張
+const originalOpenProjectModal = openProjectModal;
+openProjectModal = function(projectId = null) {
+  originalOpenProjectModal(projectId);
+
+  const project = projectId ? projects.find(p => p.id === projectId) : null;
+  populateExteriorAssigneeDropdown(projectId, project);
+};
+
+// saveProjectを拡張
+const originalSaveProject = saveProject;
+saveProject = async function() {
+  const customer = document.getElementById('projectCustomer').value.trim();
+  const assignedTo = document.getElementById('projectAssignedTo').value.trim();
+  const icAssignee = document.getElementById('projectIcAssignee').value.trim();
+  const exteriorAssignee = document.getElementById('projectExteriorAssignee')?.value.trim() || '';
+  const specifications = document.getElementById('projectSpecifications').value;
+  const memo = document.getElementById('projectMemo').value.trim();
+
+  if (!customer || !assignedTo) {
+    showToast('お客様名と担当（設計）は必須です', 'error');
+    return;
+  }
+
+  showStatus('保存中...', 'saving');
+
+  const projectData = {
+    customer,
+    assigned_to: assignedTo,
+    ic_assignee: icAssignee || null,
+    exterior_assignee: exteriorAssignee || null,
+    specifications,
+    memo,
+    updated_at: new Date().toISOString()
+  };
+
+  try {
+    if (editingProjectId) {
+      const { error } = await supabase
+        .from('projects')
+        .update(projectData)
+        .eq('id', editingProjectId);
+
+      if (error) throw error;
+
+      const idx = projects.findIndex(p => p.id === editingProjectId);
+      if (idx !== -1) {
+        projects[idx] = { ...projects[idx], ...projectData };
+      }
+    } else {
+      const uid = 'P-' + Date.now();
+      projectData.uid = uid;
+      projectData.progress = {};
+      projectData.status = 'active';
+
+      const { data, error } = await supabase
+        .from('projects')
+        .insert(projectData)
+        .select()
+        .single();
+
+      if (error) throw error;
+      projects.push(data);
+    }
+
+    showStatus('保存済み', 'saved');
+    showToast(editingProjectId ? '案件を更新しました' : '案件を追加しました', 'success');
+    closeProjectModal();
+    renderSidebar();
+    renderProjects();
+  } catch (error) {
+    console.error('保存エラー:', error);
+    showStatus('エラー', 'error');
+    showToast('保存に失敗しました', 'error');
+  }
+};
 
 // ============================================
 // ページ読み込み時

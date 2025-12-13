@@ -32,7 +32,13 @@
       "Bash(start https://nandemo-h1vbxj71z-ghouse-developments-projects.vercel.app/sekkei/index_v2.html)",
       "Bash(start https://nandemo-ag0mzka4z-ghouse-developments-projects.vercel.app/sekkei/index_v2.html)",
       "Bash(start https://nandemo-o4luvew8u-ghouse-developments-projects.vercel.app/sekkei/index_v2.html)",
-      "Bash(start sekkei/index_v2.html)"
+      "Bash(start sekkei/index_v2.html)",
+      "Bash(node -c:*)",
+      "Bash(dir /s \"C:\\claudecode\\nandemo\\sekkei\" /B)",
+      "Bash(for file in C:claudecodenandemosekkei/*.sql)",
+      "Bash(do grep -l \"ic_assignee\\|archived\\|category\" $file)",
+      "Bash(done)",
+      "Bash(git mv:*)"
     ],
     "deny": [],
     "ask": []
