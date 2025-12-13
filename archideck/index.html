@@ -988,6 +988,13 @@ body {
   overflow-y: auto;
 }
 
+/* ドラッグ&ドロップ */
+.minutes-upload-area.drag-over {
+  background: var(--bg-tertiary);
+  border-color: var(--primary-color);
+  transform: scale(1.02);
+}
+
 /* レスポンシブ */
 @media (max-width: 1200px) {
   .cards-grid {
@@ -998,30 +1005,178 @@ body {
 @media (max-width: 768px) {
   .header {
     padding: 12px 16px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .header-left {
+    gap: 12px;
+  }
+
+  .logo {
+    font-size: 20px;
+  }
+
+  .tabs-nav {
+    padding: 0 12px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .tab-nav-btn {
+    padding: 12px 16px;
+    font-size: 14px;
+    white-space: nowrap;
   }
 
   .toolbar {
-    padding: 16px;
+    padding: 12px 16px;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .toolbar-left {
+    flex-direction: column;
+  }
+
+  .toolbar-right {
+    justify-content: center;
   }
 
   .cards-container {
-    padding: 16px;
+    padding: 12px;
   }
 
   .cards-grid {
     grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .project-card {
+    padding: 16px;
+  }
+
+  .card-header {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .card-title {
+    font-size: 18px;
+    flex-wrap: wrap;
   }
 
   .tasks-grid {
     grid-template-columns: 1fr;
   }
 
+  .task-item {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .task-state-select {
+    width: 100%;
+    margin-top: 4px;
+  }
+
   .modal-content {
     width: 95vw;
+    max-height: 90vh;
   }
 
   .modal-body {
-    padding: 20px;
+    padding: 16px;
+  }
+
+  .form-group {
+    margin-bottom: 16px;
+  }
+
+  .form-input, .form-select, .select {
+    font-size: 16px;
+    padding: 12px;
+  }
+
+  .btn {
+    padding: 12px 16px;
+    font-size: 14px;
+    min-height: 44px;
+  }
+
+  .btn-small {
+    padding: 10px 14px;
+    min-height: 40px;
+  }
+
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 1000;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    width: 280px;
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 999;
+  }
+
+  .sidebar-overlay.show {
+    display: block;
+  }
+
+  .add-task-form {
+    flex-direction: column;
+  }
+
+  .add-task-form input {
+    width: 100%;
+  }
+
+  .designer-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 8px;
+  }
+
+  .designer-tab {
+    flex-shrink: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-card {
+    padding: 24px 20px;
+  }
+
+  .login-card h1 {
+    font-size: 24px;
+  }
+
+  .header-right {
+    gap: 8px;
+  }
+
+  .user-info {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+
+  .badge {
+    padding: 4px 8px;
+    font-size: 11px;
   }
 }
 
@@ -1595,10 +1750,14 @@ body {
     <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">Gハウス 設計業務管理システム</p>
     <p>メールアドレスとパスワードでログインしてください</p>
     <form onsubmit="signIn(); return false;" style="margin-bottom: 20px;">
-      <input type="email" class="form-input" id="loginEmail" placeholder="メールアドレス" style="width: 100%; margin-bottom: 12px;" required>
-      <input type="password" class="form-input" id="loginPassword" placeholder="パスワード" style="width: 100%; margin-bottom: 16px;" required>
+      <input type="email" class="form-input" id="loginEmail" placeholder="メールアドレス" style="width: 100%; margin-bottom: 12px;" inputmode="email">
+      <input type="password" class="form-input" id="loginPassword" placeholder="パスワード" style="width: 100%; margin-bottom: 16px;">
       <button type="submit" class="btn btn-primary" style="width: 100%;">ログイン</button>
     </form>
+    <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-color);">
+      <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">開発中のためパスワード無しでログイン可能</p>
+      <button class="btn btn-ghost" style="width: 100%;" onclick="enterDemoMode()">パスワード無しで入る</button>
+    </div>
   </div>
 </div>
 
@@ -2375,6 +2534,18 @@ function getTaskStateOptions(taskKey) {
 // ============================================
 // 認証処理
 // ============================================
+
+// デモモード（パスワード無しでログイン）
+function enterDemoMode() {
+  console.log('🎭 デモモードで入場...');
+  document.getElementById('loginContainer').style.display = 'none';
+  document.getElementById('accountSelectContainer').style.display = 'flex';
+  isDemoMode = true;
+}
+
+// デモモードフラグ
+let isDemoMode = false;
+
 async function signIn() {
   console.log('🔐 ログイン処理開始...');
 
@@ -2383,9 +2554,16 @@ async function signIn() {
 
   console.log('📧 入力されたメール:', email);
 
-  if (!email || !password) {
-    console.error('❌ メールアドレスまたはパスワードが空です');
-    showToast('メールアドレスとパスワードを入力してください', 'error');
+  // パスワードが空の場合はデモモードで入る
+  if (!password && email) {
+    console.log('🎭 パスワード無し - デモモードで続行');
+    enterDemoMode();
+    return;
+  }
+
+  if (!email) {
+    console.error('❌ メールアドレスが空です');
+    showToast('メールアドレスを入力してください', 'error');
     return;
   }
 
@@ -4688,15 +4866,15 @@ function renderProjectCard(project) {
     </div>
     <div class="progress-section"><div class="progress-header"><span class="progress-label">進捗状況</span><span class="progress-value">${progress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width: ${progress}%"></div></div></div>
 
+    <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">✅ タスク</span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><div id="projectTasksList_${project.id}" class="project-task-list"></div><div class="add-task-form"><input type="text" id="newTaskName_${project.id}" placeholder="タスク名" inputmode="text"><input type="date" id="newTaskDue_${project.id}"><button class="btn btn-small btn-primary" onclick="addProjectTask('${project.id}', document.getElementById('newTaskName_${project.id}').value, document.getElementById('newTaskDue_${project.id}').value)">追加</button></div></div></div>
+
+    <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">📝 メモ欄 <span style="font-size:11px;color:var(--text-muted)">(IC・外構共通)</span></span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><textarea class="shared-memo-area" id="sharedMemo_${project.id}" placeholder="IC・外構担当と共有するメモ...">${project.shared_memo || ''}</textarea><button class="btn btn-small btn-ghost" style="margin-top:8px" onclick="saveSharedMemo('${project.id}')">メモを保存</button></div></div>
+
+    <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">📄 議事録</span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><div id="minutesList_${project.id}" class="minutes-list"></div><div class="minutes-upload-area" id="minutesDropArea_${project.id}" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, '${project.id}')" onclick="document.getElementById('minutesUpload_${project.id}').click()"><input type="file" id="minutesUpload_${project.id}" style="display:none" accept=".pdf,.doc,.docx,.xls,.xlsx" onchange="uploadMinutes('${project.id}', this.files[0])"><span>📁 クリックまたはドラッグ&ドロップ</span><div style="font-size:12px;color:var(--text-muted);margin-top:4px">PDF, Word, Excel対応</div></div></div></div>
+
+    <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">📋 引継書</span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><textarea class="handover-content" id="handover_${project.id}" placeholder="引継書の内容を入力..."></textarea><button class="btn btn-small btn-ghost" style="margin-top:8px" onclick="saveHandover('${project.id}')">引継書を保存</button></div></div>
+
     <div class="card-section"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">📋 業務内容</span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><div class="tasks-grid">${tasksHtml}</div></div></div>
-
-    <div class="card-section"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">✅ タスク</span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><div id="projectTasksList_${project.id}" class="project-task-list"></div><div class="add-task-form"><input type="text" id="newTaskName_${project.id}" placeholder="タスク名"><input type="date" id="newTaskDue_${project.id}"><button class="btn btn-small btn-primary" onclick="addProjectTask('${project.id}', document.getElementById('newTaskName_${project.id}').value, document.getElementById('newTaskDue_${project.id}').value)">追加</button></div></div></div>
-
-    <div class="card-section"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">📝 メモ欄 <span style="font-size:11px;color:var(--text-muted)">(IC・外構共通)</span></span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><textarea class="shared-memo-area" id="sharedMemo_${project.id}" placeholder="IC・外構担当と共有するメモ...">${project.shared_memo || ''}</textarea><button class="btn btn-small btn-ghost" style="margin-top:8px" onclick="saveSharedMemo('${project.id}')">メモを保存</button></div></div>
-
-    <div class="card-section"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">📄 議事録</span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><div id="minutesList_${project.id}" class="minutes-list"></div><div class="minutes-upload-area" onclick="document.getElementById('minutesUpload_${project.id}').click()"><input type="file" id="minutesUpload_${project.id}" style="display:none" accept=".pdf,.doc,.docx,.xls,.xlsx" onchange="uploadMinutes('${project.id}', this.files[0])"><span>📁 クリックしてファイルをアップロード</span><div style="font-size:12px;color:var(--text-muted);margin-top:4px">PDF, Word, Excel対応</div></div></div></div>
-
-    <div class="card-section"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">📋 引継書</span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><textarea class="handover-content" id="handover_${project.id}" placeholder="引継書の内容を入力..."></textarea><button class="btn btn-small btn-ghost" style="margin-top:8px" onclick="saveHandover('${project.id}')">引継書を保存</button></div></div>
 
     <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--bg-secondary);display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;color:var(--text-muted)">更新: ${formatDateTime(project.updated_at)}</span><button class="btn btn-danger btn-small" onclick="deleteProject('${project.id}')">削除</button></div>
   </div>`;
@@ -7194,6 +7372,30 @@ function canPressApplicationGo(project) {
 function toggleCardSection(element) {
   const section = element.closest('.card-section');
   section.classList.toggle('collapsed');
+}
+
+// ドラッグ&ドロップ関数
+function handleDragOver(event) {
+  event.preventDefault();
+  event.stopPropagation();
+  event.currentTarget.classList.add('drag-over');
+}
+
+function handleDragLeave(event) {
+  event.preventDefault();
+  event.stopPropagation();
+  event.currentTarget.classList.remove('drag-over');
+}
+
+function handleDrop(event, projectId) {
+  event.preventDefault();
+  event.stopPropagation();
+  event.currentTarget.classList.remove('drag-over');
+
+  const files = event.dataTransfer.files;
+  if (files.length > 0) {
+    uploadMinutes(projectId, files[0]);
+  }
 }
 
 // 共有メモ保存

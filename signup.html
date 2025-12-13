@@ -8,494 +8,119 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+JP:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-
-:root {
-  --primary: #4A90E2;
-  --primary-dark: #357ABD;
-  --secondary: #50E3C2;
-  --danger: #E94B3C;
-  --success: #7ED321;
-  --text: #2C3E50;
-  --text-light: #7F8C8D;
-  --bg: #FFFFFF;
-  --bg-light: #F8F9FA;
-  --border: #E1E8ED;
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --primary:#4A90E2;
+  --primary-dark:#357ABD;
+  --secondary:#10B981;
+  --danger:#EF4444;
+  --text:#1F2937;
+  --text-light:#6B7280;
+  --bg:#F9FAFB;
+  --card:#FFFFFF;
+  --border:#E5E7EB;
+  --radius:12px;
 }
+body{font-family:'Inter','Noto Sans JP',-apple-system,sans-serif;background:linear-gradient(135deg,#F0F7FF,#E8F4FD);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px 20px}
 
-body {
-  font-family: 'Inter', 'Noto Sans JP', -apple-system, sans-serif;
-  background: linear-gradient(135deg, #F0F7FF 0%, #E8F4FD 100%);
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 40px 20px;
-}
+.signup-container{display:grid;grid-template-columns:1fr 1fr;max-width:1000px;width:100%;background:var(--card);border-radius:24px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.1)}
 
-.signup-container {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  max-width: 1100px;
-  width: 100%;
-  background: white;
-  border-radius: 24px;
-  overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
-}
+.signup-left{padding:48px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;display:flex;flex-direction:column;justify-content:center}
+.signup-left h1{font-size:32px;font-weight:800;margin-bottom:20px;line-height:1.3}
+.signup-left p{font-size:15px;opacity:.9;margin-bottom:32px;line-height:1.7}
+.benefits{list-style:none}
+.benefits li{display:flex;align-items:center;gap:12px;padding:12px 0;font-size:14px;border-bottom:1px solid rgba(255,255,255,.15)}
+.benefits li:last-child{border:none}
+.benefits .icon{width:32px;height:32px;background:rgba(255,255,255,.2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
 
-.signup-left {
-  padding: 60px;
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-  color: white;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
+.signup-right{padding:48px}
+.signup-header{margin-bottom:28px}
+.signup-header h2{font-size:26px;font-weight:700;margin-bottom:8px;color:var(--text)}
+.signup-header p{color:var(--text-light);font-size:14px}
+.signup-header a{color:var(--primary);text-decoration:none;font-weight:600}
+.signup-header a:hover{text-decoration:underline}
 
-.signup-left h1 {
-  font-size: 36px;
-  font-weight: 800;
-  margin-bottom: 24px;
-  line-height: 1.3;
-}
-
-.signup-left p {
-  font-size: 16px;
-  opacity: 0.9;
-  margin-bottom: 40px;
-  line-height: 1.7;
-}
-
-.benefits {
-  list-style: none;
-}
-
-.benefits li {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 0;
-  font-size: 15px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-}
-
-.benefits li:last-child {
-  border-bottom: none;
-}
-
-.benefits .icon {
-  width: 32px;
-  height: 32px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-}
-
-.signup-right {
-  padding: 60px;
-}
-
-.signup-header {
-  margin-bottom: 32px;
-}
-
-.signup-header h2 {
-  font-size: 28px;
-  font-weight: 700;
-  margin-bottom: 8px;
-  color: var(--text);
-}
-
-.signup-header p {
-  color: var(--text-light);
-  font-size: 15px;
-}
-
-.signup-header a {
-  color: var(--primary);
-  text-decoration: none;
-  font-weight: 600;
-}
-
-.signup-header a:hover {
-  text-decoration: underline;
-}
-
-/* ステップインジケーター */
-.steps {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 32px;
-}
-
-.step {
-  flex: 1;
-  height: 4px;
-  background: var(--border);
-  border-radius: 2px;
-  transition: background 0.3s;
-}
-
-.step.active {
-  background: var(--primary);
-}
-
-.step.completed {
-  background: var(--success);
-}
+/* ステップ */
+.steps{display:flex;gap:8px;margin-bottom:28px}
+.step-dot{flex:1;height:4px;background:var(--border);border-radius:2px;transition:.3s}
+.step-dot.active{background:var(--primary)}
+.step-dot.completed{background:var(--secondary)}
 
 /* フォーム */
-.form-step {
-  display: none;
-}
+.form-step{display:none}
+.form-step.active{display:block}
+.form-group{margin-bottom:20px}
+.form-label{display:block;font-size:14px;font-weight:600;color:var(--text);margin-bottom:8px}
+.form-input{width:100%;padding:14px 16px;border:2px solid var(--border);border-radius:var(--radius);font-size:15px;font-family:inherit;transition:.2s;background:var(--card)}
+.form-input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 4px rgba(74,144,226,.1)}
+.form-input.error{border-color:var(--danger)}
+.form-hint{font-size:12px;color:var(--text-light);margin-top:6px}
+.form-error{font-size:12px;color:var(--danger);margin-top:6px;display:none}
+.form-error.show{display:block}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 
-.form-step.active {
-  display: block;
-}
-
-.form-group {
-  margin-bottom: 24px;
-}
-
-.form-label {
-  display: block;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text);
-  margin-bottom: 8px;
-}
-
-.form-input {
-  width: 100%;
-  padding: 14px 16px;
-  border: 2px solid var(--border);
-  border-radius: 10px;
-  font-size: 15px;
-  font-family: inherit;
-  transition: all 0.2s;
-  background: var(--bg);
-}
-
-.form-input:focus {
-  outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 4px rgba(74, 144, 226, 0.1);
-}
-
-.form-input.error {
-  border-color: var(--danger);
-}
-
-.form-hint {
-  font-size: 13px;
-  color: var(--text-light);
-  margin-top: 6px;
-}
-
-.form-error {
-  font-size: 13px;
-  color: var(--danger);
-  margin-top: 6px;
-  display: none;
-}
-
-.form-error.show {
-  display: block;
-}
-
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-
-/* プラン選択 */
-.plan-options {
-  display: grid;
-  gap: 12px;
-  margin-bottom: 24px;
-}
-
-.plan-option {
-  padding: 20px;
-  border: 2px solid var(--border);
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.2s;
-  position: relative;
-}
-
-.plan-option:hover {
-  border-color: var(--primary);
-  background: var(--bg-light);
-}
-
-.plan-option.selected {
-  border-color: var(--primary);
-  background: rgba(74, 144, 226, 0.05);
-}
-
-.plan-option input {
-  position: absolute;
-  opacity: 0;
-}
-
-.plan-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-}
-
-.plan-name {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--text);
-}
-
-.plan-price {
-  font-size: 18px;
-  font-weight: 800;
-  color: var(--primary);
-}
-
-.plan-desc {
-  font-size: 13px;
-  color: var(--text-light);
-}
-
-.plan-badge {
-  position: absolute;
-  top: -10px;
-  right: 16px;
-  background: linear-gradient(135deg, var(--primary), var(--secondary));
-  color: white;
-  padding: 4px 12px;
-  border-radius: 50px;
-  font-size: 11px;
-  font-weight: 700;
-}
+/* プラン */
+.plan-options{display:grid;gap:12px;margin-bottom:20px}
+.plan-option{padding:16px;border:2px solid var(--border);border-radius:var(--radius);cursor:pointer;transition:.2s;position:relative}
+.plan-option:hover{border-color:var(--primary);background:rgba(74,144,226,.02)}
+.plan-option.selected{border-color:var(--primary);background:rgba(74,144,226,.05)}
+.plan-option input{position:absolute;opacity:0}
+.plan-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.plan-name{font-size:15px;font-weight:700;color:var(--text)}
+.plan-price{font-size:16px;font-weight:800;color:var(--primary)}
+.plan-desc{font-size:12px;color:var(--text-light)}
+.plan-badge{position:absolute;top:-10px;right:12px;background:var(--primary);color:#fff;padding:4px 12px;border-radius:50px;font-size:10px;font-weight:700}
 
 /* ボタン */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  width: 100%;
-  padding: 16px 24px;
-  border-radius: 10px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s;
-  border: none;
-}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px 24px;border-radius:var(--radius);font-size:15px;font-weight:600;cursor:pointer;transition:.2s;border:none}
+.btn-primary{background:var(--primary);color:#fff;box-shadow:0 4px 14px rgba(74,144,226,.3)}
+.btn-primary:hover{background:var(--primary-dark);transform:translateY(-1px)}
+.btn-primary:disabled{opacity:.6;cursor:not-allowed;transform:none}
+.btn-outline{background:transparent;color:var(--text);border:2px solid var(--border)}
+.btn-outline:hover{border-color:var(--primary);color:var(--primary)}
+.form-actions{display:flex;gap:12px;margin-top:28px}
+.form-actions .btn{flex:1}
 
-.btn-primary {
-  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-  color: white;
-  box-shadow: 0 4px 14px rgba(74, 144, 226, 0.35);
-}
+/* 利用規約 */
+.terms-check{display:flex;align-items:flex-start;gap:12px;margin-bottom:20px}
+.terms-check input{margin-top:3px;width:18px;height:18px;cursor:pointer;accent-color:var(--primary)}
+.terms-check label{font-size:13px;color:var(--text-light);line-height:1.6}
+.terms-check a{color:var(--primary);text-decoration:none}
+.terms-check a:hover{text-decoration:underline}
 
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(74, 144, 226, 0.45);
-}
-
-.btn-primary:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.btn-secondary {
-  background: white;
-  color: var(--text);
-  border: 2px solid var(--border);
-}
-
-.btn-secondary:hover {
-  border-color: var(--primary);
-  color: var(--primary);
-}
-
-.form-actions {
-  display: flex;
-  gap: 12px;
-  margin-top: 32px;
-}
-
-.form-actions .btn {
-  flex: 1;
-}
-
-/* 完了画面 */
-.success-screen {
-  text-align: center;
-  padding: 40px 0;
-  display: none;
-}
-
-.success-screen.show {
-  display: block;
-}
-
-.success-icon {
-  width: 80px;
-  height: 80px;
-  background: linear-gradient(135deg, var(--success), #5cb85c);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 40px;
-  margin: 0 auto 24px;
-}
-
-.success-screen h2 {
-  font-size: 28px;
-  font-weight: 700;
-  margin-bottom: 12px;
-  color: var(--text);
-}
-
-.success-screen p {
-  color: var(--text-light);
-  font-size: 15px;
-  margin-bottom: 32px;
-  line-height: 1.7;
-}
+/* 完了 */
+.success-screen{text-align:center;padding:40px 0;display:none}
+.success-screen.show{display:block}
+.success-icon{width:72px;height:72px;background:var(--secondary);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 24px;color:#fff}
+.success-screen h2{font-size:24px;font-weight:700;margin-bottom:12px;color:var(--text)}
+.success-screen p{color:var(--text-light);font-size:14px;margin-bottom:28px;line-height:1.7}
 
 /* ローディング */
-.loading {
-  display: none;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-}
-
-.loading.show {
-  display: flex;
-}
-
-.spinner {
-  width: 20px;
-  height: 20px;
-  border: 3px solid rgba(255, 255, 255, 0.3);
-  border-top-color: white;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
+.loading{display:none;align-items:center;justify-content:center;gap:8px}
+.loading.show{display:flex}
+.spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 
 /* パスワード強度 */
-.password-strength {
-  display: flex;
-  gap: 4px;
-  margin-top: 8px;
-}
-
-.strength-bar {
-  flex: 1;
-  height: 4px;
-  background: var(--border);
-  border-radius: 2px;
-  transition: background 0.3s;
-}
-
-.strength-bar.weak { background: var(--danger); }
-.strength-bar.medium { background: var(--warning, #F5A623); }
-.strength-bar.strong { background: var(--success); }
-
-/* 規約同意 */
-.terms-check {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  margin-bottom: 24px;
-}
-
-.terms-check input {
-  margin-top: 4px;
-  width: 18px;
-  height: 18px;
-  cursor: pointer;
-}
-
-.terms-check label {
-  font-size: 14px;
-  color: var(--text-light);
-  line-height: 1.6;
-}
-
-.terms-check a {
-  color: var(--primary);
-  text-decoration: none;
-}
-
-.terms-check a:hover {
-  text-decoration: underline;
-}
-
-/* レスポンシブ */
-@media (max-width: 900px) {
-  .signup-container {
-    grid-template-columns: 1fr;
-  }
-
-  .signup-left {
-    padding: 40px;
-    display: none;
-  }
-
-  .signup-right {
-    padding: 40px;
-  }
-
-  .form-row {
-    grid-template-columns: 1fr;
-  }
-}
+.password-strength{display:flex;gap:4px;margin-top:8px}
+.strength-bar{flex:1;height:4px;background:var(--border);border-radius:2px;transition:.3s}
+.strength-bar.weak{background:var(--danger)}
+.strength-bar.medium{background:#F59E0B}
+.strength-bar.strong{background:var(--secondary)}
 
 /* トースト */
-.toast {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  padding: 16px 24px;
-  background: var(--text);
-  color: white;
-  border-radius: 10px;
-  font-size: 14px;
-  font-weight: 500;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
-  transform: translateY(100px);
-  opacity: 0;
-  transition: all 0.3s;
-  z-index: 1000;
-}
+.toast{position:fixed;bottom:24px;right:24px;padding:16px 24px;background:var(--text);color:#fff;border-radius:var(--radius);font-size:14px;font-weight:500;transform:translateY(100px);opacity:0;transition:.3s;z-index:1000}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.error{background:var(--danger)}
+.toast.success{background:var(--secondary)}
 
-.toast.show {
-  transform: translateY(0);
-  opacity: 1;
-}
-
-.toast.error {
-  background: var(--danger);
-}
-
-.toast.success {
-  background: var(--success);
+/* レスポンシブ */
+@media(max-width:900px){
+  .signup-container{grid-template-columns:1fr}
+  .signup-left{display:none}
+  .form-row{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -504,28 +129,13 @@ body {
 <div class="signup-container">
   <div class="signup-left">
     <h1>住宅設計業務を<br>効率化しましょう</h1>
-    <p>ArchiDeckは住宅会社の設計部門のために開発された、オールインワンの業務管理ツールです。14日間無料でお試しください。</p>
+    <p>ArchiDeckは住宅会社の設計部門のために開発された業務管理ツールです。14日間無料でお試しください。</p>
     <ul class="benefits">
-      <li>
-        <span class="icon">📋</span>
-        <span>案件管理と17種類のタスク進捗を一元管理</span>
-      </li>
-      <li>
-        <span class="icon">✉️</span>
-        <span>業者への発注メールをワンクリックで作成</span>
-      </li>
-      <li>
-        <span class="icon">👥</span>
-        <span>設計士・IC・外構担当のチーム管理</span>
-      </li>
-      <li>
-        <span class="icon">📊</span>
-        <span>担当者ごとの業務量を可視化</span>
-      </li>
-      <li>
-        <span class="icon">🔒</span>
-        <span>セキュアなクラウド環境でデータを保護</span>
-      </li>
+      <li><span class="icon">📋</span>案件管理と17種類のタスク進捗を一元管理</li>
+      <li><span class="icon">✉️</span>業者への発注メールをワンクリックで作成</li>
+      <li><span class="icon">👥</span>設計士・IC・外構担当のチーム管理</li>
+      <li><span class="icon">📊</span>担当者ごとの業務量を可視化</li>
+      <li><span class="icon">🔒</span>セキュアなクラウド環境でデータを保護</li>
     </ul>
   </div>
 
@@ -536,9 +146,9 @@ body {
     </div>
 
     <div class="steps">
-      <div class="step active" data-step="1"></div>
-      <div class="step" data-step="2"></div>
-      <div class="step" data-step="3"></div>
+      <div class="step-dot active" data-step="1"></div>
+      <div class="step-dot" data-step="2"></div>
+      <div class="step-dot" data-step="3"></div>
     </div>
 
     <!-- ステップ1: 会社情報 -->
@@ -548,21 +158,18 @@ body {
         <input type="text" class="form-input" id="companyName" placeholder="例：株式会社サンプル住宅">
         <div class="form-error" id="companyNameError">会社名を入力してください</div>
       </div>
-
       <div class="form-group">
         <label class="form-label">会社URL（スラッグ） *</label>
         <input type="text" class="form-input" id="companySlug" placeholder="例：sample-jutaku">
-        <div class="form-hint">https://<strong id="slugPreview">your-company</strong>.archideck.jp でアクセスできます</div>
-        <div class="form-error" id="companySlugError">URLを入力してください</div>
+        <div class="form-hint">https://<strong id="slugPreview">your-company</strong>.archiceck.jp</div>
+        <div class="form-error" id="companySlugError">英数字とハイフンのみ使用できます</div>
       </div>
-
       <div class="form-group">
         <label class="form-label">電話番号</label>
         <input type="tel" class="form-input" id="companyPhone" placeholder="例：06-1234-5678">
       </div>
-
       <div class="form-actions">
-        <a href="landing.html" class="btn btn-secondary">戻る</a>
+        <a href="landing.html" class="btn btn-outline">戻る</a>
         <button type="button" class="btn btn-primary" onclick="nextStep(2)">次へ</button>
       </div>
     </div>
@@ -571,23 +178,21 @@ body {
     <div class="form-step" id="step2">
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label">お名前（姓） *</label>
+          <label class="form-label">姓 *</label>
           <input type="text" class="form-input" id="lastName" placeholder="山田">
           <div class="form-error" id="lastNameError">姓を入力してください</div>
         </div>
         <div class="form-group">
-          <label class="form-label">お名前（名） *</label>
+          <label class="form-label">名 *</label>
           <input type="text" class="form-input" id="firstName" placeholder="太郎">
           <div class="form-error" id="firstNameError">名を入力してください</div>
         </div>
       </div>
-
       <div class="form-group">
         <label class="form-label">メールアドレス *</label>
-        <input type="email" class="form-input" id="email" placeholder="taro.yamada@example.com">
+        <input type="email" class="form-input" id="email" placeholder="taro@example.com">
         <div class="form-error" id="emailError">有効なメールアドレスを入力してください</div>
       </div>
-
       <div class="form-group">
         <label class="form-label">パスワード *</label>
         <input type="password" class="form-input" id="password" placeholder="8文字以上">
@@ -600,9 +205,8 @@ body {
         <div class="form-hint">8文字以上、英数字を含めてください</div>
         <div class="form-error" id="passwordError">パスワードは8文字以上で設定してください</div>
       </div>
-
       <div class="form-actions">
-        <button type="button" class="btn btn-secondary" onclick="prevStep(1)">戻る</button>
+        <button type="button" class="btn btn-outline" onclick="prevStep(1)">戻る</button>
         <button type="button" class="btn btn-primary" onclick="nextStep(3)">次へ</button>
       </div>
     </div>
@@ -618,7 +222,6 @@ body {
           </div>
           <div class="plan-desc">ユーザー5名、案件100件まで</div>
         </label>
-
         <label class="plan-option">
           <input type="radio" name="plan" value="professional">
           <span class="plan-badge">おすすめ</span>
@@ -628,7 +231,6 @@ body {
           </div>
           <div class="plan-desc">ユーザー15名、案件500件、kintone連携</div>
         </label>
-
         <label class="plan-option">
           <input type="radio" name="plan" value="enterprise">
           <div class="plan-header">
@@ -641,13 +243,11 @@ body {
 
       <div class="terms-check">
         <input type="checkbox" id="termsAgree">
-        <label for="termsAgree">
-          <a href="#" target="_blank">利用規約</a>および<a href="#" target="_blank">プライバシーポリシー</a>に同意します
-        </label>
+        <label for="termsAgree"><a href="#" target="_blank">利用規約</a>および<a href="#" target="_blank">プライバシーポリシー</a>に同意します</label>
       </div>
 
       <div class="form-actions">
-        <button type="button" class="btn btn-secondary" onclick="prevStep(2)">戻る</button>
+        <button type="button" class="btn btn-outline" onclick="prevStep(2)">戻る</button>
         <button type="button" class="btn btn-primary" id="submitBtn" onclick="submitSignup()">
           <span class="btn-text">14日間無料で始める</span>
           <span class="loading"><span class="spinner"></span>処理中...</span>
@@ -655,11 +255,11 @@ body {
       </div>
     </div>
 
-    <!-- 完了画面 -->
+    <!-- 完了 -->
     <div class="success-screen" id="successScreen">
       <div class="success-icon">✓</div>
       <h2>登録完了</h2>
-      <p>アカウントが作成されました。<br>メールアドレスに確認メールを送信しました。<br>メール内のリンクをクリックして、アカウントを有効化してください。</p>
+      <p>アカウントが作成されました。<br>メールアドレスに確認メールを送信しました。<br>メール内のリンクをクリックしてアカウントを有効化してください。</p>
       <a href="archideck/index.html" class="btn btn-primary">ログインページへ</a>
     </div>
   </div>
@@ -668,279 +268,151 @@ body {
 <div class="toast" id="toast"></div>
 
 <script>
-// Supabase設定
-const SUPABASE_URL = 'https://twzsirpfudqwboeyakta.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3enNpcnBmdWRxd2JvZXlha3RhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE0MzM4NjgsImV4cCI6MjA3NzAwOTg2OH0.E_8GxfsO6Scjc0dDoEoyxq3i4lfvNxYZvnSL1OlSDSM';
+const SUPABASE_URL='https://twzsirpfudqwboeyakta.supabase.co';
+const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3enNpcnBmdWRxd2JvZXlha3RhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE0MzM4NjgsImV4cCI6MjA3NzAwOTg2OH0.E_8GxfsO6Scjc0dDoEoyxq3i4lfvNxYZvnSL1OlSDSM';
+const supabase=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let currentStep=1;
 
-let currentStep = 1;
-
-// ステップ移動
-function nextStep(step) {
-  if (!validateStep(currentStep)) return;
-
-  document.querySelector(`#step${currentStep}`).classList.remove('active');
-  document.querySelector(`#step${step}`).classList.add('active');
-  document.querySelector(`.step[data-step="${currentStep}"]`).classList.add('completed');
-  document.querySelector(`.step[data-step="${currentStep}"]`).classList.remove('active');
-  document.querySelector(`.step[data-step="${step}"]`).classList.add('active');
-
-  currentStep = step;
+function nextStep(step){
+  if(!validateStep(currentStep))return;
+  document.getElementById('step'+currentStep).classList.remove('active');
+  document.getElementById('step'+step).classList.add('active');
+  document.querySelector('.step-dot[data-step="'+currentStep+'"]').classList.add('completed');
+  document.querySelector('.step-dot[data-step="'+currentStep+'"]').classList.remove('active');
+  document.querySelector('.step-dot[data-step="'+step+'"]').classList.add('active');
+  currentStep=step;
 }
 
-function prevStep(step) {
-  document.querySelector(`#step${currentStep}`).classList.remove('active');
-  document.querySelector(`#step${step}`).classList.add('active');
-  document.querySelector(`.step[data-step="${currentStep}"]`).classList.remove('active');
-  document.querySelector(`.step[data-step="${step}"]`).classList.remove('completed');
-  document.querySelector(`.step[data-step="${step}"]`).classList.add('active');
-
-  currentStep = step;
+function prevStep(step){
+  document.getElementById('step'+currentStep).classList.remove('active');
+  document.getElementById('step'+step).classList.add('active');
+  document.querySelector('.step-dot[data-step="'+currentStep+'"]').classList.remove('active');
+  document.querySelector('.step-dot[data-step="'+step+'"]').classList.remove('completed');
+  document.querySelector('.step-dot[data-step="'+step+'"]').classList.add('active');
+  currentStep=step;
 }
 
-// バリデーション
-function validateStep(step) {
-  let isValid = true;
-
-  if (step === 1) {
-    const companyName = document.getElementById('companyName').value.trim();
-    const companySlug = document.getElementById('companySlug').value.trim();
-
-    if (!companyName) {
-      showError('companyName', 'companyNameError');
-      isValid = false;
-    } else {
-      hideError('companyName', 'companyNameError');
-    }
-
-    if (!companySlug || !/^[a-z0-9-]+$/.test(companySlug)) {
-      showError('companySlug', 'companySlugError');
-      document.getElementById('companySlugError').textContent = companySlug ? '英数字とハイフンのみ使用できます' : 'URLを入力してください';
-      isValid = false;
-    } else {
-      hideError('companySlug', 'companySlugError');
-    }
+function validateStep(step){
+  let isValid=true;
+  if(step===1){
+    const name=document.getElementById('companyName').value.trim();
+    const slug=document.getElementById('companySlug').value.trim();
+    if(!name){showError('companyName','companyNameError');isValid=false}else{hideError('companyName','companyNameError')}
+    if(!slug||!/^[a-z0-9-]+$/.test(slug)){showError('companySlug','companySlugError');isValid=false}else{hideError('companySlug','companySlugError')}
   }
-
-  if (step === 2) {
-    const lastName = document.getElementById('lastName').value.trim();
-    const firstName = document.getElementById('firstName').value.trim();
-    const email = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value;
-
-    if (!lastName) {
-      showError('lastName', 'lastNameError');
-      isValid = false;
-    } else {
-      hideError('lastName', 'lastNameError');
-    }
-
-    if (!firstName) {
-      showError('firstName', 'firstNameError');
-      isValid = false;
-    } else {
-      hideError('firstName', 'firstNameError');
-    }
-
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      showError('email', 'emailError');
-      isValid = false;
-    } else {
-      hideError('email', 'emailError');
-    }
-
-    if (!password || password.length < 8) {
-      showError('password', 'passwordError');
-      isValid = false;
-    } else {
-      hideError('password', 'passwordError');
-    }
+  if(step===2){
+    const lastName=document.getElementById('lastName').value.trim();
+    const firstName=document.getElementById('firstName').value.trim();
+    const email=document.getElementById('email').value.trim();
+    const password=document.getElementById('password').value;
+    if(!lastName){showError('lastName','lastNameError');isValid=false}else{hideError('lastName','lastNameError')}
+    if(!firstName){showError('firstName','firstNameError');isValid=false}else{hideError('firstName','firstNameError')}
+    if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){showError('email','emailError');isValid=false}else{hideError('email','emailError')}
+    if(!password||password.length<8){showError('password','passwordError');isValid=false}else{hideError('password','passwordError')}
   }
-
   return isValid;
 }
 
-function showError(inputId, errorId) {
+function showError(inputId,errorId){
   document.getElementById(inputId).classList.add('error');
   document.getElementById(errorId).classList.add('show');
 }
-
-function hideError(inputId, errorId) {
+function hideError(inputId,errorId){
   document.getElementById(inputId).classList.remove('error');
   document.getElementById(errorId).classList.remove('show');
 }
 
 // スラッグプレビュー
-document.getElementById('companySlug').addEventListener('input', function() {
-  const slug = this.value.toLowerCase().replace(/[^a-z0-9-]/g, '-');
-  this.value = slug;
-  document.getElementById('slugPreview').textContent = slug || 'your-company';
-});
-
-// 会社名からスラッグを自動生成
-document.getElementById('companyName').addEventListener('blur', function() {
-  const slugInput = document.getElementById('companySlug');
-  if (!slugInput.value) {
-    // 簡易的なスラッグ生成（実際は英語変換が必要）
-    const name = this.value.trim();
-    if (name) {
-      // 日本語の場合はローマ字変換が必要だが、ここでは簡略化
-      slugInput.value = 'company-' + Date.now().toString(36);
-      document.getElementById('slugPreview').textContent = slugInput.value;
-    }
-  }
+document.getElementById('companySlug').addEventListener('input',function(){
+  const slug=this.value.toLowerCase().replace(/[^a-z0-9-]/g,'-').replace(/-+/g,'-');
+  this.value=slug;
+  document.getElementById('slugPreview').textContent=slug||'your-company';
 });
 
 // パスワード強度
-document.getElementById('password').addEventListener('input', function() {
-  const password = this.value;
-  let strength = 0;
-
-  if (password.length >= 8) strength++;
-  if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
-  if (/\d/.test(password)) strength++;
-  if (/[^a-zA-Z0-9]/.test(password)) strength++;
-
-  for (let i = 1; i <= 4; i++) {
-    const bar = document.getElementById(`str${i}`);
-    bar.className = 'strength-bar';
-    if (i <= strength) {
-      if (strength <= 1) bar.classList.add('weak');
-      else if (strength <= 2) bar.classList.add('medium');
+document.getElementById('password').addEventListener('input',function(){
+  const pw=this.value;
+  let str=0;
+  if(pw.length>=8)str++;
+  if(/[a-z]/.test(pw)&&/[A-Z]/.test(pw))str++;
+  if(/\d/.test(pw))str++;
+  if(/[^a-zA-Z0-9]/.test(pw))str++;
+  for(let i=1;i<=4;i++){
+    const bar=document.getElementById('str'+i);
+    bar.className='strength-bar';
+    if(i<=str){
+      if(str<=1)bar.classList.add('weak');
+      else if(str<=2)bar.classList.add('medium');
       else bar.classList.add('strong');
     }
   }
 });
 
 // プラン選択
-document.querySelectorAll('.plan-option').forEach(option => {
-  option.addEventListener('click', function() {
-    document.querySelectorAll('.plan-option').forEach(o => o.classList.remove('selected'));
+document.querySelectorAll('.plan-option').forEach(opt=>{
+  opt.addEventListener('click',function(){
+    document.querySelectorAll('.plan-option').forEach(o=>o.classList.remove('selected'));
     this.classList.add('selected');
   });
 });
 
 // 登録処理
-async function submitSignup() {
-  if (!validateStep(currentStep)) return;
+async function submitSignup(){
+  if(!validateStep(currentStep))return;
+  const termsAgree=document.getElementById('termsAgree').checked;
+  if(!termsAgree){showToast('利用規約に同意してください','error');return}
 
-  const termsAgree = document.getElementById('termsAgree').checked;
-  if (!termsAgree) {
-    showToast('利用規約に同意してください', 'error');
-    return;
-  }
+  const btn=document.getElementById('submitBtn');
+  btn.disabled=true;
+  btn.querySelector('.btn-text').style.display='none';
+  btn.querySelector('.loading').classList.add('show');
 
-  const submitBtn = document.getElementById('submitBtn');
-  submitBtn.disabled = true;
-  submitBtn.querySelector('.btn-text').style.display = 'none';
-  submitBtn.querySelector('.loading').classList.add('show');
+  try{
+    const companyName=document.getElementById('companyName').value.trim();
+    const companySlug=document.getElementById('companySlug').value.trim();
+    const companyPhone=document.getElementById('companyPhone').value.trim();
+    const lastName=document.getElementById('lastName').value.trim();
+    const firstName=document.getElementById('firstName').value.trim();
+    const email=document.getElementById('email').value.trim();
+    const password=document.getElementById('password').value;
+    const plan=document.querySelector('input[name="plan"]:checked').value;
 
-  try {
-    const companyName = document.getElementById('companyName').value.trim();
-    const companySlug = document.getElementById('companySlug').value.trim();
-    const companyPhone = document.getElementById('companyPhone').value.trim();
-    const lastName = document.getElementById('lastName').value.trim();
-    const firstName = document.getElementById('firstName').value.trim();
-    const email = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value;
-    const plan = document.querySelector('input[name="plan"]:checked').value;
-
-    console.log('📝 登録開始:', { companyName, companySlug, email, plan });
-
-    // 1. Supabase Authでユーザー作成
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email: email,
-      password: password,
-      options: {
-        data: {
-          first_name: firstName,
-          last_name: lastName,
-          company_name: companyName
-        }
-      }
+    // ユーザー作成
+    const{data:authData,error:authError}=await supabase.auth.signUp({
+      email:email,
+      password:password,
+      options:{data:{first_name:firstName,last_name:lastName,company_name:companyName}}
     });
+    if(authError)throw authError;
 
-    if (authError) throw authError;
-
-    console.log('✅ ユーザー作成完了:', authData.user.id);
-
-    // 2. 組織を作成
-    const { data: orgData, error: orgError } = await supabase
-      .from('organizations')
-      .insert({
-        name: companyName,
-        slug: companySlug,
-        email: email,
-        phone: companyPhone
-      })
-      .select()
-      .single();
-
-    if (orgError) {
-      console.error('組織作成エラー:', orgError);
-      // 組織テーブルがない場合のフォールバック
-      if (orgError.code === '42P01') {
-        console.log('⚠️ organizationsテーブルが存在しません。マイグレーションを実行してください。');
+    // 組織作成（テーブルがある場合）
+    try{
+      const{data:orgData}=await supabase.from('organizations').insert({name:companyName,slug:companySlug,email:email,phone:companyPhone}).select().single();
+      if(orgData){
+        await supabase.from('subscriptions').insert({organization_id:orgData.id,plan_type:plan,status:'trial'});
+        await supabase.from('organization_members').insert({organization_id:orgData.id,user_id:authData.user.id,email:email,role:'owner',status:'active',joined_at:new Date().toISOString()});
       }
-    } else {
-      console.log('✅ 組織作成完了:', orgData.id);
+    }catch(e){console.log('組織テーブル未作成:',e)}
 
-      // 3. サブスクリプションを作成
-      const { error: subError } = await supabase
-        .from('subscriptions')
-        .insert({
-          organization_id: orgData.id,
-          plan_type: plan,
-          status: 'trial'
-        });
-
-      if (subError) {
-        console.error('サブスクリプション作成エラー:', subError);
-      }
-
-      // 4. 組織メンバーとして登録
-      const { error: memberError } = await supabase
-        .from('organization_members')
-        .insert({
-          organization_id: orgData.id,
-          user_id: authData.user.id,
-          email: email,
-          role: 'owner',
-          status: 'active',
-          joined_at: new Date().toISOString()
-        });
-
-      if (memberError) {
-        console.error('メンバー登録エラー:', memberError);
-      }
-    }
-
-    // 成功画面を表示
-    document.querySelectorAll('.form-step').forEach(step => step.classList.remove('active'));
-    document.querySelector('.steps').style.display = 'none';
+    // 成功画面
+    document.querySelectorAll('.form-step').forEach(s=>s.classList.remove('active'));
+    document.querySelector('.steps').style.display='none';
     document.getElementById('successScreen').classList.add('show');
-
-    console.log('✅ 登録完了');
-
-  } catch (error) {
-    console.error('❌ 登録エラー:', error);
-    showToast(error.message || '登録に失敗しました。', 'error');
-
-    submitBtn.disabled = false;
-    submitBtn.querySelector('.btn-text').style.display = 'inline';
-    submitBtn.querySelector('.loading').classList.remove('show');
+  }catch(error){
+    console.error('登録エラー:',error);
+    showToast(error.message||'登録に失敗しました','error');
+    btn.disabled=false;
+    btn.querySelector('.btn-text').style.display='inline';
+    btn.querySelector('.loading').classList.remove('show');
   }
 }
 
-// トースト表示
-function showToast(message, type = '') {
-  const toast = document.getElementById('toast');
-  toast.textContent = message;
-  toast.className = 'toast show ' + type;
-  setTimeout(() => {
-    toast.classList.remove('show');
-  }, 3000);
+function showToast(msg,type){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.className='toast show '+(type||'');
+  setTimeout(()=>t.classList.remove('show'),3000);
 }
 </script>
 </body>

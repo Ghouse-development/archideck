@@ -44,7 +44,7 @@ INSERT INTO tasks (task_key, task_name, category, display_order, has_state, stat
   ('area_check', '面積チェック', '設計', 5, true, '["", "依頼済", "営業共有済"]'),
   ('checklist', 'チェックリスト', '設計', 6, true, '["", "間取確定後：済", "最終確認後：済"]'),
   ('handover_input', '引継書入力', '設計', 7, true, '["", "入力済"]'),
-  ('exterior_request', '外構依頼', '設計', 8, true, '["", "ヒアリングシート＋3DSデータ：UP済"]'),
+  ('exterior_request', '外構依頼', '設計', 8, true, '["", "UP済"]'),
   ('implementation_request', '実施図依頼', '設計', 9, true, '["", "依頼済", "保存済"]'),
   ('ground_survey', '地盤調査', '設計', 16, true, '["", "依頼済", "保存済", "営業共有済"]')
 ON CONFLICT (task_key) DO UPDATE SET

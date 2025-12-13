@@ -6,10 +6,10 @@
 
 ## URL
 
-- **ランディングページ**: https://archideck.vercel.app/
-- **アプリケーション**: https://archideck.vercel.app/archideck/index.html
-- **新規登録**: https://archideck.vercel.app/signup.html
-- **管理者ダッシュボード**: https://archideck.vercel.app/admin/
+- **ランディングページ**: https://archiceck.vercel.app/
+- **アプリケーション**: https://archiceck.vercel.app/archideck/index.html
+- **新規登録**: https://archiceck.vercel.app/signup.html
+- **管理者ダッシュボード**: https://archiceck.vercel.app/admin/
 - **GitHub**: https://github.com/Ghouse-development/archideck
 
 ---
