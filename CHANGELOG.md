@@ -30,8 +30,8 @@
 - XSS対策ヘッダー（vercel.json）
 
 ### 本番URL
-- メインアプリ: https://archideck.vercel.app/
-- 管理者画面: https://archideck.vercel.app/admin
+- メインアプリ: https://nandemo-nu.vercel.app/ （ドメイン変更予定）
+- 管理者画面: https://nandemo-nu.vercel.app/admin
 
 ---
 
