@@ -3019,7 +3019,8 @@ input:checked + .toggle-slider:before {
           <button class="sub-tab-btn active" onclick="switchSubTab('staff', this)">👥 スタッフ管理</button>
           <button class="sub-tab-btn" onclick="switchSubTab('vendors', this)">🏢 業者・メール管理</button>
           <button class="sub-tab-btn" onclick="switchSubTab('categories', this)">🏷️ カテゴリ管理</button>
-          <button class="sub-tab-btn" onclick="switchSubTab('tasks', this)">🏠 設計業務管理</button>
+          <button class="sub-tab-btn" onclick="switchSubTab('tasks', this)">📐 設計業務管理</button>
+          <button class="sub-tab-btn" onclick="switchSubTab('icTasks', this)">🎨 IC業務管理</button>
           <button class="sub-tab-btn" onclick="switchSubTab('exteriorTasks', this)">🌳 外構業務管理</button>
           <button class="sub-tab-btn" onclick="switchSubTab('products', this)">📦 商品管理</button>
           <button class="sub-tab-btn" onclick="switchSubTab('customize', this)">🎨 カスタマイズ</button>
@@ -3080,17 +3081,28 @@ input:checked + .toggle-slider:before {
         <div id="tasksPanel" class="sub-tab-panel">
           <div class="toolbar" style="padding-bottom: 16px; border-bottom: 1px solid var(--border-color); margin-bottom: 24px;">
             <div class="toolbar-left">
-              <select class="select" id="taskCategoryFilterInline" onchange="renderTasksManagement()">
-                <option value="">すべて</option>
-                <option value="設計">設計用タスク</option>
-                <option value="IC">IC用タスク</option>
-              </select>
+              <h3 style="margin: 0; font-size: 18px;">📐 設計タスク管理</h3>
             </div>
             <div class="toolbar-right">
-              <button class="btn btn-primary" onclick="openTaskModal()">+ タスク追加</button>
+              <button class="btn btn-primary" onclick="openTaskModal('設計')">+ 設計タスク追加</button>
             </div>
           </div>
+          <p style="margin-bottom: 16px; color: var(--text-secondary);">設計担当者が使用するタスクを管理します。</p>
           <div id="tasksGrid"></div>
+        </div>
+
+        <!-- IC業務管理 -->
+        <div id="icTasksPanel" class="sub-tab-panel">
+          <div class="toolbar" style="padding-bottom: 16px; border-bottom: 1px solid var(--border-color); margin-bottom: 24px;">
+            <div class="toolbar-left">
+              <h3 style="margin: 0; font-size: 18px;">🎨 ICタスク管理</h3>
+            </div>
+            <div class="toolbar-right">
+              <button class="btn btn-primary" onclick="openTaskModal('IC')">+ ICタスク追加</button>
+            </div>
+          </div>
+          <p style="margin-bottom: 16px; color: var(--text-secondary);">IC担当者が使用するタスクを管理します。</p>
+          <div id="icTasksGrid"></div>
         </div>
 
         <!-- 外構業務管理 -->
@@ -5389,55 +5401,68 @@ function populateProductDropdown() {
 }
 
 // ============================================
-// タスク管理
+// タスク管理（設計・IC分離）
 // ============================================
 function renderTasksManagement() {
   const container = document.getElementById('tasksGrid');
   if (!container) return;
 
   const sekkeiTasks = tasksV2.filter(t => t.category === '設計');
+
+  container.innerHTML = `
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th style="width: 60px;"></th>
+            <th>タスク名</th>
+            <th style="width: 100px;">状態管理</th>
+            <th style="width: 120px;">📧ボタン</th>
+            <th>紐づけ業者</th>
+            <th style="width: 180px;">操作</th>
+          </tr>
+        </thead>
+        <tbody id="sekkeiTasksBody">
+          ${sekkeiTasks.map(task => renderTaskRow(task)).join('')}
+        </tbody>
+      </table>
+    </div>
+    <div style="margin-top: 16px; padding: 12px; background: var(--bg-secondary); border-radius: var(--radius-md);">
+      <p style="margin: 0; font-size: 13px; color: var(--text-secondary);">
+        📐 設計タスク: ${sekkeiTasks.length}件登録済み
+      </p>
+    </div>
+  `;
+}
+
+function renderIcTasksManagement() {
+  const container = document.getElementById('icTasksGrid');
+  if (!container) return;
+
   const icTasks = tasksV2.filter(t => t.category === 'IC');
 
   container.innerHTML = `
-    <div class="tasks-section">
-      <h3 style="margin: 0 0 16px; font-size: 18px; font-weight: 600;">設計タスク (${sekkeiTasks.length}件)</h3>
-      <div class="table-container">
-        <table class="table">
-          <thead>
-            <tr>
-              <th style="width: 60px;"></th>
-              <th>タスク名</th>
-              <th style="width: 100px;">状態管理</th>
-              <th style="width: 120px;">📧ボタン</th>
-              <th>紐づけ業者</th>
-              <th style="width: 180px;">操作</th>
-            </tr>
-          </thead>
-          <tbody id="sekkeiTasksBody">
-            ${sekkeiTasks.map(task => renderTaskRow(task)).join('')}
-          </tbody>
-        </table>
-      </div>
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th style="width: 60px;"></th>
+            <th>タスク名</th>
+            <th style="width: 100px;">状態管理</th>
+            <th style="width: 120px;">📧ボタン</th>
+            <th>紐づけ業者</th>
+            <th style="width: 180px;">操作</th>
+          </tr>
+        </thead>
+        <tbody id="icTasksBody">
+          ${icTasks.map(task => renderTaskRow(task)).join('')}
+        </tbody>
+      </table>
     </div>
-    <div class="tasks-section" style="margin-top: 32px;">
-      <h3 style="margin: 0 0 16px; font-size: 18px; font-weight: 600;">ICタスク (${icTasks.length}件)</h3>
-      <div class="table-container">
-        <table class="table">
-          <thead>
-            <tr>
-              <th style="width: 60px;"></th>
-              <th>タスク名</th>
-              <th style="width: 100px;">状態管理</th>
-              <th style="width: 120px;">📧ボタン</th>
-              <th>紐づけ業者</th>
-              <th style="width: 180px;">操作</th>
-            </tr>
-          </thead>
-          <tbody id="icTasksBody">
-            ${icTasks.map(task => renderTaskRow(task)).join('')}
-          </tbody>
-        </table>
-      </div>
+    <div style="margin-top: 16px; padding: 12px; background: var(--bg-secondary); border-radius: var(--radius-md);">
+      <p style="margin: 0; font-size: 13px; color: var(--text-secondary);">
+        🎨 ICタスク: ${icTasks.length}件登録済み
+      </p>
     </div>
   `;
 }
@@ -5578,12 +5603,16 @@ function deleteExteriorTask(taskId) {
   showToast('タスクを削除しました', 'success');
 }
 
-function openTaskModal(taskId = null) {
+function openTaskModal(taskIdOrCategory = null) {
   const modal = document.getElementById('taskModal');
   const title = document.getElementById('taskModalTitle');
 
-  if (taskId) {
-    const task = tasksV2.find(t => t.id === taskId);
+  // カテゴリ名が渡された場合（新規追加）
+  const isCategory = taskIdOrCategory === '設計' || taskIdOrCategory === 'IC';
+
+  if (taskIdOrCategory && !isCategory) {
+    // 編集モード（taskIdが渡された）
+    const task = tasksV2.find(t => t.id === taskIdOrCategory);
     if (!task) return;
 
     title.textContent = 'タスク編集';
@@ -5594,17 +5623,19 @@ function openTaskModal(taskId = null) {
     document.getElementById('taskOrder').value = task.display_order;
     document.getElementById('taskHasState').checked = task.has_state;
     document.getElementById('taskStateOptions').value = task.state_options ? JSON.stringify(task.state_options) : '';
-    document.getElementById('taskHasEmailButton').checked = task.has_email_button !== false; // デフォルトtrue
+    document.getElementById('taskHasEmailButton').checked = task.has_email_button !== false;
     toggleTaskState();
-    populateTaskVendorSelection(taskId);
+    populateTaskVendorSelection(taskIdOrCategory);
   } else {
-    title.textContent = 'タスク追加';
+    // 新規追加モード
+    const category = isCategory ? taskIdOrCategory : '設計';
+    title.textContent = `${category}タスク追加`;
     document.getElementById('taskForm').reset();
     document.getElementById('taskId').value = '';
-    document.getElementById('taskCategory').value = '設計';
-    document.getElementById('taskOrder').value = tasksV2.length + 1;
+    document.getElementById('taskCategory').value = category;
+    document.getElementById('taskOrder').value = tasksV2.filter(t => t.category === category).length + 1;
     document.getElementById('taskHasState').checked = false;
-    document.getElementById('taskHasEmailButton').checked = true; // デフォルトtrue
+    document.getElementById('taskHasEmailButton').checked = true;
     toggleTaskState();
     populateTaskVendorSelection(null);
   }
@@ -6003,6 +6034,9 @@ function switchSubTab(panelName, element) {
       break;
     case 'tasks':
       renderTasksManagement();
+      break;
+    case 'icTasks':
+      renderIcTasksManagement();
       break;
     case 'exteriorTasks':
       renderExteriorTasksManagement();
