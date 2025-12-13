@@ -476,10 +476,13 @@ body {
 /* コンテンツエリア */
 .tab-panel {
   display: none;
+  flex: 1;
+  overflow-y: auto;
 }
 
 .tab-panel.active {
-  display: block;
+  display: flex;
+  flex-direction: column;
 }
 
 /* ツールバー */
@@ -1246,6 +1249,50 @@ input:checked + .toggle-slider:before {
   background: var(--bg-secondary);
   border-color: var(--border-color);
   box-shadow: var(--shadow-sm);
+}
+
+/* タスク期限・遅延表示 */
+.task-item.overdue {
+  border-left: 3px solid var(--danger-color);
+  background: #FEF2F2;
+}
+
+.task-item.due-soon {
+  border-left: 3px solid var(--warning-color);
+  background: #FFFBEB;
+}
+
+.task-due-date {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+.task-due-date.overdue {
+  background: var(--danger-light);
+  color: var(--danger-color);
+  font-weight: 600;
+}
+
+.task-due-date.due-soon {
+  background: var(--warning-light);
+  color: #92400E;
+}
+
+.task-due-date.normal {
+  background: var(--bg-tertiary);
+  color: var(--text-muted);
+}
+
+.task-due-input {
+  width: 110px;
+  padding: 4px 8px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  flex-shrink: 0;
 }
 
 .task-checkbox {
@@ -4031,7 +4078,7 @@ async function checkAuth() {
       return;
     }
 
-    // その他の場合は設計士情報を取得してcategoryを判定
+    // その他の場合はスタッフ情報を取得してcategoryを判定
     const { data: designerData } = await supabase
       .from('designers')
       .select('*')
@@ -4041,9 +4088,9 @@ async function checkAuth() {
     if (designerData) {
       currentDesigner = designerData;
       currentUserCategory = designerData.category;
-      console.log('✅ 設計士情報取得:', currentDesigner.name, '/', currentUserCategory);
+      console.log('✅ スタッフ情報取得:', currentDesigner.name, '/', currentUserCategory);
     } else {
-      console.warn('⚠️ 設計士情報が見つかりません:', currentUser.email);
+      console.warn('⚠️ スタッフ情報が見つかりません:', currentUser.email);
     }
 
     // メインコンテナを表示
@@ -4091,7 +4138,7 @@ supabase.auth.onAuthStateChange(async (event, session) => {
       return;
     }
 
-    // その他の場合は設計士情報を取得してcategoryを判定
+    // その他の場合はスタッフ情報を取得してcategoryを判定
     const { data: designerData } = await supabase
       .from('designers')
       .select('*')
@@ -4101,9 +4148,9 @@ supabase.auth.onAuthStateChange(async (event, session) => {
     if (designerData) {
       currentDesigner = designerData;
       currentUserCategory = designerData.category;
-      console.log('✅ 設計士情報取得:', currentDesigner.name, '/', currentUserCategory);
+      console.log('✅ スタッフ情報取得:', currentDesigner.name, '/', currentUserCategory);
     } else {
-      console.warn('⚠️ 設計士情報が見つかりません:', currentUser.email);
+      console.warn('⚠️ スタッフ情報が見つかりません:', currentUser.email);
     }
 
     // メインコンテナを表示
@@ -4234,7 +4281,7 @@ async function init() {
 
     // 各結果を確認
     results.forEach((result, index) => {
-      const names = ['設計士', '現在の設計士', '案件', 'テンプレート', '業者', 'タスク設定'];
+      const names = ['スタッフ', '現在のスタッフ', '案件', 'テンプレート', '業者', 'タスク設定'];
       if (result.status === 'rejected') {
         console.error(`❌ ${names[index]}の読み込み失敗:`, result.reason);
       } else {
@@ -4341,14 +4388,14 @@ ArchiDeck デバッグ情報
 メモリ上のデータ
 ----------------
 案件数: ${projects.length}件
-設計士数: ${designers.length}人
+スタッフ数: ${designers.length}人
 タスク数: ${tasksV2.length}件
 業者数: ${vendorsV2.length}件
 
 データベース直接確認
 --------------------
 DB案件数: ${dbProjectsCount}件
-DB設計士数: ${dbDesignersCount}人
+DBスタッフ数: ${dbDesignersCount}人
 ${dbError ? `DBエラー: ${dbError.message || dbError}` : ''}
 
 案件詳細
@@ -4357,11 +4404,11 @@ ${projects.slice(0, 5).map(p => `・${p.customer} (設計:${p.assigned_to || '�
 ${projects.length > 5 ? `...他${projects.length - 5}件` : ''}
 ${projects.length === 0 ? '（案件データなし）' : ''}
 
-設計士詳細
+スタッフ詳細
 ----------
 ${designers.slice(0, 5).map(d => `・${d.name} (${d.category})`).join('\n')}
 ${designers.length > 5 ? `...他${designers.length - 5}人` : ''}
-${designers.length === 0 ? '（設計士データなし）' : ''}
+${designers.length === 0 ? '（スタッフデータなし）' : ''}
 
 アーカイブ状況
 --------------
@@ -4516,7 +4563,7 @@ console.log('  - checkAssignment("担当者名", "案件名") : 割り当てチ�
 // データ読み込み
 // ============================================
 async function loadDesigners() {
-  console.log('🔄 設計士データ読み込み開始...');
+  console.log('🔄 スタッフデータ読み込み開始...');
 
   try {
     const { data, error, count } = await supabase
@@ -4533,7 +4580,7 @@ async function loadDesigners() {
     });
 
     if (error) {
-      console.error('❌ 設計士データ読み込みエラー:', error);
+      console.error('❌ スタッフデータ読み込みエラー:', error);
       console.error('エラー詳細:', {
         message: error.message,
         details: error.details,
@@ -4553,14 +4600,14 @@ async function loadDesigners() {
       return acc;
     }, {});
 
-    console.log('✅ 設計士データ読み込み完了:', {
+    console.log('✅ スタッフデータ読み込み完了:', {
       '総数': designers.length,
       'カテゴリ別': byCategory,
       'サンプル': designers.slice(0, 3).map(d => ({ name: d.name, category: d.category, email: d.email }))
     });
 
     if (designers.length === 0) {
-      console.warn('⚠️ 警告: 設計士データが0件です！Supabaseのテーブルにデータがあるか確認してください。');
+      console.warn('⚠️ 警告: スタッフデータが0件です！Supabaseのテーブルにデータがあるか確認してください。');
     }
   } catch (err) {
     console.error('❌ loadDesigners()で予期しないエラー:', err);
@@ -4571,7 +4618,7 @@ async function loadDesigners() {
 async function loadCurrentDesigner() {
   if (!currentUser || !currentUser.email) return;
 
-  // admin@ghouse.jpの場合は設計士を特定しない（全案件閲覧可能）
+  // admin@ghouse.jpの場合はスタッフを特定しない（全案件閲覧可能）
   if (currentUser.email === 'admin@ghouse.jp') {
     currentDesigner = null;
     return;
@@ -4584,13 +4631,13 @@ async function loadCurrentDesigner() {
     .single();
 
   if (error) {
-    console.warn('設計士情報の取得に失敗:', error);
+    console.warn('スタッフ情報の取得に失敗:', error);
     currentDesigner = null;
     return;
   }
 
   currentDesigner = data;
-  console.log('現在の設計士:', currentDesigner);
+  console.log('現在のスタッフ:', currentDesigner);
 }
 
 async function loadProjects() {
@@ -6541,6 +6588,22 @@ function updateAlertSummary(projectList) {
         alerts.push({ project, type: 'danger', message: `着工${daysUntilStart}日前` });
       }
     }
+
+    // 遅延タスクをチェック
+    const tasks = getTasksForAssignee(project.assigned_to);
+    let overdueCount = 0;
+    tasks.forEach(taskDef => {
+      const task = progressData[taskDef.task_key];
+      if (task?.due_date && !task.completed) {
+        const dueStatus = getTaskDueStatus(task.due_date, false);
+        if (dueStatus.class === 'overdue') {
+          overdueCount++;
+        }
+      }
+    });
+    if (overdueCount > 0) {
+      alerts.push({ project, type: 'danger', message: `${overdueCount}件のタスク遅延` });
+    }
   });
 
   if (alerts.length === 0) {
@@ -6625,7 +6688,7 @@ function renderProjectCard(project) {
 
   const tasksHtml = tasks.map(taskDef => {
     const key = taskDef.task_key;
-    const task = progressData[key] || { completed: false, date: '', state: '' };
+    const task = progressData[key] || { completed: false, date: '', state: '', due_date: '' };
     const isApplicationGo = key === 'application';
     const disabledClass = isApplicationGo && !applicationGoEnabled ? 'disabled' : '';
 
@@ -6641,9 +6704,16 @@ function renderProjectCard(project) {
       stateSelect = `<select class="task-state-select ${stateClass}" onchange="updateTaskState('${project.id}', '${key}', this.value)">${stateOptions.map(state => `<option value="${state}" ${task.state === state ? 'selected' : ''}>${state || '-'}</option>`).join('')}</select>`;
     }
 
-    return `<div class="task-item ${disabledClass}" ${isApplicationGo && !applicationGoEnabled ? 'title="太陽光:営業共有済、給排水:保存済、換気:保存済、サッシ:保存済 が必要"' : ''}>
+    // 期限と遅延判定
+    const dueStatus = getTaskDueStatus(task.due_date, task.completed);
+    const dueClass = dueStatus.class;
+    const dueBadge = task.due_date && !task.completed ?
+      `<span class="task-due-date ${dueStatus.badgeClass}" title="期限: ${task.due_date}">${dueStatus.label}</span>` : '';
+    const dueInput = `<input type="date" class="task-due-input" value="${task.due_date || ''}" onchange="updateTaskDueDate('${project.id}', '${key}', this.value)" title="期限を設定">`;
+
+    return `<div class="task-item ${disabledClass} ${dueClass}" ${isApplicationGo && !applicationGoEnabled ? 'title="太陽光:営業共有済、給排水:保存済、換気:保存済、サッシ:保存済 が必要"' : ''}>
       <input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''} ${disabledClass ? 'disabled' : ''} onchange="updateTaskStatus('${project.id}', '${key}', this.checked)">
-      <span class="task-label">${taskDef.task_name}</span>${stateSelect}${emailBtn}</div>`;
+      <span class="task-label">${taskDef.task_name}</span>${stateSelect}${emailBtn}${dueBadge}${dueInput}</div>`;
   }).join('');
 
   return `<div class="project-card" data-project-id="${project.id}">
@@ -6715,6 +6785,61 @@ async function updateTaskStatus(projectId, taskKey, completed) {
   project.updated_at = new Date().toISOString();
   renderProjects();
   showStatus('保存済み', 'saved');
+}
+
+// タスク期限のステータス判定
+function getTaskDueStatus(dueDate, completed) {
+  if (!dueDate || completed) {
+    return { class: '', badgeClass: 'normal', label: '' };
+  }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const due = new Date(dueDate);
+  due.setHours(0, 0, 0, 0);
+  const diffDays = Math.ceil((due - today) / (1000 * 60 * 60 * 24));
+
+  if (diffDays < 0) {
+    return { class: 'overdue', badgeClass: 'overdue', label: `${Math.abs(diffDays)}日遅延` };
+  } else if (diffDays === 0) {
+    return { class: 'due-soon', badgeClass: 'overdue', label: '本日期限' };
+  } else if (diffDays <= 3) {
+    return { class: 'due-soon', badgeClass: 'due-soon', label: `あと${diffDays}日` };
+  } else {
+    const m = due.getMonth() + 1;
+    const d = due.getDate();
+    return { class: '', badgeClass: 'normal', label: `${m}/${d}` };
+  }
+}
+
+// タスク期限の更新
+async function updateTaskDueDate(projectId, taskKey, dueDate) {
+  const project = projects.find(p => p.id === projectId);
+  if (!project) return;
+
+  const progressData = project.progress || {};
+  if (!progressData[taskKey]) progressData[taskKey] = { completed: false, date: '', state: '' };
+  progressData[taskKey].due_date = dueDate;
+
+  showStatus('保存中...', 'saving');
+  const { error } = await supabase
+    .from('projects')
+    .update({ progress: progressData, updated_at: new Date().toISOString() })
+    .eq('id', projectId);
+
+  if (error) {
+    showStatus('エラー', 'error');
+    showToast('期限の保存に失敗しました', 'error');
+    return;
+  }
+
+  project.progress = progressData;
+  project.updated_at = new Date().toISOString();
+  renderProjects();
+  showStatus('保存済み', 'saved');
+  if (dueDate) {
+    showToast('期限を設定しました', 'success');
+  }
 }
 
 async function updateTaskState(projectId, taskKey, state) {
@@ -6838,7 +6963,7 @@ async function saveProject() {
 
   showStatus('保存中...', 'saving');
 
-  // 担当設計士（設計）のIDを取得
+  // 設計担当のIDを取得
   const designer = designers.find(d => d.name.trim() === assignedTo);
   const designerId = designer ? designer.id : null;
 
@@ -6984,7 +7109,7 @@ async function toggleArchive(projectId, isArchived) {
 }
 
 // ============================================
-// 設計士管理
+// スタッフ管理機能
 // ============================================
 function openDesignerModal() {
   renderDesignerList();
