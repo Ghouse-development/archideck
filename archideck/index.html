@@ -867,6 +867,124 @@ body {
   color: var(--accent-color);
 }
 
+/* ミス・漏れ防止: 警告バッジ */
+.project-warnings {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.warning-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  animation: pulse-warning 2s ease-in-out infinite;
+}
+
+.warning-badge.warning-danger {
+  background: linear-gradient(135deg, #FEE2E2, #FECACA);
+  color: #DC2626;
+  border: 1px solid #FCA5A5;
+}
+
+.warning-badge.warning-warning {
+  background: linear-gradient(135deg, #FEF3C7, #FDE68A);
+  color: #D97706;
+  border: 1px solid #FCD34D;
+}
+
+.warning-icon {
+  font-size: 14px;
+}
+
+@keyframes pulse-warning {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* アラートサマリー */
+.alert-summary {
+  background: linear-gradient(135deg, #FEF2F2, #FEE2E2);
+  border: 2px solid #FCA5A5;
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  animation: slide-down 0.3s ease-out;
+}
+
+@keyframes slide-down {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.alert-summary-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.alert-summary-icon {
+  font-size: 20px;
+}
+
+.alert-summary-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #DC2626;
+}
+
+.alert-summary-count {
+  background: #DC2626;
+  color: white;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.alert-summary-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.alert-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: white;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #991B1B;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid #FECACA;
+}
+
+.alert-item:hover {
+  background: #FEF2F2;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.15);
+}
+
+/* カードハイライト */
+.project-card.highlight-card {
+  animation: highlight-pulse 0.5s ease-out 3;
+  box-shadow: 0 0 0 3px var(--primary-color), var(--shadow-lg);
+}
+
+@keyframes highlight-pulse {
+  0%, 100% { box-shadow: 0 0 0 3px var(--primary-color), var(--shadow-lg); }
+  50% { box-shadow: 0 0 0 6px rgba(37, 99, 235, 0.3), var(--shadow-lg); }
+}
+
 .badge-dot {
   width: 6px;
   height: 6px;
@@ -2526,6 +2644,15 @@ body {
             <button class="btn btn-ghost" onclick="exportCSV()">CSV出力</button>
             <button class="btn btn-primary" onclick="openProjectModal()">+ 案件追加</button>
       </div>
+    </div>
+    <!-- アラートサマリー -->
+    <div id="alertSummary" class="alert-summary" style="display: none;">
+      <div class="alert-summary-header">
+        <span class="alert-summary-icon">🚨</span>
+        <span class="alert-summary-title">要対応案件</span>
+        <span class="alert-summary-count" id="alertCount">0件</span>
+      </div>
+      <div class="alert-summary-list" id="alertList"></div>
     </div>
     <div class="cards-container">
       <div class="cards-grid" id="projectsGrid"></div>
@@ -5615,6 +5742,77 @@ function renderProjects() {
       loadMinutesList(project.id);
     });
   }, 50);
+
+  // アラートサマリー更新
+  updateAlertSummary(filtered);
+}
+
+// アラートサマリー更新
+function updateAlertSummary(projectList) {
+  const alertSummary = document.getElementById('alertSummary');
+  const alertCount = document.getElementById('alertCount');
+  const alertList = document.getElementById('alertList');
+
+  if (!alertSummary) return;
+
+  const alerts = [];
+
+  projectList.forEach(project => {
+    if (project.is_archived) return;
+
+    const progress = calculateProgress(project);
+    const progressData = project.progress || {};
+
+    // 担当者未割当
+    if (!project.assigned_to) {
+      alerts.push({ project, type: 'danger', message: '担当未割当' });
+    }
+
+    // 進捗50%以上で間取確定未完了
+    if (progress >= 50 && !progressData['layout_confirmed']?.completed) {
+      alerts.push({ project, type: 'warning', message: '間取確定未完了' });
+    }
+
+    // 進捗80%以上で申請GO未完了
+    if (progress >= 80 && !progressData['application']?.completed) {
+      alerts.push({ project, type: 'warning', message: '申請GO未完了' });
+    }
+
+    // 着工日が近い
+    if (project.construction_start_date) {
+      const startDate = new Date(project.construction_start_date);
+      const today = new Date();
+      const daysUntilStart = Math.ceil((startDate - today) / (1000 * 60 * 60 * 24));
+      if (daysUntilStart <= 14 && daysUntilStart > 0 && progress < 90) {
+        alerts.push({ project, type: 'danger', message: `着工${daysUntilStart}日前` });
+      }
+    }
+  });
+
+  if (alerts.length === 0) {
+    alertSummary.style.display = 'none';
+    return;
+  }
+
+  alertSummary.style.display = 'block';
+  alertCount.textContent = `${alerts.length}件`;
+  alertList.innerHTML = alerts.map(a => `
+    <div class="alert-item" onclick="scrollToProject('${a.project.id}')">
+      <span>${a.type === 'danger' ? '🚨' : '⚠️'}</span>
+      <span>${a.project.customer}</span>
+      <span style="color: ${a.type === 'danger' ? '#DC2626' : '#D97706'};">${a.message}</span>
+    </div>
+  `).join('');
+}
+
+// 案件カードにスクロール
+function scrollToProject(projectId) {
+  const card = document.querySelector(`[data-project-id="${projectId}"]`);
+  if (card) {
+    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    card.classList.add('highlight-card');
+    setTimeout(() => card.classList.remove('highlight-card'), 2000);
+  }
 }
 
 function renderProjectCard(project) {
@@ -5632,6 +5830,44 @@ function renderProjectCard(project) {
 
   // 申請GO条件チェック
   const applicationGoEnabled = canPressApplicationGo(project);
+
+  // ⚠️ ミス・漏れ防止: 警告チェック
+  const warnings = [];
+
+  // 担当者未割当チェック
+  if (!project.assigned_to) {
+    warnings.push({ type: 'danger', message: '設計担当が未割当' });
+  }
+
+  // 重要タスク未完了チェック（進捗50%以上で間取確定が未完了）
+  if (progress >= 50) {
+    const layoutTask = progressData['layout_confirmed'];
+    if (!layoutTask?.completed) {
+      warnings.push({ type: 'warning', message: '間取確定が未完了' });
+    }
+  }
+
+  // 進捗80%以上で申請GOが未完了
+  if (progress >= 80 && !progressData['application']?.completed) {
+    warnings.push({ type: 'warning', message: '申請GOが未完了' });
+  }
+
+  // 着工日が近い（14日以内）のに進捗が低い
+  if (project.construction_start_date) {
+    const startDate = new Date(project.construction_start_date);
+    const today = new Date();
+    const daysUntilStart = Math.ceil((startDate - today) / (1000 * 60 * 60 * 24));
+    if (daysUntilStart <= 14 && daysUntilStart > 0 && progress < 90) {
+      warnings.push({ type: 'danger', message: `着工まで${daysUntilStart}日（進捗${progress}%）` });
+    }
+  }
+
+  // 警告HTML生成
+  const warningsHtml = warnings.length > 0 ? `
+    <div class="project-warnings" style="margin-bottom:12px;">
+      ${warnings.map(w => `<div class="warning-badge warning-${w.type}"><span class="warning-icon">${w.type === 'danger' ? '🚨' : '⚠️'}</span>${w.message}</div>`).join('')}
+    </div>
+  ` : '';
 
   const tasksHtml = tasks.map(taskDef => {
     const key = taskDef.task_key;
@@ -5660,13 +5896,14 @@ function renderProjectCard(project) {
     <div class="card-header">
       <div>
         <div class="card-title">${project.customer}<span class="badge badge-primary">${project.specifications || 'LIFE'}</span>${project.is_archived ? '<span class="badge badge-success">完了済み</span>' : ''}</div>
-        <div class="card-subtitle">設計：${project.assigned_to}${project.ic_assignee ? ` | IC：${project.ic_assignee}` : ''}${project.exterior_assignee ? ` | 外構：${project.exterior_assignee}` : ''}</div>
+        <div class="card-subtitle">設計：${project.assigned_to || '未割当'}${project.ic_assignee ? ` | IC：${project.ic_assignee}` : ''}${project.exterior_assignee ? ` | 外構：${project.exterior_assignee}` : ''}</div>
       </div>
       <div style="display: flex; gap: 8px;">
         ${project.is_archived ? `<button class="btn btn-success btn-small" onclick="toggleArchive('${project.id}', false)">復元</button>` : canArchive ? `<button class="btn btn-warning btn-small" onclick="toggleArchive('${project.id}', true)">完了済みにする</button>` : ''}
         <button class="btn btn-ghost btn-small" onclick="editProject('${project.id}')">編集</button>
       </div>
     </div>
+    ${warningsHtml}
     <div class="progress-section"><div class="progress-header"><span class="progress-label">進捗状況</span><span class="progress-value">${progress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width: ${progress}%"></div></div></div>
 
     <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">✅ タスク</span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><div id="projectTasksList_${project.id}" class="project-task-list"></div><div class="add-task-form"><input type="text" id="newTaskName_${project.id}" placeholder="タスク名" inputmode="text"><input type="date" id="newTaskDue_${project.id}"><button class="btn btn-small btn-primary" onclick="addProjectTask('${project.id}', document.getElementById('newTaskName_${project.id}').value, document.getElementById('newTaskDue_${project.id}').value)">追加</button></div></div></div>
