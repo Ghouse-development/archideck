@@ -808,20 +808,16 @@ body {
   color: var(--primary-color);
 }
 
-/* 物件名のアクセントカラー */
+/* 物件名の背景ハイライト */
 .customer-name {
+  background: linear-gradient(135deg, #DBEAFE 0%, #EFF6FF 100%);
+  padding: 4px 12px;
+  border-radius: 6px;
   color: #1E40AF;
-  background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
 .card-title:hover .customer-name {
-  background: linear-gradient(135deg, #1D4ED8 0%, #60A5FA 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  background: linear-gradient(135deg, #BFDBFE 0%, #DBEAFE 100%);
 }
 
 .card-subtitle {
