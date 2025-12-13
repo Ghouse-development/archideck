@@ -5607,6 +5607,14 @@ function renderProjects() {
   container.style.display = 'grid';
   emptyState.style.display = 'none';
   container.innerHTML = filtered.map(project => renderProjectCard(project)).join('');
+
+  // カード描画後にタスクと議事録を読み込む
+  setTimeout(() => {
+    filtered.forEach(project => {
+      loadProjectTasksList(project.id);
+      loadMinutesList(project.id);
+    });
+  }, 50);
 }
 
 function renderProjectCard(project) {
@@ -5665,7 +5673,7 @@ function renderProjectCard(project) {
 
     <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">📝 メモ欄 <span style="font-size:11px;color:var(--text-muted)">(IC・外構共通)</span></span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><textarea class="shared-memo-area" id="sharedMemo_${project.id}" placeholder="IC・外構担当と共有するメモ...">${project.shared_memo || ''}</textarea><button class="btn btn-small btn-ghost" style="margin-top:8px" onclick="saveSharedMemo('${project.id}')">メモを保存</button></div></div>
 
-    <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">📄 議事録</span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><div id="minutesList_${project.id}" class="minutes-list"></div><div class="minutes-upload-area" id="minutesDropArea_${project.id}" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, '${project.id}')" onclick="document.getElementById('minutesUpload_${project.id}').click()"><input type="file" id="minutesUpload_${project.id}" style="display:none" accept=".pdf,.doc,.docx,.xls,.xlsx" onchange="uploadMinutes('${project.id}', this.files[0])"><span>📁 クリックまたはドラッグ&ドロップ</span><div style="font-size:12px;color:var(--text-muted);margin-top:4px">PDF, Word, Excel対応</div></div></div></div>
+    <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">📄 議事録</span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><div id="minutesList_${project.id}" class="minutes-list"></div><div style="margin-bottom:12px;padding:12px;background:var(--bg-tertiary);border-radius:8px;"><label style="font-size:12px;color:var(--text-secondary);display:block;margin-bottom:6px;">打合せ日</label><input type="date" id="meetingDate_${project.id}" style="width:100%;padding:8px 12px;border:1px solid var(--border-color);border-radius:6px;font-size:14px;"></div><div class="minutes-upload-area" id="minutesDropArea_${project.id}" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDropWithDate(event, '${project.id}')" onclick="triggerMinutesUpload('${project.id}')"><input type="file" id="minutesUpload_${project.id}" style="display:none" accept=".pdf,.doc,.docx,.xls,.xlsx" onchange="uploadMinutesWithDate('${project.id}', this.files[0])"><span>📁 クリックまたはドラッグ&ドロップ</span><div style="font-size:12px;color:var(--text-muted);margin-top:4px">PDF, Word, Excel対応</div></div></div></div>
 
     <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">📋 引継書</span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><textarea class="handover-content" id="handover_${project.id}" placeholder="引継書の内容を入力..."></textarea><button class="btn btn-small btn-ghost" style="margin-top:8px" onclick="saveHandover('${project.id}')">引継書を保存</button></div></div>
 
@@ -8124,6 +8132,87 @@ async function toggleProjectTask(taskId, completed) {
   renderProjects();
 }
 
+// 案件タスク一覧読み込み
+async function loadProjectTasksList(projectId) {
+  const container = document.getElementById(`projectTasksList_${projectId}`);
+  if (!container) return;
+
+  try {
+    const { data: tasks, error } = await supabase
+      .from('project_tasks')
+      .select('*')
+      .eq('project_id', projectId)
+      .order('due_date', { ascending: true, nullsFirst: false });
+
+    if (error) {
+      console.error('Load tasks error:', error);
+      container.innerHTML = '<div style="color: var(--text-muted); font-size: 12px;">タスクの読み込みに失敗しました</div>';
+      return;
+    }
+
+    if (!tasks || tasks.length === 0) {
+      container.innerHTML = '<div style="color: var(--text-muted); font-size: 12px;">タスクはありません</div>';
+      return;
+    }
+
+    container.innerHTML = tasks.map(t => `
+      <div class="task-item" style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: ${t.is_completed ? 'var(--success-light)' : 'var(--bg-secondary)'}; border-radius: 6px; margin-bottom: 8px; border-left: 3px solid ${t.is_completed ? 'var(--success-color)' : 'var(--primary-color)'};">
+        <input type="checkbox" ${t.is_completed ? 'checked' : ''} onchange="toggleProjectTask('${t.id}', '${projectId}', this.checked)" style="width: 18px; height: 18px; cursor: pointer;">
+        <div style="flex: 1; min-width: 0;">
+          <div style="font-size: 13px; font-weight: 500; ${t.is_completed ? 'text-decoration: line-through; color: var(--text-muted);' : ''}">${escapeHtml(t.task_name)}</div>
+          ${t.due_date ? `<div style="font-size: 11px; color: ${isOverdue(t.due_date) && !t.is_completed ? 'var(--danger-color)' : 'var(--text-muted)'}; margin-top: 2px;">期限: ${formatDate(t.due_date)}</div>` : ''}
+        </div>
+        <button class="btn btn-small btn-ghost" onclick="deleteProjectTask('${t.id}', '${projectId}')" style="flex-shrink: 0; padding: 4px 8px; font-size: 12px; color: var(--danger-color);">削除</button>
+      </div>
+    `).join('');
+  } catch (error) {
+    console.error('Load tasks error:', error);
+    container.innerHTML = '<div style="color: var(--text-muted); font-size: 12px;">タスクの読み込みに失敗しました</div>';
+  }
+}
+
+// 期限切れチェック
+function isOverdue(dateStr) {
+  if (!dateStr) return false;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const dueDate = new Date(dateStr);
+  return dueDate < today;
+}
+
+// タスク完了状態を切り替え
+async function toggleProjectTask(taskId, projectId, isCompleted) {
+  const { error } = await supabase
+    .from('project_tasks')
+    .update({ is_completed: isCompleted, updated_at: new Date().toISOString() })
+    .eq('id', taskId);
+
+  if (error) {
+    showToast('更新に失敗しました', 'error');
+    return;
+  }
+
+  await loadProjectTasksList(projectId);
+}
+
+// タスク削除
+async function deleteProjectTask(taskId, projectId) {
+  if (!confirm('このタスクを削除しますか？')) return;
+
+  const { error } = await supabase
+    .from('project_tasks')
+    .delete()
+    .eq('id', taskId);
+
+  if (error) {
+    showToast('削除に失敗しました', 'error');
+    return;
+  }
+
+  showToast('タスクを削除しました', 'success');
+  await loadProjectTasksList(projectId);
+}
+
 // 案件にタスクを追加
 async function addProjectTask(projectId, taskName, dueDate) {
   if (!taskName.trim()) {
@@ -8146,8 +8235,12 @@ async function addProjectTask(projectId, taskName, dueDate) {
     return;
   }
 
+  // 入力欄をクリア
+  document.getElementById(`newTaskName_${projectId}`).value = '';
+  document.getElementById(`newTaskDue_${projectId}`).value = '';
+
   showToast('タスクを追加しました', 'success');
-  renderProjects();
+  await loadProjectTasksList(projectId);
 }
 
 // 申請GO条件チェック
@@ -8190,6 +8283,144 @@ function handleDrop(event, projectId) {
   const files = event.dataTransfer.files;
   if (files.length > 0) {
     uploadMinutes(projectId, files[0]);
+  }
+}
+
+// 打合せ日付きドロップ
+function handleDropWithDate(event, projectId) {
+  event.preventDefault();
+  event.stopPropagation();
+  event.currentTarget.classList.remove('drag-over');
+
+  const files = event.dataTransfer.files;
+  if (files.length > 0) {
+    uploadMinutesWithDate(projectId, files[0]);
+  }
+}
+
+// ファイル選択トリガー
+function triggerMinutesUpload(projectId) {
+  document.getElementById(`minutesUpload_${projectId}`).click();
+}
+
+// 打合せ日・案件名・担当者を含む議事録アップロード
+async function uploadMinutesWithDate(projectId, file) {
+  if (!file) {
+    showToast('ファイルを選択してください', 'error');
+    return;
+  }
+
+  const project = projects.find(p => p.id === projectId);
+  if (!project) {
+    showToast('案件が見つかりません', 'error');
+    return;
+  }
+
+  // 打合せ日を取得
+  const meetingDateInput = document.getElementById(`meetingDate_${projectId}`);
+  const meetingDate = meetingDateInput?.value;
+
+  if (!meetingDate) {
+    showToast('打合せ日を選択してください', 'error');
+    return;
+  }
+
+  // ファイルサイズチェック（10MB上限）
+  const maxSize = 10 * 1024 * 1024;
+  if (file.size > maxSize) {
+    showToast('ファイルサイズは10MB以下にしてください', 'error');
+    return;
+  }
+
+  // 対応ファイル形式チェック
+  const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
+  if (!allowedTypes.includes(file.type) && !file.name.match(/\.(pdf|doc|docx|xls|xlsx)$/i)) {
+    showToast('PDF, Word, Excelファイルのみ対応しています', 'error');
+    return;
+  }
+
+  // タイトル自動生成: 打合せ日_案件名_担当者
+  const formattedDate = meetingDate.replace(/-/g, '');
+  const customerName = project.customer || '不明';
+  const assignee = project.assigned_to || '担当未定';
+  const ext = file.name.split('.').pop();
+  const autoTitle = `${formattedDate}_${customerName}_${assignee}.${ext}`;
+
+  showToast('アップロード中...', 'info');
+
+  try {
+    // Supabase Storageにアップロード
+    const fileName = `${projectId}/${Date.now()}_${autoTitle}`;
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('minutes')
+      .upload(fileName, file);
+
+    if (uploadError) {
+      console.error('Storage upload error:', uploadError);
+      if (uploadError.message?.includes('bucket') || uploadError.statusCode === '404') {
+        showToast('ストレージが設定されていません。管理者に連絡してください。', 'error');
+      } else if (uploadError.message?.includes('policy')) {
+        showToast('アップロード権限がありません。', 'error');
+      } else {
+        showToast('アップロードに失敗しました: ' + (uploadError.message || 'Unknown error'), 'error');
+      }
+      return;
+    }
+
+    // URLを取得
+    const { data: urlData } = supabase.storage
+      .from('minutes')
+      .getPublicUrl(fileName);
+
+    // DBに登録（タイトルを自動生成したものに）
+    const { error: dbError } = await supabase
+      .from('project_minutes')
+      .insert({
+        project_id: projectId,
+        file_name: autoTitle,
+        file_url: urlData.publicUrl,
+        file_size: file.size,
+        uploaded_by: currentUser?.email || 'demo@archideck.jp'
+      });
+
+    if (dbError) {
+      console.error('DB insert error:', dbError);
+      showToast('議事録登録に失敗しました: ' + (dbError.message || 'Unknown error'), 'error');
+      return;
+    }
+
+    // 通知を送信
+    const notifyEmails = [];
+    if (project.assigned_to) {
+      const designer = designers.find(d => d.name === project.assigned_to);
+      if (designer?.email) notifyEmails.push(designer.email);
+    }
+    if (project.ic_assignee) {
+      const icDesigner = designers.find(d => d.name === project.ic_assignee);
+      if (icDesigner?.email) notifyEmails.push(icDesigner.email);
+    }
+    if (project.exterior_assignee) {
+      const extDesigner = designers.find(d => d.name === project.exterior_assignee);
+      if (extDesigner?.email) notifyEmails.push(extDesigner.email);
+    }
+
+    for (const email of notifyEmails) {
+      await supabase.from('notifications').insert({
+        user_email: email,
+        title: '新しい議事録がアップロードされました',
+        message: `${project.customer}様の議事録「${autoTitle}」がアップロードされました`,
+        link: `#projects?id=${projectId}`
+      }).catch(() => {});
+    }
+
+    // 打合せ日入力をクリア
+    meetingDateInput.value = '';
+
+    showToast('議事録をアップロードしました', 'success');
+    await loadMinutesList(projectId);
+  } catch (error) {
+    console.error('Upload error:', error);
+    showToast('アップロードに失敗しました', 'error');
   }
 }
 
