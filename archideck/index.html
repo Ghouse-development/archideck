@@ -808,6 +808,22 @@ body {
   color: var(--primary-color);
 }
 
+/* 物件名のアクセントカラー */
+.customer-name {
+  color: #1E40AF;
+  background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.card-title:hover .customer-name {
+  background: linear-gradient(135deg, #1D4ED8 0%, #60A5FA 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
 .card-subtitle {
   font-size: 13px;
   color: var(--text-secondary);
@@ -6584,7 +6600,7 @@ function renderProjectCard(project) {
   return `<div class="project-card" data-project-id="${project.id}">
     <div class="card-header">
       <div>
-        <div class="card-title">${project.customer}<span class="badge badge-primary">${project.specifications || 'LIFE'}</span>${project.is_archived ? '<span class="badge badge-success">完了済み</span>' : ''}</div>
+        <div class="card-title"><span class="customer-name">${project.customer}</span><span class="badge badge-primary">${project.specifications || 'LIFE'}</span>${project.is_archived ? '<span class="badge badge-success">完了済み</span>' : ''}</div>
         <div class="card-subtitle">設計：${project.assigned_to || '未割当'}${project.ic_assignee ? ` | IC：${project.ic_assignee}` : ''}${project.exterior_assignee ? ` | 外構：${project.exterior_assignee}` : ''}</div>
       </div>
       <div style="display: flex; gap: 8px;">
