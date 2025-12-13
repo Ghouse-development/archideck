@@ -874,6 +874,52 @@ body {
   color: var(--accent-color);
 }
 
+/* トグルスイッチ */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 26px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: 0.3s;
+  border-radius: 26px;
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.3s;
+  border-radius: 50%;
+}
+
+input:checked + .toggle-slider {
+  background-color: var(--primary-color);
+}
+
+input:checked + .toggle-slider:before {
+  transform: translateX(24px);
+}
+
 /* ミス・漏れ防止: 警告バッジ */
 .project-warnings {
   display: flex;
@@ -3219,7 +3265,26 @@ body {
         <div id="backupPanel" class="sub-tab-panel">
           <div style="max-width: 800px; margin: 0 auto;">
             <h2 style="margin-bottom: 20px; font-size: 24px; font-weight: 700;">データバックアップ</h2>
-            <p style="margin-bottom: 32px; color: var(--text-secondary);">システム全体のデータをバックアップ・復元できます。定期的なバックアップをお勧めします。</p>
+            <p style="margin-bottom: 32px; color: var(--text-secondary);">システム全体のデータをバックアップ・復元できます。自動バックアップも利用可能です。</p>
+
+            <!-- 自動バックアップ設定 -->
+            <div style="margin-bottom: 24px; padding: 20px; background: linear-gradient(135deg, #e0f2fe, #dbeafe); border-radius: var(--radius-md);">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+                <div>
+                  <h3 style="font-size: 16px; font-weight: 600; margin: 0 0 4px;">🔄 自動バックアップ</h3>
+                  <p style="font-size: 13px; color: var(--text-secondary); margin: 0;">データ変更時に自動でローカルにバックアップを保存します</p>
+                </div>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="autoBackupToggle" onchange="toggleAutoBackup()" checked>
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+              <div style="display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px;">
+                <div>最終バックアップ: <strong id="lastBackupTime">-</strong></div>
+                <div>バックアップ件数: <strong id="localBackupCount">0</strong>件</div>
+                <button class="btn btn-secondary btn-small" onclick="downloadLocalBackup()">ローカルバックアップをダウンロード</button>
+              </div>
+            </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
               <div style="padding: 24px; background: var(--bg-secondary); border-radius: var(--radius-md); text-align: center;">
@@ -3243,6 +3308,7 @@ body {
                 <li>復元を行うと既存データが上書きされます</li>
                 <li>復元前に必ず現在のバックアップを作成してください</li>
                 <li>バックアップファイルは安全な場所に保管してください</li>
+                <li>自動バックアップはブラウザのローカルストレージに保存されます（最大5MB）</li>
               </ul>
             </div>
 
@@ -9917,6 +9983,110 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 });
+
+// ============================================
+// 自動バックアップ機能
+// ============================================
+let autoBackupEnabled = localStorage.getItem('autoBackupEnabled') !== 'false';
+
+function toggleAutoBackup() {
+  const toggle = document.getElementById('autoBackupToggle');
+  autoBackupEnabled = toggle.checked;
+  localStorage.setItem('autoBackupEnabled', autoBackupEnabled);
+  showToast(autoBackupEnabled ? '自動バックアップを有効化しました' : '自動バックアップを無効化しました', 'info');
+}
+
+function saveAutoBackup() {
+  if (!autoBackupEnabled) return;
+
+  try {
+    const backup = {
+      version: '4.3',
+      created_at: new Date().toISOString(),
+      data: {
+        projects: projects,
+        designers: designers,
+        tasksV2: tasksV2,
+        vendors: vendors,
+        emailTemplates: emailTemplates,
+        products: products,
+        vendorCategories: vendorCategories,
+        taskVendorMappings: taskVendorMappings
+      }
+    };
+
+    const json = JSON.stringify(backup);
+
+    // サイズチェック (5MB制限)
+    if (json.length > 5 * 1024 * 1024) {
+      console.warn('⚠️ バックアップサイズが大きすぎます。ローカル保存をスキップします。');
+      return;
+    }
+
+    localStorage.setItem('archideck_auto_backup', json);
+    localStorage.setItem('archideck_last_backup', new Date().toISOString());
+
+    // バックアップ履歴を保持（最大3件）
+    const history = JSON.parse(localStorage.getItem('archideck_backup_history') || '[]');
+    history.unshift({
+      timestamp: new Date().toISOString(),
+      projectCount: projects.length,
+      designerCount: designers.length
+    });
+    if (history.length > 3) history.pop();
+    localStorage.setItem('archideck_backup_history', JSON.stringify(history));
+
+    updateBackupUI();
+    console.log('✅ 自動バックアップ完了:', new Date().toLocaleString());
+  } catch (e) {
+    console.warn('自動バックアップエラー:', e);
+  }
+}
+
+function updateBackupUI() {
+  const lastBackupEl = document.getElementById('lastBackupTime');
+  const countEl = document.getElementById('localBackupCount');
+  const toggleEl = document.getElementById('autoBackupToggle');
+
+  if (lastBackupEl) {
+    const lastBackup = localStorage.getItem('archideck_last_backup');
+    lastBackupEl.textContent = lastBackup ? new Date(lastBackup).toLocaleString('ja-JP') : '-';
+  }
+
+  if (countEl) {
+    const history = JSON.parse(localStorage.getItem('archideck_backup_history') || '[]');
+    countEl.textContent = history.length.toString();
+  }
+
+  if (toggleEl) {
+    toggleEl.checked = autoBackupEnabled;
+  }
+}
+
+function downloadLocalBackup() {
+  const backup = localStorage.getItem('archideck_auto_backup');
+  if (!backup) {
+    showToast('ローカルバックアップがありません', 'warning');
+    return;
+  }
+
+  const blob = new Blob([backup], { type: 'application/json' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `archideck_local_backup_${new Date().toISOString().split('T')[0]}.json`;
+  link.click();
+  showToast('ローカルバックアップをダウンロードしました', 'success');
+}
+
+// 初期化時にバックアップUIを更新
+setTimeout(updateBackupUI, 1000);
+
+// 定期的に自動バックアップ（5分ごと）
+setInterval(() => {
+  if (projects.length > 0 || designers.length > 0) {
+    saveAutoBackup();
+  }
+}, 5 * 60 * 1000);
 
 // バックアップ作成
 async function createBackup() {
