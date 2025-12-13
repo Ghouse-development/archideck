@@ -2805,9 +2805,18 @@ input:checked + .toggle-slider:before {
     <p>メールアドレスとパスワードでログインしてください</p>
     <form onsubmit="signIn(); return false;" style="margin-bottom: 20px;">
       <input type="email" class="form-input" id="loginEmail" placeholder="メールアドレス" style="width: 100%; margin-bottom: 12px;" inputmode="email">
-      <input type="password" class="form-input" id="loginPassword" placeholder="パスワード" style="width: 100%; margin-bottom: 16px;">
+      <input type="password" class="form-input" id="loginPassword" placeholder="パスワード" style="width: 100%; margin-bottom: 12px;">
+      <div style="text-align: right; margin-bottom: 16px;">
+        <a href="#" onclick="showForgotPassword(); return false;" style="font-size: 13px; color: var(--primary-color);">パスワードを忘れた方</a>
+      </div>
       <button type="submit" class="btn btn-primary" style="width: 100%;">ログイン</button>
     </form>
+    <div id="forgotPasswordSection" style="display: none; margin-bottom: 20px; padding: 16px; background: var(--bg-secondary); border-radius: var(--radius-md);">
+      <p style="font-size: 13px; margin-bottom: 12px;">登録済みのメールアドレスを入力してください。パスワード再設定用のリンクを送信します。</p>
+      <input type="email" class="form-input" id="forgotEmail" placeholder="メールアドレス" style="width: 100%; margin-bottom: 12px;">
+      <button class="btn btn-primary" style="width: 100%; margin-bottom: 8px;" onclick="sendPasswordReset()">再設定メールを送信</button>
+      <button class="btn btn-ghost" style="width: 100%;" onclick="hideForgotPassword()">キャンセル</button>
+    </div>
     <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-color);">
       <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">開発中のためパスワード無しでログイン可能</p>
       <button class="btn btn-ghost" style="width: 100%;" onclick="enterDemoMode()">パスワード無しで入る</button>
@@ -3903,6 +3912,50 @@ function enterDemoMode() {
 
 // デモモードフラグ
 let isDemoMode = false;
+
+// パスワード再設定UI表示
+function showForgotPassword() {
+  document.getElementById('forgotPasswordSection').style.display = 'block';
+  document.getElementById('forgotEmail').value = document.getElementById('loginEmail').value;
+  document.getElementById('forgotEmail').focus();
+}
+
+function hideForgotPassword() {
+  document.getElementById('forgotPasswordSection').style.display = 'none';
+}
+
+// パスワード再設定メール送信
+async function sendPasswordReset() {
+  const email = document.getElementById('forgotEmail').value.trim();
+
+  if (!email) {
+    showToast('メールアドレスを入力してください', 'error');
+    return;
+  }
+
+  if (!window.supabase) {
+    showToast('エラー: システムが初期化されていません', 'error');
+    return;
+  }
+
+  try {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + '/archideck/index.html#reset-password'
+    });
+
+    if (error) {
+      console.error('パスワードリセットエラー:', error);
+      showToast('メール送信に失敗しました: ' + error.message, 'error');
+      return;
+    }
+
+    showToast('パスワード再設定用のメールを送信しました。メールをご確認ください。', 'success', 5000);
+    hideForgotPassword();
+  } catch (e) {
+    console.error('パスワードリセット例外:', e);
+    showToast('エラーが発生しました', 'error');
+  }
+}
 
 async function signIn() {
   console.log('🔐 ログイン処理開始...');
@@ -6779,7 +6832,7 @@ async function saveProject() {
   console.log('💾 saveProject開始:', { customer, assignedTo, icAssignee, specifications });
 
   if (!customer || !assignedTo) {
-    showToast('お客様名と担当設計士（設計）は必須です', 'error');
+    showToast('お客様名と設計担当は必須です', 'error');
     return;
   }
 
