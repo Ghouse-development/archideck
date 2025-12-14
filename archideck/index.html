@@ -3050,6 +3050,97 @@ input:checked + .toggle-slider:before {
   font-style: italic;
 }
 
+/* 担当者別レポートスタイル */
+.report-designer-section {
+  background: var(--bg-secondary);
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.report-designer-section:last-child {
+  margin-bottom: 0;
+}
+
+.report-designer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.report-designer-name {
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--text-primary);
+}
+
+.report-designer-count {
+  background: var(--primary);
+  color: white;
+  font-size: 0.75rem;
+  padding: 2px 10px;
+  border-radius: 12px;
+}
+
+.report-project-detail {
+  background: var(--bg-primary);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 8px;
+  border-left: 3px solid var(--border-color);
+}
+
+.report-project-detail:last-child {
+  margin-bottom: 0;
+}
+
+.report-project-detail.updated {
+  border-left-color: var(--success-color);
+  background: linear-gradient(90deg, rgba(16, 185, 129, 0.05), var(--bg-primary));
+}
+
+.report-project-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.report-project-title .project-name {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.report-updated-badge {
+  background: var(--success-color);
+  color: white;
+  font-size: 0.65rem;
+  padding: 2px 6px;
+  border-radius: 8px;
+}
+
+.report-status-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.report-status-tag {
+  font-size: 0.75rem;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+}
+
+.report-status-tag.active {
+  background: var(--primary);
+  color: white;
+}
+
 /* ===== ArchiDeck v3.0 新機能スタイル ===== */
 
 /* 5部構成カードセクション - Premium Design */
@@ -13755,28 +13846,54 @@ function generateWeeklyReport() {
     return updated >= weekAgo;
   });
 
-  const avgProgress = activeProjects.length > 0
-    ? Math.round(activeProjects.reduce((sum, p) => sum + calculateProgress(p), 0) / activeProjects.length)
-    : 0;
+  // 今週更新された案件
+  const updatedThisWeek = projects.filter(p => {
+    const updated = new Date(p.updated_at);
+    return updated >= weekAgo;
+  });
 
-  const atRisk = activeProjects.filter(p => !p.assigned_to || calculateProgress(p) < 30).length;
+  // 担当者別にグループ化
+  const designerProjects = {};
+  designers.filter(d => d.category === '設計').forEach(d => {
+    designerProjects[d.name] = activeProjects.filter(p => p.assigned_to === d.name);
+  });
 
-  const activeProjectsList = activeProjects.slice(0, 10).map(p => {
-    const progress = calculateProgress(p);
-    return `<li class="report-list-item">
-      <span class="report-project-name">${p.customer}</span>
-      <div class="report-project-meta">
-        <span class="report-progress-badge ${getProgressBadgeClass(progress)}">${progress}%</span>
-        <span class="report-assignee">${p.assigned_to || '未割当'}</span>
-      </div>
-    </li>`;
-  }).join('');
+  // 担当者別セクションを生成
+  const designerSections = Object.entries(designerProjects)
+    .filter(([name, projs]) => projs.length > 0)
+    .map(([name, projs]) => {
+      const projectDetails = projs.map(p => {
+        const progress = calculateProgress(p);
+        const progressData = p.progress || {};
 
-  const completedList = completedThisWeek.length > 0
-    ? completedThisWeek.map(p => `<li class="report-list-item">
-        <span class="report-project-name">${p.customer}</span>
-      </li>`).join('')
-    : '<li class="report-empty">今週の完了案件はありません</li>';
+        // 主要タスクのステータスを取得
+        const statuses = [];
+        if (progressData['solar']?.state) statuses.push(`太陽光:${progressData['solar'].state}`);
+        if (progressData['plumbing']?.state) statuses.push(`給排水:${progressData['plumbing'].state}`);
+        if (progressData['ventilation']?.state) statuses.push(`換気:${progressData['ventilation'].state}`);
+        if (progressData['sash']?.state) statuses.push(`サッシ:${progressData['sash'].state}`);
+
+        const statusText = statuses.length > 0 ? statuses.join(' / ') : '未着手';
+        const wasUpdated = new Date(p.updated_at) >= weekAgo;
+
+        return `<div class="report-project-detail ${wasUpdated ? 'updated' : ''}">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            <span style="font-weight: 600;">${p.customer}</span>
+            <span class="report-progress-badge ${getProgressBadgeClass(progress)}">${progress}%</span>
+          </div>
+          <div style="font-size: 12px; color: var(--text-secondary);">${statusText}</div>
+          ${wasUpdated ? '<div style="font-size: 11px; color: var(--primary-color); margin-top: 4px;">📝 今週更新</div>' : ''}
+        </div>`;
+      }).join('');
+
+      return `<div class="report-designer-section">
+        <div class="report-designer-header">
+          <span class="report-designer-name">${name}</span>
+          <span class="report-designer-count">${projs.length}件</span>
+        </div>
+        ${projectDetails}
+      </div>`;
+    }).join('');
 
   const report = `
     <div class="report-card">
@@ -13786,34 +13903,32 @@ function generateWeeklyReport() {
       </div>
       <div class="report-stats-grid">
         <div class="report-stat-item">
-          <div class="report-stat-value">${projects.length}</div>
-          <div class="report-stat-label">総案件数</div>
-        </div>
-        <div class="report-stat-item">
           <div class="report-stat-value">${activeProjects.length}</div>
           <div class="report-stat-label">進行中</div>
+        </div>
+        <div class="report-stat-item">
+          <div class="report-stat-value">${updatedThisWeek.length}</div>
+          <div class="report-stat-label">今週更新</div>
         </div>
         <div class="report-stat-item">
           <div class="report-stat-value">${completedThisWeek.length}</div>
           <div class="report-stat-label">今週完了</div>
         </div>
-        <div class="report-stat-item">
-          <div class="report-stat-value">${avgProgress}%</div>
-          <div class="report-stat-label">平均進捗</div>
-        </div>
-        <div class="report-stat-item">
-          <div class="report-stat-value">${atRisk}</div>
-          <div class="report-stat-label">要注意</div>
-        </div>
       </div>
       <div class="report-section">
-        <div class="report-section-title">進行中案件（上位10件）</div>
-        <ul class="report-list">${activeProjectsList || '<li class="report-empty">進行中の案件はありません</li>'}</ul>
+        <div class="report-section-title">担当者別 案件状況</div>
+        ${designerSections || '<div class="report-empty">進行中の案件はありません</div>'}
       </div>
+      ${completedThisWeek.length > 0 ? `
       <div class="report-section">
         <div class="report-section-title">今週の完了案件</div>
-        <ul class="report-list">${completedList}</ul>
-      </div>
+        <ul class="report-list">
+          ${completedThisWeek.map(p => `<li class="report-list-item">
+            <span class="report-project-name">${p.customer}</span>
+            <span class="report-assignee">${p.assigned_to || '未割当'}</span>
+          </li>`).join('')}
+        </ul>
+      </div>` : ''}
     </div>
   `;
 
@@ -13834,36 +13949,59 @@ function generateMonthlyReport() {
     return updated >= monthAgo;
   });
 
-  const designerStats = {};
-  designers.filter(d => d.category === '設計').forEach(d => {
-    designerStats[d.name] = { total: 0, completed: 0 };
-  });
-  projects.forEach(p => {
-    if (p.assigned_to && designerStats[p.assigned_to]) {
-      designerStats[p.assigned_to].total++;
-      if (p.is_archived) designerStats[p.assigned_to].completed++;
-    }
+  // 今月更新された案件
+  const updatedThisMonth = projects.filter(p => {
+    const updated = new Date(p.updated_at);
+    return updated >= monthAgo;
   });
 
   const completionRate = projects.length > 0 ? Math.round(completedThisMonth.length / projects.length * 100) : 0;
 
-  const designerStatsList = Object.entries(designerStats).map(([name, stats]) => {
-    const rate = stats.total > 0 ? Math.round(stats.completed / stats.total * 100) : 0;
-    return `<li class="report-list-item">
-      <span class="report-project-name">${name}</span>
-      <div class="report-project-meta">
-        <span>${stats.total}件担当</span>
-        <span class="report-progress-badge ${getProgressBadgeClass(rate)}">${stats.completed}件完了</span>
-      </div>
-    </li>`;
-  }).join('');
+  // 担当者別にグループ化
+  const designerProjects = {};
+  designers.filter(d => d.category === '設計').forEach(d => {
+    designerProjects[d.name] = activeProjects.filter(p => p.assigned_to === d.name);
+  });
 
-  const completedList = completedThisMonth.length > 0
-    ? completedThisMonth.map(p => `<li class="report-list-item">
-        <span class="report-project-name">${p.customer}</span>
-        <span class="report-assignee">${p.assigned_to || '未割当'}</span>
-      </li>`).join('')
-    : '<li class="report-empty">今月の完了案件はありません</li>';
+  // 担当者ごとのセクション生成
+  const designerSections = Object.entries(designerProjects)
+    .filter(([name, projs]) => projs.length > 0)
+    .map(([name, projs]) => {
+      const projectDetails = projs.map(p => {
+        const progressData = p.progress || {};
+        const updatedAt = new Date(p.updated_at);
+        const isUpdated = updatedAt >= monthAgo;
+
+        // タスクステータスを収集
+        const statuses = [];
+        if (progressData['solar']?.state) statuses.push(`太陽光:${progressData['solar'].state}`);
+        if (progressData['plumbing']?.state) statuses.push(`給排水:${progressData['plumbing'].state}`);
+        if (progressData['ventilation']?.state) statuses.push(`換気:${progressData['ventilation'].state}`);
+        if (progressData['sash']?.state) statuses.push(`サッシ:${progressData['sash'].state}`);
+        if (progressData['structure']?.state) statuses.push(`構造:${progressData['structure'].state}`);
+        if (progressData['evoltz']?.state) statuses.push(`エボルツ:${progressData['evoltz'].state}`);
+
+        const statusTags = statuses.map(s =>
+          `<span class="report-status-tag active">${s}</span>`
+        ).join('');
+
+        return `<div class="report-project-detail ${isUpdated ? 'updated' : ''}">
+          <div class="report-project-title">
+            <span class="project-name">${p.customer}</span>
+            ${isUpdated ? '<span class="report-updated-badge">今月更新</span>' : ''}
+          </div>
+          ${statusTags ? `<div class="report-status-list">${statusTags}</div>` : '<div class="report-status-list"><span class="report-status-tag">未着手</span></div>'}
+        </div>`;
+      }).join('');
+
+      return `<div class="report-designer-section">
+        <div class="report-designer-header">
+          <span class="report-designer-name">${name}</span>
+          <span class="report-designer-count">${projs.length}件</span>
+        </div>
+        ${projectDetails}
+      </div>`;
+    }).join('');
 
   const report = `
     <div class="report-card">
@@ -13881,22 +14019,28 @@ function generateMonthlyReport() {
           <div class="report-stat-label">進行中</div>
         </div>
         <div class="report-stat-item">
+          <div class="report-stat-value">${updatedThisMonth.length}</div>
+          <div class="report-stat-label">今月更新</div>
+        </div>
+        <div class="report-stat-item">
           <div class="report-stat-value">${completedThisMonth.length}</div>
           <div class="report-stat-label">今月完了</div>
         </div>
-        <div class="report-stat-item">
-          <div class="report-stat-value">${completionRate}%</div>
-          <div class="report-stat-label">完了率</div>
-        </div>
       </div>
       <div class="report-section">
-        <div class="report-section-title">担当者別実績</div>
-        <ul class="report-list">${designerStatsList || '<li class="report-empty">担当者データがありません</li>'}</ul>
+        <div class="report-section-title">担当者別 案件状況</div>
+        ${designerSections || '<div class="report-empty">進行中の案件はありません</div>'}
       </div>
+      ${completedThisMonth.length > 0 ? `
       <div class="report-section">
         <div class="report-section-title">今月の完了案件</div>
-        <ul class="report-list">${completedList}</ul>
-      </div>
+        <ul class="report-list">
+          ${completedThisMonth.map(p => `<li class="report-list-item">
+            <span class="report-project-name">${p.customer}</span>
+            <span class="report-assignee">${p.assigned_to || '未割当'}</span>
+          </li>`).join('')}
+        </ul>
+      </div>` : ''}
     </div>
   `;
 
