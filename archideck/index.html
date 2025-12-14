@@ -8321,7 +8321,7 @@ function renderProjectCard(project) {
 
     <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">📝 メモ欄</span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><textarea class="shared-memo-area" id="sharedMemo_${project.id}" placeholder="メモを入力...">${escapeHtml(project.shared_memo || '')}</textarea><button class="btn btn-small btn-ghost" style="margin-top:8px" onclick="saveSharedMemo('${project.id}')">メモを保存</button></div></div>
 
-    <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">📄 議事録</span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><div id="minutesList_${project.id}" class="minutes-list"></div><div style="margin-bottom:12px;padding:12px;background:var(--bg-tertiary);border-radius:8px;"><label style="font-size:12px;color:var(--text-secondary);display:block;margin-bottom:6px;">打合せ日</label><input type="date" id="meetingDate_${project.id}" style="width:100%;padding:8px 12px;border:1px solid var(--border-color);border-radius:6px;font-size:14px;"></div><div class="minutes-upload-area" id="minutesDropArea_${project.id}" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDropWithDate(event, '${project.id}')" onclick="triggerMinutesUpload('${project.id}')"><input type="file" id="minutesUpload_${project.id}" style="display:none" accept=".pdf,.doc,.docx,.xls,.xlsx" onchange="uploadMinutesWithDate('${project.id}', this.files[0])"><span>📁 クリックまたはドラッグ&ドロップ</span><div style="font-size:12px;color:var(--text-muted);margin-top:4px">PDF, Word, Excel対応</div></div></div></div>
+    <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">📄 議事録</span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><div id="minutesList_${project.id}" class="minutes-list"></div><div style="margin-bottom:12px;padding:12px;background:var(--bg-tertiary);border-radius:8px;"><label style="font-size:12px;color:var(--text-secondary);display:block;margin-bottom:6px;">打合せ日</label><input type="date" id="meetingDate_${project.id}" style="width:100%;padding:8px 12px;border:1px solid var(--border-color);border-radius:6px;font-size:14px;"></div><div class="minutes-upload-area" id="minutesDropArea_${project.id}" ondragover="handleMinutesDragOver(event)" ondragleave="handleMinutesDragLeave(event)" ondrop="handleDropWithDate(event, '${project.id}')" onclick="triggerMinutesUpload('${project.id}')"><input type="file" id="minutesUpload_${project.id}" style="display:none" accept=".pdf,.doc,.docx,.xls,.xlsx" onchange="uploadMinutesWithDate('${project.id}', this.files[0])"><span>📁 クリックまたはドラッグ&ドロップ</span><div style="font-size:12px;color:var(--text-muted);margin-top:4px">PDF, Word, Excel対応</div></div></div></div>
 
     <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">📋 引継書</span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><textarea class="handover-content" id="handover_${project.id}" placeholder="引継書の内容を入力..."></textarea><button class="btn btn-small btn-ghost" style="margin-top:8px" onclick="saveHandover('${project.id}')">引継書を保存</button></div></div>
 
@@ -9330,22 +9330,22 @@ function setupDragAndDrop() {
   const draggableRows = document.querySelectorAll('.draggable-row');
 
   draggableRows.forEach(row => {
-    row.addEventListener('dragstart', handleDragStart);
-    row.addEventListener('dragover', handleDragOver);
-    row.addEventListener('drop', handleDrop);
-    row.addEventListener('dragend', handleDragEnd);
-    row.addEventListener('dragleave', handleDragLeave);
+    row.addEventListener('dragstart', handleDesignerDragStart);
+    row.addEventListener('dragover', handleDesignerDragOver);
+    row.addEventListener('drop', handleDesignerDrop);
+    row.addEventListener('dragend', handleDesignerDragEnd);
+    row.addEventListener('dragleave', handleDesignerDragLeave);
   });
 }
 
-function handleDragStart(e) {
+function handleDesignerDragStart(e) {
   draggedElement = this;
   this.classList.add('dragging');
   e.dataTransfer.effectAllowed = 'move';
   e.dataTransfer.setData('text/html', this.innerHTML);
 }
 
-function handleDragOver(e) {
+function handleDesignerDragOver(e) {
   if (e.preventDefault) {
     e.preventDefault();
   }
@@ -9362,7 +9362,7 @@ function handleDragOver(e) {
   return false;
 }
 
-function handleDrop(e) {
+function handleDesignerDrop(e) {
   if (e.stopPropagation) {
     e.stopPropagation();
   }
@@ -9383,7 +9383,7 @@ function handleDrop(e) {
   return false;
 }
 
-function handleDragEnd(e) {
+function handleDesignerDragEnd(e) {
   this.classList.remove('dragging');
 
   const allRows = document.querySelectorAll('.draggable-row');
@@ -9392,7 +9392,7 @@ function handleDragEnd(e) {
   });
 }
 
-function handleDragLeave(e) {
+function handleDesignerDragLeave(e) {
   this.classList.remove('drag-over');
 }
 
@@ -10930,7 +10930,7 @@ const DataImporter = {
         <p style="margin-bottom: 8px; font-weight: 500;">${data.length}件のデータを検出</p>
         ${previewItems.map(item => `
           <div style="padding: 8px; background: var(--bg-primary); border-radius: 4px; margin-bottom: 4px;">
-            ${item.customer || item.顧客名 || '(顧客名なし)'} - ${item.specifications || item.商品 || 'LIFE'}
+            ${escapeHtml(item.customer || item.顧客名 || '(顧客名なし)')} - ${escapeHtml(item.specifications || item.商品 || 'LIFE')}
           </div>
         `).join('')}
         ${data.length > 5 ? `<p style="color: var(--text-muted);">...他 ${data.length - 5}件</p>` : ''}
@@ -10941,7 +10941,7 @@ const DataImporter = {
       previewDiv.style.display = 'block';
 
     } catch (error) {
-      previewContent.innerHTML = `<p style="color: var(--danger-color);">ファイル読み込みエラー: ${error.message}</p>`;
+      previewContent.innerHTML = `<p style="color: var(--danger-color);">ファイル読み込みエラー: ${escapeHtml(error.message || 'Unknown error')}</p>`;
       executeBtn.disabled = true;
       previewDiv.style.display = 'block';
     }
@@ -12094,22 +12094,22 @@ function enableDragAndDrop() {
   // イベントデリゲーションで親要素に1つだけリスナーを登録（メモリリーク防止）
   container.addEventListener('dragstart', (e) => {
     const card = e.target.closest('.project-card');
-    if (card) handleDragStart.call(card, e);
+    if (card) handleProjectDragStart.call(card, e);
   });
 
   container.addEventListener('dragover', (e) => {
     const card = e.target.closest('.project-card');
-    if (card) handleDragOver.call(card, e);
+    if (card) handleProjectDragOver.call(card, e);
   });
 
   container.addEventListener('drop', (e) => {
     const card = e.target.closest('.project-card');
-    if (card) handleDrop.call(card, e);
+    if (card) handleProjectDrop.call(card, e);
   });
 
   container.addEventListener('dragend', (e) => {
     const card = e.target.closest('.project-card');
-    if (card) handleDragEnd.call(card, e);
+    if (card) handleProjectDragEnd.call(card, e);
   });
 
   // カードにdraggable属性を付与（MutationObserverで監視）
@@ -12128,13 +12128,13 @@ function enableDragAndDrop() {
   observer.observe(container, { childList: true, subtree: true });
 }
 
-function handleDragStart(e) {
+function handleProjectDragStart(e) {
   draggedProject = this;
   this.style.opacity = '0.4';
   e.dataTransfer.effectAllowed = 'move';
 }
 
-function handleDragOver(e) {
+function handleProjectDragOver(e) {
   if (e.preventDefault) {
     e.preventDefault();
   }
@@ -12142,7 +12142,7 @@ function handleDragOver(e) {
   return false;
 }
 
-function handleDrop(e) {
+function handleProjectDrop(e) {
   if (e.stopPropagation) {
     e.stopPropagation();
   }
@@ -12163,7 +12163,7 @@ function handleDrop(e) {
   return false;
 }
 
-function handleDragEnd(e) {
+function handleProjectDragEnd(e) {
   this.style.opacity = '1';
 
   // すべてのドラッグ状態をリセット
@@ -12507,7 +12507,7 @@ async function renderStaffTasksList() {
         const isOverdue = task.due_date && task.due_date < today;
         html += `
           <div class="project-task-item">
-            <input type="checkbox" class="project-task-checkbox" onchange="toggleProjectTask('${task.id}', this.checked)">
+            <input type="checkbox" class="project-task-checkbox" onchange="toggleProjectTask('${task.id}', '${task.project_id}', this.checked)">
             <span class="project-task-name">${escapeHtml(task.task_name)}</span>
             ${task.due_date ? `<span class="project-task-due ${isOverdue ? 'overdue' : ''}">${escapeHtml(task.due_date)}</span>` : ''}
           </div>
@@ -12522,7 +12522,7 @@ async function renderStaffTasksList() {
       const isOverdue = task.due_date && task.due_date < today;
       html += `
         <div class="project-task-item">
-          <input type="checkbox" class="project-task-checkbox" onchange="toggleProjectTask('${task.id}', this.checked)">
+          <input type="checkbox" class="project-task-checkbox" onchange="toggleProjectTask('${task.id}', '${task.project_id}', this.checked)">
           <span class="project-task-name">${escapeHtml(task.task_name)}</span>
           <span style="font-size: 12px; color: var(--text-muted);">${escapeHtml(project?.customer || '')}</span>
           ${task.due_date ? `<span class="project-task-due ${isOverdue ? 'overdue' : ''}">${escapeHtml(task.due_date)}</span>` : ''}
@@ -12532,22 +12532,6 @@ async function renderStaffTasksList() {
   }
 
   container.innerHTML = html;
-}
-
-// タスク完了切り替え
-async function toggleProjectTask(taskId, completed) {
-  const { error } = await supabase
-    .from('project_tasks')
-    .update({ is_completed: completed, updated_at: new Date().toISOString() })
-    .eq('id', taskId);
-
-  if (error) {
-    showToast('タスク更新に失敗しました', 'error');
-    return;
-  }
-
-  renderStaffTasksList();
-  renderProjects();
 }
 
 // 案件タスク一覧読み込み
@@ -12610,7 +12594,10 @@ async function toggleProjectTask(taskId, projectId, isCompleted) {
     return;
   }
 
+  // 案件カード内のタスクリストを更新
   await loadProjectTasksList(projectId);
+  // スタッフ別タスク一覧も更新
+  renderStaffTasksList();
 }
 
 // タスク削除
@@ -12805,20 +12792,20 @@ function closeSidebar() {
   overlay.classList.remove('show');
 }
 
-// ドラッグ&ドロップ関数
-function handleDragOver(event) {
+// ドラッグ&ドロップ関数（議事録アップロード用）
+function handleMinutesDragOver(event) {
   event.preventDefault();
   event.stopPropagation();
   event.currentTarget.classList.add('drag-over');
 }
 
-function handleDragLeave(event) {
+function handleMinutesDragLeave(event) {
   event.preventDefault();
   event.stopPropagation();
   event.currentTarget.classList.remove('drag-over');
 }
 
-function handleDrop(event, projectId) {
+function handleMinutesDrop(event, projectId) {
   event.preventDefault();
   event.stopPropagation();
   event.currentTarget.classList.remove('drag-over');
@@ -14150,7 +14137,8 @@ async function saveCustomization() {
     .eq('id', currentOrganization.id);
 
   if (error) {
-    statusEl.innerHTML = `<span style="color: var(--danger-color);">保存に失敗しました: ${error.message}</span>`;
+    statusEl.innerHTML = `<span style="color: var(--danger-color);">保存に失敗しました</span>`;
+    logError('カスタマイズ保存エラー:', error);
     return;
   }
 
@@ -14400,7 +14388,7 @@ function restoreBackup() {
       showToast('復元が完了しました', 'success');
     } catch (error) {
       logError('Restore error:', error);
-      statusEl.innerHTML = '<span style="color: var(--danger-color);">❌ 復元に失敗しました: ' + error.message + '</span>';
+      statusEl.innerHTML = '<span style="color: var(--danger-color);">❌ 復元に失敗しました</span>';
       showToast('復元に失敗しました', 'error');
     }
   };
