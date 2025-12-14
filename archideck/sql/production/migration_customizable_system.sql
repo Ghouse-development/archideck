@@ -65,7 +65,7 @@ ON CONFLICT (name) DO NOTHING;
 
 -- 設計用タスク（16個）
 INSERT INTO tasks (task_key, task_name, category, display_order, has_state, state_options) VALUES
-  ('meeting0', '0回目打合せ', '設計', 1, false, NULL),
+  ('meeting0', '0回目打合せ', '設計', 1, true, '["-", "実施済"]'),
   ('meeting1', '1回目打合せ', '設計', 2, false, NULL),
   ('meeting2', '2回目打合せ', '設計', 3, false, NULL),
   ('meeting3', '3回目打合せ', '設計', 4, false, NULL),
