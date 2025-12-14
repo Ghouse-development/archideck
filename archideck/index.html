@@ -13,7 +13,7 @@
 <title>ArchiDeck | Gハウス 設計業務管理システム</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🏠</text></svg>">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%232563EB' width='100' height='100' rx='20'/><text x='50' y='68' font-size='50' text-anchor='middle' fill='white'>A</text></svg>">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.87.1/dist/umd/supabase.min.js" integrity="sha256-irgXd6FipXeK55mhaPb0+jDrk1XQ1PbQHZakU5bzRRo=" crossorigin="anonymous"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -2170,6 +2170,33 @@ input:checked + .toggle-slider:before {
   cursor: grabbing;
 }
 
+/* コンテキストメニュー */
+.context-menu {
+  position: fixed;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  min-width: 180px;
+  z-index: 10000;
+  display: none;
+  padding: 8px 0;
+}
+.context-menu.show { display: block; }
+.context-menu-item {
+  padding: 10px 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--text-primary);
+  transition: background 0.15s;
+}
+.context-menu-item:hover { background: var(--bg-secondary); }
+.context-menu-item.danger { color: var(--error-color); }
+.context-menu-divider { height: 1px; background: var(--border-color); margin: 4px 0; }
+
 /* トースト通知 - Premium Design */
 .toast {
   position: fixed;
@@ -2510,56 +2537,6 @@ input:checked + .toggle-slider:before {
   margin: 0 auto;
 }
 
-.kpi-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 20px;
-  margin-bottom: 32px;
-}
-
-.kpi-card {
-  background: var(--bg-primary);
-  border-radius: 16px;
-  padding: 24px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  box-shadow: var(--shadow-md);
-  transition: all var(--transition-fast);
-}
-
-.kpi-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-lg);
-}
-
-.kpi-icon {
-  font-size: 32px;
-  width: 60px;
-  height: 60px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 12px;
-}
-
-.kpi-primary .kpi-icon { background: var(--primary-light); }
-.kpi-success .kpi-icon { background: var(--success-light); }
-.kpi-warning .kpi-icon { background: var(--warning-light); }
-.kpi-info .kpi-icon { background: var(--info-light); }
-
-.kpi-value {
-  font-size: 32px;
-  font-weight: 700;
-  color: var(--text-primary);
-}
-
-.kpi-label {
-  font-size: 14px;
-  color: var(--text-secondary);
-  margin-top: 4px;
-}
-
 .analytics-section {
   background: var(--bg-primary);
   border-radius: 16px;
@@ -2575,110 +2552,6 @@ input:checked + .toggle-slider:before {
   margin-bottom: 20px;
   padding-bottom: 12px;
   border-bottom: 2px solid var(--border-light);
-}
-
-.prediction-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 20px;
-}
-
-.prediction-card {
-  background: linear-gradient(135deg, var(--primary-light), #EFF6FF);
-  border-radius: 12px;
-  padding: 20px;
-  border: 1px solid var(--primary-color);
-}
-
-.prediction-header {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--primary-dark);
-  margin-bottom: 12px;
-}
-
-.prediction-content {
-  font-size: 14px;
-  color: var(--text-primary);
-  line-height: 1.6;
-}
-
-.prediction-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  margin-bottom: 8px;
-  padding: 8px;
-  background: var(--bg-primary);
-  border-radius: 8px;
-}
-
-.prediction-item.risk-high { border-left: 3px solid var(--danger-color); }
-.prediction-item.risk-medium { border-left: 3px solid var(--warning-color); }
-.prediction-item.risk-low { border-left: 3px solid var(--success-color); }
-
-/* ガントチャート */
-.gantt-controls {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 20px;
-}
-
-.gantt-container {
-  overflow-x: auto;
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-}
-
-.gantt-table {
-  width: 100%;
-  min-width: 800px;
-  border-collapse: collapse;
-}
-
-.gantt-table th, .gantt-table td {
-  padding: 12px 8px;
-  text-align: center;
-  border-bottom: 1px solid var(--border-light);
-  font-size: 12px;
-}
-
-.gantt-table th {
-  background: var(--bg-secondary);
-  font-weight: 600;
-  position: sticky;
-  top: 0;
-}
-
-.gantt-table th:first-child, .gantt-table td:first-child {
-  text-align: left;
-  min-width: 150px;
-  position: sticky;
-  left: 0;
-  background: var(--bg-primary);
-  z-index: 1;
-}
-
-.gantt-bar {
-  height: 24px;
-  border-radius: 4px;
-  position: relative;
-}
-
-.gantt-bar-fill {
-  height: 100%;
-  border-radius: 4px;
-  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
-}
-
-.gantt-today {
-  background: rgba(220, 38, 38, 0.1);
-}
-
-/* パフォーマンステーブル */
-.performance-table-container {
-  overflow-x: auto;
 }
 
 /* レポート */
@@ -2823,12 +2696,12 @@ input:checked + .toggle-slider:before {
 
 /* 担当者別レポートスタイル */
 .report-designer-section {
-  background: #FFFFFF;
+  background: var(--bg-primary);
   border-radius: 10px;
   padding: 16px;
   margin-bottom: 12px;
   border: 1px solid var(--border-color);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .report-designer-section:last-child {
@@ -2859,11 +2732,11 @@ input:checked + .toggle-slider:before {
 }
 
 .report-project-detail {
-  background: #F8FAFC;
+  background: var(--bg-secondary);
   border-radius: 8px;
   padding: 12px;
   margin-bottom: 8px;
-  border-left: 3px solid #94A3B8;
+  border-left: 3px solid var(--primary);
 }
 
 .report-project-detail:last-child {
@@ -2905,9 +2778,9 @@ input:checked + .toggle-slider:before {
   font-size: 0.75rem;
   padding: 3px 8px;
   border-radius: 6px;
-  background: #E2E8F0;
-  color: #334155;
-  border: 1px solid #CBD5E1;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
 }
 
 .report-status-tag.active {
@@ -3421,14 +3294,6 @@ input:checked + .toggle-slider:before {
   justify-content: center;
 }
 
-/* 外構担当セクション */
-.sidebar-section-exterior {
-  border-left: 3px solid #8bc34a;
-}
-
-.sidebar-section-exterior .sidebar-section-title {
-  color: #689f38;
-}
 
 /* ============================================
    スケルトンローディング
@@ -3546,6 +3411,60 @@ input:checked + .toggle-slider:before {
   /* 日付入力改善 */
   .task-due-input {
     min-width: 130px;
+  }
+
+  /* 月報モバイル対応 */
+  .report-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .report-header h2 {
+    font-size: 1.25rem;
+  }
+
+  .report-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .report-stat-value {
+    font-size: 1.5rem;
+  }
+
+  .report-designer-section {
+    padding: 12px;
+  }
+
+  .report-designer-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .report-project-title {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .report-project-title .project-name {
+    word-break: break-word;
+  }
+
+  .report-status-list {
+    gap: 4px;
+  }
+
+  .report-status-tag {
+    font-size: 0.65rem;
+    padding: 2px 6px;
+  }
+
+  .report-list-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
   }
 }
 
@@ -3843,7 +3762,6 @@ textarea:focus-visible {
       <!-- タブナビゲーション -->
       <nav class="tabs-nav">
         <button class="tab-nav-btn active" onclick="switchMainTab('projects', this)">📋 案件管理</button>
-        <button class="tab-nav-btn" onclick="switchMainTab('calendar', this)">📅 カレンダー</button>
         <button class="tab-nav-btn" onclick="switchMainTab('analytics', this)">📊 分析</button>
         <button class="tab-nav-btn" onclick="switchMainTab('settings', this)">⚙️ 設定</button>
       </nav>
@@ -3852,7 +3770,8 @@ textarea:focus-visible {
       <div id="projectsTab" class="tab-panel active">
         <div class="toolbar">
           <div class="toolbar-left">
-            <input type="text" class="input" id="searchQuery" placeholder="検索... (Ctrl+K)" oninput="debouncedRenderProjects()" aria-label="案件を検索">
+            <input type="text" class="input" id="searchQuery" placeholder="検索... (Ctrl+K)" oninput="debouncedRenderProjects()" onfocus="updateSearchSuggestions()" list="searchSuggestions" aria-label="案件を検索" autocomplete="off">
+            <datalist id="searchSuggestions"></datalist>
             <select class="select" id="specFilter" onchange="renderProjects()">
               <option value="">すべての商品</option>
               <option>LIFE</option>
@@ -3900,83 +3819,6 @@ textarea:focus-visible {
       <!-- 分析タブ -->
       <div id="analyticsTab" class="tab-panel">
         <div class="analytics-container">
-          <!-- KPIカード -->
-          <div class="kpi-grid">
-            <div class="kpi-card kpi-primary">
-              <div class="kpi-icon">📊</div>
-              <div class="kpi-content">
-                <div class="kpi-value" id="kpiTotalProjects">0</div>
-                <div class="kpi-label">総案件数</div>
-              </div>
-            </div>
-            <div class="kpi-card kpi-success">
-              <div class="kpi-icon">✅</div>
-              <div class="kpi-content">
-                <div class="kpi-value" id="kpiCompletedProjects">0</div>
-                <div class="kpi-label">完了済み</div>
-              </div>
-            </div>
-            <div class="kpi-card kpi-warning">
-              <div class="kpi-icon">⚠️</div>
-              <div class="kpi-content">
-                <div class="kpi-value" id="kpiAtRiskProjects">0</div>
-                <div class="kpi-label">要注意案件</div>
-              </div>
-            </div>
-            <div class="kpi-card kpi-info">
-              <div class="kpi-icon">📈</div>
-              <div class="kpi-content">
-                <div class="kpi-value" id="kpiAvgProgress">0%</div>
-                <div class="kpi-label">平均進捗率</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 予測分析セクション -->
-          <div class="analytics-section">
-            <h3 class="section-title">🔮 AI予測分析</h3>
-            <div class="prediction-grid" id="predictionGrid">
-              <div class="prediction-card">
-                <div class="prediction-header">遅延リスク予測</div>
-                <div class="prediction-content" id="delayRiskContent">分析中...</div>
-              </div>
-              <div class="prediction-card">
-                <div class="prediction-header">今週の推奨アクション</div>
-                <div class="prediction-content" id="recommendedActions">分析中...</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- ガントチャート -->
-          <div class="analytics-section">
-            <h3 class="section-title">📅 ガントチャート（案件スケジュール）</h3>
-            <div class="gantt-controls">
-              <button class="btn btn-small btn-ghost" onclick="ganttPrevMonth()">◀ 前月</button>
-              <span id="ganttMonthLabel" style="font-weight: 600; padding: 0 16px;"></span>
-              <button class="btn btn-small btn-ghost" onclick="ganttNextMonth()">次月 ▶</button>
-            </div>
-            <div class="gantt-container" id="ganttChart"></div>
-          </div>
-
-          <!-- 担当者別統計 -->
-          <div class="analytics-section">
-            <h3 class="section-title">👥 担当者別パフォーマンス</h3>
-            <div class="performance-table-container">
-              <table class="data-table" id="performanceTable">
-                <thead>
-                  <tr>
-                    <th>担当者</th>
-                    <th>担当案件数</th>
-                    <th>完了案件数</th>
-                    <th>平均進捗</th>
-                    <th>完了率</th>
-                  </tr>
-                </thead>
-                <tbody id="performanceTableBody"></tbody>
-              </table>
-            </div>
-          </div>
-
           <!-- 自動レポート生成 -->
           <div class="analytics-section">
             <h3 class="section-title">📝 自動レポート生成</h3>
@@ -3987,18 +3829,6 @@ textarea:focus-visible {
             </div>
             <div id="reportPreview" class="report-preview" style="display: none;"></div>
           </div>
-        </div>
-      </div>
-
-      <!-- カレンダータブ -->
-      <div id="calendarTab" class="tab-panel">
-        <div style="max-width: 900px; margin: 0 auto; padding: 20px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h2 style="font-size: 24px; font-weight: 700;">📅 カレンダービュー</h2>
-            <button class="btn btn-ghost" onclick="TemplateManager.showManageModal()">📋 テンプレート管理</button>
-          </div>
-          <p style="color: var(--text-secondary); margin-bottom: 24px;">期限が設定された案件をカレンダー形式で表示します。案件カードの「📅 期限設定」から期限を設定してください。</p>
-          <div id="calendarContainer"></div>
         </div>
       </div>
 
@@ -4809,6 +4639,14 @@ textarea:focus-visible {
 
 <!-- トースト通知 -->
 <div id="toast" class="toast"></div>
+<div id="contextMenu" class="context-menu">
+  <div class="context-menu-item" onclick="ContextMenu.edit()">✏️ 編集</div>
+  <div class="context-menu-item" onclick="ContextMenu.toggleFavorite()">⭐ お気に入り</div>
+  <div class="context-menu-item" onclick="ContextMenu.toggleSelect()">☑️ 選択</div>
+  <div class="context-menu-divider"></div>
+  <div class="context-menu-item" onclick="ContextMenu.archive()">📦 完了済みに移動</div>
+  <div class="context-menu-item danger" onclick="ContextMenu.delete()">🗑️ 削除</div>
+</div>
 
 <script>
 // ============================================
@@ -4973,21 +4811,6 @@ const ModalManager = {
   }
 };
 
-// メモ化関数 - 結果をキャッシュ
-function memoize(fn, ttl = 60000) {
-  const cache = new Map();
-  return function(...args) {
-    const key = JSON.stringify(args);
-    const cached = cache.get(key);
-    if (cached && Date.now() - cached.time < ttl) {
-      return cached.value;
-    }
-    const result = fn.apply(this, args);
-    cache.set(key, { value: result, time: Date.now() });
-    return result;
-  };
-}
-
 // リクエストアイドルコールバック（ポリフィル付き）
 const requestIdleCallback = window.requestIdleCallback || function(cb) {
   const start = Date.now();
@@ -5002,7 +4825,108 @@ const requestIdleCallback = window.requestIdleCallback || function(cb) {
 // デバウンス済み検索関数
 const debouncedRenderProjects = debounce(() => {
   renderProjects();
+  // 検索履歴を保存
+  const query = document.getElementById('searchQuery')?.value.trim();
+  if (query && query.length >= 2) {
+    saveSearchHistory(query);
+  }
 }, 250);
+
+// コンテキストメニュー機能
+const ContextMenu = {
+  currentProjectId: null,
+  menu: null,
+
+  init() {
+    this.menu = document.getElementById('contextMenu');
+    // 案件カードの右クリックイベントをデリゲート
+    document.addEventListener('contextmenu', (e) => {
+      const card = e.target.closest('[data-project-id]');
+      if (card && document.getElementById('projectsTab').contains(card)) {
+        e.preventDefault();
+        this.show(e.clientX, e.clientY, card.dataset.projectId);
+      }
+    });
+    // クリックでメニューを閉じる
+    document.addEventListener('click', () => this.hide());
+  },
+
+  show(x, y, projectId) {
+    this.currentProjectId = projectId;
+    const project = projects.find(p => p.id === projectId);
+    if (!project) return;
+
+    // メニュー項目を動的に更新
+    const archiveItem = this.menu.querySelector('.context-menu-item:nth-child(5)');
+    if (archiveItem) {
+      archiveItem.innerHTML = project.is_archived ? '📂 復元' : '📦 完了済みに移動';
+    }
+
+    // 画面外にはみ出さないように位置調整
+    this.menu.style.left = Math.min(x, window.innerWidth - 200) + 'px';
+    this.menu.style.top = Math.min(y, window.innerHeight - 250) + 'px';
+    this.menu.classList.add('show');
+  },
+
+  hide() {
+    if (this.menu) this.menu.classList.remove('show');
+    this.currentProjectId = null;
+  },
+
+  edit() {
+    if (this.currentProjectId) openProjectModal(this.currentProjectId);
+    this.hide();
+  },
+
+  toggleFavorite() {
+    if (this.currentProjectId) FavoritesManager.toggle(this.currentProjectId);
+    this.hide();
+  },
+
+  toggleSelect() {
+    if (this.currentProjectId) BatchOperations.toggle(this.currentProjectId);
+    this.hide();
+  },
+
+  archive() {
+    if (this.currentProjectId) toggleArchive(this.currentProjectId);
+    this.hide();
+  },
+
+  delete() {
+    if (this.currentProjectId) deleteProject(this.currentProjectId);
+    this.hide();
+  }
+};
+
+// 検索オートコンプリート機能
+function getSearchHistory() {
+  return safeJsonParse(localStorage.getItem('archideck_search_history'), []);
+}
+
+function saveSearchHistory(query) {
+  let history = getSearchHistory();
+  // 重複を削除して先頭に追加
+  history = history.filter(h => h.toLowerCase() !== query.toLowerCase());
+  history.unshift(query);
+  // 最大20件まで保持
+  history = history.slice(0, 20);
+  localStorage.setItem('archideck_search_history', JSON.stringify(history));
+}
+
+function updateSearchSuggestions() {
+  const datalist = document.getElementById('searchSuggestions');
+  if (!datalist) return;
+
+  const history = getSearchHistory();
+  // 顧客名一覧を取得（重複なし）
+  const customers = [...new Set(projects.map(p => p.customer).filter(Boolean))];
+
+  // 履歴と顧客名を統合（履歴優先）
+  const suggestions = [...new Set([...history, ...customers])].slice(0, 15);
+
+  datalist.innerHTML = suggestions.map(s => `<option value="${escapeHtml(s)}">`).join('');
+}
 
 // ============================================
 // Undo/Redo 管理
@@ -5951,6 +5875,20 @@ function handleKeyboardShortcut(e) {
         e.preventDefault();
         UndoManager.redo();
         break;
+      case 'e':
+        // Ctrl+E = CSV出力
+        if (!isLoginScreen()) {
+          e.preventDefault();
+          exportToCSV();
+        }
+        break;
+      case 'a':
+        // Ctrl+A = 全選択（テキスト入力中でない場合）
+        if (!isLoginScreen() && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+          e.preventDefault();
+          BatchOperations.selectAll();
+        }
+        break;
     }
   }
 
@@ -5994,6 +5932,12 @@ function showShortcutHelp() {
           <span>Ctrl/Cmd + K</span><span>検索にフォーカス</span>
         </div>
         <div style="display: flex; justify-content: space-between; padding: 8px; background: var(--bg-tertiary); border-radius: 6px;">
+          <span>Ctrl/Cmd + E</span><span>CSV出力</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 8px; background: var(--bg-tertiary); border-radius: 6px;">
+          <span>Ctrl/Cmd + A</span><span>全案件選択</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 8px; background: var(--bg-tertiary); border-radius: 6px;">
           <span>Escape</span><span>モーダルを閉じる</span>
         </div>
         <div style="display: flex; justify-content: space-between; padding: 8px; background: var(--bg-tertiary); border-radius: 6px;">
@@ -6030,6 +5974,9 @@ async function init() {
 
   // キーボードショートカット初期化
   initKeyboardShortcuts();
+
+  // コンテキストメニュー初期化
+  ContextMenu.init();
 
   // セッションタイムアウト初期化
   SessionManager.init();
@@ -6081,8 +6028,7 @@ async function init() {
     renderSidebar();
     renderProjects();
     renderTemplates();
-    renderVendors();
-    renderMappings();
+    renderVendorsV2();
 
     // 新システムのUI初期化
     populateVendorCategoryDropdown();
@@ -7872,8 +7818,8 @@ function renderSidebar() {
   const container = document.getElementById('sidebarContent');
   if (!container) return;
 
-  const sekkeiDesigners = designers.filter(d => d.category === '設計').sort((a, b) => (a.display_order || 999) - (b.display_order || 999));
-  const icDesigners = designers.filter(d => d.category === 'IC').sort((a, b) => (a.display_order || 999) - (b.display_order || 999));
+  const sekkeiDesigners = getSekkeiDesigners();
+  const icDesigners = getIcDesigners();
   const allCount = projects.filter(p => p.status !== 'completed').length;
 
   // 完了済の件数
@@ -7976,16 +7922,6 @@ function switchMainTab(tabName, element) {
 
   document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
   document.getElementById(tabName + 'Tab').classList.add('active');
-
-  // 分析タブの場合はデータを更新
-  if (tabName === 'analytics') {
-    updateAnalyticsDashboard();
-  }
-
-  // カレンダータブの場合は描画
-  if (tabName === 'calendar') {
-    CalendarView.render();
-  }
 
   // URLを更新（handleHashChange処理中でない場合のみ）
   if (!isHandlingHashChange && window.location.hash !== '#' + tabName) {
@@ -8091,11 +8027,21 @@ function populateVendorCategoryDropdown() {
     vendorCategories.map(cat => `<option value="${escapeHtml(cat.id)}">${escapeHtml(cat.name)}</option>`).join('');
 }
 
+let statusClearTimeout = null;
 function showStatus(message, type) {
   const indicator = document.getElementById('statusIndicator');
   const text = document.getElementById('statusText');
   indicator.className = 'status-indicator status-' + type;
   text.textContent = message;
+
+  // 保存完了後は3秒で通常状態に戻す
+  if (statusClearTimeout) clearTimeout(statusClearTimeout);
+  if (type === 'saved' || type === 'success') {
+    statusClearTimeout = setTimeout(() => {
+      indicator.className = 'status-indicator';
+      text.textContent = '';
+    }, 3000);
+  }
 }
 
 function showToast(message, type = 'success') {
@@ -8571,6 +8517,7 @@ function calculateProgress(project) {
 function formatDateTime(dateStr) {
   if (!dateStr) return '—';
   const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return '—';
   return `${d.getMonth() + 1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`;
 }
 
@@ -8777,6 +8724,10 @@ function openProjectModal(projectId = null) {
   let project = null;
   if (projectId) {
     project = projects.find(p => p.id === projectId);
+    if (!project) {
+      showToast('案件が見つかりません', 'error');
+      return;
+    }
     title.textContent = '案件編集';
     document.getElementById('projectCustomer').value = project.customer;
     document.getElementById('projectSpecifications').value = project.specifications || 'LIFE';
@@ -8804,11 +8755,17 @@ function openProjectModal(projectId = null) {
     if (projectId && project) {
       // 編集時: 既存の担当者を選択
       assignedToSelect.value = project.assigned_to;
-    } else if (currentDesignerTab !== 'ALL') {
+    } else if (currentDesignerTab !== 'ALL' && currentDesignerTab !== 'ARCHIVED') {
       // 新規案件の場合、現在選択中のタブの担当者を自動選択
       const currentDesigner = sekkeiDesigners.find(d => d.name === currentDesignerTab);
       if (currentDesigner) {
         assignedToSelect.value = currentDesigner.name;
+      }
+    } else {
+      // 「全案件」タブの場合、最後に使用した担当者を自動選択
+      const lastAssignee = localStorage.getItem('archideck_last_assignee');
+      if (lastAssignee && sekkeiDesigners.find(d => d.name === lastAssignee)) {
+        assignedToSelect.value = lastAssignee;
       }
     }
   }
@@ -9881,7 +9838,6 @@ async function saveTemplate() {
 
     closeTemplateModal();
     renderTemplates();
-    renderMappings();
     showStatus('保存済み', 'saved');
     showToast('テンプレートを保存しました', 'success');
   });
@@ -9908,256 +9864,8 @@ async function deleteTemplate(templateId) {
 
   emailTemplates = emailTemplates.filter(t => t.id !== templateId);
   renderTemplates();
-  renderMappings();
   showStatus('保存済み', 'saved');
   showToast('テンプレートを削除しました', 'success');
-}
-
-// ============================================
-// 業者管理
-// ============================================
-function renderVendors() {
-  const container = document.getElementById('vendorsTable');
-  if (!container) return; // 要素が存在しない場合は何もしない
-
-  const filterSelect = document.getElementById('vendorTemplateFilter');
-  if (!filterSelect) return; // 要素が存在しない場合は何もしない
-
-  const templateFilter = filterSelect.value;
-
-  // フィルターオプションを更新（すべてのテンプレートを表示）
-  filterSelect.innerHTML = '<option value="">すべてのテンプレート</option>' +
-    emailTemplates.map(t =>
-      `<option value="${escapeHtml(t.template_id)}">${escapeHtml(t.display_name)}</option>`
-    ).join('');
-  if (templateFilter) filterSelect.value = templateFilter;
-
-  let filtered = vendors;
-  if (templateFilter) {
-    filtered = vendors.filter(v => v.template_id === templateFilter);
-  }
-
-  if (filtered.length === 0) {
-    container.innerHTML = '<div class="empty-state"><div class="empty-icon">👥</div><div class="empty-title">業者情報がありません</div><div class="empty-description">業者情報を登録すると、メールテンプレートで使用できます</div><button class="btn btn-primary" onclick="openVendorModal()">+ 業者追加</button></div>';
-    return;
-  }
-
-  container.innerHTML = `
-    <table class="table">
-      <thead>
-        <tr>
-          <th>会社名</th>
-          <th>担当者</th>
-          <th>電話番号</th>
-          <th>メールアドレス</th>
-          <th>テンプレート</th>
-          <th>操作</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${filtered.map(vendor => {
-          const template = emailTemplates.find(t => t.template_id === vendor.template_id);
-          return `
-            <tr>
-              <td><strong>${escapeHtml(vendor.company)}</strong></td>
-              <td>${escapeHtml(vendor.contact || '')}</td>
-              <td>${escapeHtml(vendor.tel || '—')}</td>
-              <td>${escapeHtml(vendor.email || '')}</td>
-              <td>${escapeHtml(template ? template.display_name : '—')}</td>
-              <td>
-                <div style="display: flex; gap: 8px;">
-                  <button class="btn btn-ghost btn-small" onclick="editVendor('${vendor.id}')">編集</button>
-                  <button class="btn btn-danger btn-small" onclick="deleteVendor('${vendor.id}')">削除</button>
-                </div>
-              </td>
-            </tr>
-          `;
-        }).join('')}
-      </tbody>
-    </table>
-  `;
-}
-
-function openVendorModal(vendorId = null) {
-  editingVendorId = vendorId;
-  const modal = document.getElementById('vendorModal');
-  const title = document.getElementById('vendorModalTitle');
-
-  // テンプレートセレクトを更新
-  const templateSelect = document.getElementById('vendorTemplateId');
-  templateSelect.innerHTML = '<option value="">選択してください</option>' +
-    emailTemplates.map(t => `<option value="${escapeHtml(t.template_id)}">${escapeHtml(t.display_name)}</option>`).join('');
-
-  if (vendorId) {
-    const vendor = vendors.find(v => v.id === vendorId);
-    title.textContent = '業者編集';
-    document.getElementById('vendorTemplateId').value = vendor.template_id;
-    document.getElementById('vendorId').value = vendor.vendor_id;
-    document.getElementById('vendorId').disabled = true;
-    document.getElementById('vendorCompany').value = vendor.company;
-    document.getElementById('vendorContact').value = vendor.contact;
-    document.getElementById('vendorTel').value = vendor.tel || '';
-    document.getElementById('vendorEmail').value = vendor.email;
-  } else {
-    title.textContent = '業者追加';
-    document.getElementById('vendorTemplateId').value = '';
-    document.getElementById('vendorId').value = '';
-    document.getElementById('vendorId').disabled = false;
-    document.getElementById('vendorCompany').value = '';
-    document.getElementById('vendorContact').value = '';
-    document.getElementById('vendorTel').value = '';
-    document.getElementById('vendorEmail').value = '';
-  }
-
-  ModalManager.open(modal, '#vendorTemplateId');
-}
-
-function closeVendorModal() {
-  ModalManager.close(document.getElementById('vendorModal'));
-  editingVendorId = null;
-}
-
-async function saveVendor() {
-  const templateId = document.getElementById('vendorTemplateId').value;
-  const vendorId = document.getElementById('vendorId').value.trim();
-  const company = document.getElementById('vendorCompany').value.trim();
-  const contact = document.getElementById('vendorContact').value.trim();
-  const tel = document.getElementById('vendorTel').value.trim();
-  const email = document.getElementById('vendorEmail').value.trim();
-
-  if (!templateId || !vendorId || !company || !contact || !email) {
-    showToast('必須項目を入力してください', 'error');
-    return;
-  }
-
-  showStatus('保存中...', 'saving');
-
-  const vendorData = {
-    template_id: templateId,
-    vendor_id: vendorId,
-    company,
-    contact,
-    tel,
-    email,
-    created_by: currentUser.id
-  };
-
-  if (editingVendorId) {
-    const { error } = await supabase
-      .from('template_vendors')
-      .update(vendorData)
-      .eq('id', editingVendorId);
-
-    if (error) {
-      showStatus('エラー', 'error');
-      showToast('保存に失敗しました: ' + error.message, 'error');
-      return;
-    }
-
-    const vendor = vendors.find(v => v.id === editingVendorId);
-    Object.assign(vendor, vendorData);
-  } else {
-    const { data, error } = await supabase
-      .from('template_vendors')
-      .insert([vendorData])
-      .select();
-
-    if (error) {
-      showStatus('エラー', 'error');
-      showToast('保存に失敗しました: ' + error.message, 'error');
-      return;
-    }
-
-    vendors.push(data[0]);
-  }
-
-  closeVendorModal();
-  renderVendors();
-  showStatus('保存済み', 'saved');
-  showToast('業者情報を保存しました', 'success');
-}
-
-function editVendor(vendorId) {
-  openVendorModal(vendorId);
-}
-
-async function deleteVendor(vendorId) {
-  if (!confirm('この業者情報を削除しますか？')) return;
-
-  showStatus('削除中...', 'saving');
-  const { error } = await supabase
-    .from('template_vendors')
-    .delete()
-    .eq('id', vendorId);
-
-  if (error) {
-    showStatus('エラー', 'error');
-    showToast('削除に失敗しました: ' + error.message, 'error');
-    return;
-  }
-
-  vendors = vendors.filter(v => v.id !== vendorId);
-  renderVendors();
-  showStatus('保存済み', 'saved');
-  showToast('業者情報を削除しました', 'success');
-}
-
-// ============================================
-// タスク-テンプレート紐づけ
-// ============================================
-function renderMappings() {
-  const container = document.getElementById('mappingsGrid');
-  if (!container) return;
-
-  // 旧システムは使用しないため、空のメッセージを表示
-  container.innerHTML = '<div class="empty-state"><div class="empty-icon">⚙️</div><div class="empty-title">タスク-テンプレート紐づけは旧システムです</div><div class="empty-description">新システムでは「✅ タスク管理」から業者を紐づけてください</div></div>';
-}
-
-async function saveMappings() {
-  showStatus('保存中...', 'saving');
-
-  const newMappings = {};
-  Object.keys(TASK_NAMES).forEach(taskKey => {
-    const select = document.getElementById('mapping_' + taskKey);
-    if (select && select.value) {
-      newMappings[taskKey] = select.value;
-    }
-  });
-
-  // 既存のマッピングを削除
-  const { error: deleteError } = await supabase
-    .from('task_template_mappings')
-    .delete()
-    .neq('id', '00000000-0000-0000-0000-000000000000');
-
-  if (deleteError) {
-    showStatus('エラー', 'error');
-    showToast('保存に失敗しました: ' + deleteError.message, 'error');
-    return;
-  }
-
-  // 新しいマッピングを挿入
-  const mappingsToInsert = Object.keys(newMappings).map(taskKey => ({
-    task_key: taskKey,
-    template_id: newMappings[taskKey]
-  }));
-
-  if (mappingsToInsert.length > 0) {
-    const { error: insertError } = await supabase
-      .from('task_template_mappings')
-      .insert(mappingsToInsert);
-
-    if (insertError) {
-      showStatus('エラー', 'error');
-      showToast('保存に失敗しました: ' + insertError.message, 'error');
-      return;
-    }
-  }
-
-  taskMappings = newMappings;
-  renderProjects();
-  showStatus('保存済み', 'saved');
-  showToast('タスク設定を保存しました', 'success');
 }
 
 // ============================================
@@ -11905,123 +11613,6 @@ const DeadlineManager = {
 };
 
 // ============================================
-// カレンダービュー
-// ============================================
-const CalendarView = {
-  currentMonth: new Date(),
-
-  render() {
-    const container = document.getElementById('calendarContainer');
-    if (!container) return;
-
-    const year = this.currentMonth.getFullYear();
-    const month = this.currentMonth.getMonth();
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    const startDayOfWeek = firstDay.getDay();
-
-    // 案件を期限でグループ化
-    const projectsByDate = {};
-    projects.forEach(project => {
-      if (project.is_archived) return;
-      const deadline = DeadlineManager.getDeadline(project.id);
-      if (deadline) {
-        if (!projectsByDate[deadline]) projectsByDate[deadline] = [];
-        projectsByDate[deadline].push(project);
-      }
-    });
-
-    const monthNames = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
-    const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
-
-    let html = `
-      <div class="calendar-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-        <button class="btn btn-ghost" onclick="CalendarView.prevMonth()">◀</button>
-        <h3 style="font-size: 18px; font-weight: 600;">${year}年 ${monthNames[month]}</h3>
-        <button class="btn btn-ghost" onclick="CalendarView.nextMonth()">▶</button>
-      </div>
-      <div class="calendar-grid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: var(--border-color); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;">
-        ${dayNames.map((day, i) => `<div style="padding: 8px; text-align: center; font-weight: 600; font-size: 12px; background: var(--bg-secondary); color: ${i === 0 ? '#EF4444' : i === 6 ? '#3B82F6' : 'var(--text-primary)'};">${day}</div>`).join('')}
-    `;
-
-    // 空白セル
-    for (let i = 0; i < startDayOfWeek; i++) {
-      html += '<div style="padding: 8px; background: var(--bg-primary); min-height: 80px;"></div>';
-    }
-
-    // 日付セル
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    for (let day = 1; day <= lastDay.getDate(); day++) {
-      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-      const dateProjects = projectsByDate[dateStr] || [];
-      const isToday = new Date(year, month, day).getTime() === today.getTime();
-      const dayOfWeek = new Date(year, month, day).getDay();
-
-      html += `
-        <div style="padding: 6px; background: ${isToday ? 'var(--primary-light)' : 'white'}; min-height: 80px; cursor: pointer;" onclick="CalendarView.showDateProjects('${dateStr}')">
-          <div style="font-size: 14px; font-weight: ${isToday ? '600' : '400'}; color: ${dayOfWeek === 0 ? '#EF4444' : dayOfWeek === 6 ? '#3B82F6' : 'var(--text-primary)'}; margin-bottom: 4px;">${day}</div>
-          ${dateProjects.slice(0, 3).map(p => `<div style="font-size: 11px; padding: 2px 4px; background: var(--primary-color); color: white; border-radius: 4px; margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(p.customer)}</div>`).join('')}
-          ${dateProjects.length > 3 ? `<div style="font-size: 10px; color: var(--text-secondary);">+${dateProjects.length - 3}件</div>` : ''}
-        </div>
-      `;
-    }
-
-    html += '</div>';
-    container.innerHTML = html;
-  },
-
-  prevMonth() {
-    this.currentMonth.setMonth(this.currentMonth.getMonth() - 1);
-    this.render();
-  },
-
-  nextMonth() {
-    this.currentMonth.setMonth(this.currentMonth.getMonth() + 1);
-    this.render();
-  },
-
-  showDateProjects(dateStr) {
-    const dateProjects = projects.filter(p => {
-      const deadline = DeadlineManager.getDeadline(p.id);
-      return deadline === dateStr && !p.is_archived;
-    });
-
-    if (dateProjects.length === 0) {
-      showToast('この日に期限の案件はありません', 'info');
-      return;
-    }
-
-    const date = new Date(dateStr);
-    const modal = document.createElement('div');
-    modal.id = 'dateProjectsModal';
-    modal.style.cssText = 'position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 9999;';
-    modal.innerHTML = `
-      <div style="background: var(--bg-primary); border-radius: 12px; width: 90%; max-width: 400px; max-height: 80vh; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
-        <div style="padding: 20px; border-bottom: 1px solid var(--border-color);">
-          <h3 style="font-size: 18px; font-weight: 600;">${date.getMonth() + 1}/${date.getDate()} の案件</h3>
-        </div>
-        <div style="padding: 12px; max-height: 400px; overflow-y: auto;">
-          ${dateProjects.map(p => `
-            <div style="padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 8px; cursor: pointer;"
-                 onclick="document.getElementById('dateProjectsModal').remove(); editProject('${p.id}')">
-              <div style="font-weight: 500;">${escapeHtml(p.customer)}</div>
-              <div style="font-size: 13px; color: var(--text-secondary);">担当: ${escapeHtml(p.assigned_to || '未割当')}</div>
-            </div>
-          `).join('')}
-        </div>
-        <div style="padding: 16px 20px; border-top: 1px solid var(--border-color);">
-          <button class="btn btn-ghost" style="width: 100%;" onclick="document.getElementById('dateProjectsModal').remove()">閉じる</button>
-        </div>
-      </div>
-    `;
-    modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
-    document.body.appendChild(modal);
-  }
-};
-
-// ============================================
 // プロジェクトテンプレート
 // ============================================
 const TemplateManager = {
@@ -12527,9 +12118,18 @@ let projectMinutes = [];
 let kintoneSettings = null;
 let currentTaskSort = 'due';
 
-// 外構担当の処理を追加
+// デザイナーカテゴリ別取得ヘルパー関数
+function getDesignersByCategory(category) {
+  return designers.filter(d => d.category === category).sort((a, b) => (a.display_order || 999) - (b.display_order || 999));
+}
+function getSekkeiDesigners() {
+  return getDesignersByCategory('設計');
+}
+function getIcDesigners() {
+  return getDesignersByCategory('IC');
+}
 function getExteriorDesigners() {
-  return designers.filter(d => d.category === '外構').sort((a, b) => (a.display_order || 999) - (b.display_order || 999));
+  return getDesignersByCategory('外構');
 }
 
 // サイドバーに外構担当セクションを追加（renderSidebar関数の拡張）
@@ -12538,9 +12138,9 @@ renderSidebar = function() {
   const container = document.getElementById('sidebarContent');
   if (!container) return;
 
-  const sekkeiDesigners = designers.filter(d => d.category === '設計').sort((a, b) => (a.display_order || 999) - (b.display_order || 999));
-  const icDesigners = designers.filter(d => d.category === 'IC').sort((a, b) => (a.display_order || 999) - (b.display_order || 999));
-  const exteriorDesigners = designers.filter(d => d.category === '外構').sort((a, b) => (a.display_order || 999) - (b.display_order || 999));
+  const sekkeiDesigners = getSekkeiDesigners();
+  const icDesigners = getIcDesigners();
+  const exteriorDesigners = getExteriorDesigners();
   const allCount = projects.filter(p => p.status !== 'completed' && !p.is_archived).length;
   const archivedCount = projects.filter(p => p.is_archived).length;
 
@@ -12631,7 +12231,7 @@ renderSidebar = function() {
 
   // 外構担当セクション（色分け付き）
   if (exteriorDesigners.length > 0) {
-    html += '<div class="sidebar-section sidebar-section-exterior"><div class="sidebar-section-title">🌳 外構担当</div>';
+    html += '<div class="sidebar-section"><div class="sidebar-section-title">🌳 外構担当</div>';
     exteriorDesigners.forEach(designer => {
       const count = projects.filter(p => {
         const exteriorAssigned = (p.exterior_assignee || '').trim();
@@ -13550,165 +13150,6 @@ const ErrorHandler = {
 // ============================================
 // 分析ダッシュボード機能
 // ============================================
-let ganttCurrentMonth = new Date();
-
-function updateAnalyticsDashboard() {
-  updateKPIs();
-  updatePredictions();
-  updateGanttChart();
-  updatePerformanceTable();
-}
-
-function updateKPIs() {
-  const total = projects.length;
-  const completed = projects.filter(p => p.is_archived).length;
-  const atRisk = projects.filter(p => {
-    if (p.is_archived) return false;
-    const progress = calculateProgress(p);
-    if (progress >= 80 && !p.progress?.application?.completed) return true;
-    if (!p.assigned_to) return true;
-    return false;
-  }).length;
-
-  const avgProgress = total > 0
-    ? Math.round(projects.filter(p => !p.is_archived).reduce((sum, p) => sum + calculateProgress(p), 0) / Math.max(1, total - completed))
-    : 0;
-
-  document.getElementById('kpiTotalProjects').textContent = total;
-  document.getElementById('kpiCompletedProjects').textContent = completed;
-  document.getElementById('kpiAtRiskProjects').textContent = atRisk;
-  document.getElementById('kpiAvgProgress').textContent = avgProgress + '%';
-}
-
-function updatePredictions() {
-  const activeProjects = projects.filter(p => !p.is_archived);
-  const delayRisks = [];
-  const recommendations = [];
-
-  activeProjects.forEach(p => {
-    const progress = calculateProgress(p);
-    const progressData = p.progress || {};
-
-    // 遅延リスク判定
-    if (progress < 30 && p.construction_start_date) {
-      const daysUntil = Math.ceil((new Date(p.construction_start_date) - new Date()) / (1000*60*60*24));
-      if (daysUntil < 60) {
-        delayRisks.push({ project: p, risk: 'high', message: `着工${daysUntil}日前で進捗${progress}%` });
-      }
-    }
-
-    if (progress >= 50 && !progressData['layout_confirmed']?.completed) {
-      delayRisks.push({ project: p, risk: 'medium', message: '間取確定が未完了' });
-    }
-
-    // 推奨アクション
-    if (!p.assigned_to) {
-      recommendations.push(`${p.customer}: 担当者を割り当ててください`);
-    }
-    if (progress >= 70 && !progressData['application']?.completed) {
-      recommendations.push(`${p.customer}: 申請GO準備を進めてください`);
-    }
-  });
-
-  const delayContent = document.getElementById('delayRiskContent');
-  if (delayRisks.length === 0) {
-    delayContent.innerHTML = '<div style="color: var(--success-color);">✅ 遅延リスクのある案件はありません</div>';
-  } else {
-    delayContent.innerHTML = delayRisks.slice(0, 5).map(r => `
-      <div class="prediction-item risk-${r.risk}">
-        <strong>${r.project.customer}</strong>: ${r.message}
-      </div>
-    `).join('');
-  }
-
-  const recContent = document.getElementById('recommendedActions');
-  if (recommendations.length === 0) {
-    recContent.innerHTML = '<div style="color: var(--success-color);">✅ 特に推奨アクションはありません</div>';
-  } else {
-    recContent.innerHTML = recommendations.slice(0, 5).map(r => `
-      <div class="prediction-item risk-low">📌 ${r}</div>
-    `).join('');
-  }
-}
-
-function updateGanttChart() {
-  const container = document.getElementById('ganttChart');
-  const label = document.getElementById('ganttMonthLabel');
-
-  const year = ganttCurrentMonth.getFullYear();
-  const month = ganttCurrentMonth.getMonth();
-  label.textContent = `${year}年${month + 1}月`;
-
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const today = new Date();
-
-  const activeProjects = projects.filter(p => !p.is_archived).slice(0, 15);
-
-  let html = '<table class="gantt-table"><thead><tr><th>案件名</th>';
-  for (let d = 1; d <= daysInMonth; d++) {
-    const isToday = year === today.getFullYear() && month === today.getMonth() && d === today.getDate();
-    html += `<th class="${isToday ? 'gantt-today' : ''}">${d}</th>`;
-  }
-  html += '</tr></thead><tbody>';
-
-  activeProjects.forEach(p => {
-    html += `<tr><td>${escapeHtml(p.customer)}</td>`;
-    const progress = calculateProgress(p);
-    const progressDays = Math.ceil(daysInMonth * progress / 100);
-
-    for (let d = 1; d <= daysInMonth; d++) {
-      const isToday = year === today.getFullYear() && month === today.getMonth() && d === today.getDate();
-      if (d <= progressDays) {
-        html += `<td class="${isToday ? 'gantt-today' : ''}"><div style="background: var(--primary-color); height: 20px; border-radius: 3px;"></div></td>`;
-      } else {
-        html += `<td class="${isToday ? 'gantt-today' : ''}"><div style="background: var(--bg-tertiary); height: 20px; border-radius: 3px;"></div></td>`;
-      }
-    }
-    html += '</tr>';
-  });
-
-  html += '</tbody></table>';
-  container.innerHTML = html;
-}
-
-function ganttPrevMonth() {
-  ganttCurrentMonth.setMonth(ganttCurrentMonth.getMonth() - 1);
-  updateGanttChart();
-}
-
-function ganttNextMonth() {
-  ganttCurrentMonth.setMonth(ganttCurrentMonth.getMonth() + 1);
-  updateGanttChart();
-}
-
-function updatePerformanceTable() {
-  const tbody = document.getElementById('performanceTableBody');
-  const designerStats = {};
-
-  designers.filter(d => d.category === '設計').forEach(d => {
-    designerStats[d.name] = { total: 0, completed: 0, progressSum: 0 };
-  });
-
-  projects.forEach(p => {
-    if (p.assigned_to && designerStats[p.assigned_to]) {
-      designerStats[p.assigned_to].total++;
-      if (p.is_archived) designerStats[p.assigned_to].completed++;
-      designerStats[p.assigned_to].progressSum += calculateProgress(p);
-    }
-  });
-
-  tbody.innerHTML = Object.entries(designerStats).map(([name, stats]) => {
-    const avgProgress = stats.total > 0 ? Math.round(stats.progressSum / stats.total) : 0;
-    const completionRate = stats.total > 0 ? Math.round(stats.completed / stats.total * 100) : 0;
-    return `<tr>
-      <td><strong>${name}</strong></td>
-      <td>${stats.total}件</td>
-      <td>${stats.completed}件</td>
-      <td>${avgProgress}%</td>
-      <td><span class="badge ${completionRate >= 50 ? 'badge-success' : 'badge-warning'}">${completionRate}%</span></td>
-    </tr>`;
-  }).join('');
-}
 
 function getProgressBadgeClass(progress) {
   if (progress >= 70) return 'high';
@@ -15068,6 +14509,11 @@ saveProject = async function() {
   const customer = document.getElementById('projectCustomer').value.trim();
   const assignedTo = document.getElementById('projectAssignedTo').value.trim();
   const icAssignee = document.getElementById('projectIcAssignee').value.trim();
+
+  // 最後に使用した担当者を記憶
+  if (assignedTo) {
+    localStorage.setItem('archideck_last_assignee', assignedTo);
+  }
   const exteriorAssignee = document.getElementById('projectExteriorAssignee')?.value.trim() || '';
   const specifications = document.getElementById('projectSpecifications').value;
   const memo = document.getElementById('projectMemo').value.trim();
