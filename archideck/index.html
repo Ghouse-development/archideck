@@ -98,210 +98,6 @@
   --space-2xl: 48px;
 }
 
-/* ダークモード - Dark Mode Theme */
-[data-theme="dark"] {
-  --primary-color: #3B82F6;
-  --primary-hover: #2563EB;
-  --primary-light: #1E3A5F;
-  --primary-dark: #60A5FA;
-
-  --secondary-color: #10B981;
-  --secondary-hover: #059669;
-  --secondary-light: #064E3B;
-
-  --accent-color: #8B5CF6;
-  --accent-light: #2E1065;
-
-  --danger-color: #EF4444;
-  --danger-light: #450A0A;
-  --warning-color: #F59E0B;
-  --warning-light: #451A03;
-  --success-color: #22C55E;
-  --success-light: #052E16;
-  --success-bg: #052E16;
-  --info-color: #06B6D4;
-  --info-light: #083344;
-
-  --text-primary: #F1F5F9;
-  --text-secondary: #94A3B8;
-  --text-muted: #64748B;
-  --text-light: #475569;
-
-  --bg-primary: #0F172A;
-  --bg-secondary: #1E293B;
-  --bg-tertiary: #334155;
-  --bg-hover: #475569;
-
-  --border-color: #334155;
-  --border-light: #1E293B;
-  --border-focus: #3B82F6;
-
-  --shadow-xs: 0 1px 2px rgba(0,0,0,0.3);
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
-  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.4), 0 2px 4px -2px rgba(0,0,0,0.3);
-  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.4), 0 4px 6px -4px rgba(0,0,0,0.2);
-  --shadow-xl: 0 20px 25px -5px rgba(0,0,0,0.4), 0 8px 10px -6px rgba(0,0,0,0.2);
-  --shadow-glow: 0 0 20px rgba(59, 130, 246, 0.3);
-}
-
-/* ダークモードのトランジション */
-body, .header, .sidebar, .modal-content, .card, .project-card, .btn {
-  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
-}
-
-/* ダークモード追加スタイル */
-[data-theme="dark"] .sidebar {
-  background: var(--bg-secondary);
-}
-
-[data-theme="dark"] .sidebar-item,
-[data-theme="dark"] .sidebar-section-title {
-  color: var(--text-primary);
-}
-
-[data-theme="dark"] .sidebar-item:hover {
-  background: var(--bg-tertiary);
-}
-
-[data-theme="dark"] .input,
-[data-theme="dark"] .select,
-[data-theme="dark"] .form-input,
-[data-theme="dark"] input[type="text"],
-[data-theme="dark"] input[type="email"],
-[data-theme="dark"] input[type="password"],
-[data-theme="dark"] input[type="date"],
-[data-theme="dark"] input[type="number"],
-[data-theme="dark"] select,
-[data-theme="dark"] textarea {
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
-  border-color: var(--border-color);
-}
-
-[data-theme="dark"] .input::placeholder,
-[data-theme="dark"] .form-input::placeholder,
-[data-theme="dark"] textarea::placeholder {
-  color: var(--text-muted);
-}
-
-[data-theme="dark"] select option {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-}
-
-[data-theme="dark"] .task-state-select {
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
-  border-color: var(--border-color);
-}
-
-[data-theme="dark"] .task-item {
-  background: var(--bg-secondary);
-  border-color: var(--border-color);
-}
-
-[data-theme="dark"] .task-label {
-  color: var(--text-primary);
-}
-
-[data-theme="dark"] .card-section-header {
-  color: var(--text-primary);
-}
-
-[data-theme="dark"] .card-section-content {
-  background: var(--bg-secondary);
-}
-
-[data-theme="dark"] .table {
-  background: var(--bg-primary);
-}
-
-[data-theme="dark"] .table th {
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
-}
-
-[data-theme="dark"] .table td {
-  color: var(--text-primary);
-  border-color: var(--border-color);
-}
-
-[data-theme="dark"] .table tr:hover {
-  background: var(--bg-secondary);
-}
-
-[data-theme="dark"] .modal-content {
-  background: var(--bg-primary);
-  color: var(--text-primary);
-}
-
-[data-theme="dark"] .modal-header,
-[data-theme="dark"] .modal-footer {
-  border-color: var(--border-color);
-}
-
-[data-theme="dark"] .badge {
-  color: var(--text-primary);
-}
-
-[data-theme="dark"] .progress-bar {
-  background: var(--bg-tertiary);
-}
-
-[data-theme="dark"] .designer-tab {
-  color: var(--text-primary);
-  background: var(--bg-tertiary);
-  border-color: var(--border-color);
-}
-
-[data-theme="dark"] .designer-tab:hover {
-  background: var(--bg-hover);
-}
-
-[data-theme="dark"] .designer-tab.active {
-  background: var(--primary-color);
-  color: white;
-}
-
-/* 分析画面ダークモード */
-[data-theme="dark"] .analytics-section {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-}
-
-[data-theme="dark"] .section-title {
-  color: var(--text-primary);
-}
-
-[data-theme="dark"] .kpi-card {
-  background: var(--bg-tertiary);
-  border-color: var(--border-color);
-}
-
-[data-theme="dark"] .kpi-value,
-[data-theme="dark"] .kpi-label {
-  color: var(--text-primary);
-}
-
-[data-theme="dark"] .prediction-card {
-  background: var(--bg-tertiary);
-  border-color: var(--border-color);
-}
-
-[data-theme="dark"] .prediction-header,
-[data-theme="dark"] .prediction-content {
-  color: var(--text-primary);
-}
-
-[data-theme="dark"] .gantt-container {
-  background: var(--bg-tertiary);
-}
-
-[data-theme="dark"] .report-preview {
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
-  border: 1px solid var(--border-color);
-}
 
 /* data-table スタイル（分析画面用） */
 .data-table {
@@ -328,20 +124,6 @@ body, .header, .sidebar, .modal-content, .card, .project-card, .btn {
 }
 
 .data-table tr:hover td {
-  background: var(--bg-hover);
-}
-
-[data-theme="dark"] .data-table th {
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
-}
-
-[data-theme="dark"] .data-table td {
-  color: var(--text-primary);
-  border-color: var(--border-color);
-}
-
-[data-theme="dark"] .data-table tr:hover td {
   background: var(--bg-hover);
 }
 
@@ -1755,16 +1537,6 @@ input:checked + .toggle-slider:before {
   opacity: 0.5;
 }
 
-/* 申請Go ダークモード対応 */
-[data-theme="dark"] .application-go-disabled {
-  background: var(--bg-tertiary);
-  border-color: var(--border-color);
-}
-
-[data-theme="dark"] .application-go-disabled .application-go-status {
-  background: rgba(255,255,255,0.1);
-}
-
 /* 申請Go モバイル対応 */
 @media (max-width: 768px) {
   .application-go-container {
@@ -3038,10 +2810,6 @@ input:checked + .toggle-slider:before {
 .report-progress-badge.medium { background: #fef9c3; color: #854d0e; }
 .report-progress-badge.low { background: #fee2e2; color: #991b1b; }
 
-[data-theme="dark"] .report-progress-badge.high { background: #166534; color: #dcfce7; }
-[data-theme="dark"] .report-progress-badge.medium { background: #854d0e; color: #fef9c3; }
-[data-theme="dark"] .report-progress-badge.low { background: #991b1b; color: #fee2e2; }
-
 .report-assignee {
   color: var(--text-secondary);
 }
@@ -3142,91 +2910,6 @@ input:checked + .toggle-slider:before {
 .report-status-tag.active {
   background: var(--primary);
   color: white;
-}
-
-/* ダークモード対応 - レポート */
-[data-theme="dark"] .report-designer-section {
-  background: #1e293b;
-  border: 1px solid #334155;
-}
-
-[data-theme="dark"] .report-designer-name {
-  color: #f1f5f9;
-}
-
-[data-theme="dark"] .report-project-detail {
-  background: #0f172a;
-  border-left-color: #475569;
-}
-
-[data-theme="dark"] .report-project-detail.updated {
-  background: linear-gradient(90deg, rgba(16, 185, 129, 0.15), #0f172a);
-  border-left-color: #10b981;
-}
-
-[data-theme="dark"] .report-project-title .project-name {
-  color: #f1f5f9;
-}
-
-[data-theme="dark"] .report-status-tag {
-  background: #334155;
-  color: #e2e8f0;
-}
-
-[data-theme="dark"] .report-status-tag.active {
-  background: #3b82f6;
-  color: white;
-}
-
-[data-theme="dark"] .report-designer-header {
-  border-bottom-color: #475569;
-}
-
-[data-theme="dark"] .report-card {
-  background: #1e293b;
-  border-color: #334155;
-}
-
-[data-theme="dark"] .report-header h2 {
-  color: #f1f5f9;
-}
-
-[data-theme="dark"] .report-period {
-  background: #334155;
-  color: #e2e8f0;
-}
-
-[data-theme="dark"] .report-stat-item {
-  background: #0f172a;
-}
-
-[data-theme="dark"] .report-stat-label {
-  color: #94a3b8;
-}
-
-[data-theme="dark"] .report-section-title {
-  color: #f1f5f9;
-}
-
-[data-theme="dark"] .report-list-item {
-  background: #0f172a;
-}
-
-[data-theme="dark"] .report-project-name {
-  color: #f1f5f9;
-}
-
-[data-theme="dark"] .report-assignee {
-  color: #94a3b8;
-}
-
-[data-theme="dark"] .report-empty {
-  color: #94a3b8;
-}
-
-[data-theme="dark"] .report-designer-count {
-  background: #334155;
-  color: #e2e8f0;
 }
 
 /* ===== ArchiDeck v3.0 新機能スタイル ===== */
@@ -3788,12 +3471,6 @@ textarea:focus-visible {
     --border-color: #000000;
   }
 
-  [data-theme="dark"] {
-    --text-primary: #ffffff;
-    --text-secondary: #e0e0e0;
-    --border-color: #ffffff;
-  }
-
   .btn {
     border: 2px solid currentColor;
   }
@@ -3970,7 +3647,6 @@ textarea:focus-visible {
       </div>
       <button class="btn btn-ghost btn-small" onclick="UndoManager.undo()" title="元に戻す (Ctrl+Z)" id="undoBtn" disabled>↩️</button>
       <button class="btn btn-ghost btn-small" onclick="UndoManager.redo()" title="やり直す (Ctrl+Y)" id="redoBtn" disabled>↪️</button>
-      <button class="btn btn-ghost btn-small" onclick="toggleDarkMode()" title="ダークモード切替" id="darkModeToggle">🌙</button>
       <button class="btn btn-ghost btn-small" onclick="forceReloadData()" title="データを再読み込み">🔄</button>
       <button class="btn btn-ghost btn-small" onclick="showDebugInfo()" title="デバッグ情報">🔍</button>
       <button class="btn btn-ghost btn-small" onclick="signOut()">ログアウト</button>
@@ -4932,6 +4608,30 @@ function throttle(func, limit = 100) {
   };
 }
 
+// 二重クリック防止ヘルパー
+const SaveGuard = {
+  _locks: new Set(),
+
+  // 保存処理をロック（二重実行防止）
+  async run(key, asyncFn) {
+    if (this._locks.has(key)) {
+      console.log(`SaveGuard: ${key} is already running`);
+      return false;
+    }
+    this._locks.add(key);
+    try {
+      return await asyncFn();
+    } finally {
+      this._locks.delete(key);
+    }
+  },
+
+  // ロック状態を確認
+  isLocked(key) {
+    return this._locks.has(key);
+  }
+};
+
 // モーダル管理ユーティリティ
 const ModalManager = {
   activeModal: null,
@@ -5833,46 +5533,6 @@ function exitFCMode() {
 }
 
 // ============================================
-// ダークモード
-// ============================================
-function initDarkMode() {
-  const savedTheme = localStorage.getItem('theme');
-  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-  if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
-    document.documentElement.setAttribute('data-theme', 'dark');
-    updateDarkModeIcon(true);
-  }
-
-  // システム設定の変更を監視
-  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-    if (!localStorage.getItem('theme')) {
-      document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
-      updateDarkModeIcon(e.matches);
-    }
-  });
-}
-
-function toggleDarkMode() {
-  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-  const newTheme = isDark ? 'light' : 'dark';
-
-  document.documentElement.setAttribute('data-theme', newTheme);
-  localStorage.setItem('theme', newTheme);
-  updateDarkModeIcon(!isDark);
-
-  showToast(isDark ? 'ライトモードに切り替えました' : 'ダークモードに切り替えました', 'info');
-}
-
-function updateDarkModeIcon(isDark) {
-  const btn = document.getElementById('darkModeToggle');
-  if (btn) {
-    btn.textContent = isDark ? '☀️' : '🌙';
-    btn.title = isDark ? 'ライトモードに切替' : 'ダークモードに切替';
-  }
-}
-
-// ============================================
 // キーボードショートカット
 // ============================================
 function initKeyboardShortcuts() {
@@ -5913,11 +5573,6 @@ function handleKeyboardShortcut(e) {
         if (searchInput) {
           searchInput.focus();
         }
-        break;
-      case 'd':
-        // ダークモード切替
-        e.preventDefault();
-        toggleDarkMode();
         break;
       case 'z':
         // 元に戻す / やり直す
@@ -5975,9 +5630,6 @@ function showShortcutHelp() {
           <span>Ctrl/Cmd + S</span><span>データ同期</span>
         </div>
         <div style="display: flex; justify-content: space-between; padding: 8px; background: var(--bg-tertiary); border-radius: 6px;">
-          <span>Ctrl/Cmd + D</span><span>ダークモード切替</span>
-        </div>
-        <div style="display: flex; justify-content: space-between; padding: 8px; background: var(--bg-tertiary); border-radius: 6px;">
           <span>Ctrl/Cmd + K</span><span>検索にフォーカス</span>
         </div>
         <div style="display: flex; justify-content: space-between; padding: 8px; background: var(--bg-tertiary); border-radius: 6px;">
@@ -6014,9 +5666,6 @@ function showShortcutHelp() {
 async function init() {
   log('🚀 初期化開始...');
   showStatus('読み込み中...', 'saving');
-
-  // ダークモード初期化（早期に実行してフラッシュを防ぐ）
-  initDarkMode();
 
   // キーボードショートカット初期化
   initKeyboardShortcuts();
@@ -6815,6 +6464,9 @@ function closeVendorModalV2() {
 }
 
 async function saveVendorV2() {
+  // 二重クリック防止
+  if (SaveGuard.isLocked('saveVendorV2')) return;
+
   const id = document.getElementById('vendorId').value;
   const company = document.getElementById('vendorCompany').value.trim();
   const contact = document.getElementById('vendorContact').value.trim();
@@ -6829,43 +6481,45 @@ async function saveVendorV2() {
     return;
   }
 
-  showStatus('保存中...', 'saving');
+  await SaveGuard.run('saveVendorV2', async () => {
+    showStatus('保存中...', 'saving');
 
-  const vendorData = {
-    company,
-    contact: contact || null,
-    tel: tel || null,
-    email: email || null,
-    category_id: categoryId || null,
-    subject_format: subjectFormat || null,
-    template_text: templateText || null
-  };
+    const vendorData = {
+      company,
+      contact: contact || null,
+      tel: tel || null,
+      email: email || null,
+      category_id: categoryId || null,
+      subject_format: subjectFormat || null,
+      template_text: templateText || null
+    };
 
-  let result;
-  if (id) {
-    result = await supabase
-      .from('vendors_v2')
-      .update(vendorData)
-      .eq('id', id)
-      .select('*, vendor_categories(name)');
-  } else {
-    result = await supabase
-      .from('vendors_v2')
-      .insert([vendorData])
-      .select('*, vendor_categories(name)');
-  }
+    let result;
+    if (id) {
+      result = await supabase
+        .from('vendors_v2')
+        .update(vendorData)
+        .eq('id', id)
+        .select('*, vendor_categories(name)');
+    } else {
+      result = await supabase
+        .from('vendors_v2')
+        .insert([vendorData])
+        .select('*, vendor_categories(name)');
+    }
 
-  if (result.error) {
-    showStatus('保存失敗', 'error');
-    showToast('保存に失敗しました: ' + result.error.message, 'error');
-    return;
-  }
+    if (result.error) {
+      showStatus('保存失敗', 'error');
+      showToast('保存に失敗しました: ' + result.error.message, 'error');
+      return;
+    }
 
-  showStatus('保存完了', 'success');
-  showToast(id ? '業者を更新しました' : '業者を追加しました', 'success');
-  closeVendorModalV2();
-  await loadVendorsV2();
-  renderVendorsV2();
+    showStatus('保存完了', 'success');
+    showToast(id ? '業者を更新しました' : '業者を追加しました', 'success');
+    closeVendorModalV2();
+    await loadVendorsV2();
+    renderVendorsV2();
+  });
 }
 
 function editVendorV2(vendorId) {
@@ -8636,7 +8290,7 @@ function renderProjectCard(project) {
         </div>`;
       } else {
         // 条件が揃っていない場合：無効表示
-        return `<div class="application-go-container application-go-disabled" title="太陽光:営業共有済、給排水:保存済、換気:保存済、サッシ:保存済 が必要">
+        return `<div class="application-go-container application-go-disabled" title="太陽光:保存済、給排水:保存済、換気:保存済、サッシ:保存済 が必要">
           <div class="application-go-icon">🔒</div>
           <div class="application-go-text">${taskDef.task_name}</div>
           <div class="application-go-status">条件未達</div>
@@ -8990,6 +8644,11 @@ function closeProjectModal() {
 }
 
 async function saveProject() {
+  // 二重クリック防止
+  if (SaveGuard.isLocked('saveProject')) {
+    return;
+  }
+
   const customer = document.getElementById('projectCustomer').value.trim();
   const assignedTo = document.getElementById('projectAssignedTo').value.trim(); // trim()追加
   const icAssignee = document.getElementById('projectIcAssignee').value.trim(); // trim()追加
@@ -9003,26 +8662,56 @@ async function saveProject() {
     return;
   }
 
-  showStatus('保存中...', 'saving');
+  await SaveGuard.run('saveProject', async () => {
+    showStatus('保存中...', 'saving');
 
-  // 設計担当のIDを取得
-  const designer = designers.find(d => d.name.trim() === assignedTo);
-  const designerId = designer ? designer.id : null;
+    // 設計担当のIDを取得
+    const designer = designers.find(d => d.name.trim() === assignedTo);
+    const designerId = designer ? designer.id : null;
 
-  // IC担当者のIDを取得（空文字列の場合はnull）
-  const icDesigner = icAssignee ? designers.find(d => d.name.trim() === icAssignee) : null;
-  const icDesignerId = icDesigner ? icDesigner.id : null;
+    // IC担当者のIDを取得（空文字列の場合はnull）
+    const icDesigner = icAssignee ? designers.find(d => d.name.trim() === icAssignee) : null;
+    const icDesignerId = icDesigner ? icDesigner.id : null;
 
-  const blankProgress = {};
-  tasksV2.forEach(task => {
-    blankProgress[task.task_key] = { completed: false, date: '', state: '' };
-  });
+    const blankProgress = {};
+    tasksV2.forEach(task => {
+      blankProgress[task.task_key] = { completed: false, date: '', state: '' };
+    });
 
-  if (editingProjectId) {
-    const project = projects.find(p => p.id === editingProjectId);
-    const { error } = await supabase
-      .from('projects')
-      .update({
+    if (editingProjectId) {
+      const project = projects.find(p => p.id === editingProjectId);
+      const { error } = await supabase
+        .from('projects')
+        .update({
+          customer,
+          assigned_to: assignedTo,
+          designer_id: designerId,
+          ic_assignee: icAssignee || null,
+          ic_designer_id: icDesignerId,
+          specifications,
+          memo,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', editingProjectId);
+
+      if (error) {
+        showStatus('エラー', 'error');
+        showToast('保存に失敗しました: ' + error.message, 'error');
+        return;
+      }
+
+      Object.assign(project, {
+        customer,
+        assigned_to: assignedTo,
+        ic_assignee: icAssignee || null,
+        ic_designer_id: icDesignerId,
+        specifications,
+        memo,
+        updated_at: new Date().toISOString()
+      });
+    } else {
+      const newProject = {
+        uid: 'proj_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
         customer,
         assigned_to: assignedTo,
         designer_id: designerId,
@@ -9030,64 +8719,36 @@ async function saveProject() {
         ic_designer_id: icDesignerId,
         specifications,
         memo,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', editingProjectId);
+        status: 'active',
+        progress: blankProgress,
+        created_by: currentUser?.id || null
+      };
 
-    if (error) {
-      showStatus('エラー', 'error');
-      showToast('保存に失敗しました: ' + error.message, 'error');
-      return;
+      const { data, error } = await supabase
+        .from('projects')
+        .insert([newProject])
+        .select();
+
+      if (error) {
+        showStatus('エラー', 'error');
+        showToast('保存に失敗しました: ' + error.message, 'error');
+        return;
+      }
+
+      log('✅ 新規案件保存成功:', data[0]);
+      log('📊 assigned_to:', data[0].assigned_to);
+      log('📊 ic_assignee:', data[0].ic_assignee);
+      projects.unshift(data[0]);
     }
 
-    Object.assign(project, {
-      customer,
-      assigned_to: assignedTo,
-      ic_assignee: icAssignee || null,
-      ic_designer_id: icDesignerId,
-      specifications,
-      memo,
-      updated_at: new Date().toISOString()
-    });
-  } else {
-    const newProject = {
-      uid: 'proj_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
-      customer,
-      assigned_to: assignedTo,
-      designer_id: designerId,
-      ic_assignee: icAssignee || null,
-      ic_designer_id: icDesignerId,
-      specifications,
-      memo,
-      status: 'active',
-      progress: blankProgress,
-      created_by: currentUser?.id || null
-    };
-
-    const { data, error } = await supabase
-      .from('projects')
-      .insert([newProject])
-      .select();
-
-    if (error) {
-      showStatus('エラー', 'error');
-      showToast('保存に失敗しました: ' + error.message, 'error');
-      return;
-    }
-
-    log('✅ 新規案件保存成功:', data[0]);
-    log('📊 assigned_to:', data[0].assigned_to);
-    log('📊 ic_assignee:', data[0].ic_assignee);
-    projects.unshift(data[0]);
-  }
-
-  log('🔄 renderDesignerTabs()とrenderProjects()を実行します');
-  log('📊 現在のprojects数:', projects.length);
-  closeProjectModal();
-  renderDesignerTabs();
-  renderProjects();
-  showStatus('保存済み', 'saved');
-  showToast('案件を保存しました', 'success');
+    log('🔄 renderDesignerTabs()とrenderProjects()を実行します');
+    log('📊 現在のprojects数:', projects.length);
+    closeProjectModal();
+    renderDesignerTabs();
+    renderProjects();
+    showStatus('保存済み', 'saved');
+    showToast('案件を保存しました', 'success');
+  });
 }
 
 function editProject(projectId) {
@@ -13193,11 +12854,21 @@ async function addProjectTask(projectId, taskName, dueDate) {
 function canPressApplicationGo(project) {
   const progressData = project.progress || {};
 
-  // 条件: 太陽光依頼が営業共有済、給排水図依頼が保存済、換気図依頼が保存済、サッシ依頼が保存済
-  const solarOk = progressData['solar']?.state === '営業共有済';
+  // 条件: 太陽光依頼・給排水図依頼・換気図依頼・サッシ依頼が全て「保存済」
+  const solarOk = progressData['solar']?.state === '保存済';
   const plumbingOk = progressData['plumbing']?.state === '保存済';
   const ventilationOk = progressData['ventilation']?.state === '保存済';
   const sashOk = progressData['sash']?.state === '保存済';
+
+  // デバッグログ
+  console.log('申請GO条件チェック:', {
+    customer: project.customer,
+    solar: { state: progressData['solar']?.state, ok: solarOk },
+    plumbing: { state: progressData['plumbing']?.state, ok: plumbingOk },
+    ventilation: { state: progressData['ventilation']?.state, ok: ventilationOk },
+    sash: { state: progressData['sash']?.state, ok: sashOk },
+    result: solarOk && plumbingOk && ventilationOk && sashOk
+  });
 
   return solarOk && plumbingOk && ventilationOk && sashOk;
 }
@@ -13214,7 +12885,7 @@ function confirmApplicationGo(projectId) {
 
   // 条件表示
   const conditions = [
-    { label: '太陽光依頼', ok: progressData['solar']?.state === '営業共有済', value: progressData['solar']?.state || '-' },
+    { label: '太陽光依頼', ok: progressData['solar']?.state === '保存済', value: progressData['solar']?.state || '-' },
     { label: '給排水図依頼', ok: progressData['plumbing']?.state === '保存済', value: progressData['plumbing']?.state || '-' },
     { label: '換気図依頼', ok: progressData['ventilation']?.state === '保存済', value: progressData['ventilation']?.state || '-' },
     { label: 'サッシ依頼', ok: progressData['sash']?.state === '保存済', value: progressData['sash']?.state || '-' }
@@ -13238,6 +12909,8 @@ function closeApplicationGoModal() {
 }
 
 async function executeApplicationGo() {
+  // 二重クリック防止
+  if (SaveGuard.isLocked('executeApplicationGo')) return;
   if (!applicationGoProjectId) return;
 
   const project = projects.find(p => p.id === applicationGoProjectId);
@@ -13250,37 +12923,39 @@ async function executeApplicationGo() {
     return;
   }
 
-  // 申請タスクを完了としてマーク
-  const progressData = project.progress || {};
-  if (!progressData['application']) progressData['application'] = {};
-  progressData['application'].completed = true;
-  progressData['application'].date = new Date().toISOString().split('T')[0];
+  await SaveGuard.run('executeApplicationGo', async () => {
+    // 申請タスクを完了としてマーク
+    const progressData = project.progress || {};
+    if (!progressData['application']) progressData['application'] = {};
+    progressData['application'].completed = true;
+    progressData['application'].date = new Date().toISOString().split('T')[0];
 
-  showStatus('保存中...', 'saving');
-  const { error } = await supabase
-    .from('projects')
-    .update({
-      is_archived: true,
-      progress: progressData,
-      updated_at: new Date().toISOString()
-    })
-    .eq('id', applicationGoProjectId);
+    showStatus('保存中...', 'saving');
+    const { error } = await supabase
+      .from('projects')
+      .update({
+        is_archived: true,
+        progress: progressData,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', applicationGoProjectId);
 
-  if (error) {
-    showStatus('エラー', 'error');
-    showToast('完了処理に失敗しました: ' + error.message, 'error');
-    return;
-  }
+    if (error) {
+      showStatus('エラー', 'error');
+      showToast('完了処理に失敗しました: ' + error.message, 'error');
+      return;
+    }
 
-  project.is_archived = true;
-  project.progress = progressData;
-  project.updated_at = new Date().toISOString();
+    project.is_archived = true;
+    project.progress = progressData;
+    project.updated_at = new Date().toISOString();
 
-  closeApplicationGoModal();
-  renderProjects();
-  updateSidebar();
-  showStatus('保存済み', 'saved');
-  showToast(`${project.customer} を完了済みに移動しました`, 'success');
+    closeApplicationGoModal();
+    renderProjects();
+    updateSidebar();
+    showStatus('保存済み', 'saved');
+    showToast(`${project.customer} を完了済みに移動しました`, 'success');
+  });
 }
 
 // 折りたたみ機能
