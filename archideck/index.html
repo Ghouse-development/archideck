@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#2563EB">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="ArchiDeck">
@@ -5282,12 +5283,21 @@ function getTaskStateOptions(taskKey) {
 // 認証処理
 // ============================================
 
+// ユーザー名・アバター表示の共通関数
+function updateUserDisplay(displayName) {
+  const userNameEl = document.getElementById('userName');
+  const userAvatarEl = document.getElementById('userAvatar');
+  if (userNameEl) userNameEl.textContent = displayName;
+  if (userAvatarEl) userAvatarEl.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=4A90E2&color=fff&size=32`;
+}
+
 // デモモード（パスワード無しでログイン）
-function enterDemoMode() {
+async function enterDemoMode() {
   log('🎭 デモモードで入場...');
   document.getElementById('loginContainer').style.display = 'none';
-  document.getElementById('accountSelectContainer').style.display = 'flex';
   isDemoMode = true;
+  // 管理者モードで直接メイン画面へ
+  await selectAccountType('admin');
 }
 
 // デモモードフラグ
@@ -5429,12 +5439,8 @@ async function checkAuth() {
     // メインコンテナを表示
     document.getElementById('mainContainer').classList.add('show');
 
-    // メールアドレスからユーザー名を表示（@より前の部分）
-    const displayName = currentUser.email.split('@')[0];
-    document.getElementById('userName').textContent = displayName;
-
-    // デフォルトアバターを設定
-    document.getElementById('userAvatar').src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(displayName) + '&background=4A90E2&color=fff&size=32';
+    // ユーザー名・アバターを表示
+    updateUserDisplay(currentUser.email.split('@')[0]);
 
     await init();
 
@@ -5489,9 +5495,8 @@ supabase.auth.onAuthStateChange(async (event, session) => {
     // メインコンテナを表示
     document.getElementById('mainContainer').classList.add('show');
 
-    const displayName = currentUser.email.split('@')[0];
-    document.getElementById('userName').textContent = displayName;
-    document.getElementById('userAvatar').src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(displayName) + '&background=4A90E2&color=fff&size=32';
+    // ユーザー名・アバターを表示
+    updateUserDisplay(currentUser.email.split('@')[0]);
 
     await init();
     isAuthProcessing = false;
@@ -5507,13 +5512,11 @@ supabase.auth.onAuthStateChange(async (event, session) => {
 async function selectAccountType(category) {
   log('🎯 アカウントタイプ選択:', category);
   currentUserCategory = category;
-  document.getElementById('accountSelectContainer').style.display = 'none';
   document.getElementById('mainContainer').classList.add('show');
 
-  // デモモード対応: currentUserがnullの場合は'demo'を使用
+  // ユーザー名・アバターを表示（デモモード対応）
   const displayName = currentUser?.email ? currentUser.email.split('@')[0] : 'demo';
-  document.getElementById('userName').textContent = displayName;
-  document.getElementById('userAvatar').src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(displayName) + '&background=4A90E2&color=fff&size=32';
+  updateUserDisplay(displayName);
 
   // 切り替えボタンを表示
   updateCategorySwitchButton();
@@ -5967,22 +5970,56 @@ async function init() {
 // ============================================
 // データ強制リロード
 // ============================================
+let isReloading = false;
+
 async function forceReloadData() {
-  showToast('データを再読み込み中...', 'info');
-  showStatus('読み込み中...', 'saving');
+  // 重複実行防止
+  if (isReloading) {
+    showToast('再読み込み中です...', 'info');
+    return;
+  }
 
-  // キャッシュをクリア
+  isReloading = true;
+
+  // ボタンを無効化
+  const reloadBtns = document.querySelectorAll('[onclick*="forceReloadData"]');
+  reloadBtns.forEach(btn => {
+    btn.disabled = true;
+    btn.style.opacity = '0.5';
+  });
+
   try {
-    const cacheNames = await caches.keys();
-    for (const name of cacheNames) {
-      await caches.delete(name);
+    showStatus('キャッシュクリア中...', 'saving');
+
+    // キャッシュをクリア
+    try {
+      const cacheNames = await caches.keys();
+      for (const name of cacheNames) {
+        await caches.delete(name);
+      }
+    } catch (e) {
+      warn('キャッシュクリアエラー:', e);
     }
-  } catch (e) {}
 
-  // データを再読み込み
-  await init();
+    showStatus('データ読み込み中...', 'saving');
 
-  showToast(`データを再読み込みしました。案件数: ${projects.length}件`, 'success');
+    // データを再読み込み
+    await init();
+
+    showStatus('保存済み', 'saved');
+    showToast(`データを再読み込みしました。案件数: ${projects.length}件`, 'success');
+  } catch (error) {
+    logError('再読み込みエラー:', error);
+    showStatus('エラー', 'error');
+    showToast('再読み込みに失敗しました', 'danger');
+  } finally {
+    isReloading = false;
+    // ボタンを再有効化
+    reloadBtns.forEach(btn => {
+      btn.disabled = false;
+      btn.style.opacity = '1';
+    });
+  }
 }
 
 // ============================================
@@ -8062,6 +8099,14 @@ function openEmailFromTask(projectId, taskKey) {
   }
 }
 
+// メール変数置換の共通関数
+function replaceEmailVariables(template, variables) {
+  if (!template) return '';
+  return Object.keys(variables).reduce((result, key) => {
+    return result.replace(new RegExp(`\\{${key}\\}`, 'g'), variables[key]);
+  }, template);
+}
+
 function showVendorSelection(project, taskDef, vendors) {
   const modal = document.getElementById('emailModal');
   const content = document.getElementById('emailComposerContent');
@@ -8108,15 +8153,9 @@ function openEmailComposer(project, taskDef, vendor) {
     specialContent: vendor.default_special_content || ''
   };
 
-  // 件名と本文の置換
-  let subject = vendor.subject_format || '';
-  let body = vendor.template_text || '';
-
-  Object.keys(variables).forEach(key => {
-    const regex = new RegExp(`\\{${key}\\}`, 'g');
-    subject = subject.replace(regex, variables[key]);
-    body = body.replace(regex, variables[key]);
-  });
+  // 件名と本文の置換（共通関数を使用）
+  const subject = replaceEmailVariables(vendor.subject_format, variables);
+  const body = replaceEmailVariables(vendor.template_text, variables);
 
   // メール作成UI
   content.innerHTML = `
@@ -8165,10 +8204,18 @@ function openEmailComposer(project, taskDef, vendor) {
   `;
 
   // 特別コンテンツや期日の変更時に本文を更新
+  // イベントハンドラを保存して後で削除できるようにする
+  const updateHandler = () => updateEmailBody(vendor, variables);
+
   if (vendor.has_special_content) {
-    document.getElementById('emailSpecialContent').addEventListener('input', () => updateEmailBody(vendor, variables));
+    const specialInput = document.getElementById('emailSpecialContent');
+    specialInput.addEventListener('input', updateHandler);
+    specialInput._emailHandler = updateHandler;
   }
-  document.getElementById('emailDueDate').addEventListener('input', () => updateEmailBody(vendor, variables));
+
+  const dueDateInput = document.getElementById('emailDueDate');
+  dueDateInput.addEventListener('input', updateHandler);
+  dueDateInput._emailHandler = updateHandler;
 
   modal.style.display = 'flex';
 }
@@ -8178,12 +8225,7 @@ function updateEmailBody(vendor, baseVariables) {
   const dueDate = document.getElementById('emailDueDate').value;
 
   const variables = { ...baseVariables, specialContent, dueDate };
-
-  let body = vendor.template_text || '';
-  Object.keys(variables).forEach(key => {
-    const regex = new RegExp(`\\{${key}\\}`, 'g');
-    body = body.replace(regex, variables[key]);
-  });
+  const body = replaceEmailVariables(vendor.template_text, variables);
 
   document.getElementById('emailBody').value = body;
 }
@@ -8203,6 +8245,19 @@ function copyEmailToClipboard() {
 }
 
 function closeEmailModal() {
+  // イベントリスナーを削除（メモリリーク防止）
+  const specialInput = document.getElementById('emailSpecialContent');
+  if (specialInput && specialInput._emailHandler) {
+    specialInput.removeEventListener('input', specialInput._emailHandler);
+    delete specialInput._emailHandler;
+  }
+
+  const dueDateInput = document.getElementById('emailDueDate');
+  if (dueDateInput && dueDateInput._emailHandler) {
+    dueDateInput.removeEventListener('input', dueDateInput._emailHandler);
+    delete dueDateInput._emailHandler;
+  }
+
   document.getElementById('emailModal').style.display = 'none';
 }
 
