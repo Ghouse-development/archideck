@@ -6404,7 +6404,14 @@ async function loadVendorCategories() {
     .from('vendor_categories')
     .select('*')
     .order('display_order');
-  if (!error) vendorCategories = data || [];
+
+  if (error) {
+    logError('❌ 業者カテゴリ読み込みエラー:', error);
+    vendorCategories = [];
+    return;
+  }
+
+  vendorCategories = data || [];
   log('✅ 業者カテゴリ読み込み完了:', vendorCategories.length, '件');
 }
 
@@ -6413,7 +6420,14 @@ async function loadTasksV2() {
     .from('tasks')
     .select('*')
     .order('display_order');
-  if (!error) tasksV2 = data || [];
+
+  if (error) {
+    logError('❌ タスク読み込みエラー:', error);
+    tasksV2 = [];
+    return;
+  }
+
+  tasksV2 = data || [];
   log('✅ タスク読み込み完了:', tasksV2.length, '件');
 }
 
@@ -6479,27 +6493,18 @@ function mergeVendorCategories() {
 }
 
 async function loadTaskVendorMappings() {
-  log('🔄 タスク-業者紐づけデータ読み込み開始...', {
-    timestamp: new Date().toISOString()
-  });
-
   const { data, error } = await supabase
     .from('task_vendor_mappings_v2')
     .select('*');
 
-  log('📡 loadTaskVendorMappings Supabaseレスポンス:', {
-    success: !error,
-    dataLength: data?.length || 0,
-    error: error,
-    rawDataSample: data?.slice(0, 3)
-  });
+  if (error) {
+    logError('❌ タスク-業者紐づけ読み込みエラー:', error);
+    taskVendorMappings = [];
+    return;
+  }
 
-  if (!error) taskVendorMappings = data || [];
-
-  log('✅ タスク-業者紐づけ読み込み完了:', {
-    count: taskVendorMappings.length,
-    mappings: taskVendorMappings
-  });
+  taskVendorMappings = data || [];
+  log('✅ タスク-業者紐づけ読み込み完了:', taskVendorMappings.length, '件');
 }
 
 async function loadProducts() {
