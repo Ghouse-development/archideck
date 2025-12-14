@@ -4912,11 +4912,12 @@ const UndoManager = {
   // アクションを元に戻す
   async revert(action) {
     switch (action.type) {
-      case 'UPDATE_PROJECT':
-        await supabase
+      case 'UPDATE_PROJECT': {
+        const { error } = await supabase
           .from('projects')
           .update(action.oldValue)
           .eq('id', action.projectId);
+        if (error) throw new Error(`プロジェクト更新失敗: ${error.message}`);
         // ローカルデータも更新
         const projectIdx = projects.findIndex(p => p.id === action.projectId);
         if (projectIdx !== -1) {
@@ -4924,44 +4925,52 @@ const UndoManager = {
         }
         renderProjects();
         break;
+      }
 
-      case 'UPDATE_TASK':
+      case 'UPDATE_TASK': {
         const proj = projects.find(p => p.id === action.projectId);
         if (proj && proj.tasks) {
           proj.tasks[action.taskKey] = { ...action.oldValue };
-          await supabase
+          const { error } = await supabase
             .from('projects')
             .update({ tasks: proj.tasks })
             .eq('id', action.projectId);
+          if (error) throw new Error(`タスク更新失敗: ${error.message}`);
         }
         renderProjects();
         break;
+      }
 
-      case 'CREATE_PROJECT':
-        await supabase.from('projects').delete().eq('id', action.projectId);
+      case 'CREATE_PROJECT': {
+        const { error } = await supabase.from('projects').delete().eq('id', action.projectId);
+        if (error) throw new Error(`プロジェクト削除失敗: ${error.message}`);
         projects = projects.filter(p => p.id !== action.projectId);
         renderProjects();
         renderSidebar();
         break;
+      }
 
-      case 'DELETE_PROJECT':
-        const { data } = await supabase
+      case 'DELETE_PROJECT': {
+        const { data, error } = await supabase
           .from('projects')
           .insert(action.oldValue)
           .select()
           .single();
+        if (error) throw new Error(`プロジェクト復元失敗: ${error.message}`);
         if (data) {
           projects.push(data);
         }
         renderProjects();
         renderSidebar();
         break;
+      }
 
-      case 'ARCHIVE_PROJECT':
-        await supabase
+      case 'ARCHIVE_PROJECT': {
+        const { error } = await supabase
           .from('projects')
           .update({ is_archived: action.oldValue })
           .eq('id', action.projectId);
+        if (error) throw new Error(`アーカイブ更新失敗: ${error.message}`);
         const archiveIdx = projects.findIndex(p => p.id === action.projectId);
         if (archiveIdx !== -1) {
           projects[archiveIdx].is_archived = action.oldValue;
@@ -4969,6 +4978,7 @@ const UndoManager = {
         renderProjects();
         renderSidebar();
         break;
+      }
 
       default:
         warn('未対応のアクションタイプ:', action.type);
@@ -4978,55 +4988,64 @@ const UndoManager = {
   // アクションを再適用
   async apply(action) {
     switch (action.type) {
-      case 'UPDATE_PROJECT':
-        await supabase
+      case 'UPDATE_PROJECT': {
+        const { error } = await supabase
           .from('projects')
           .update(action.newValue)
           .eq('id', action.projectId);
+        if (error) throw new Error(`プロジェクト更新失敗: ${error.message}`);
         const projectIdx = projects.findIndex(p => p.id === action.projectId);
         if (projectIdx !== -1) {
           Object.assign(projects[projectIdx], action.newValue);
         }
         renderProjects();
         break;
+      }
 
-      case 'UPDATE_TASK':
+      case 'UPDATE_TASK': {
         const proj = projects.find(p => p.id === action.projectId);
         if (proj && proj.tasks) {
           proj.tasks[action.taskKey] = { ...action.newValue };
-          await supabase
+          const { error } = await supabase
             .from('projects')
             .update({ tasks: proj.tasks })
             .eq('id', action.projectId);
+          if (error) throw new Error(`タスク更新失敗: ${error.message}`);
         }
         renderProjects();
         break;
+      }
 
-      case 'CREATE_PROJECT':
-        const { data } = await supabase
+      case 'CREATE_PROJECT': {
+        const { data, error } = await supabase
           .from('projects')
           .insert(action.newValue)
           .select()
           .single();
+        if (error) throw new Error(`プロジェクト作成失敗: ${error.message}`);
         if (data) {
           projects.push(data);
         }
         renderProjects();
         renderSidebar();
         break;
+      }
 
-      case 'DELETE_PROJECT':
-        await supabase.from('projects').delete().eq('id', action.projectId);
+      case 'DELETE_PROJECT': {
+        const { error } = await supabase.from('projects').delete().eq('id', action.projectId);
+        if (error) throw new Error(`プロジェクト削除失敗: ${error.message}`);
         projects = projects.filter(p => p.id !== action.projectId);
         renderProjects();
         renderSidebar();
         break;
+      }
 
-      case 'ARCHIVE_PROJECT':
-        await supabase
+      case 'ARCHIVE_PROJECT': {
+        const { error } = await supabase
           .from('projects')
           .update({ is_archived: action.newValue })
           .eq('id', action.projectId);
+        if (error) throw new Error(`アーカイブ更新失敗: ${error.message}`);
         const archiveIdx = projects.findIndex(p => p.id === action.projectId);
         if (archiveIdx !== -1) {
           projects[archiveIdx].is_archived = action.newValue;
@@ -5034,6 +5053,7 @@ const UndoManager = {
         renderProjects();
         renderSidebar();
         break;
+      }
 
       default:
         warn('未対応のアクションタイプ:', action.type);
@@ -7513,10 +7533,16 @@ async function saveTaskVendorMappings(taskId) {
   const selectedVendorIds = Array.from(checkboxes).map(cb => cb.value);
 
   // 既存の紐づけを全削除
-  await supabase
+  const { error: deleteError } = await supabase
     .from('task_vendor_mappings_v2')
     .delete()
     .eq('task_id', taskId);
+
+  if (deleteError) {
+    logError('業者紐づけ削除エラー:', deleteError);
+    showToast('既存の紐づけ削除に失敗しました', 'error');
+    return;
+  }
 
   // 新しい紐づけを作成
   if (selectedVendorIds.length > 0) {
@@ -10748,6 +10774,11 @@ const ExportManager = {
     }
 
     const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      showToast('ポップアップがブロックされました。許可してください。', 'error');
+      return;
+    }
+
     const html = `
       <!DOCTYPE html>
       <html lang="ja">
@@ -14382,19 +14413,32 @@ function restoreBackup() {
         vendor_categories: backup.data.vendorCategories
       };
 
+      let totalItems = 0;
+      let failedItems = 0;
+
       for (const table of tables) {
         const data = dataMap[table];
         if (data && data.length > 0) {
           // 既存データを削除して復元
           await supabase.from(table).delete().neq('id', '00000000-0000-0000-0000-000000000000');
           for (const item of data) {
-            await supabase.from(table).insert(item).catch(() => {});
+            totalItems++;
+            const { error } = await supabase.from(table).insert(item);
+            if (error) {
+              failedItems++;
+              logError(`復元エラー (${table}):`, error);
+            }
           }
         }
       }
 
-      statusEl.innerHTML = '<span style="color: var(--success-color);">✅ 復元が完了しました。ページを再読み込みしてください。</span>';
-      showToast('復元が完了しました', 'success');
+      if (failedItems > 0) {
+        statusEl.innerHTML = `<span style="color: var(--warning-color);">⚠️ 復元完了（${failedItems}/${totalItems}件失敗）。ページを再読み込みしてください。</span>`;
+        showToast(`復元完了（${failedItems}件失敗）`, 'warning');
+      } else {
+        statusEl.innerHTML = '<span style="color: var(--success-color);">✅ 復元が完了しました。ページを再読み込みしてください。</span>';
+        showToast('復元が完了しました', 'success');
+      }
     } catch (error) {
       logError('Restore error:', error);
       statusEl.innerHTML = '<span style="color: var(--danger-color);">❌ 復元に失敗しました</span>';
@@ -14485,6 +14529,13 @@ async function importFromKintone() {
 
     const text = await file.text();
     const lines = text.split('\n');
+
+    // 空ファイルまたはヘッダーのみのチェック
+    if (!lines || lines.length < 2) {
+      showToast('CSVファイルが空か、データがありません', 'error');
+      return;
+    }
+
     const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
 
     const customerIdx = headers.findIndex(h => h.includes('顧客') || h.includes('邸名') || h.includes('customer'));
