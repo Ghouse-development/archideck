@@ -4715,7 +4715,7 @@ textarea:focus-visible {
         <div class="form-group">
           <label class="form-label">ブランドカラー</label>
           <div style="display: flex; gap: 12px; align-items: center;">
-            <input type="color" id="fcColor" value="#2563EB" style="width: 50px; height: 36px; border: none; border-radius: 4px; cursor: pointer;">
+            <input type="color" id="fcColor" value="#2563EB" style="width: 50px; height: 36px; border: none; border-radius: 4px; cursor: pointer;" oninput="document.getElementById('fcColorText').value = this.value">
             <input type="text" class="form-input" id="fcColorText" value="#2563EB" style="width: 120px;" oninput="document.getElementById('fcColor').value = this.value">
           </div>
           <div class="form-hint">FC専用画面で使用されるメインカラー</div>
@@ -4885,7 +4885,6 @@ const SaveGuard = {
   // 保存処理をロック（二重実行防止）
   async run(key, asyncFn) {
     if (this._locks.has(key)) {
-      console.log(`SaveGuard: ${key} is already running`);
       return false;
     }
     this._locks.add(key);
@@ -6829,11 +6828,11 @@ function openVendorModalV2(vendorId = null) {
     document.getElementById('vendorId').value = '';
   }
 
-  modal.style.display = 'flex';
+  ModalManager.open(modal, '#vendorCompany');
 }
 
 function closeVendorModalV2() {
-  document.getElementById('vendorModalV2').style.display = 'none';
+  ModalManager.close(document.getElementById('vendorModalV2'));
 }
 
 async function saveVendorV2() {
@@ -6992,14 +6991,16 @@ function openCategoryModal(categoryId = null) {
     document.getElementById('categoryOrder').value = vendorCategories.length + 1;
   }
 
-  modal.style.display = 'flex';
+  ModalManager.open(modal, '#categoryName');
 }
 
 function closeCategoryModal() {
-  document.getElementById('categoryModal').style.display = 'none';
+  ModalManager.close(document.getElementById('categoryModal'));
 }
 
 async function saveCategory() {
+  if (SaveGuard.isLocked('saveCategory')) return;
+
   const id = document.getElementById('categoryId').value;
   const name = document.getElementById('categoryName').value.trim();
   const order = parseInt(document.getElementById('categoryOrder').value) || 0;
@@ -7009,39 +7010,41 @@ async function saveCategory() {
     return;
   }
 
-  showStatus('保存中...', 'saving');
+  await SaveGuard.run('saveCategory', async () => {
+    showStatus('保存中...', 'saving');
 
-  const categoryData = {
-    name,
-    display_order: order
-  };
+    const categoryData = {
+      name,
+      display_order: order
+    };
 
-  let result;
-  if (id) {
-    result = await supabase
-      .from('vendor_categories')
-      .update(categoryData)
-      .eq('id', id)
-      .select();
-  } else {
-    result = await supabase
-      .from('vendor_categories')
-      .insert([categoryData])
-      .select();
-  }
+    let result;
+    if (id) {
+      result = await supabase
+        .from('vendor_categories')
+        .update(categoryData)
+        .eq('id', id)
+        .select();
+    } else {
+      result = await supabase
+        .from('vendor_categories')
+        .insert([categoryData])
+        .select();
+    }
 
-  if (result.error) {
-    showStatus('保存失敗', 'error');
-    showToast('保存に失敗しました: ' + result.error.message, 'error');
-    return;
-  }
+    if (result.error) {
+      showStatus('保存失敗', 'error');
+      showToast('保存に失敗しました: ' + result.error.message, 'error');
+      return;
+    }
 
-  showStatus('保存完了', 'success');
-  showToast(id ? 'カテゴリを更新しました' : 'カテゴリを追加しました', 'success');
-  closeCategoryModal();
-  await loadVendorCategories();
-  renderCategoriesList();
-  renderCategoryFilters();
+    showStatus('保存完了', 'success');
+    showToast(id ? 'カテゴリを更新しました' : 'カテゴリを追加しました', 'success');
+    closeCategoryModal();
+    await loadVendorCategories();
+    renderCategoriesList();
+    renderCategoryFilters();
+  });
 }
 
 function editCategory(categoryId) {
@@ -7592,7 +7595,7 @@ function openTaskModal(taskIdOrCategory = null) {
     populateTaskVendorSelection(null);
   }
 
-  modal.style.display = 'flex';
+  ModalManager.open(modal, '#taskKey');
 }
 
 function populateTaskVendorSelection(taskId) {
@@ -7626,7 +7629,7 @@ function populateTaskVendorSelection(taskId) {
 }
 
 function closeTaskModal() {
-  document.getElementById('taskModal').style.display = 'none';
+  ModalManager.close(document.getElementById('taskModal'));
 }
 
 function toggleTaskState() {
@@ -7636,6 +7639,8 @@ function toggleTaskState() {
 }
 
 async function saveTask() {
+  if (SaveGuard.isLocked('saveTask')) return;
+
   const id = document.getElementById('taskId').value;
   const taskName = document.getElementById('taskName').value.trim();
   const category = document.getElementById('taskCategory').value;
@@ -7668,48 +7673,50 @@ async function saveTask() {
     }
   }
 
-  showStatus('保存中...', 'saving');
+  await SaveGuard.run('saveTask', async () => {
+    showStatus('保存中...', 'saving');
 
-  const taskData = {
-    task_key: taskKey,
-    task_name: taskName,
-    category,
-    display_order: order,
-    has_state: hasState,
-    state_options: stateOptions,
-    has_email_button: hasEmailButton
-  };
+    const taskData = {
+      task_key: taskKey,
+      task_name: taskName,
+      category,
+      display_order: order,
+      has_state: hasState,
+      state_options: stateOptions,
+      has_email_button: hasEmailButton
+    };
 
-  let result;
-  if (id) {
-    result = await supabase
-      .from('tasks')
-      .update(taskData)
-      .eq('id', id)
-      .select();
-  } else {
-    result = await supabase
-      .from('tasks')
-      .insert([taskData])
-      .select();
-  }
+    let result;
+    if (id) {
+      result = await supabase
+        .from('tasks')
+        .update(taskData)
+        .eq('id', id)
+        .select();
+    } else {
+      result = await supabase
+        .from('tasks')
+        .insert([taskData])
+        .select();
+    }
 
-  if (result.error) {
-    showStatus('保存失敗', 'error');
-    showToast('保存に失敗しました: ' + result.error.message, 'error');
-    return;
-  }
+    if (result.error) {
+      showStatus('保存失敗', 'error');
+      showToast('保存に失敗しました: ' + result.error.message, 'error');
+      return;
+    }
 
-  // 業者紐づけの保存
-  const savedTaskId = id || result.data[0].id;
-  await saveTaskVendorMappings(savedTaskId);
+    // 業者紐づけの保存
+    const savedTaskId = id || result.data[0].id;
+    await saveTaskVendorMappings(savedTaskId);
 
-  showStatus('保存完了', 'success');
-  showToast(id ? 'タスクを更新しました' : 'タスクを追加しました', 'success');
-  closeTaskModal();
-  await loadTasksV2();
-  await loadTaskVendorMappings();
-  renderTasksManagement();
+    showStatus('保存完了', 'success');
+    showToast(id ? 'タスクを更新しました' : 'タスクを追加しました', 'success');
+    closeTaskModal();
+    await loadTasksV2();
+    await loadTaskVendorMappings();
+    renderTasksManagement();
+  });
 }
 
 async function saveTaskVendorMappings(taskId) {
@@ -9810,6 +9817,8 @@ function closeTemplateModal() {
 }
 
 async function saveTemplate() {
+  if (SaveGuard.isLocked('saveTemplate')) return;
+
   const templateId = document.getElementById('templateId').value.trim();
   const displayName = document.getElementById('templateDisplayName').value.trim();
   const category = document.getElementById('templateCategory').value;
@@ -9824,56 +9833,58 @@ async function saveTemplate() {
     return;
   }
 
-  showStatus('保存中...', 'saving');
+  await SaveGuard.run('saveTemplate', async () => {
+    showStatus('保存中...', 'saving');
 
-  const templateData = {
-    template_id: templateId,
-    display_name: displayName,
-    category,
-    company,
-    contact,
-    email,
-    subject_format: subjectFormat,
-    template_text: templateText,
-    has_special_content: false,
-    has_sub_options: false,
-    created_by: currentUser.id
-  };
+    const templateData = {
+      template_id: templateId,
+      display_name: displayName,
+      category,
+      company,
+      contact,
+      email,
+      subject_format: subjectFormat,
+      template_text: templateText,
+      has_special_content: false,
+      has_sub_options: false,
+      created_by: currentUser.id
+    };
 
-  if (editingTemplateId) {
-    const { error } = await supabase
-      .from('email_templates')
-      .update(templateData)
-      .eq('id', editingTemplateId);
+    if (editingTemplateId) {
+      const { error } = await supabase
+        .from('email_templates')
+        .update(templateData)
+        .eq('id', editingTemplateId);
 
-    if (error) {
-      showStatus('エラー', 'error');
-      showToast('保存に失敗しました: ' + error.message, 'error');
-      return;
+      if (error) {
+        showStatus('エラー', 'error');
+        showToast('保存に失敗しました: ' + error.message, 'error');
+        return;
+      }
+
+      const template = emailTemplates.find(t => t.id === editingTemplateId);
+      Object.assign(template, templateData);
+    } else {
+      const { data, error } = await supabase
+        .from('email_templates')
+        .insert([templateData])
+        .select();
+
+      if (error) {
+        showStatus('エラー', 'error');
+        showToast('保存に失敗しました: ' + error.message, 'error');
+        return;
+      }
+
+      emailTemplates.push(data[0]);
     }
 
-    const template = emailTemplates.find(t => t.id === editingTemplateId);
-    Object.assign(template, templateData);
-  } else {
-    const { data, error } = await supabase
-      .from('email_templates')
-      .insert([templateData])
-      .select();
-
-    if (error) {
-      showStatus('エラー', 'error');
-      showToast('保存に失敗しました: ' + error.message, 'error');
-      return;
-    }
-
-    emailTemplates.push(data[0]);
-  }
-
-  closeTemplateModal();
-  renderTemplates();
-  renderMappings();
-  showStatus('保存済み', 'saved');
-  showToast('テンプレートを保存しました', 'success');
+    closeTemplateModal();
+    renderTemplates();
+    renderMappings();
+    showStatus('保存済み', 'saved');
+    showToast('テンプレートを保存しました', 'success');
+  });
 }
 
 function editTemplate(templateId) {
@@ -12904,16 +12915,6 @@ function canPressApplicationGo(project) {
   const ventilationOk = progressData['ventilation']?.state === '保存済';
   const sashOk = progressData['sash']?.state === '保存済';
 
-  // デバッグログ
-  console.log('申請GO条件チェック:', {
-    customer: project.customer,
-    solar: { state: progressData['solar']?.state, ok: solarOk },
-    plumbing: { state: progressData['plumbing']?.state, ok: plumbingOk },
-    ventilation: { state: progressData['ventilation']?.state, ok: ventilationOk },
-    sash: { state: progressData['sash']?.state, ok: sashOk },
-    result: solarOk && plumbingOk && ventilationOk && sashOk
-  });
-
   return solarOk && plumbingOk && ventilationOk && sashOk;
 }
 
@@ -13545,58 +13546,6 @@ const ErrorHandler = {
     // this.sendErrorLog(error, context);
   }
 };
-
-// ============================================
-// ローディング表示
-// ============================================
-function showSkeletonLoading(containerId, type = 'card') {
-  const container = document.getElementById(containerId);
-  if (!container) return;
-
-  const skeletons = {
-    card: `
-      <div class="skeleton-card animate-pulse">
-        <div class="skeleton-line" style="width: 60%; height: 20px; margin-bottom: 12px;"></div>
-        <div class="skeleton-line" style="width: 80%; height: 14px; margin-bottom: 8px;"></div>
-        <div class="skeleton-line" style="width: 40%; height: 14px;"></div>
-      </div>
-    `,
-    list: `
-      <div class="skeleton-list animate-pulse">
-        ${Array(5).fill().map(() => `
-          <div class="skeleton-item" style="display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border-color);">
-            <div class="skeleton-circle" style="width: 40px; height: 40px; border-radius: 50%;"></div>
-            <div style="flex: 1;">
-              <div class="skeleton-line" style="width: 50%; height: 16px; margin-bottom: 8px;"></div>
-              <div class="skeleton-line" style="width: 30%; height: 12px;"></div>
-            </div>
-          </div>
-        `).join('')}
-      </div>
-    `,
-    table: `
-      <div class="skeleton-table animate-pulse">
-        ${Array(5).fill().map(() => `
-          <div style="display: flex; gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--border-color);">
-            <div class="skeleton-line" style="width: 20%; height: 14px;"></div>
-            <div class="skeleton-line" style="width: 30%; height: 14px;"></div>
-            <div class="skeleton-line" style="width: 25%; height: 14px;"></div>
-            <div class="skeleton-line" style="width: 15%; height: 14px;"></div>
-          </div>
-        `).join('')}
-      </div>
-    `
-  };
-
-  container.innerHTML = skeletons[type] || skeletons.card;
-}
-
-function hideSkeletonLoading(containerId) {
-  const container = document.getElementById(containerId);
-  if (container) {
-    container.innerHTML = '';
-  }
-}
 
 // ============================================
 // 分析ダッシュボード機能
@@ -14421,16 +14370,11 @@ function openFcModal(fcId = null) {
     title.textContent = 'FC追加';
   }
 
-  // カラーピッカーの同期
-  document.getElementById('fcColor').addEventListener('input', function() {
-    document.getElementById('fcColorText').value = this.value;
-  });
-
-  modal.style.display = 'flex';
+  ModalManager.open(modal, '#fcName');
 }
 
 function closeFcModal() {
-  document.getElementById('fcModal').style.display = 'none';
+  ModalManager.close(document.getElementById('fcModal'));
 }
 
 async function saveFc() {
@@ -14514,22 +14458,24 @@ async function deleteFc(fcId) {
     return;
   }
 
-  showStatus('削除中...', 'saving');
+  await SaveGuard.run(`deleteFc_${fcId}`, async () => {
+    showStatus('削除中...', 'saving');
 
-  const { error } = await supabase
-    .from('fc_organizations')
-    .delete()
-    .eq('id', fcId);
+    const { error } = await supabase
+      .from('fc_organizations')
+      .delete()
+      .eq('id', fcId);
 
-  if (error) {
-    showStatus('エラー', 'error');
-    showToast('削除に失敗しました: ' + error.message, 'error');
-    return;
-  }
+    if (error) {
+      showStatus('エラー', 'error');
+      showToast('削除に失敗しました: ' + error.message, 'error');
+      return;
+    }
 
-  showStatus('保存済み', 'saved');
-  showToast('FCを削除しました', 'success');
-  await loadFcOrganizations();
+    showStatus('保存済み', 'saved');
+    showToast('FCを削除しました', 'success');
+    await loadFcOrganizations();
+  });
 }
 
 // ============================================

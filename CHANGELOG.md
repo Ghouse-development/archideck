@@ -35,6 +35,32 @@
 
 ---
 
+## v4.25.0 (2025-12-14)
+
+### コード品質改善
+
+#### 不要コードの削除
+- 本番用console.log削除（申請GO条件チェック用デバッグログ、SaveGuardデバッグログ）
+- 未使用スケルトンローディング関数削除（`showSkeletonLoading`, `hideSkeletonLoading`）
+
+#### ModalManager統一
+- 全モーダルをModalManagerで統一管理（Escapeキー・フォーカス管理の一貫性）
+  - `openVendorModalV2` / `closeVendorModalV2`
+  - `openCategoryModal` / `closeCategoryModal`
+  - `openTaskModal` / `closeTaskModal`
+  - `openFcModal` / `closeFcModal`
+
+#### イベントリスナー蓄積防止
+- `openFcModal`: カラーピッカー同期をHTML側のoninputに移動
+
+#### 二重実行防止（SaveGuard）追加
+- `saveCategory`: カテゴリ保存の連打防止
+- `saveTask`: タスク保存の連打防止
+- `saveTemplate`: テンプレート保存の連打防止
+- `deleteFc`: FC削除の連打防止
+
+---
+
 ## v4.24.0 (2025-12-14)
 
 ### セキュリティ修正
