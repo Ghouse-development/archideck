@@ -3182,6 +3182,53 @@ input:checked + .toggle-slider:before {
   border-bottom-color: #475569;
 }
 
+[data-theme="dark"] .report-card {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+[data-theme="dark"] .report-header h2 {
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .report-period {
+  background: #334155;
+  color: #e2e8f0;
+}
+
+[data-theme="dark"] .report-stat-item {
+  background: #0f172a;
+}
+
+[data-theme="dark"] .report-stat-label {
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .report-section-title {
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .report-list-item {
+  background: #0f172a;
+}
+
+[data-theme="dark"] .report-project-name {
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .report-assignee {
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .report-empty {
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .report-designer-count {
+  background: #334155;
+  color: #e2e8f0;
+}
+
 /* ===== ArchiDeck v3.0 新機能スタイル ===== */
 
 /* 5部構成カードセクション - Premium Design */
@@ -4884,6 +4931,61 @@ function throttle(func, limit = 100) {
     }
   };
 }
+
+// モーダル管理ユーティリティ
+const ModalManager = {
+  activeModal: null,
+  previousFocus: null,
+
+  // モーダルを開く（フォーカス管理付き）
+  open(modalElement, firstFocusSelector = 'input:not([type="hidden"]), select, textarea, button') {
+    if (!modalElement) return;
+
+    // 現在のフォーカス要素を保存
+    this.previousFocus = document.activeElement;
+    this.activeModal = modalElement;
+
+    // モーダルを表示
+    modalElement.classList.add('show');
+
+    // 最初の入力要素にフォーカス
+    setTimeout(() => {
+      const firstFocusable = modalElement.querySelector(firstFocusSelector);
+      if (firstFocusable) {
+        firstFocusable.focus();
+      }
+    }, 100);
+
+    // Escapeキーでのクローズを設定
+    this._escapeHandler = (e) => {
+      if (e.key === 'Escape' && this.activeModal === modalElement) {
+        this.close(modalElement);
+      }
+    };
+    document.addEventListener('keydown', this._escapeHandler);
+  },
+
+  // モーダルを閉じる
+  close(modalElement) {
+    if (!modalElement) return;
+
+    modalElement.classList.remove('show');
+
+    // Escapeハンドラを解除
+    if (this._escapeHandler) {
+      document.removeEventListener('keydown', this._escapeHandler);
+      this._escapeHandler = null;
+    }
+
+    // 前のフォーカス要素に戻す
+    if (this.previousFocus && typeof this.previousFocus.focus === 'function') {
+      this.previousFocus.focus();
+    }
+
+    this.activeModal = null;
+    this.previousFocus = null;
+  }
+};
 
 // メモ化関数 - 結果をキャッシュ
 function memoize(fn, ttl = 60000) {
@@ -8442,13 +8544,13 @@ function renderProjects() {
   emptyState.style.display = 'none';
   container.innerHTML = filtered.map(project => renderProjectCard(project)).join('');
 
-  // カード描画後にタスクと議事録を読み込む
+  // カード描画後にタスクと議事録を読み込む（DOM描画完了を待つ）
   setTimeout(() => {
     filtered.forEach(project => {
       loadProjectTasksList(project.id);
       loadMinutesList(project.id);
     });
-  }, 50);
+  }, 100);
 }
 
 // 案件カードにスクロール
@@ -8569,8 +8671,8 @@ function renderProjectCard(project) {
         <input type="checkbox" class="batch-checkbox" data-project-id="${project.id}" ${isSelected ? 'checked' : ''} onclick="event.stopPropagation(); BatchOperations.toggle('${project.id}')" title="選択">
         <button class="favorite-btn ${isFavorite ? 'active' : ''}" onclick="event.stopPropagation(); FavoritesManager.toggle('${project.id}')" title="${isFavorite ? 'お気に入り解除' : 'お気に入り登録'}">${isFavorite ? '★' : '☆'}</button>
         <div>
-          <div class="card-title"><span class="customer-name">${project.customer}</span><span class="badge badge-primary">${project.specifications || 'LIFE'}</span>${project.is_archived ? '<span class="badge badge-success">完了済み</span>' : ''}</div>
-          <div class="card-subtitle"><span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this)" style="cursor: pointer; text-decoration: underline dotted;" title="クリックで担当者変更">設計：${project.assigned_to || '未割当'}</span>${project.ic_assignee ? ` | IC：${project.ic_assignee}` : ''}${project.exterior_assignee ? ` | 外構：${project.exterior_assignee}` : ''}${(() => { const ds = DeadlineManager.getStatus(project.id); return ds ? ` <span style="background: ${ds.color}; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-left: 8px;" onclick="event.stopPropagation(); DeadlineManager.showModal('${project.id}')" title="期限を変更">📅 ${ds.label}</span>` : ` <span style="color: var(--text-muted); font-size: 11px; cursor: pointer;" onclick="event.stopPropagation(); DeadlineManager.showModal('${project.id}')" title="期限を設定">📅 期限設定</span>`; })()}</div>
+          <div class="card-title"><span class="customer-name">${escapeHtml(project.customer)}</span><span class="badge badge-primary">${escapeHtml(project.specifications || 'LIFE')}</span>${project.is_archived ? '<span class="badge badge-success">完了済み</span>' : ''}</div>
+          <div class="card-subtitle"><span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this)" style="cursor: pointer; text-decoration: underline dotted;" title="クリックで担当者変更">設計：${escapeHtml(project.assigned_to || '未割当')}</span>${project.ic_assignee ? ` | IC：${escapeHtml(project.ic_assignee)}` : ''}${project.exterior_assignee ? ` | 外構：${escapeHtml(project.exterior_assignee)}` : ''}${(() => { const ds = DeadlineManager.getStatus(project.id); return ds ? ` <span style="background: ${ds.color}; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-left: 8px;" onclick="event.stopPropagation(); DeadlineManager.showModal('${project.id}')" title="期限を変更">📅 ${ds.label}</span>` : ` <span style="color: var(--text-muted); font-size: 11px; cursor: pointer;" onclick="event.stopPropagation(); DeadlineManager.showModal('${project.id}')" title="期限を設定">📅 期限設定</span>`; })()}</div>
         </div>
       </div>
       <div style="display: flex; gap: 8px; align-items: center;">
@@ -8587,7 +8689,7 @@ function renderProjectCard(project) {
 
     <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">✅ タスク</span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><div id="projectTasksList_${project.id}" class="project-task-list"></div><div class="add-task-form"><input type="text" id="newTaskName_${project.id}" placeholder="タスク名" inputmode="text"><input type="date" id="newTaskDue_${project.id}"><button class="btn btn-small btn-primary" onclick="addProjectTask('${project.id}', document.getElementById('newTaskName_${project.id}').value, document.getElementById('newTaskDue_${project.id}').value)">追加</button></div></div></div>
 
-    <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">📝 メモ欄</span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><textarea class="shared-memo-area" id="sharedMemo_${project.id}" placeholder="メモを入力...">${project.shared_memo || ''}</textarea><button class="btn btn-small btn-ghost" style="margin-top:8px" onclick="saveSharedMemo('${project.id}')">メモを保存</button></div></div>
+    <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">📝 メモ欄</span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><textarea class="shared-memo-area" id="sharedMemo_${project.id}" placeholder="メモを入力...">${escapeHtml(project.shared_memo || '')}</textarea><button class="btn btn-small btn-ghost" style="margin-top:8px" onclick="saveSharedMemo('${project.id}')">メモを保存</button></div></div>
 
     <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">📄 議事録</span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><div id="minutesList_${project.id}" class="minutes-list"></div><div style="margin-bottom:12px;padding:12px;background:var(--bg-tertiary);border-radius:8px;"><label style="font-size:12px;color:var(--text-secondary);display:block;margin-bottom:6px;">打合せ日</label><input type="date" id="meetingDate_${project.id}" style="width:100%;padding:8px 12px;border:1px solid var(--border-color);border-radius:6px;font-size:14px;"></div><div class="minutes-upload-area" id="minutesDropArea_${project.id}" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDropWithDate(event, '${project.id}')" onclick="triggerMinutesUpload('${project.id}')"><input type="file" id="minutesUpload_${project.id}" style="display:none" accept=".pdf,.doc,.docx,.xls,.xlsx" onchange="uploadMinutesWithDate('${project.id}', this.files[0])"><span>📁 クリックまたはドラッグ&ドロップ</span><div style="font-size:12px;color:var(--text-muted);margin-top:4px">PDF, Word, Excel対応</div></div></div></div>
 
@@ -8878,12 +8980,12 @@ function openProjectModal(projectId = null) {
   }
 
   log('🎬 モーダルを表示します...');
-  modal.classList.add('show');
+  ModalManager.open(modal, '#projectCustomer');
   log('✅ openProjectModal() 完了');
 }
 
 function closeProjectModal() {
-  document.getElementById('projectModal').classList.remove('show');
+  ModalManager.close(document.getElementById('projectModal'));
   editingProjectId = null;
 }
 
@@ -9100,11 +9202,11 @@ async function restoreFromArchive(projectId) {
 // ============================================
 function openDesignerModal() {
   renderDesignerList();
-  document.getElementById('designerModal').classList.add('show');
+  ModalManager.open(document.getElementById('designerModal'));
 }
 
 function closeDesignerModal() {
-  document.getElementById('designerModal').classList.remove('show');
+  ModalManager.close(document.getElementById('designerModal'));
 }
 
 function renderDesignerList() {
@@ -9478,11 +9580,11 @@ function openDesignerAuthModal(designerId) {
   document.getElementById('authDesignerPassword').value = '';
   document.getElementById('authDesignerPasswordConfirm').value = '';
 
-  document.getElementById('designerAuthModal').classList.add('show');
+  ModalManager.open(document.getElementById('designerAuthModal'), '#authDesignerEmail');
 }
 
 function closeDesignerAuthModal() {
-  document.getElementById('designerAuthModal').classList.remove('show');
+  ModalManager.close(document.getElementById('designerAuthModal'));
 }
 
 async function saveDesignerAuth() {
@@ -9836,11 +9938,11 @@ function openTemplateModal(templateId = null) {
     document.getElementById('templateText').value = '';
   }
 
-  modal.classList.add('show');
+  ModalManager.open(modal, '#templateId');
 }
 
 function closeTemplateModal() {
-  document.getElementById('templateModal').classList.remove('show');
+  ModalManager.close(document.getElementById('templateModal'));
   editingTemplateId = null;
 }
 
@@ -10033,11 +10135,11 @@ function openVendorModal(vendorId = null) {
     document.getElementById('vendorEmail').value = '';
   }
 
-  modal.classList.add('show');
+  ModalManager.open(modal, '#vendorTemplateId');
 }
 
 function closeVendorModal() {
-  document.getElementById('vendorModal').classList.remove('show');
+  ModalManager.close(document.getElementById('vendorModal'));
   editingVendorId = null;
 }
 
@@ -10607,7 +10709,7 @@ function showTemplateSelector(projectId, taskKey) {
   `;
 
   document.getElementById('emailComposerContent').innerHTML = html;
-  document.getElementById('emailModal').classList.add('show');
+  ModalManager.open(document.getElementById('emailModal'));
 }
 
 // テンプレート選択後にメール作成画面を表示
@@ -10809,7 +10911,7 @@ async function markTaskAsRequested(projectId, taskKey) {
 }
 
 function closeEmailModal() {
-  document.getElementById('emailModal').classList.remove('show');
+  ModalManager.close(document.getElementById('emailModal'));
   window.__currentEmailData = null;
 }
 
@@ -12035,7 +12137,7 @@ const DeadlineManager = {
       <div style="background: var(--bg-primary); border-radius: 12px; width: 90%; max-width: 360px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
         <div style="padding: 20px; border-bottom: 1px solid var(--border-color);">
           <h3 style="font-size: 18px; font-weight: 600;">期限を設定</h3>
-          <p style="font-size: 14px; color: var(--text-secondary); margin-top: 4px;">${project.customer}</p>
+          <p style="font-size: 14px; color: var(--text-secondary); margin-top: 4px;">${escapeHtml(project.customer)}</p>
         </div>
         <div style="padding: 20px;">
           <input type="date" id="deadlineInput" class="form-input" style="width: 100%;" value="${currentDeadline}">
@@ -12131,7 +12233,7 @@ const CalendarView = {
       html += `
         <div style="padding: 6px; background: ${isToday ? 'var(--primary-light)' : 'white'}; min-height: 80px; cursor: pointer;" onclick="CalendarView.showDateProjects('${dateStr}')">
           <div style="font-size: 14px; font-weight: ${isToday ? '600' : '400'}; color: ${dayOfWeek === 0 ? '#EF4444' : dayOfWeek === 6 ? '#3B82F6' : 'var(--text-primary)'}; margin-bottom: 4px;">${day}</div>
-          ${dateProjects.slice(0, 3).map(p => `<div style="font-size: 11px; padding: 2px 4px; background: var(--primary-color); color: white; border-radius: 4px; margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${p.customer}</div>`).join('')}
+          ${dateProjects.slice(0, 3).map(p => `<div style="font-size: 11px; padding: 2px 4px; background: var(--primary-color); color: white; border-radius: 4px; margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(p.customer)}</div>`).join('')}
           ${dateProjects.length > 3 ? `<div style="font-size: 10px; color: var(--text-secondary);">+${dateProjects.length - 3}件</div>` : ''}
         </div>
       `;
@@ -12175,8 +12277,8 @@ const CalendarView = {
           ${dateProjects.map(p => `
             <div style="padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 8px; cursor: pointer;"
                  onclick="document.getElementById('dateProjectsModal').remove(); editProject('${p.id}')">
-              <div style="font-weight: 500;">${p.customer}</div>
-              <div style="font-size: 13px; color: var(--text-secondary);">担当: ${p.assigned_to || '未割当'}</div>
+              <div style="font-weight: 500;">${escapeHtml(p.customer)}</div>
+              <div style="font-size: 13px; color: var(--text-secondary);">担当: ${escapeHtml(p.assigned_to || '未割当')}</div>
             </div>
           `).join('')}
         </div>
@@ -12711,12 +12813,17 @@ renderSidebar = function() {
   const icDesigners = designers.filter(d => d.category === 'IC').sort((a, b) => (a.display_order || 999) - (b.display_order || 999));
   const exteriorDesigners = designers.filter(d => d.category === '外構').sort((a, b) => (a.display_order || 999) - (b.display_order || 999));
   const allCount = projects.filter(p => p.status !== 'completed' && !p.is_archived).length;
+  const archivedCount = projects.filter(p => p.is_archived).length;
 
   let html = `
     <div class="sidebar-section">
       <div class="sidebar-item ${currentDesignerTab === 'ALL' ? 'active' : ''}" onclick="selectDesigner('ALL')">
         <span class="sidebar-item-label">全案件</span>
         <span class="sidebar-item-count">${allCount}</span>
+      </div>
+      <div class="sidebar-item ${currentDesignerTab === 'ARCHIVED' ? 'active' : ''}" onclick="selectDesigner('ARCHIVED')" style="background: ${currentDesignerTab === 'ARCHIVED' ? 'var(--success-bg)' : 'transparent'};">
+        <span class="sidebar-item-label" style="color: var(--success-color);">✓ 完了済</span>
+        <span class="sidebar-item-count" style="background: var(--success-color); color: white;">${archivedCount}</span>
       </div>
     </div>
   `;
@@ -12834,11 +12941,11 @@ function openStaffTasksModal(staffName) {
   currentStaffForTasks = staffName;
   document.getElementById('staffTasksModalTitle').textContent = `${staffName} のタスク一覧`;
   renderStaffTasksList();
-  document.getElementById('staffTasksModal').classList.add('show');
+  ModalManager.open(document.getElementById('staffTasksModal'));
 }
 
 function closeStaffTasksModal() {
-  document.getElementById('staffTasksModal').classList.remove('show');
+  ModalManager.close(document.getElementById('staffTasksModal'));
   currentStaffForTasks = null;
 }
 
@@ -13122,11 +13229,11 @@ function confirmApplicationGo(projectId) {
     </div>`
   ).join('');
 
-  document.getElementById('applicationGoModal').classList.add('show');
+  ModalManager.open(document.getElementById('applicationGoModal'));
 }
 
 function closeApplicationGoModal() {
-  document.getElementById('applicationGoModal').classList.remove('show');
+  ModalManager.close(document.getElementById('applicationGoModal'));
   applicationGoProjectId = null;
 }
 
@@ -13135,6 +13242,13 @@ async function executeApplicationGo() {
 
   const project = projects.find(p => p.id === applicationGoProjectId);
   if (!project) return;
+
+  // 条件を再チェック（モーダル表示後に条件が変わっている可能性があるため）
+  if (!canPressApplicationGo(project)) {
+    showToast('条件が満たされていません。タスクの状態を確認してください。', 'error');
+    closeApplicationGoModal();
+    return;
+  }
 
   // 申請タスクを完了としてマーク
   const progressData = project.progress || {};
@@ -13274,14 +13388,17 @@ async function uploadMinutesWithDate(projectId, file) {
   const ext = file.name.split('.').pop();
   const autoTitle = `${formattedDate}_${customerName}_${assignee}.${ext}`;
 
+  // ストレージ用のファイル名（ASCII文字のみ、スペースはアンダースコアに置換）
+  const safeFileName = `${Date.now()}_${formattedDate}.${ext}`;
+
   showToast('アップロード中...', 'info');
 
   try {
-    // Supabase Storageにアップロード
-    const fileName = `${projectId}/${Date.now()}_${autoTitle}`;
+    // Supabase Storageにアップロード（ファイル名はASCIIのみ）
+    const storagePath = `${projectId}/${safeFileName}`;
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('minutes')
-      .upload(fileName, file);
+      .upload(storagePath, file);
 
     if (uploadError) {
       logError('Storage upload error:', uploadError);
@@ -13298,7 +13415,7 @@ async function uploadMinutesWithDate(projectId, file) {
     // URLを取得
     const { data: urlData } = supabase.storage
       .from('minutes')
-      .getPublicUrl(fileName);
+      .getPublicUrl(storagePath);
 
     // DBに登録（タイトルを自動生成したものに）
     const { error: dbError } = await supabase
@@ -13425,11 +13542,12 @@ async function uploadMinutes(projectId, file) {
   showToast('アップロード中...', 'info');
 
   try {
-    // Supabase Storageにアップロード
-    const fileName = `${projectId}/${Date.now()}_${file.name}`;
+    // Supabase Storageにアップロード（ファイル名はASCIIのみ）
+    const ext = file.name.split('.').pop();
+    const safeStoragePath = `${projectId}/${Date.now()}.${ext}`;
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('minutes')
-      .upload(fileName, file);
+      .upload(safeStoragePath, file);
 
     if (uploadError) {
       logError('Storage upload error:', uploadError);
@@ -13447,7 +13565,7 @@ async function uploadMinutes(projectId, file) {
     // URLを取得
     const { data: urlData } = supabase.storage
       .from('minutes')
-      .getPublicUrl(fileName);
+      .getPublicUrl(safeStoragePath);
 
     // DBに登録
     const { error: dbError } = await supabase
@@ -13866,7 +13984,7 @@ function updateGanttChart() {
   html += '</tr></thead><tbody>';
 
   activeProjects.forEach(p => {
-    html += `<tr><td>${p.customer}</td>`;
+    html += `<tr><td>${escapeHtml(p.customer)}</td>`;
     const progress = calculateProgress(p);
     const progressDays = Math.ceil(daysInMonth * progress / 100);
 
@@ -13973,7 +14091,7 @@ function generateWeeklyReport() {
 
         return `<div class="report-project-detail ${wasUpdated ? 'updated' : ''}">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-            <span style="font-weight: 600;">${p.customer}</span>
+            <span style="font-weight: 600;">${escapeHtml(p.customer)}</span>
             <span class="report-progress-badge ${getProgressBadgeClass(progress)}">${progress}%</span>
           </div>
           <div style="font-size: 12px; color: var(--text-secondary);">${statusText}</div>
@@ -13983,7 +14101,7 @@ function generateWeeklyReport() {
 
       return `<div class="report-designer-section">
         <div class="report-designer-header">
-          <span class="report-designer-name">${name}</span>
+          <span class="report-designer-name">${escapeHtml(name)}</span>
           <span class="report-designer-count">${projs.length}件</span>
         </div>
         ${projectDetails}
@@ -14019,8 +14137,8 @@ function generateWeeklyReport() {
         <div class="report-section-title">今週の完了案件</div>
         <ul class="report-list">
           ${completedThisWeek.map(p => `<li class="report-list-item">
-            <span class="report-project-name">${p.customer}</span>
-            <span class="report-assignee">${p.assigned_to || '未割当'}</span>
+            <span class="report-project-name">${escapeHtml(p.customer)}</span>
+            <span class="report-assignee">${escapeHtml(p.assigned_to || '未割当')}</span>
           </li>`).join('')}
         </ul>
       </div>` : ''}
@@ -14082,7 +14200,7 @@ function generateMonthlyReport() {
 
         return `<div class="report-project-detail ${isUpdated ? 'updated' : ''}">
           <div class="report-project-title">
-            <span class="project-name">${p.customer}</span>
+            <span class="project-name">${escapeHtml(p.customer)}</span>
             ${isUpdated ? '<span class="report-updated-badge">今月更新</span>' : ''}
           </div>
           ${statusTags ? `<div class="report-status-list">${statusTags}</div>` : '<div class="report-status-list"><span class="report-status-tag">未着手</span></div>'}
@@ -14091,7 +14209,7 @@ function generateMonthlyReport() {
 
       return `<div class="report-designer-section">
         <div class="report-designer-header">
-          <span class="report-designer-name">${name}</span>
+          <span class="report-designer-name">${escapeHtml(name)}</span>
           <span class="report-designer-count">${projs.length}件</span>
         </div>
         ${projectDetails}
@@ -14131,8 +14249,8 @@ function generateMonthlyReport() {
         <div class="report-section-title">今月の完了案件</div>
         <ul class="report-list">
           ${completedThisMonth.map(p => `<li class="report-list-item">
-            <span class="report-project-name">${p.customer}</span>
-            <span class="report-assignee">${p.assigned_to || '未割当'}</span>
+            <span class="report-project-name">${escapeHtml(p.customer)}</span>
+            <span class="report-assignee">${escapeHtml(p.assigned_to || '未割当')}</span>
           </li>`).join('')}
         </ul>
       </div>` : ''}
@@ -14431,10 +14549,12 @@ function downloadLocalBackup() {
   }
 
   const blob = new Blob([backup], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
+  link.href = url;
   link.download = `archideck_local_backup_${new Date().toISOString().split('T')[0]}.json`;
   link.click();
+  URL.revokeObjectURL(url); // メモリ解放
   showToast('ローカルバックアップをダウンロードしました', 'success');
 }
 
@@ -14471,10 +14591,12 @@ async function createBackup() {
 
     const json = JSON.stringify(backup, null, 2);
     const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
+    link.href = url;
     link.download = `archideck_backup_${new Date().toISOString().split('T')[0]}.json`;
     link.click();
+    URL.revokeObjectURL(url); // メモリ解放
 
     statusEl.innerHTML = '<span style="color: var(--success-color);">✅ バックアップを作成しました</span>';
     showToast('バックアップファイルをダウンロードしました', 'success');
@@ -14685,10 +14807,12 @@ function exportToKintone() {
 
   const csv = [headers.join(','), ...rows].join('\n');
   const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
+  link.href = url;
   link.download = `archideck_export_${new Date().toISOString().split('T')[0]}.csv`;
   link.click();
+  URL.revokeObjectURL(url); // メモリ解放
   showToast('CSVをエクスポートしました', 'success');
 }
 
