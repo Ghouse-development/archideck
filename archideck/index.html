@@ -8734,6 +8734,45 @@ async function updateTaskState(projectId, taskKey, state) {
 
   project.progress = progressData;
   project.updated_at = new Date().toISOString();
+
+  // 申請GOの状態が変わる可能性があるため、常にUIを更新
+  // 該当の案件カードのみを更新（パフォーマンス最適化）
+  const projectCard = document.querySelector(`.project-card[data-project-id="${projectId}"]`);
+  if (projectCard) {
+    const applicationGoEnabled = canPressApplicationGo(project);
+    const applicationGoContainer = projectCard.querySelector('.application-go-container');
+    if (applicationGoContainer) {
+      const taskDef = tasksV2.find(t => t.task_key === 'application');
+      const applicationGoData = progressData['application'] || {};
+
+      if (applicationGoData.completed) {
+        // 完了済み
+        applicationGoContainer.outerHTML = `<div class="application-go-container application-go-completed">
+          <div class="application-go-icon">✓</div>
+          <div class="application-go-text">${taskDef?.task_name || '申請GO'} 完了</div>
+        </div>`;
+      } else if (applicationGoEnabled) {
+        // 条件が揃っている：クリック可能
+        applicationGoContainer.outerHTML = `<div class="application-go-container application-go-ready" onclick="confirmApplicationGo('${projectId}')">
+          <div class="application-go-icon">🚀</div>
+          <div class="application-go-text">${taskDef?.task_name || '申請GO'}</div>
+          <div class="application-go-arrow">→</div>
+        </div>`;
+      } else {
+        // 条件未達
+        const requiredTasks = getApplicationGoRequiredTasks();
+        const tooltip = requiredTasks.length > 0
+          ? requiredTasks.map(r => `${r.task_name}:${r.finalState}`).join('、') + ' が必要'
+          : '太陽光:保存済、給排水:保存済、換気:保存済、サッシ:保存済 が必要';
+        applicationGoContainer.outerHTML = `<div class="application-go-container application-go-disabled" title="${tooltip}">
+          <div class="application-go-icon">🔒</div>
+          <div class="application-go-text">${taskDef?.task_name || '申請GO'}</div>
+          <div class="application-go-status">条件未達</div>
+        </div>`;
+      }
+    }
+  }
+
   if (applicationGoCleared) {
     project.is_archived = false;
     renderProjects();
@@ -12587,6 +12626,7 @@ function canPressApplicationGo(project) {
 
   // 必要なタスクが見つからない場合は旧ロジックにフォールバック
   if (requiredTasks.length === 0) {
+    log('⚠️ 申請GO: tasksV2からタスクが見つかりません。旧ロジックを使用');
     const solarOk = progressData['solar']?.state === '保存済';
     const plumbingOk = progressData['plumbing']?.state === '保存済';
     const ventilationOk = progressData['ventilation']?.state === '保存済';
@@ -12595,10 +12635,16 @@ function canPressApplicationGo(project) {
   }
 
   // 全ての必要タスクが最終状態かチェック
-  return requiredTasks.every(req => {
-    const currentState = progressData[req.task_key]?.state;
-    return currentState === req.finalState;
+  const results = requiredTasks.map(req => {
+    const currentState = progressData[req.task_key]?.state || '-';
+    const ok = currentState === req.finalState;
+    log(`📋 申請GO条件: ${req.task_name} (${req.task_key}) = "${currentState}" / 必要: "${req.finalState}" → ${ok ? '✓' : '✗'}`);
+    return ok;
   });
+
+  const allOk = results.every(r => r);
+  log(`📋 申請GO判定: ${allOk ? '条件OK' : '条件未達'}`);
+  return allOk;
 }
 
 // 申請GO確認モーダル
