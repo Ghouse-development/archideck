@@ -4922,6 +4922,12 @@ const ModalManager = {
   open(modalElement, firstFocusSelector = 'input:not([type="hidden"]), select, textarea, button') {
     if (!modalElement) return;
 
+    // 既存のEscapeハンドラがあれば先に解除（蓄積防止）
+    if (this._escapeHandler) {
+      document.removeEventListener('keydown', this._escapeHandler);
+      this._escapeHandler = null;
+    }
+
     // 現在のフォーカス要素を保存
     this.previousFocus = document.activeElement;
     this.activeModal = modalElement;
@@ -14563,19 +14569,38 @@ function previewCustomization() {
 }
 
 function updatePreview() {
-  const primaryColor = document.getElementById('customPrimaryColor').value;
-  const secondaryColor = document.getElementById('customSecondaryColor').value;
-  const name = document.getElementById('customOrgName').value;
-  const logoUrl = document.getElementById('customLogoUrl').value;
+  const primaryColor = document.getElementById('customPrimaryColor')?.value || '#2563EB';
+  const secondaryColor = document.getElementById('customSecondaryColor')?.value || '#1E40AF';
+  const name = document.getElementById('customOrgName')?.value || '';
+  const logoUrl = document.getElementById('customLogoUrl')?.value || '';
 
   const previewLogo = document.getElementById('previewLogo');
   const previewTitle = document.getElementById('previewTitle');
 
+  // null チェック
+  if (!previewLogo || !previewTitle) return;
+
+  // カラー値の検証（#RRGGBB形式のみ許可）
+  const isValidColor = (color) => /^#[0-9A-Fa-f]{6}$/.test(color);
+  const safePrimary = isValidColor(primaryColor) ? primaryColor : '#2563EB';
+  const safeSecondary = isValidColor(secondaryColor) ? secondaryColor : '#1E40AF';
+
   if (logoUrl) {
-    previewLogo.innerHTML = `<img src="${logoUrl}" style="max-width: 32px; max-height: 32px; object-fit: contain;">`;
+    // XSS対策: URLをエスケープし、httpまたはhttpsのみ許可
+    const isValidUrl = /^https?:\/\//i.test(logoUrl);
+    if (isValidUrl) {
+      const img = document.createElement('img');
+      img.src = logoUrl;
+      img.style.cssText = 'max-width: 32px; max-height: 32px; object-fit: contain;';
+      img.onerror = () => { previewLogo.innerHTML = '🏠'; };
+      previewLogo.innerHTML = '';
+      previewLogo.appendChild(img);
+    } else {
+      previewLogo.innerHTML = '🏠';
+    }
   } else {
     previewLogo.innerHTML = '🏠';
-    previewLogo.style.background = `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`;
+    previewLogo.style.background = `linear-gradient(135deg, ${safePrimary}, ${safeSecondary})`;
   }
 
   previewTitle.textContent = name || 'ArchiDeck';
