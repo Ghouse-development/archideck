@@ -1667,6 +1667,121 @@ input:checked + .toggle-slider:before {
   box-shadow: 0 2px 8px rgba(74, 144, 226, 0.3);
 }
 
+/* 申請Goコンテナ（フルワイド） */
+.application-go-container {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 16px 24px;
+  border-radius: 12px;
+  margin-top: 8px;
+  transition: all 0.3s ease;
+}
+
+.application-go-icon {
+  font-size: 24px;
+}
+
+.application-go-text {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.application-go-arrow {
+  font-size: 20px;
+  font-weight: 700;
+  animation: pulse-arrow 1.5s infinite;
+}
+
+@keyframes pulse-arrow {
+  0%, 100% { opacity: 1; transform: translateX(0); }
+  50% { opacity: 0.6; transform: translateX(4px); }
+}
+
+.application-go-status {
+  font-size: 12px;
+  padding: 4px 12px;
+  background: rgba(0,0,0,0.1);
+  border-radius: 12px;
+}
+
+/* 条件達成時：クリック可能 */
+.application-go-ready {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+}
+
+.application-go-ready:hover {
+  background: linear-gradient(135deg, #059669, #047857);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
+}
+
+/* 完了済み */
+.application-go-completed {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+}
+
+.application-go-completed .application-go-icon {
+  background: white;
+  color: #10b981;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* 条件未達 */
+.application-go-disabled {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border: 2px dashed var(--border-color);
+}
+
+.application-go-disabled .application-go-icon {
+  opacity: 0.5;
+}
+
+/* 申請Go ダークモード対応 */
+[data-theme="dark"] .application-go-disabled {
+  background: var(--bg-tertiary);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .application-go-disabled .application-go-status {
+  background: rgba(255,255,255,0.1);
+}
+
+/* 申請Go モバイル対応 */
+@media (max-width: 768px) {
+  .application-go-container {
+    padding: 14px 16px;
+    gap: 10px;
+  }
+
+  .application-go-icon {
+    font-size: 20px;
+  }
+
+  .application-go-text {
+    font-size: 14px;
+  }
+
+  .application-go-arrow {
+    font-size: 16px;
+  }
+}
+
 .template-select-btn {
   width: 100%;
   padding: 16px;
@@ -2803,12 +2918,136 @@ input:checked + .toggle-slider:before {
   background: var(--bg-secondary);
   border-radius: 12px;
   padding: 24px;
-  white-space: pre-wrap;
-  font-family: monospace;
-  font-size: 13px;
-  line-height: 1.6;
-  max-height: 500px;
-  overflow-y: auto;
+}
+
+.report-card {
+  background: var(--bg-primary);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+  border: 1px solid var(--border-color);
+}
+
+.report-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--primary);
+}
+
+.report-header h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.report-period {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  background: var(--bg-secondary);
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+
+.report-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.report-stat-item {
+  background: var(--bg-secondary);
+  padding: 16px;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.report-stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.report-stat-label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.report-section {
+  margin-top: 20px;
+}
+
+.report-section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.report-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.report-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.report-list-item:last-child {
+  margin-bottom: 0;
+}
+
+.report-project-name {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.report-project-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.875rem;
+}
+
+.report-progress-badge {
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.report-progress-badge.high { background: #dcfce7; color: #166534; }
+.report-progress-badge.medium { background: #fef9c3; color: #854d0e; }
+.report-progress-badge.low { background: #fee2e2; color: #991b1b; }
+
+[data-theme="dark"] .report-progress-badge.high { background: #166534; color: #dcfce7; }
+[data-theme="dark"] .report-progress-badge.medium { background: #854d0e; color: #fef9c3; }
+[data-theme="dark"] .report-progress-badge.low { background: #991b1b; color: #fee2e2; }
+
+.report-assignee {
+  color: var(--text-secondary);
+}
+
+.report-empty {
+  text-align: center;
+  padding: 20px;
+  color: var(--text-secondary);
+  font-style: italic;
 }
 
 /* ===== ArchiDeck v3.0 新機能スタイル ===== */
@@ -4442,15 +4681,46 @@ textarea:focus-visible {
   </div>
 </div>
 
+<!-- モーダル：申請Go確認 -->
+<div id="applicationGoModal" class="modal">
+  <div class="modal-content" style="max-width: 450px;">
+    <div class="modal-header">
+      <h2 class="modal-title">確認申請</h2>
+      <button class="close" onclick="closeApplicationGoModal()">&times;</button>
+    </div>
+    <div class="modal-body" style="text-align: center; padding: 30px;">
+      <div style="font-size: 48px; margin-bottom: 16px;">📋</div>
+      <p id="applicationGoProjectName" style="font-size: 18px; font-weight: 600; margin-bottom: 8px;"></p>
+      <p style="color: var(--text-secondary); margin-bottom: 24px;">この案件を完了済みに移動しますか？</p>
+      <div class="application-go-checklist" style="text-align: left; background: var(--bg-secondary); padding: 16px; border-radius: 8px; margin-bottom: 20px;">
+        <div style="font-weight: 600; margin-bottom: 8px;">条件確認:</div>
+        <div id="applicationGoConditions"></div>
+      </div>
+    </div>
+    <div class="modal-footer" style="justify-content: center; gap: 12px;">
+      <button class="btn btn-ghost" onclick="closeApplicationGoModal()">キャンセル</button>
+      <button class="btn btn-success" onclick="executeApplicationGo()" style="background: linear-gradient(135deg, #10b981, #059669);">完了済みにする</button>
+    </div>
+  </div>
+</div>
+
 <!-- トースト通知 -->
 <div id="toast" class="toast"></div>
 
 <script>
 // ============================================
+// デバッグモード設定
+// ============================================
+const DEBUG_MODE = false; // 本番環境では false
+const log = DEBUG_MODE ? console.log.bind(console) : () => {};
+const warn = DEBUG_MODE ? console.warn.bind(console) : () => {};
+const logError = DEBUG_MODE ? console.error.bind(console) : () => {};
+
+// ============================================
 // バージョン管理 & キャッシュクリア
 // ============================================
-const APP_VERSION = '4.11.0-' + Date.now();
-console.log('🚀 ArchiDeck バージョン:', APP_VERSION);
+const APP_VERSION = '4.12.0-' + Date.now();
+if (DEBUG_MODE) log('🚀 ArchiDeck バージョン:', APP_VERSION);
 
 // 起動時にキャッシュを強制クリア
 (async function forceClearCache() {
@@ -4459,7 +4729,7 @@ console.log('🚀 ArchiDeck バージョン:', APP_VERSION);
     const cacheNames = await caches.keys();
     for (const name of cacheNames) {
       await caches.delete(name);
-      console.log('🗑️ キャッシュ削除:', name);
+      log('🗑️ キャッシュ削除:', name);
     }
 
     // Service Worker を更新
@@ -4467,12 +4737,12 @@ console.log('🚀 ArchiDeck バージョン:', APP_VERSION);
       const registrations = await navigator.serviceWorker.getRegistrations();
       for (const reg of registrations) {
         await reg.update();
-        console.log('🔄 Service Worker 更新');
+        log('🔄 Service Worker 更新');
       }
     }
-    console.log('✅ キャッシュクリア完了');
+    log('✅ キャッシュクリア完了');
   } catch (e) {
-    console.log('キャッシュクリアエラー（無視可）:', e);
+    log('キャッシュクリアエラー（無視可）:', e);
   }
 })();
 
@@ -4563,7 +4833,7 @@ const UndoManager = {
     this.redoStack = [];
 
     this.updateUI();
-    console.log(`📝 操作記録: ${action.description}`, action);
+    log(`📝 操作記録: ${action.description}`, action);
   },
 
   // 元に戻す
@@ -4584,7 +4854,7 @@ const UndoManager = {
       showToast(`↩️ 元に戻しました: ${action.description}`, 'success');
       announceToScreenReader(`元に戻しました: ${action.description}`);
     } catch (error) {
-      console.error('Undo失敗:', error);
+      logError('Undo失敗:', error);
       showToast('元に戻す操作に失敗しました', 'error');
     } finally {
       this.isUndoing = false;
@@ -4610,7 +4880,7 @@ const UndoManager = {
       showToast(`↪️ やり直しました: ${action.description}`, 'success');
       announceToScreenReader(`やり直しました: ${action.description}`);
     } catch (error) {
-      console.error('Redo失敗:', error);
+      logError('Redo失敗:', error);
       showToast('やり直す操作に失敗しました', 'error');
     } finally {
       this.isUndoing = false;
@@ -4680,7 +4950,7 @@ const UndoManager = {
         break;
 
       default:
-        console.warn('未対応のアクションタイプ:', action.type);
+        warn('未対応のアクションタイプ:', action.type);
     }
   },
 
@@ -4745,7 +5015,7 @@ const UndoManager = {
         break;
 
       default:
-        console.warn('未対応のアクションタイプ:', action.type);
+        warn('未対応のアクションタイプ:', action.type);
     }
   },
 
@@ -4794,12 +5064,12 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 // Supabase CDNのロード確認
 if (!window.supabase) {
-  console.error('❌ Supabase CDN が読み込まれていません！');
+  logError('❌ Supabase CDN が読み込まれていません！');
   alert('Supabase CDN が読み込まれていません。ページを再読み込みしてください。');
 }
 
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-console.log('✅ Supabase初期化完了:', SUPABASE_URL);
+log('✅ Supabase初期化完了:', SUPABASE_URL);
 
 // グローバル変数
 let currentUser = null;
@@ -4864,7 +5134,7 @@ async function loadOrganization() {
       }
     }
   } catch (error) {
-    console.log('組織情報の読み込みをスキップ（テーブル未作成の可能性）');
+    log('組織情報の読み込みをスキップ（テーブル未作成の可能性）');
   }
 }
 
@@ -4925,7 +5195,7 @@ function getTasksForAssignee(assigneeName) {
 
   // tasksV2が空の場合は空配列を返す
   if (!tasksV2 || tasksV2.length === 0) {
-    console.warn('⚠️ tasksV2テーブルにデータがありません。migration_customizable_system.sqlを実行してください。');
+    warn('⚠️ tasksV2テーブルにデータがありません。migration_customizable_system.sqlを実行してください。');
     return [];
   }
 
@@ -4945,7 +5215,7 @@ function getTaskStateOptions(taskKey) {
 
 // デモモード（パスワード無しでログイン）
 function enterDemoMode() {
-  console.log('🎭 デモモードで入場...');
+  log('🎭 デモモードで入場...');
   document.getElementById('loginContainer').style.display = 'none';
   document.getElementById('accountSelectContainer').style.display = 'flex';
   isDemoMode = true;
@@ -4985,7 +5255,7 @@ async function sendPasswordReset() {
     });
 
     if (error) {
-      console.error('パスワードリセットエラー:', error);
+      logError('パスワードリセットエラー:', error);
       showToast('メール送信に失敗しました: ' + error.message, 'error');
       return;
     }
@@ -4993,54 +5263,54 @@ async function sendPasswordReset() {
     showToast('パスワード再設定用のメールを送信しました。メールをご確認ください。', 'success', 5000);
     hideForgotPassword();
   } catch (e) {
-    console.error('パスワードリセット例外:', e);
+    logError('パスワードリセット例外:', e);
     showToast('エラーが発生しました', 'error');
   }
 }
 
 async function signIn() {
-  console.log('🔐 ログイン処理開始...');
+  log('🔐 ログイン処理開始...');
 
   const email = document.getElementById('loginEmail').value.trim();
   const password = document.getElementById('loginPassword').value.trim();
 
-  console.log('📧 入力されたメール:', email);
+  log('📧 入力されたメール:', email);
 
   // パスワードが空の場合はデモモードで入る
   if (!password && email) {
-    console.log('🎭 パスワード無し - デモモードで続行');
+    log('🎭 パスワード無し - デモモードで続行');
     enterDemoMode();
     return;
   }
 
   if (!email) {
-    console.error('❌ メールアドレスが空です');
+    logError('❌ メールアドレスが空です');
     showToast('メールアドレスを入力してください', 'error');
     return;
   }
 
   if (!window.supabase) {
-    console.error('❌ Supabase CDNが読み込まれていません');
+    logError('❌ Supabase CDNが読み込まれていません');
     showToast('エラー: Supabaseが初期化されていません。ページを再読み込みしてください。', 'error');
     return;
   }
 
   try {
-    console.log('🔄 Supabase認証リクエスト送信中...');
+    log('🔄 Supabase認証リクエスト送信中...');
     const { data, error } = await supabase.auth.signInWithPassword({
       email: email,
       password: password
     });
 
     if (error) {
-      console.error('❌ Supabase認証エラー:', error);
+      logError('❌ Supabase認証エラー:', error);
       throw error;
     }
 
-    console.log('✅ ログイン成功:', data.user.email);
+    log('✅ ログイン成功:', data.user.email);
     // ログイン成功 - onAuthStateChangeで処理されるのでreloadは不要
   } catch (error) {
-    console.error('❌ ログインエラー:', error);
+    logError('❌ ログインエラー:', error);
     showToast('ログインに失敗しました: ' + error.message, 'error');
   }
 }
@@ -5051,23 +5321,23 @@ async function signOut() {
     if (error) throw error;
     location.reload();
   } catch (error) {
-    console.error('ログアウトエラー:', error);
+    logError('ログアウトエラー:', error);
     showToast('ログアウトに失敗しました', 'error');
   }
 }
 
 async function checkAuth() {
-  console.log('🔍 認証状態をチェック中...');
+  log('🔍 認証状態をチェック中...');
   const { data: { session } } = await supabase.auth.getSession();
 
   if (session) {
-    console.log('✅ セッション検出:', session.user.email);
+    log('✅ セッション検出:', session.user.email);
     currentUser = session.user;
     document.getElementById('loginContainer').style.display = 'none';
 
     // admin@ghouse.jpの場合はアカウント選択画面を表示
     if (currentUser.email === 'admin@ghouse.jp') {
-      console.log('👑 管理者ログイン - アカウント選択画面を表示');
+      log('👑 管理者ログイン - アカウント選択画面を表示');
       document.getElementById('accountSelectContainer').style.display = 'flex';
       return;
     }
@@ -5082,9 +5352,9 @@ async function checkAuth() {
     if (designerData) {
       currentDesigner = designerData;
       currentUserCategory = designerData.category;
-      console.log('✅ スタッフ情報取得:', currentDesigner.name, '/', currentUserCategory);
+      log('✅ スタッフ情報取得:', currentDesigner.name, '/', currentUserCategory);
     } else {
-      console.warn('⚠️ スタッフ情報が見つかりません:', currentUser.email);
+      warn('⚠️ スタッフ情報が見つかりません:', currentUser.email);
     }
 
     // メインコンテナを表示
@@ -5104,7 +5374,7 @@ async function checkAuth() {
       window.location.hash = 'projects';
     }
   } else {
-    console.log('❌ セッションなし - ログイン画面を表示');
+    log('❌ セッションなし - ログイン画面を表示');
     document.getElementById('loginContainer').style.display = 'flex';
     document.getElementById('mainContainer').classList.remove('show');
   }
@@ -5115,18 +5385,18 @@ let isAuthProcessing = false;
 
 // 認証状態変更を監視
 supabase.auth.onAuthStateChange(async (event, session) => {
-  console.log('🔔 認証イベント:', event, 'currentUser:', currentUser?.email, 'processing:', isAuthProcessing);
+  log('🔔 認証イベント:', event, 'currentUser:', currentUser?.email, 'processing:', isAuthProcessing);
 
   if (event === 'SIGNED_IN' && !currentUser && !isAuthProcessing) {
     isAuthProcessing = true;
-    console.log('✅ SIGNED_IN イベント処理開始:', session.user.email);
+    log('✅ SIGNED_IN イベント処理開始:', session.user.email);
 
     currentUser = session.user;
     document.getElementById('loginContainer').style.display = 'none';
 
     // admin@ghouse.jpの場合はアカウント選択画面を表示
     if (currentUser.email === 'admin@ghouse.jp') {
-      console.log('👑 管理者ログイン - アカウント選択画面を表示');
+      log('👑 管理者ログイン - アカウント選択画面を表示');
       document.getElementById('accountSelectContainer').style.display = 'flex';
       isAuthProcessing = false;
       return;
@@ -5142,9 +5412,9 @@ supabase.auth.onAuthStateChange(async (event, session) => {
     if (designerData) {
       currentDesigner = designerData;
       currentUserCategory = designerData.category;
-      console.log('✅ スタッフ情報取得:', currentDesigner.name, '/', currentUserCategory);
+      log('✅ スタッフ情報取得:', currentDesigner.name, '/', currentUserCategory);
     } else {
-      console.warn('⚠️ スタッフ情報が見つかりません:', currentUser.email);
+      warn('⚠️ スタッフ情報が見つかりません:', currentUser.email);
     }
 
     // メインコンテナを表示
@@ -5157,16 +5427,16 @@ supabase.auth.onAuthStateChange(async (event, session) => {
     await init();
     isAuthProcessing = false;
   } else if (event === 'SIGNED_OUT') {
-    console.log('👋 SIGNED_OUT イベント');
+    log('👋 SIGNED_OUT イベント');
     location.reload();
   } else {
-    console.log('⏭️ イベントをスキップ');
+    log('⏭️ イベントをスキップ');
   }
 });
 
 // アカウントタイプ選択
 async function selectAccountType(category) {
-  console.log('🎯 アカウントタイプ選択:', category);
+  log('🎯 アカウントタイプ選択:', category);
   currentUserCategory = category;
   document.getElementById('accountSelectContainer').style.display = 'none';
   document.getElementById('mainContainer').classList.add('show');
@@ -5186,7 +5456,7 @@ async function selectAccountType(category) {
     window.location.hash = 'projects';
   }
 
-  console.log('✅ アカウントタイプ選択完了');
+  log('✅ アカウントタイプ選択完了');
 }
 
 // カテゴリ切り替えボタンの表示更新
@@ -5222,14 +5492,14 @@ document.addEventListener('click', function(e) {
 
 // カテゴリ切り替え
 async function switchCategory(category) {
-  console.log('🔄 カテゴリ切り替え:', category);
+  log('🔄 カテゴリ切り替え:', category);
 
   // メニューを閉じる
   document.getElementById('categorySwitchMenu').style.display = 'none';
 
   // 同じカテゴリなら何もしない
   if (currentUserCategory === category) {
-    console.log('⏭️ 同じカテゴリのためスキップ');
+    log('⏭️ 同じカテゴリのためスキップ');
     return;
   }
 
@@ -5244,7 +5514,7 @@ async function switchCategory(category) {
   await init();
 
   showToast(`${category === 'admin' ? '管理者' : category + '担当'}画面に切り替えました`, 'success');
-  console.log('✅ カテゴリ切り替え完了');
+  log('✅ カテゴリ切り替え完了');
 }
 
 // ============================================
@@ -5261,7 +5531,7 @@ function detectFCMode() {
   if (fcParam) {
     isFCMode = true;
     fcSlug = fcParam;
-    console.log('🏪 FCモード検出（URLパラメータ）:', fcSlug);
+    log('🏪 FCモード検出（URLパラメータ）:', fcSlug);
   } else if (fcModeData) {
     try {
       const fcConfig = JSON.parse(fcModeData);
@@ -5269,10 +5539,10 @@ function detectFCMode() {
       if (fcConfig.timestamp && (Date.now() - fcConfig.timestamp < 24 * 60 * 60 * 1000)) {
         isFCMode = true;
         fcSlug = fcConfig.slug;
-        console.log('🏪 FCモード検出（localStorage）:', fcSlug);
+        log('🏪 FCモード検出（localStorage）:', fcSlug);
       }
     } catch (e) {
-      console.warn('FC設定の解析に失敗:', e);
+      warn('FC設定の解析に失敗:', e);
     }
   }
 
@@ -5283,7 +5553,7 @@ function detectFCMode() {
 }
 
 function applyFCMode() {
-  console.log('🎨 FCモードUI適用中...');
+  log('🎨 FCモードUI適用中...');
 
   // タイトルからGハウスを削除
   document.title = '設計業務管理システム';
@@ -5335,7 +5605,7 @@ function applyFCMode() {
     }
   }, 100);
 
-  console.log('✅ FCモードUI適用完了');
+  log('✅ FCモードUI適用完了');
 }
 
 function exitFCMode() {
@@ -5398,12 +5668,9 @@ function initKeyboardShortcuts() {
 function handleKeyboardShortcut(e) {
   // モーダルが開いている場合のEscapeキー
   if (e.key === 'Escape') {
-    const modals = document.querySelectorAll('.modal-overlay[style*="flex"], .modal[style*="flex"]');
-    modals.forEach(modal => {
-      if (modal.style.display === 'flex') {
-        modal.style.display = 'none';
-      }
-    });
+    // .show クラスのモーダルを閉じる
+    const openModals = document.querySelectorAll('.modal.show');
+    openModals.forEach(modal => modal.classList.remove('show'));
     // サイドバーを閉じる
     closeSidebar();
     return;
@@ -5531,7 +5798,7 @@ function showShortcutHelp() {
 // 初期化
 // ============================================
 async function init() {
-  console.log('🚀 初期化開始...');
+  log('🚀 初期化開始...');
   showStatus('読み込み中...', 'saving');
 
   // ダークモード初期化（早期に実行してフラッシュを防ぐ）
@@ -5550,7 +5817,7 @@ async function init() {
     // マルチテナント: 組織情報を先に読み込む
     await loadOrganization();
 
-    console.log('📦 データ読み込み開始...');
+    log('📦 データ読み込み開始...');
     const results = await Promise.allSettled([
       loadDesigners(),
       loadCurrentDesigner(),
@@ -5569,23 +5836,23 @@ async function init() {
     results.forEach((result, index) => {
       const names = ['スタッフ', '現在のスタッフ', '案件', 'テンプレート', '業者', 'タスク設定'];
       if (result.status === 'rejected') {
-        console.error(`❌ ${names[index]}の読み込み失敗:`, result.reason);
+        logError(`❌ ${names[index]}の読み込み失敗:`, result.reason);
       } else {
-        console.log(`✅ ${names[index]}の読み込み成功`);
+        log(`✅ ${names[index]}の読み込み成功`);
       }
     });
 
     // 失敗したものがあればエラーを表示
     const failedCount = results.filter(r => r.status === 'rejected').length;
     if (failedCount > 0) {
-      console.warn(`⚠️ ${failedCount}件のデータ読み込みに失敗しました`);
+      warn(`⚠️ ${failedCount}件のデータ読み込みに失敗しました`);
       showToast(`${failedCount}件のデータ読み込みに失敗しました。コンソールを確認してください。`, 'error');
     }
 
     // 業者データとカテゴリデータをマージ（両方の読み込みが完了した後に実行）
     mergeVendorCategories();
 
-    console.log('🎨 画面描画開始...');
+    log('🎨 画面描画開始...');
     renderSidebar();
     renderProjects();
     renderTemplates();
@@ -5597,7 +5864,7 @@ async function init() {
     populateProductDropdown();
 
     // 新システムの各管理画面の初期描画
-    console.log('🎨 新システム描画開始:', {
+    log('🎨 新システム描画開始:', {
       vendorsV2Length: vendorsV2.length,
       vendorCategoriesLength: vendorCategories.length,
       tasksV2Length: tasksV2.length,
@@ -5619,10 +5886,10 @@ async function init() {
       DeadlineManager.checkReminders();
     }, 3000);
 
-    console.log('✅ 初期化完了');
+    log('✅ 初期化完了');
     showStatus('保存済み', 'saved');
   } catch (error) {
-    console.error('❌ 初期化エラー:', error);
+    logError('❌ 初期化エラー:', error);
     showStatus('エラー', 'error');
     showToast('データの読み込みに失敗しました: ' + error.message, 'error');
   }
@@ -5723,16 +5990,16 @@ RLS(Row Level Security)がデータをブロックしている
   `.trim();
 
   alert(info);
-  console.log(info);
+  log(info);
 
   // データが0件の場合は警告を表示
   if (projects.length === 0 || designers.length === 0) {
-    console.error('🚨 データ消失問題検出！');
-    console.error('Supabaseのダッシュボードで以下を確認してください:');
-    console.error('1. projectsテーブルにデータがあるか');
-    console.error('2. designersテーブルにデータがあるか');
-    console.error('3. RLSポリシーが正しく設定されているか');
-    console.error('4. anon keyに適切な権限があるか');
+    logError('🚨 データ消失問題検出！');
+    logError('Supabaseのダッシュボードで以下を確認してください:');
+    logError('1. projectsテーブルにデータがあるか');
+    logError('2. designersテーブルにデータがあるか');
+    logError('3. RLSポリシーが正しく設定されているか');
+    logError('4. anon keyに適切な権限があるか');
   }
 }
 
@@ -5741,55 +6008,55 @@ RLS(Row Level Security)がデータをブロックしている
 // ============================================
 // コンソールで debug() を実行すると、全データの詳細が表示されます
 window.debug = function() {
-  console.log('='.repeat(80));
-  console.log('🔍 デバッグ情報');
-  console.log('='.repeat(80));
+  log('='.repeat(80));
+  log('🔍 デバッグ情報');
+  log('='.repeat(80));
 
-  console.log('\n📊 基本情報:');
-  console.log('  - スタッフ数:', designers.length);
-  console.log('  - 案件数:', projects.length);
-  console.log('  - タスク数:', tasksV2.length);
-  console.log('  - 業者数:', vendorsV2.length);
+  log('\n📊 基本情報:');
+  log('  - スタッフ数:', designers.length);
+  log('  - 案件数:', projects.length);
+  log('  - タスク数:', tasksV2.length);
+  log('  - 業者数:', vendorsV2.length);
 
-  console.log('\n👥 スタッフ一覧:');
+  log('\n👥 スタッフ一覧:');
   designers.forEach(d => {
-    console.log(`  - [${d.category}] ${d.name} (${d.email})`);
+    log(`  - [${d.category}] ${d.name} (${d.email})`);
   });
 
-  console.log('\n📋 案件一覧:');
+  log('\n📋 案件一覧:');
   projects.forEach(p => {
-    console.log(`  - ${p.customer}`);
-    console.log(`    設計: "${p.assigned_to}" (trim: "${(p.assigned_to || '').trim()}")`);
-    console.log(`    IC: "${p.ic_assignee}" (trim: "${(p.ic_assignee || '').trim()}")`);
-    console.log(`    status: ${p.status}, is_archived: ${p.is_archived}`);
+    log(`  - ${p.customer}`);
+    log(`    設計: "${p.assigned_to}" (trim: "${(p.assigned_to || '').trim()}")`);
+    log(`    IC: "${p.ic_assignee}" (trim: "${(p.ic_assignee || '').trim()}")`);
+    log(`    status: ${p.status}, is_archived: ${p.is_archived}`);
   });
 
-  console.log('\n' + '='.repeat(80));
+  log('\n' + '='.repeat(80));
   return 'デバッグ情報を出力しました。上記を確認してください。';
 };
 
 // コンソールで checkAssignment('担当者名', '案件名') を実行すると、詳細チェックができます
 window.checkAssignment = function(designerName, projectName) {
-  console.log('='.repeat(80));
-  console.log(`🔍 割り当てチェック: ${designerName} → ${projectName}`);
-  console.log('='.repeat(80));
+  log('='.repeat(80));
+  log(`🔍 割り当てチェック: ${designerName} → ${projectName}`);
+  log('='.repeat(80));
 
   const designer = designers.find(d => d.name.includes(designerName));
   if (!designer) {
-    console.error(`❌ スタッフ "${designerName}" が見つかりません`);
-    console.log('登録されているスタッフ:', designers.map(d => d.name));
+    logError(`❌ スタッフ "${designerName}" が見つかりません`);
+    log('登録されているスタッフ:', designers.map(d => d.name));
     return;
   }
 
   const project = projects.find(p => p.customer.includes(projectName));
   if (!project) {
-    console.error(`❌ 案件 "${projectName}" が見つかりません`);
-    console.log('登録されている案件:', projects.map(p => p.customer));
+    logError(`❌ 案件 "${projectName}" が見つかりません`);
+    log('登録されている案件:', projects.map(p => p.customer));
     return;
   }
 
-  console.log('\n✅ データ確認:');
-  console.log('スタッフ情報:', {
+  log('\n✅ データ確認:');
+  log('スタッフ情報:', {
     name: designer.name,
     nameLength: designer.name.length,
     nameTrimmed: designer.name.trim(),
@@ -5797,7 +6064,7 @@ window.checkAssignment = function(designerName, projectName) {
     email: designer.email
   });
 
-  console.log('\n案件情報:', {
+  log('\n案件情報:', {
     customer: project.customer,
     assigned_to: `"${project.assigned_to}"`,
     assigned_to_length: project.assigned_to?.length,
@@ -5809,7 +6076,7 @@ window.checkAssignment = function(designerName, projectName) {
     is_archived: project.is_archived
   });
 
-  console.log('\n🔍 マッチング結果:');
+  log('\n🔍 マッチング結果:');
   const designerNameTrimmed = designer.name.trim();
   const assignedToTrimmed = (project.assigned_to || '').trim();
   const icAssigneeTrimmed = (project.ic_assignee || '').trim();
@@ -5820,44 +6087,44 @@ window.checkAssignment = function(designerName, projectName) {
   const archivedOK = !project.is_archived;
   const finalMatch = (matchAssigned || matchIC) && statusOK && archivedOK;
 
-  console.log(`  - assigned_to一致: ${matchAssigned ? '✅' : '❌'} ("${assignedToTrimmed}" === "${designerNameTrimmed}")`);
-  console.log(`  - ic_assignee一致: ${matchIC ? '✅' : '❌'} ("${icAssigneeTrimmed}" === "${designerNameTrimmed}")`);
-  console.log(`  - statusチェック: ${statusOK ? '✅' : '❌'} (status !== "completed")`);
-  console.log(`  - archivedチェック: ${archivedOK ? '✅' : '❌'} (!is_archived)`);
-  console.log(`  - 最終判定: ${finalMatch ? '✅ カウントされる' : '❌ カウントされない'}`);
+  log(`  - assigned_to一致: ${matchAssigned ? '✅' : '❌'} ("${assignedToTrimmed}" === "${designerNameTrimmed}")`);
+  log(`  - ic_assignee一致: ${matchIC ? '✅' : '❌'} ("${icAssigneeTrimmed}" === "${designerNameTrimmed}")`);
+  log(`  - statusチェック: ${statusOK ? '✅' : '❌'} (status !== "completed")`);
+  log(`  - archivedチェック: ${archivedOK ? '✅' : '❌'} (!is_archived)`);
+  log(`  - 最終判定: ${finalMatch ? '✅ カウントされる' : '❌ カウントされない'}`);
 
   if (!finalMatch) {
-    console.log('\n💡 カウントされない理由:');
+    log('\n💡 カウントされない理由:');
     if (!matchAssigned && !matchIC) {
-      console.log('  - 担当者名が一致していません');
+      log('  - 担当者名が一致していません');
       if (assignedToTrimmed !== designerNameTrimmed) {
-        console.log(`    設計: "${assignedToTrimmed}" ≠ "${designerNameTrimmed}"`);
+        log(`    設計: "${assignedToTrimmed}" ≠ "${designerNameTrimmed}"`);
       }
       if (icAssigneeTrimmed !== designerNameTrimmed) {
-        console.log(`    IC: "${icAssigneeTrimmed}" ≠ "${designerNameTrimmed}"`);
+        log(`    IC: "${icAssigneeTrimmed}" ≠ "${designerNameTrimmed}"`);
       }
     }
     if (!statusOK) {
-      console.log(`  - statusが "completed" です`);
+      log(`  - statusが "completed" です`);
     }
     if (!archivedOK) {
-      console.log(`  - is_archived が true です`);
+      log(`  - is_archived が true です`);
     }
   }
 
-  console.log('\n' + '='.repeat(80));
+  log('\n' + '='.repeat(80));
   return finalMatch ? 'この案件はカウントされます ✅' : 'この案件はカウントされません ❌';
 };
 
-console.log('💡 デバッグ関数が利用可能です:');
-console.log('  - debug() : 全データの詳細を表示');
-console.log('  - checkAssignment("担当者名", "案件名") : 割り当てチェック');
+log('💡 デバッグ関数が利用可能です:');
+log('  - debug() : 全データの詳細を表示');
+log('  - checkAssignment("担当者名", "案件名") : 割り当てチェック');
 
 // ============================================
 // データ読み込み
 // ============================================
 async function loadDesigners() {
-  console.log('🔄 スタッフデータ読み込み開始...');
+  log('🔄 スタッフデータ読み込み開始...');
 
   try {
     const { data, error, count } = await supabase
@@ -5865,7 +6132,7 @@ async function loadDesigners() {
       .select('*', { count: 'exact' })
       .order('display_order');
 
-    console.log('📡 Supabaseレスポンス:', {
+    log('📡 Supabaseレスポンス:', {
       success: !error,
       dataLength: data?.length || 0,
       count: count,
@@ -5874,8 +6141,8 @@ async function loadDesigners() {
     });
 
     if (error) {
-      console.error('❌ スタッフデータ読み込みエラー:', error);
-      console.error('エラー詳細:', {
+      logError('❌ スタッフデータ読み込みエラー:', error);
+      logError('エラー詳細:', {
         message: error.message,
         details: error.details,
         hint: error.hint,
@@ -5894,17 +6161,17 @@ async function loadDesigners() {
       return acc;
     }, {});
 
-    console.log('✅ スタッフデータ読み込み完了:', {
+    log('✅ スタッフデータ読み込み完了:', {
       '総数': designers.length,
       'カテゴリ別': byCategory,
       'サンプル': designers.slice(0, 3).map(d => ({ name: d.name, category: d.category, email: d.email }))
     });
 
     if (designers.length === 0) {
-      console.warn('⚠️ 警告: スタッフデータが0件です！Supabaseのテーブルにデータがあるか確認してください。');
+      warn('⚠️ 警告: スタッフデータが0件です！Supabaseのテーブルにデータがあるか確認してください。');
     }
   } catch (err) {
-    console.error('❌ loadDesigners()で予期しないエラー:', err);
+    logError('❌ loadDesigners()で予期しないエラー:', err);
     designers = [];
   }
 }
@@ -5925,44 +6192,44 @@ async function loadCurrentDesigner() {
     .single();
 
   if (error) {
-    console.warn('スタッフ情報の取得に失敗:', error);
+    warn('スタッフ情報の取得に失敗:', error);
     currentDesigner = null;
     return;
   }
 
   currentDesigner = data;
-  console.log('現在のスタッフ:', currentDesigner);
+  log('現在のスタッフ:', currentDesigner);
 }
 
 async function loadProjects() {
-  console.log('🔄 案件データ読み込み中...');
+  log('🔄 案件データ読み込み中...');
   try {
     const { data, error } = await supabase
       .from('projects')
       .select('*')
       .order('created_at', { ascending: false });
     if (error) {
-      console.error('❌ 案件データ読み込みエラー:', error);
+      logError('❌ 案件データ読み込みエラー:', error);
       projects = [];
       return;
     }
     projects = data || [];
-    console.log('✅ 案件データ読み込み完了:', projects.length, '件');
-    console.log('📋 読み込んだ案件の詳細:');
+    log('✅ 案件データ読み込み完了:', projects.length, '件');
+    log('📋 読み込んだ案件の詳細:');
     projects.forEach(p => {
-      console.log(`  - ${p.customer}: assigned_to="${p.assigned_to}", ic_assignee="${p.ic_assignee}"`);
+      log(`  - ${p.customer}: assigned_to="${p.assigned_to}", ic_assignee="${p.ic_assignee}"`);
     });
 
     // 既存データのクリーンアップ: assigned_toとic_assigneeの前後の空白を削除
     await cleanupProjectAssignees();
   } catch (err) {
-    console.error('❌ loadProjects()で予期しないエラー:', err);
+    logError('❌ loadProjects()で予期しないエラー:', err);
     projects = [];
   }
 }
 
 async function cleanupProjectAssignees() {
-  console.log('🧹 案件の担当者データをクリーンアップ中...');
+  log('🧹 案件の担当者データをクリーンアップ中...');
   let updatedCount = 0;
 
   for (const project of projects) {
@@ -5984,7 +6251,7 @@ async function cleanupProjectAssignees() {
     }
 
     if (needsUpdate) {
-      console.log(`🔧 クリーンアップ: ${project.customer} (assigned_to: "${project.assigned_to}" → "${assigned || 'null'}", ic_assignee: "${project.ic_assignee}" → "${icAssigned || 'null'}")`);
+      log(`🔧 クリーンアップ: ${project.customer} (assigned_to: "${project.assigned_to}" → "${assigned || 'null'}", ic_assignee: "${project.ic_assignee}" → "${icAssigned || 'null'}")`);
 
       const { error } = await supabase
         .from('projects')
@@ -5999,66 +6266,66 @@ async function cleanupProjectAssignees() {
         project.ic_assignee = icAssigned || null;
         updatedCount++;
       } else {
-        console.error('❌ クリーンアップ失敗:', project.customer, error);
+        logError('❌ クリーンアップ失敗:', project.customer, error);
       }
     }
   }
 
   if (updatedCount > 0) {
-    console.log(`✅ ${updatedCount}件の案件をクリーンアップしました`);
+    log(`✅ ${updatedCount}件の案件をクリーンアップしました`);
   } else {
-    console.log('✅ クリーンアップ不要（全案件正常）');
+    log('✅ クリーンアップ不要（全案件正常）');
   }
 }
 
 async function loadEmailTemplates() {
-  console.log('🔄 メールテンプレートデータ読み込み中...');
+  log('🔄 メールテンプレートデータ読み込み中...');
   try {
     const { data, error } = await supabase
       .from('email_templates')
       .select('*')
       .order('display_name');
     if (error) {
-      console.error('❌ メールテンプレートデータ読み込みエラー:', error);
+      logError('❌ メールテンプレートデータ読み込みエラー:', error);
       emailTemplates = [];
       return;
     }
     emailTemplates = data || [];
-    console.log('✅ メールテンプレートデータ読み込み完了:', emailTemplates.length, '件');
+    log('✅ メールテンプレートデータ読み込み完了:', emailTemplates.length, '件');
   } catch (err) {
-    console.error('❌ loadEmailTemplates()で予期しないエラー:', err);
+    logError('❌ loadEmailTemplates()で予期しないエラー:', err);
     emailTemplates = [];
   }
 }
 
 async function loadVendors() {
-  console.log('🔄 業者データ読み込み中...');
+  log('🔄 業者データ読み込み中...');
   try {
     const { data, error } = await supabase
       .from('template_vendors')
       .select('*')
       .order('company');
     if (error) {
-      console.error('❌ 業者データ読み込みエラー:', error);
+      logError('❌ 業者データ読み込みエラー:', error);
       vendors = [];
       return;
     }
     vendors = data || [];
-    console.log('✅ 業者データ読み込み完了:', vendors.length, '件');
+    log('✅ 業者データ読み込み完了:', vendors.length, '件');
   } catch (err) {
-    console.error('❌ loadVendors()で予期しないエラー:', err);
+    logError('❌ loadVendors()で予期しないエラー:', err);
     vendors = [];
   }
 }
 
 async function loadTaskMappings() {
-  console.log('🔄 タスクマッピングデータ読み込み中...');
+  log('🔄 タスクマッピングデータ読み込み中...');
   try {
     const { data, error } = await supabase
       .from('task_template_mappings')
       .select('*');
     if (error) {
-      console.error('❌ タスクマッピングデータ読み込みエラー:', error);
+      logError('❌ タスクマッピングデータ読み込みエラー:', error);
       taskMappings = {};
       return;
     }
@@ -6066,9 +6333,9 @@ async function loadTaskMappings() {
     (data || []).forEach(mapping => {
       taskMappings[mapping.task_key] = mapping.template_id;
     });
-    console.log('✅ タスクマッピングデータ読み込み完了:', Object.keys(taskMappings).length, '件');
+    log('✅ タスクマッピングデータ読み込み完了:', Object.keys(taskMappings).length, '件');
   } catch (err) {
-    console.error('❌ loadTaskMappings()で予期しないエラー:', err);
+    logError('❌ loadTaskMappings()で予期しないエラー:', err);
     taskMappings = {};
   }
 }
@@ -6080,7 +6347,7 @@ async function loadVendorCategories() {
     .select('*')
     .order('display_order');
   if (!error) vendorCategories = data || [];
-  console.log('✅ 業者カテゴリ読み込み完了:', vendorCategories.length, '件');
+  log('✅ 業者カテゴリ読み込み完了:', vendorCategories.length, '件');
 }
 
 async function loadTasksV2() {
@@ -6089,11 +6356,11 @@ async function loadTasksV2() {
     .select('*')
     .order('display_order');
   if (!error) tasksV2 = data || [];
-  console.log('✅ タスク読み込み完了:', tasksV2.length, '件');
+  log('✅ タスク読み込み完了:', tasksV2.length, '件');
 }
 
 async function loadVendorsV2() {
-  console.log('🔄 業者データ読み込み開始...', {
+  log('🔄 業者データ読み込み開始...', {
     timestamp: new Date().toISOString()
   });
 
@@ -6102,7 +6369,7 @@ async function loadVendorsV2() {
     .select('*')
     .order('company');
 
-  console.log('📡 loadVendorsV2 Supabaseレスポンス:', {
+  log('📡 loadVendorsV2 Supabaseレスポンス:', {
     success: !error,
     dataLength: data?.length || 0,
     error: error,
@@ -6110,26 +6377,26 @@ async function loadVendorsV2() {
   });
 
   if (error) {
-    console.error('❌ 業者読み込みエラー:', error);
+    logError('❌ 業者読み込みエラー:', error);
     alert('業者データ読み込みエラー: ' + error.message);
     vendorsV2 = [];
     return;
   }
 
   if (!data || data.length === 0) {
-    console.error('⚠️ CRITICAL: vendors_v2テーブルにデータが0件です！');
+    logError('⚠️ CRITICAL: vendors_v2テーブルにデータが0件です！');
     alert('⚠️ vendors_v2テーブルにデータが登録されていません。Supabaseで確認してください。');
     vendorsV2 = [];
     return;
   }
 
   vendorsV2 = data || [];
-  console.log('✅ 業者読み込み完了:', vendorsV2.length, '件');
-  console.log('✅ 業者データ詳細:', vendorsV2);
+  log('✅ 業者読み込み完了:', vendorsV2.length, '件');
+  log('✅ 業者データ詳細:', vendorsV2);
 }
 
 function mergeVendorCategories() {
-  console.log('🔗 mergeVendorCategories() 開始:', {
+  log('🔗 mergeVendorCategories() 開始:', {
     vendorsV2Length: vendorsV2.length,
     vendorCategoriesLength: vendorCategories.length,
     vendorCategories: vendorCategories
@@ -6144,9 +6411,9 @@ function mergeVendorCategories() {
         vendor_categories: category ? { name: category.name } : null
       };
     });
-    console.log('✅ 業者-カテゴリマージ完了:', vendorsV2.slice(0, 2));
+    log('✅ 業者-カテゴリマージ完了:', vendorsV2.slice(0, 2));
   } else {
-    console.warn('⚠️ マージスキップ:', {
+    warn('⚠️ マージスキップ:', {
       vendorsV2Empty: vendorsV2.length === 0,
       vendorCategoriesEmpty: vendorCategories.length === 0
     });
@@ -6154,7 +6421,7 @@ function mergeVendorCategories() {
 }
 
 async function loadTaskVendorMappings() {
-  console.log('🔄 タスク-業者紐づけデータ読み込み開始...', {
+  log('🔄 タスク-業者紐づけデータ読み込み開始...', {
     timestamp: new Date().toISOString()
   });
 
@@ -6162,7 +6429,7 @@ async function loadTaskVendorMappings() {
     .from('task_vendor_mappings_v2')
     .select('*');
 
-  console.log('📡 loadTaskVendorMappings Supabaseレスポンス:', {
+  log('📡 loadTaskVendorMappings Supabaseレスポンス:', {
     success: !error,
     dataLength: data?.length || 0,
     error: error,
@@ -6171,7 +6438,7 @@ async function loadTaskVendorMappings() {
 
   if (!error) taskVendorMappings = data || [];
 
-  console.log('✅ タスク-業者紐づけ読み込み完了:', {
+  log('✅ タスク-業者紐づけ読み込み完了:', {
     count: taskVendorMappings.length,
     mappings: taskVendorMappings
   });
@@ -6195,7 +6462,7 @@ async function loadProducts() {
       { id: '6', name: 'LIFE+ Limited', display_order: 6 }
     ];
   }
-  console.log('✅ 商品読み込み完了:', products.length, '件');
+  log('✅ 商品読み込み完了:', products.length, '件');
 }
 
 // ============================================
@@ -6204,23 +6471,23 @@ async function loadProducts() {
 let currentCategoryFilter = 'ALL';
 
 function renderVendorsV2() {
-  console.log('📞 renderVendorsV2() 呼び出し開始');
-  console.log('📊 vendorsV2配列の状態:', {
+  log('📞 renderVendorsV2() 呼び出し開始');
+  log('📊 vendorsV2配列の状態:', {
     length: vendorsV2.length,
     data: vendorsV2.slice(0, 3),
     '全データ': vendorsV2
   });
 
   const container = document.getElementById('vendorsGrid');
-  console.log('🎯 vendorsGrid要素:', container ? 'found ✓' : 'NOT FOUND ✗');
+  log('🎯 vendorsGrid要素:', container ? 'found ✓' : 'NOT FOUND ✗');
 
   if (!container) {
-    console.error('❌ CRITICAL: vendorsGrid要素が見つかりません！');
-    console.log('📍 現在のDOM状態:', document.getElementById('vendorsPanel'));
+    logError('❌ CRITICAL: vendorsGrid要素が見つかりません！');
+    log('📍 現在のDOM状態:', document.getElementById('vendorsPanel'));
     return;
   }
 
-  console.log('🔍 renderVendorsV2():', {
+  log('🔍 renderVendorsV2():', {
     totalVendors: vendorsV2.length,
     currentFilter: currentCategoryFilter,
     vendors: vendorsV2
@@ -6230,7 +6497,7 @@ function renderVendorsV2() {
     ? vendorsV2
     : vendorsV2.filter(v => v.category_id === currentCategoryFilter);
 
-  console.log('🔍 フィルター後の業者数:', filtered.length);
+  log('🔍 フィルター後の業者数:', filtered.length);
 
   if (filtered.length === 0) {
     container.innerHTML = '<div class="empty-state"><div class="empty-icon">📦</div><p>業者が登録されていません<br><small>「+ 業者追加」ボタンから登録してください</small></p></div>';
@@ -7189,7 +7456,7 @@ async function saveTaskVendorMappings(taskId) {
       .insert(mappings);
 
     if (error) {
-      console.error('業者紐づけ保存エラー:', error);
+      logError('業者紐づけ保存エラー:', error);
       showToast('業者紐づけの保存に失敗しました', 'error');
     }
   }
@@ -7381,6 +7648,17 @@ function renderSidebar() {
     html += '</div>';
   }
 
+  // 完了済セクション
+  const archivedCount = projects.filter(p => p.is_archived).length;
+  html += `
+    <div class="sidebar-section" style="margin-top: 16px; border-top: 1px solid var(--border-color); padding-top: 16px;">
+      <div class="sidebar-item ${currentDesignerTab === 'ARCHIVED' ? 'active' : ''}" onclick="selectDesigner('ARCHIVED')" style="background: ${currentDesignerTab === 'ARCHIVED' ? 'var(--success-bg)' : 'transparent'};">
+        <span class="sidebar-item-label" style="color: var(--success-color);">✓ 完了済</span>
+        <span class="sidebar-item-count" style="background: var(--success-color); color: white;">${archivedCount}</span>
+      </div>
+    </div>
+  `;
+
   container.innerHTML = html;
 }
 
@@ -7396,7 +7674,7 @@ function selectDesigner(name) {
 
 // メインタブ切り替え
 function switchMainTab(tabName, element) {
-  console.log('📑 switchMainTab 開始:', {
+  log('📑 switchMainTab 開始:', {
     tabName: tabName,
     isHandlingHashChange: isHandlingHashChange,
     currentHash: window.location.hash,
@@ -7421,16 +7699,16 @@ function switchMainTab(tabName, element) {
 
   // URLを更新（handleHashChange処理中でない場合のみ）
   if (!isHandlingHashChange && window.location.hash !== '#' + tabName) {
-    console.log('🔗 switchMainTab: URLを更新:', tabName);
+    log('🔗 switchMainTab: URLを更新:', tabName);
     window.location.hash = tabName;
   } else {
-    console.log('⏸️ switchMainTab: URL更新をスキップ (isHandlingHashChange=' + isHandlingHashChange + ')');
+    log('⏸️ switchMainTab: URL更新をスキップ (isHandlingHashChange=' + isHandlingHashChange + ')');
   }
 }
 
 // サブタブ切り替え
 function switchSubTab(panelName, element) {
-  console.log('📑 switchSubTab 開始:', {
+  log('📑 switchSubTab 開始:', {
     panelName: panelName,
     isHandlingHashChange: isHandlingHashChange,
     currentHash: window.location.hash,
@@ -7445,10 +7723,10 @@ function switchSubTab(panelName, element) {
 
   // URLを更新（handleHashChange処理中でない場合のみ）
   if (!isHandlingHashChange && window.location.hash !== `#settings/${panelName}`) {
-    console.log('🔗 switchSubTab: URLを更新:', panelName);
+    log('🔗 switchSubTab: URLを更新:', panelName);
     window.location.hash = `settings/${panelName}`;
   } else {
-    console.log('⏸️ switchSubTab: URL更新をスキップ (isHandlingHashChange=' + isHandlingHashChange + ')');
+    log('⏸️ switchSubTab: URL更新をスキップ (isHandlingHashChange=' + isHandlingHashChange + ')');
   }
 
   // サブタブ切り替え時に対応する描画関数を実行
@@ -7566,7 +7844,7 @@ const NotificationSystem = {
   async init() {
     if ('Notification' in window) {
       this.permission = Notification.permission;
-      console.log('🔔 通知権限:', this.permission);
+      log('🔔 通知権限:', this.permission);
     }
   },
 
@@ -7588,14 +7866,14 @@ const NotificationSystem = {
         return false;
       }
     } catch (error) {
-      console.error('通知権限リクエストエラー:', error);
+      logError('通知権限リクエストエラー:', error);
       return false;
     }
   },
 
   async send(title, options = {}) {
     if (this.permission !== 'granted') {
-      console.log('通知権限がありません');
+      log('通知権限がありません');
       return null;
     }
 
@@ -7623,7 +7901,7 @@ const NotificationSystem = {
 
       return notification;
     } catch (error) {
-      console.error('通知送信エラー:', error);
+      logError('通知送信エラー:', error);
       return null;
     }
   },
@@ -7647,7 +7925,7 @@ const NotificationSystem = {
       oscillator.start(audioContext.currentTime);
       oscillator.stop(audioContext.currentTime + 0.3);
     } catch (e) {
-      console.log('通知音再生エラー（無視可）:', e);
+      log('通知音再生エラー（無視可）:', e);
     }
   },
 
@@ -7869,11 +8147,11 @@ function closeEmailModal() {
 function renderDesignerTabs() {
   const container = document.getElementById('designerTabs');
   if (!container) {
-    console.warn('⚠️ designerTabs要素が見つかりません');
+    warn('⚠️ designerTabs要素が見つかりません');
     return;
   }
 
-  console.log('🎨 担当者タブ描画:', {
+  log('🎨 担当者タブ描画:', {
     '総スタッフ数': designers.length,
     '設計担当': designers.filter(d => d.category === '設計').length,
     'IC担当': designers.filter(d => d.category === 'IC').length,
@@ -7886,7 +8164,7 @@ function renderDesignerTabs() {
 
   // 設計担当
   const sekkeiDesigners = designers.filter(d => d.category === '設計');
-  console.log('📐 設計担当:', sekkeiDesigners.map(d => d.name));
+  log('📐 設計担当:', sekkeiDesigners.map(d => d.name));
   if (sekkeiDesigners.length > 0) {
     html += '<div class="designer-group-label">設計担当</div>';
     sekkeiDesigners.forEach(designer => {
@@ -7900,12 +8178,12 @@ function renderDesignerTabs() {
       html += `<button class="designer-tab ${currentDesignerTab === designer.name ? 'active' : ''}" onclick="setDesignerTab('${designer.name}')">${designer.name} (${count})</button>`;
     });
   } else {
-    console.warn('⚠️ 設計担当が0名です');
+    warn('⚠️ 設計担当が0名です');
   }
 
   // IC担当
   const icDesigners = designers.filter(d => d.category === 'IC');
-  console.log('🎨 IC担当:', icDesigners.map(d => d.name));
+  log('🎨 IC担当:', icDesigners.map(d => d.name));
   if (icDesigners.length > 0) {
     html += '<div class="designer-group-label">IC担当</div>';
     icDesigners.forEach(designer => {
@@ -7938,12 +8216,24 @@ function renderProjects() {
   const container = document.getElementById('projectsGrid');
   const emptyState = document.getElementById('emptyProjects');
 
-  console.log('🎨 renderProjects() 開始');
-  console.log('📊 現在のタブ:', currentDesignerTab);
-  console.log('📊 全案件数:', projects.length);
-  console.log('📊 全案件:', projects.map(p => ({ customer: p.customer, assigned_to: p.assigned_to, ic_assignee: p.ic_assignee })));
+  log('🎨 renderProjects() 開始');
+  log('📊 現在のタブ:', currentDesignerTab);
+  log('📊 全案件数:', projects.length);
+  log('📊 全案件:', projects.map(p => ({ customer: p.customer, assigned_to: p.assigned_to, ic_assignee: p.ic_assignee })));
 
   let filtered = projects.filter(p => {
+    // 完了済タブが選択されている場合
+    if (currentDesignerTab === 'ARCHIVED') {
+      // 完了済案件のみ表示
+      if (!p.is_archived) return false;
+
+      // 検索クエリフィルター
+      const query = document.getElementById('searchQuery').value.toLowerCase();
+      if (query && !p.customer.toLowerCase().includes(query) && !(p.memo || '').toLowerCase().includes(query)) return false;
+
+      return true;
+    }
+
     // 担当者フィルター（設計またはIC担当者）
     if (currentDesignerTab !== 'ALL') {
       const assigned = (p.assigned_to || '').trim();
@@ -7951,12 +8241,12 @@ function renderProjects() {
       const currentTab = currentDesignerTab.trim();
 
       if (assigned !== currentTab && icAssigned !== currentTab) {
-        console.log(`❌ フィルタで除外: ${p.customer} (assigned_to: "${p.assigned_to}" (trim: "${assigned}"), ic_assignee: "${p.ic_assignee}" (trim: "${icAssigned}"), currentTab: "${currentTab}")`);
+        log(`❌ フィルタで除外: ${p.customer} (assigned_to: "${p.assigned_to}" (trim: "${assigned}"), ic_assignee: "${p.ic_assignee}" (trim: "${icAssigned}"), currentTab: "${currentTab}")`);
         return false;
       }
     }
 
-    // アーカイブフィルター
+    // アーカイブフィルター（通常時は完了済を除外）
     const archiveFilter = document.getElementById('archiveFilter').value;
     const isArchived = p.is_archived || false;
     if (archiveFilter === 'active' && isArchived) return false;
@@ -7972,8 +8262,8 @@ function renderProjects() {
     return true;
   });
 
-  console.log('✅ フィルタ後の案件数:', filtered.length);
-  console.log('✅ フィルタ後の案件:', filtered.map(p => ({ customer: p.customer, assigned_to: p.assigned_to })));
+  log('✅ フィルタ後の案件数:', filtered.length);
+  log('✅ フィルタ後の案件:', filtered.map(p => ({ customer: p.customer, assigned_to: p.assigned_to })));
 
   // お気に入りを先頭にソート
   filtered.sort((a, b) => {
@@ -8061,49 +8351,36 @@ function renderProjectCard(project) {
   // 申請GO条件チェック
   const applicationGoEnabled = canPressApplicationGo(project);
 
-  // ⚠️ ミス・漏れ防止: 警告チェック
-  const warnings = [];
-
-  // 担当者未割当チェック
-  if (!project.assigned_to) {
-    warnings.push({ type: 'danger', message: '設計担当が未割当' });
-  }
-
-  // 重要タスク未完了チェック（進捗50%以上で間取確定が未完了）
-  if (progress >= 50) {
-    const layoutTask = progressData['layout_confirmed'];
-    if (!layoutTask?.completed) {
-      warnings.push({ type: 'warning', message: '間取確定が未完了' });
-    }
-  }
-
-  // 進捗80%以上で申請GOが未完了
-  if (progress >= 80 && !progressData['application']?.completed) {
-    warnings.push({ type: 'warning', message: '申請GOが未完了' });
-  }
-
-  // 着工日が近い（14日以内）のに進捗が低い
-  if (project.construction_start_date) {
-    const startDate = new Date(project.construction_start_date);
-    const today = new Date();
-    const daysUntilStart = Math.ceil((startDate - today) / (1000 * 60 * 60 * 24));
-    if (daysUntilStart <= 14 && daysUntilStart > 0 && progress < 90) {
-      warnings.push({ type: 'danger', message: `着工まで${daysUntilStart}日（進捗${progress}%）` });
-    }
-  }
-
-  // 警告HTML生成
-  const warningsHtml = warnings.length > 0 ? `
-    <div class="project-warnings" style="margin-bottom:12px;">
-      ${warnings.map(w => `<div class="warning-badge warning-${w.type}"><span class="warning-icon">${w.type === 'danger' ? '🚨' : '⚠️'}</span>${w.message}</div>`).join('')}
-    </div>
-  ` : '';
 
   const tasksHtml = tasks.map(taskDef => {
     const key = taskDef.task_key;
     const task = progressData[key] || { completed: false, date: '', state: '', due_date: '' };
     const isApplicationGo = key === 'application';
-    const disabledClass = isApplicationGo && !applicationGoEnabled ? 'disabled' : '';
+
+    // 申請Goの場合は特別なフルワイド表示
+    if (isApplicationGo) {
+      if (task.completed) {
+        // 既に完了済みの場合
+        return `<div class="application-go-container application-go-completed">
+          <div class="application-go-icon">✓</div>
+          <div class="application-go-text">${taskDef.task_name} 完了</div>
+        </div>`;
+      } else if (applicationGoEnabled) {
+        // 条件が揃っている場合：クリック可能なボタン
+        return `<div class="application-go-container application-go-ready" onclick="confirmApplicationGo('${project.id}')">
+          <div class="application-go-icon">🚀</div>
+          <div class="application-go-text">${taskDef.task_name}</div>
+          <div class="application-go-arrow">→</div>
+        </div>`;
+      } else {
+        // 条件が揃っていない場合：無効表示
+        return `<div class="application-go-container application-go-disabled" title="太陽光:営業共有済、給排水:保存済、換気:保存済、サッシ:保存済 が必要">
+          <div class="application-go-icon">🔒</div>
+          <div class="application-go-text">${taskDef.task_name}</div>
+          <div class="application-go-status">条件未達</div>
+        </div>`;
+      }
+    }
 
     const hasVendor = taskVendorMappings.some(m => m.task_id === taskDef.id);
     const showEmailButton = taskDef.has_email_button !== false && hasVendor;
@@ -8122,7 +8399,7 @@ function renderProjectCard(project) {
       stateSelect = `<select class="task-state-select ${stateClass}" onchange="updateTaskState('${project.id}', '${key}', this.value)">${stateOptions.map(state => `<option value="${state}" ${task.state === state ? 'selected' : ''}>${state || '-'}</option>`).join('')}</select>`;
     }
 
-    return `<div class="task-item ${disabledClass}" ${isApplicationGo && !applicationGoEnabled ? 'title="太陽光:営業共有済、給排水:保存済、換気:保存済、サッシ:保存済 が必要"' : ''}>
+    return `<div class="task-item">
       <span class="task-label">${taskDef.task_name}</span>${stateSelect}${emailBtn}</div>`;
   }).join('');
 
@@ -8139,12 +8416,16 @@ function renderProjectCard(project) {
           <div class="card-subtitle"><span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this)" style="cursor: pointer; text-decoration: underline dotted;" title="クリックで担当者変更">設計：${project.assigned_to || '未割当'}</span>${project.ic_assignee ? ` | IC：${project.ic_assignee}` : ''}${project.exterior_assignee ? ` | 外構：${project.exterior_assignee}` : ''}${(() => { const ds = DeadlineManager.getStatus(project.id); return ds ? ` <span style="background: ${ds.color}; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-left: 8px;" onclick="event.stopPropagation(); DeadlineManager.showModal('${project.id}')" title="期限を変更">📅 ${ds.label}</span>` : ` <span style="color: var(--text-muted); font-size: 11px; cursor: pointer;" onclick="event.stopPropagation(); DeadlineManager.showModal('${project.id}')" title="期限を設定">📅 期限設定</span>`; })()}</div>
         </div>
       </div>
-      <div style="display: flex; gap: 8px;">
-        ${project.is_archived ? `<button class="btn btn-success btn-small" onclick="toggleArchive('${project.id}', false)">復元</button>` : canArchive ? `<button class="btn btn-warning btn-small" onclick="toggleArchive('${project.id}', true)">完了済みにする</button>` : ''}
+      <div style="display: flex; gap: 8px; align-items: center;">
+        ${project.is_archived ? `
+          <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; background: var(--success-color); color: white; padding: 4px 12px; border-radius: 6px; font-size: 13px;">
+            <input type="checkbox" checked onchange="restoreFromArchive('${project.id}')" style="width: 16px; height: 16px; cursor: pointer;">
+            完了済
+          </label>
+        ` : ''}
         <button class="btn btn-ghost btn-small" onclick="editProject('${project.id}')">編集</button>
       </div>
     </div>
-    ${warningsHtml}
     <div class="progress-section"><div class="progress-header"><span class="progress-label">進捗状況</span><span class="progress-value">${progress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width: ${progress}%"></div></div></div>
 
     <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">✅ タスク</span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><div id="projectTasksList_${project.id}" class="project-task-list"></div><div class="add-task-form"><input type="text" id="newTaskName_${project.id}" placeholder="タスク名" inputmode="text"><input type="date" id="newTaskDue_${project.id}"><button class="btn btn-small btn-primary" onclick="addProjectTask('${project.id}', document.getElementById('newTaskName_${project.id}').value, document.getElementById('newTaskDue_${project.id}').value)">追加</button></div></div></div>
@@ -8331,20 +8612,20 @@ async function updateTaskState(projectId, taskKey, state) {
 
   project.progress = progressData;
   project.updated_at = new Date().toISOString();
-  updateSingleProjectCard(projectId);
+  // ステータス変更はselectの値が既に変わっているため、再描画不要
   showStatus('保存済み', 'saved');
 }
 
 function openProjectModal(projectId = null) {
-  console.log('📝 openProjectModal() 呼び出し:', projectId);
-  console.log('👥 designers配列:', designers);
+  log('📝 openProjectModal() 呼び出し:', projectId);
+  log('👥 designers配列:', designers);
 
   editingProjectId = projectId;
   const modal = document.getElementById('projectModal');
   const title = document.getElementById('projectModalTitle');
 
-  console.log('🎯 modal要素:', modal);
-  console.log('🎯 title要素:', title);
+  log('🎯 modal要素:', modal);
+  log('🎯 title要素:', title);
 
   let project = null;
   if (projectId) {
@@ -8361,12 +8642,12 @@ function openProjectModal(projectId = null) {
   }
 
   // 設計担当者（設計カテゴリのみ）を埋める
-  console.log('🔧 設計担当者をフィルタリング中...');
+  log('🔧 設計担当者をフィルタリング中...');
   const sekkeiDesigners = designers.filter(d => d.category === '設計');
-  console.log('✅ 設計担当者:', sekkeiDesigners);
+  log('✅ 設計担当者:', sekkeiDesigners);
 
   const assignedToSelect = document.getElementById('projectAssignedTo');
-  console.log('🎯 assignedToSelect要素:', assignedToSelect);
+  log('🎯 assignedToSelect要素:', assignedToSelect);
 
   if (assignedToSelect) {
     assignedToSelect.innerHTML = '<option value="">選択してください</option>' +
@@ -8386,12 +8667,12 @@ function openProjectModal(projectId = null) {
   }
 
   // IC担当者（ICカテゴリのみ）を埋める
-  console.log('🔧 IC担当者をフィルタリング中...');
+  log('🔧 IC担当者をフィルタリング中...');
   const icDesigners = designers.filter(d => d.category === 'IC');
-  console.log('✅ IC担当者:', icDesigners);
+  log('✅ IC担当者:', icDesigners);
 
   const icAssigneeSelect = document.getElementById('projectIcAssignee');
-  console.log('🎯 icAssigneeSelect要素:', icAssigneeSelect);
+  log('🎯 icAssigneeSelect要素:', icAssigneeSelect);
 
   if (icAssigneeSelect) {
     icAssigneeSelect.innerHTML = '<option value="">未定</option>' +
@@ -8410,9 +8691,9 @@ function openProjectModal(projectId = null) {
     templateButtons.style.display = projectId ? 'block' : 'none';
   }
 
-  console.log('🎬 モーダルを表示します...');
+  log('🎬 モーダルを表示します...');
   modal.classList.add('show');
-  console.log('✅ openProjectModal() 完了');
+  log('✅ openProjectModal() 完了');
 }
 
 function closeProjectModal() {
@@ -8427,7 +8708,7 @@ async function saveProject() {
   const specifications = document.getElementById('projectSpecifications').value;
   const memo = document.getElementById('projectMemo').value.trim();
 
-  console.log('💾 saveProject開始:', { customer, assignedTo, icAssignee, specifications });
+  log('💾 saveProject開始:', { customer, assignedTo, icAssignee, specifications });
 
   if (!customer || !assignedTo) {
     showToast('お客様名と設計担当は必須です', 'error');
@@ -8506,14 +8787,14 @@ async function saveProject() {
       return;
     }
 
-    console.log('✅ 新規案件保存成功:', data[0]);
-    console.log('📊 assigned_to:', data[0].assigned_to);
-    console.log('📊 ic_assignee:', data[0].ic_assignee);
+    log('✅ 新規案件保存成功:', data[0]);
+    log('📊 assigned_to:', data[0].assigned_to);
+    log('📊 ic_assignee:', data[0].ic_assignee);
     projects.unshift(data[0]);
   }
 
-  console.log('🔄 renderDesignerTabs()とrenderProjects()を実行します');
-  console.log('📊 現在のprojects数:', projects.length);
+  log('🔄 renderDesignerTabs()とrenderProjects()を実行します');
+  log('📊 現在のprojects数:', projects.length);
   closeProjectModal();
   renderDesignerTabs();
   renderProjects();
@@ -8577,8 +8858,55 @@ async function toggleArchive(projectId, isArchived) {
   project.archived_at = updateData.archived_at;
 
   renderProjects();
+  renderSidebar();
   showStatus('保存済み', 'saved');
   showToast(isArchived ? '案件を完了済みにしました' : '案件を復元しました', 'success');
+}
+
+// 完了済から復元（チェックボックス解除時）
+async function restoreFromArchive(projectId) {
+  const project = projects.find(p => p.id === projectId);
+  if (!project) return;
+
+  if (!confirm(`「${project.customer}」を担当者（${project.assigned_to || '未割当'}）に戻しますか？`)) {
+    // キャンセルされた場合、チェックボックスを戻す
+    renderProjects();
+    return;
+  }
+
+  showStatus('復元中...', 'saving');
+
+  const { error } = await supabase
+    .from('projects')
+    .update({
+      is_archived: false,
+      archived_at: null,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', projectId);
+
+  if (error) {
+    showStatus('エラー', 'error');
+    showToast('復元に失敗しました: ' + error.message, 'error');
+    renderProjects(); // チェックボックスを戻す
+    return;
+  }
+
+  project.is_archived = false;
+  project.archived_at = null;
+  project.updated_at = new Date().toISOString();
+
+  // 担当者のタブに切り替え
+  if (project.assigned_to) {
+    currentDesignerTab = project.assigned_to;
+  } else {
+    currentDesignerTab = 'ALL';
+  }
+
+  renderSidebar();
+  renderProjects();
+  showStatus('保存済み', 'saved');
+  showToast(`${project.customer} を復元しました`, 'success');
 }
 
 // ============================================
@@ -8749,7 +9077,7 @@ function renderDesignerListInline() {
 
   // 外構担当
   if (exteriorDesigners.length > 0) {
-    html += '<h4 style="margin: 20px 0 12px; color: #8bc34a;">🌳 外構担当</h4>';
+    html += '<h4 style="margin: 20px 0 12px; color: var(--secondary-color);">🌳 外構担当</h4>';
     html += '<div class="table-container"><table class="table"><thead><tr><th width="40"></th><th>スタッフ名</th><th>メールアドレス</th><th>担当案件数</th><th>操作</th></tr></thead><tbody id="exteriorTbody">';
     exteriorDesigners.forEach(designer => {
       html += renderDesignerRow(designer, '外構', 'exterior_assignee');
@@ -9004,7 +9332,7 @@ async function saveDesignerAuth() {
     const designer = designers.find(d => d.id === designerId);
     const oldEmail = designer.email;
 
-    console.log('🔐 ユーザーアカウント作成開始:', { email, designerId });
+    log('🔐 ユーザーアカウント作成開始:', { email, designerId });
 
     // 1. Supabase Authにユーザーを作成
     const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -9019,7 +9347,7 @@ async function saveDesignerAuth() {
       }
     });
 
-    console.log('🔐 signUp結果:', { authData, authError });
+    log('🔐 signUp結果:', { authData, authError });
 
     if (authError) {
       // ユーザーが既に存在する場合は、パスワードだけを更新できないので警告
@@ -9029,7 +9357,7 @@ async function saveDesignerAuth() {
         throw authError;
       }
     } else {
-      console.log('✅ Supabase Authにユーザー作成完了:', authData.user?.id);
+      log('✅ Supabase Authにユーザー作成完了:', authData.user?.id);
     }
 
     // 2. designersテーブルのemailを更新
@@ -9039,13 +9367,13 @@ async function saveDesignerAuth() {
       .eq('id', designerId);
 
     if (updateError) {
-      console.error('❌ designers更新エラー:', updateError);
+      logError('❌ designers更新エラー:', updateError);
       showStatus('エラー', 'error');
       showToast('メールアドレスの保存に失敗しました: ' + updateError.message, 'error');
       return;
     }
 
-    console.log('✅ designersテーブル更新完了');
+    log('✅ designersテーブル更新完了');
 
     // 3. デザイナー配列を更新
     const designerIndex = designers.findIndex(d => d.id === designerId);
@@ -9064,7 +9392,7 @@ async function saveDesignerAuth() {
     }
 
   } catch (error) {
-    console.error('❌ 認証設定エラー:', error);
+    logError('❌ 認証設定エラー:', error);
     showStatus('エラー', 'error');
     showToast('認証設定に失敗しました: ' + error.message, 'error');
   }
@@ -9185,7 +9513,7 @@ async function updateDesignerOrder(draggedId, targetId, category) {
       .eq('id', update.id);
 
     if (error) {
-      console.error('並び替えエラー:', error);
+      logError('並び替えエラー:', error);
       showStatus('エラー', 'error');
       showToast('並び替えに失敗しました: ' + error.message, 'error');
       return;
@@ -9775,7 +10103,7 @@ function updateVendorInfo(templateId) {
   const selectedVendor = vendors.find(v => v.id === select.value);
   if (selectedVendor) {
     // 特別なフィードバックは不要（generateEmail時に使用）
-    console.log('業者選択:', selectedVendor.company);
+    log('業者選択:', selectedVendor.company);
   }
 }
 
@@ -9834,7 +10162,7 @@ function copyText(elementId) {
   navigator.clipboard.writeText(text).then(() => {
     showToast('コピーしました！', 'success');
   }).catch(err => {
-    console.error('コピーに失敗:', err);
+    logError('コピーに失敗:', err);
     showToast('コピーに失敗しました', 'error');
   });
 }
@@ -10065,7 +10393,7 @@ async function logEmailSent(method, to, subject) {
   const { project, taskDef } = window.__emailModalData || {};
   if (!project || !taskDef) return;
 
-  console.log(`📧 メール送信記録: ${method} -> ${to}, 件名: ${subject}`);
+  log(`📧 メール送信記録: ${method} -> ${to}, 件名: ${subject}`);
 
   // 将来: Supabaseに送信履歴を保存
   // try {
@@ -10078,7 +10406,7 @@ async function logEmailSent(method, to, subject) {
   //     sent_at: new Date().toISOString()
   //   });
   // } catch (e) {
-  //   console.error('メール履歴保存失敗:', e);
+  //   logError('メール履歴保存失敗:', e);
   // }
 }
 
@@ -10280,7 +10608,7 @@ function copyModalText(elementId) {
   navigator.clipboard.writeText(text).then(() => {
     showToast('コピーしました！', 'success');
   }).catch(err => {
-    console.error('コピーに失敗:', err);
+    logError('コピーに失敗:', err);
     showToast('コピーに失敗しました', 'error');
   });
 }
@@ -10300,7 +10628,7 @@ async function markTaskAsRequested(projectId, taskKey) {
     .eq('id', projectId);
 
   if (error) {
-    console.error('更新エラー:', error);
+    logError('更新エラー:', error);
     showStatus('エラー', 'error');
     showToast('保存に失敗しました', 'error');
     return;
@@ -10431,7 +10759,7 @@ function copyStandaloneText(elementId) {
   navigator.clipboard.writeText(text).then(() => {
     showToast('コピーしました', 'success');
   }).catch(err => {
-    console.error('コピーに失敗:', err);
+    logError('コピーに失敗:', err);
     showToast('コピーに失敗しました', 'error');
   });
 }
@@ -10978,7 +11306,7 @@ const DataImporter = {
           imported++;
         }
       } catch (e) {
-        console.error('インポートエラー:', e);
+        logError('インポートエラー:', e);
       }
     }
 
@@ -11914,7 +12242,7 @@ const SessionManager = {
   init() {
     this.resetTimer();
     this.setupActivityListeners();
-    console.log('🔒 セッション管理開始（タイムアウト: ' + this.timeoutMinutes + '分）');
+    log('🔒 セッション管理開始（タイムアウト: ' + this.timeoutMinutes + '分）');
   },
 
   setupActivityListeners() {
@@ -12091,12 +12419,12 @@ function updateURLWithDesigner(designerName) {
 function handleHashChange() {
   // 無限ループ防止
   if (isHandlingHashChange) {
-    console.log('⏸️ handleHashChange: すでに処理中のためスキップ');
+    log('⏸️ handleHashChange: すでに処理中のためスキップ');
     return;
   }
 
   const hash = window.location.hash.substring(1); // #を除去
-  console.log('🔗 handleHashChange 開始:', {
+  log('🔗 handleHashChange 開始:', {
     hash: hash,
     timestamp: new Date().toISOString(),
     vendorsV2Length: vendorsV2.length,
@@ -12153,14 +12481,14 @@ function handleHashChange() {
         // フラグをリセット（遅延後）
         setTimeout(() => {
           isHandlingHashChange = false;
-          console.log('✅ handleHashChange完了');
+          log('✅ handleHashChange完了');
         }, 150);
       }, 100);
     } else {
       // サブタブがない場合はすぐにフラグをリセット
       setTimeout(() => {
         isHandlingHashChange = false;
-        console.log('✅ handleHashChange完了');
+        log('✅ handleHashChange完了');
       }, 150);
     }
   } else {
@@ -12455,7 +12783,7 @@ async function loadProjectTasksList(projectId) {
       .order('due_date', { ascending: true, nullsFirst: false });
 
     if (error) {
-      console.error('Load tasks error:', error);
+      logError('Load tasks error:', error);
       container.innerHTML = '<div style="color: var(--text-muted); font-size: 12px;">タスクの読み込みに失敗しました</div>';
       return;
     }
@@ -12476,7 +12804,7 @@ async function loadProjectTasksList(projectId) {
       </div>
     `).join('');
   } catch (error) {
-    console.error('Load tasks error:', error);
+    logError('Load tasks error:', error);
     container.innerHTML = '<div style="color: var(--text-muted); font-size: 12px;">タスクの読み込みに失敗しました</div>';
   }
 }
@@ -12545,7 +12873,7 @@ async function addProjectTask(projectId, taskName, dueDate) {
       .select();
 
     if (error) {
-      console.error('タスク追加エラー:', error);
+      logError('タスク追加エラー:', error);
       if (error.code === '42501') {
         showToast('タスク追加の権限がありません。管理者に連絡してください。', 'error');
       } else if (error.code === '42P01') {
@@ -12563,7 +12891,7 @@ async function addProjectTask(projectId, taskName, dueDate) {
     showToast('タスクを追加しました', 'success');
     await loadProjectTasksList(projectId);
   } catch (err) {
-    console.error('タスク追加例外:', err);
+    logError('タスク追加例外:', err);
     showToast('タスク追加中にエラーが発生しました', 'error');
   }
 }
@@ -12579,6 +12907,80 @@ function canPressApplicationGo(project) {
   const sashOk = progressData['sash']?.state === '保存済';
 
   return solarOk && plumbingOk && ventilationOk && sashOk;
+}
+
+// 申請GO確認モーダル
+let applicationGoProjectId = null;
+
+function confirmApplicationGo(projectId) {
+  const project = projects.find(p => p.id === projectId);
+  if (!project) return;
+
+  applicationGoProjectId = projectId;
+  const progressData = project.progress || {};
+
+  // 条件表示
+  const conditions = [
+    { label: '太陽光依頼', ok: progressData['solar']?.state === '営業共有済', value: progressData['solar']?.state || '-' },
+    { label: '給排水図依頼', ok: progressData['plumbing']?.state === '保存済', value: progressData['plumbing']?.state || '-' },
+    { label: '換気図依頼', ok: progressData['ventilation']?.state === '保存済', value: progressData['ventilation']?.state || '-' },
+    { label: 'サッシ依頼', ok: progressData['sash']?.state === '保存済', value: progressData['sash']?.state || '-' }
+  ];
+
+  document.getElementById('applicationGoProjectName').textContent = project.customer;
+  document.getElementById('applicationGoConditions').innerHTML = conditions.map(c =>
+    `<div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+      <span style="color: ${c.ok ? '#10b981' : '#ef4444'};">${c.ok ? '✓' : '✗'}</span>
+      <span>${c.label}:</span>
+      <span style="font-weight: 500; color: ${c.ok ? '#10b981' : 'var(--text-secondary)'};">${c.value}</span>
+    </div>`
+  ).join('');
+
+  document.getElementById('applicationGoModal').classList.add('show');
+}
+
+function closeApplicationGoModal() {
+  document.getElementById('applicationGoModal').classList.remove('show');
+  applicationGoProjectId = null;
+}
+
+async function executeApplicationGo() {
+  if (!applicationGoProjectId) return;
+
+  const project = projects.find(p => p.id === applicationGoProjectId);
+  if (!project) return;
+
+  // 申請タスクを完了としてマーク
+  const progressData = project.progress || {};
+  if (!progressData['application']) progressData['application'] = {};
+  progressData['application'].completed = true;
+  progressData['application'].date = new Date().toISOString().split('T')[0];
+
+  showStatus('保存中...', 'saving');
+  const { error } = await supabase
+    .from('projects')
+    .update({
+      is_archived: true,
+      progress: progressData,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', applicationGoProjectId);
+
+  if (error) {
+    showStatus('エラー', 'error');
+    showToast('完了処理に失敗しました: ' + error.message, 'error');
+    return;
+  }
+
+  project.is_archived = true;
+  project.progress = progressData;
+  project.updated_at = new Date().toISOString();
+
+  closeApplicationGoModal();
+  renderProjects();
+  updateSidebar();
+  showStatus('保存済み', 'saved');
+  showToast(`${project.customer} を完了済みに移動しました`, 'success');
 }
 
 // 折りたたみ機能
@@ -12696,7 +13098,7 @@ async function uploadMinutesWithDate(projectId, file) {
       .upload(fileName, file);
 
     if (uploadError) {
-      console.error('Storage upload error:', uploadError);
+      logError('Storage upload error:', uploadError);
       if (uploadError.message?.includes('bucket') || uploadError.statusCode === '404') {
         showToast('ストレージが設定されていません。管理者に連絡してください。', 'error');
       } else if (uploadError.message?.includes('policy')) {
@@ -12724,7 +13126,7 @@ async function uploadMinutesWithDate(projectId, file) {
       });
 
     if (dbError) {
-      console.error('DB insert error:', dbError);
+      logError('DB insert error:', dbError);
       showToast('議事録登録に失敗しました: ' + (dbError.message || 'Unknown error'), 'error');
       return;
     }
@@ -12759,7 +13161,7 @@ async function uploadMinutesWithDate(projectId, file) {
     showToast('議事録をアップロードしました', 'success');
     await loadMinutesList(projectId);
   } catch (error) {
-    console.error('Upload error:', error);
+    logError('Upload error:', error);
     showToast('アップロードに失敗しました', 'error');
   }
 }
@@ -12844,7 +13246,7 @@ async function uploadMinutes(projectId, file) {
       .upload(fileName, file);
 
     if (uploadError) {
-      console.error('Storage upload error:', uploadError);
+      logError('Storage upload error:', uploadError);
       // バケットが存在しない場合のエラーメッセージ
       if (uploadError.message?.includes('bucket') || uploadError.statusCode === '404') {
         showToast('ストレージが設定されていません。管理者に連絡してください。', 'error');
@@ -12873,7 +13275,7 @@ async function uploadMinutes(projectId, file) {
       });
 
     if (dbError) {
-      console.error('DB insert error:', dbError);
+      logError('DB insert error:', dbError);
       showToast('議事録登録に失敗しました: ' + (dbError.message || 'Unknown error'), 'error');
       return;
     }
@@ -12909,7 +13311,7 @@ async function uploadMinutes(projectId, file) {
     showToast('議事録をアップロードしました', 'success');
     await loadMinutesList(projectId);
   } catch (error) {
-    console.error('Upload error:', error);
+    logError('Upload error:', error);
     showToast('アップロードに失敗しました', 'error');
   }
 }
@@ -12927,7 +13329,7 @@ async function loadMinutesList(projectId) {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Load minutes error:', error);
+      logError('Load minutes error:', error);
       container.innerHTML = '<div style="color: var(--text-muted); font-size: 12px;">議事録の読み込みに失敗しました</div>';
       return;
     }
@@ -12951,7 +13353,7 @@ async function loadMinutesList(projectId) {
       </div>
     `).join('');
   } catch (error) {
-    console.error('Load minutes error:', error);
+    logError('Load minutes error:', error);
     container.innerHTML = '<div style="color: var(--text-muted); font-size: 12px;">議事録の読み込みに失敗しました</div>';
   }
 }
@@ -12970,7 +13372,7 @@ async function deleteMinute(minuteId, projectId) {
     showToast('議事録を削除しました', 'success');
     await loadMinutesList(projectId);
   } catch (error) {
-    console.error('Delete minute error:', error);
+    logError('Delete minute error:', error);
     showToast('削除に失敗しました', 'error');
   }
 }
@@ -13111,7 +13513,7 @@ const ErrorHandler = {
 
   // エラーをログ＆通知
   handle(error, context = '') {
-    console.error(`❌ エラー [${context}]:`, error);
+    logError(`❌ エラー [${context}]:`, error);
 
     const userMessage = this.getUserMessage(error);
     showToast(userMessage, 'error');
@@ -13336,6 +13738,12 @@ function updatePerformanceTable() {
   }).join('');
 }
 
+function getProgressBadgeClass(progress) {
+  if (progress >= 70) return 'high';
+  if (progress >= 40) return 'medium';
+  return 'low';
+}
+
 function generateWeeklyReport() {
   const today = new Date();
   const weekAgo = new Date(today - 7 * 24 * 60 * 60 * 1000);
@@ -13353,31 +13761,65 @@ function generateWeeklyReport() {
 
   const atRisk = activeProjects.filter(p => !p.assigned_to || calculateProgress(p) < 30).length;
 
+  const activeProjectsList = activeProjects.slice(0, 10).map(p => {
+    const progress = calculateProgress(p);
+    return `<li class="report-list-item">
+      <span class="report-project-name">${p.customer}</span>
+      <div class="report-project-meta">
+        <span class="report-progress-badge ${getProgressBadgeClass(progress)}">${progress}%</span>
+        <span class="report-assignee">${p.assigned_to || '未割当'}</span>
+      </div>
+    </li>`;
+  }).join('');
+
+  const completedList = completedThisWeek.length > 0
+    ? completedThisWeek.map(p => `<li class="report-list-item">
+        <span class="report-project-name">${p.customer}</span>
+      </li>`).join('')
+    : '<li class="report-empty">今週の完了案件はありません</li>';
+
   const report = `
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📊 ArchiDeck 週報
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-期間: ${weekAgo.toLocaleDateString('ja-JP')} 〜 ${today.toLocaleDateString('ja-JP')}
-
-【サマリー】
-・総案件数: ${projects.length}件
-・進行中: ${activeProjects.length}件
-・今週完了: ${completedThisWeek.length}件
-・平均進捗率: ${avgProgress}%
-・要注意案件: ${atRisk}件
-
-【進行中案件】
-${activeProjects.slice(0, 10).map(p => `・${p.customer} (${calculateProgress(p)}%) - ${p.assigned_to || '未割当'}`).join('\n')}
-
-【今週の完了案件】
-${completedThisWeek.length > 0 ? completedThisWeek.map(p => `・${p.customer}`).join('\n') : 'なし'}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    <div class="report-card">
+      <div class="report-header">
+        <h2>週報</h2>
+        <span class="report-period">${weekAgo.toLocaleDateString('ja-JP')} 〜 ${today.toLocaleDateString('ja-JP')}</span>
+      </div>
+      <div class="report-stats-grid">
+        <div class="report-stat-item">
+          <div class="report-stat-value">${projects.length}</div>
+          <div class="report-stat-label">総案件数</div>
+        </div>
+        <div class="report-stat-item">
+          <div class="report-stat-value">${activeProjects.length}</div>
+          <div class="report-stat-label">進行中</div>
+        </div>
+        <div class="report-stat-item">
+          <div class="report-stat-value">${completedThisWeek.length}</div>
+          <div class="report-stat-label">今週完了</div>
+        </div>
+        <div class="report-stat-item">
+          <div class="report-stat-value">${avgProgress}%</div>
+          <div class="report-stat-label">平均進捗</div>
+        </div>
+        <div class="report-stat-item">
+          <div class="report-stat-value">${atRisk}</div>
+          <div class="report-stat-label">要注意</div>
+        </div>
+      </div>
+      <div class="report-section">
+        <div class="report-section-title">進行中案件（上位10件）</div>
+        <ul class="report-list">${activeProjectsList || '<li class="report-empty">進行中の案件はありません</li>'}</ul>
+      </div>
+      <div class="report-section">
+        <div class="report-section-title">今週の完了案件</div>
+        <ul class="report-list">${completedList}</ul>
+      </div>
+    </div>
   `;
 
   const preview = document.getElementById('reportPreview');
   preview.style.display = 'block';
-  preview.textContent = report;
+  preview.innerHTML = report;
   showToast('週報を生成しました', 'success');
 }
 
@@ -13403,30 +13845,64 @@ function generateMonthlyReport() {
     }
   });
 
+  const completionRate = projects.length > 0 ? Math.round(completedThisMonth.length / projects.length * 100) : 0;
+
+  const designerStatsList = Object.entries(designerStats).map(([name, stats]) => {
+    const rate = stats.total > 0 ? Math.round(stats.completed / stats.total * 100) : 0;
+    return `<li class="report-list-item">
+      <span class="report-project-name">${name}</span>
+      <div class="report-project-meta">
+        <span>${stats.total}件担当</span>
+        <span class="report-progress-badge ${getProgressBadgeClass(rate)}">${stats.completed}件完了</span>
+      </div>
+    </li>`;
+  }).join('');
+
+  const completedList = completedThisMonth.length > 0
+    ? completedThisMonth.map(p => `<li class="report-list-item">
+        <span class="report-project-name">${p.customer}</span>
+        <span class="report-assignee">${p.assigned_to || '未割当'}</span>
+      </li>`).join('')
+    : '<li class="report-empty">今月の完了案件はありません</li>';
+
   const report = `
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📈 ArchiDeck 月報
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-期間: ${monthAgo.toLocaleDateString('ja-JP')} 〜 ${today.toLocaleDateString('ja-JP')}
-
-【サマリー】
-・総案件数: ${projects.length}件
-・進行中: ${activeProjects.length}件
-・今月完了: ${completedThisMonth.length}件
-・完了率: ${projects.length > 0 ? Math.round(completedThisMonth.length / projects.length * 100) : 0}%
-
-【担当者別実績】
-${Object.entries(designerStats).map(([name, stats]) => `・${name}: ${stats.total}件担当 / ${stats.completed}件完了`).join('\n')}
-
-【今月の完了案件】
-${completedThisMonth.length > 0 ? completedThisMonth.map(p => `・${p.customer} (担当: ${p.assigned_to || '未割当'})`).join('\n') : 'なし'}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    <div class="report-card">
+      <div class="report-header">
+        <h2>月報</h2>
+        <span class="report-period">${monthAgo.toLocaleDateString('ja-JP')} 〜 ${today.toLocaleDateString('ja-JP')}</span>
+      </div>
+      <div class="report-stats-grid">
+        <div class="report-stat-item">
+          <div class="report-stat-value">${projects.length}</div>
+          <div class="report-stat-label">総案件数</div>
+        </div>
+        <div class="report-stat-item">
+          <div class="report-stat-value">${activeProjects.length}</div>
+          <div class="report-stat-label">進行中</div>
+        </div>
+        <div class="report-stat-item">
+          <div class="report-stat-value">${completedThisMonth.length}</div>
+          <div class="report-stat-label">今月完了</div>
+        </div>
+        <div class="report-stat-item">
+          <div class="report-stat-value">${completionRate}%</div>
+          <div class="report-stat-label">完了率</div>
+        </div>
+      </div>
+      <div class="report-section">
+        <div class="report-section-title">担当者別実績</div>
+        <ul class="report-list">${designerStatsList || '<li class="report-empty">担当者データがありません</li>'}</ul>
+      </div>
+      <div class="report-section">
+        <div class="report-section-title">今月の完了案件</div>
+        <ul class="report-list">${completedList}</ul>
+      </div>
+    </div>
   `;
 
   const preview = document.getElementById('reportPreview');
   preview.style.display = 'block';
-  preview.textContent = report;
+  preview.innerHTML = report;
   showToast('月報を生成しました', 'success');
 }
 
@@ -13664,7 +14140,7 @@ function saveAutoBackup() {
 
     // サイズチェック (5MB制限)
     if (json.length > 5 * 1024 * 1024) {
-      console.warn('⚠️ バックアップサイズが大きすぎます。ローカル保存をスキップします。');
+      warn('⚠️ バックアップサイズが大きすぎます。ローカル保存をスキップします。');
       return;
     }
 
@@ -13682,9 +14158,9 @@ function saveAutoBackup() {
     localStorage.setItem('archideck_backup_history', JSON.stringify(history));
 
     updateBackupUI();
-    console.log('✅ 自動バックアップ完了:', new Date().toLocaleString());
+    log('✅ 自動バックアップ完了:', new Date().toLocaleString());
   } catch (e) {
-    console.warn('自動バックアップエラー:', e);
+    warn('自動バックアップエラー:', e);
   }
 }
 
@@ -13764,7 +14240,7 @@ async function createBackup() {
     statusEl.innerHTML = '<span style="color: var(--success-color);">✅ バックアップを作成しました</span>';
     showToast('バックアップファイルをダウンロードしました', 'success');
   } catch (error) {
-    console.error('Backup error:', error);
+    logError('Backup error:', error);
     statusEl.innerHTML = '<span style="color: var(--danger-color);">❌ バックアップの作成に失敗しました</span>';
     showToast('バックアップの作成に失敗しました', 'error');
   }
@@ -13817,7 +14293,7 @@ function restoreBackup() {
       statusEl.innerHTML = '<span style="color: var(--success-color);">✅ 復元が完了しました。ページを再読み込みしてください。</span>';
       showToast('復元が完了しました', 'success');
     } catch (error) {
-      console.error('Restore error:', error);
+      logError('Restore error:', error);
       statusEl.innerHTML = '<span style="color: var(--danger-color);">❌ 復元に失敗しました: ' + error.message + '</span>';
       showToast('復元に失敗しました', 'error');
     }
@@ -14094,7 +14570,7 @@ saveProject = async function() {
     renderSidebar();
     renderProjects();
   } catch (error) {
-    console.error('保存エラー:', error);
+    logError('保存エラー:', error);
     showStatus('エラー', 'error');
     showToast('保存に失敗しました', 'error');
   }
@@ -14113,7 +14589,7 @@ window.addEventListener('DOMContentLoaded', () => {
     caches.keys().then(cacheNames => {
       cacheNames.forEach(cacheName => {
         caches.delete(cacheName);
-        console.log('🗑️ キャッシュをクリア:', cacheName);
+        log('🗑️ キャッシュをクリア:', cacheName);
       });
     });
 
@@ -14121,19 +14597,19 @@ window.addEventListener('DOMContentLoaded', () => {
     navigator.serviceWorker.getRegistrations().then(registrations => {
       registrations.forEach(registration => {
         registration.update();
-        console.log('🔄 Service Worker更新を確認');
+        log('🔄 Service Worker更新を確認');
       });
     });
 
     navigator.serviceWorker.register('/archideck/sw.js', { updateViaCache: 'none' })
       .then(reg => {
-        console.log('✅ Service Worker registered:', reg.scope);
+        log('✅ Service Worker registered:', reg.scope);
         // 新しいService Workerがあれば即座にアクティベート
         if (reg.waiting) {
           reg.waiting.postMessage({ type: 'SKIP_WAITING' });
         }
       })
-      .catch(err => console.log('❌ Service Worker registration failed:', err));
+      .catch(err => log('❌ Service Worker registration failed:', err));
   }
 
   // プッシュ通知の許可リクエスト
@@ -14142,7 +14618,7 @@ window.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
       Notification.requestPermission().then(permission => {
         if (permission === 'granted') {
-          console.log('✅ Push notifications enabled');
+          log('✅ Push notifications enabled');
         }
       });
     }, 3000);
