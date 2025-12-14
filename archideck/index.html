@@ -3840,6 +3840,7 @@ textarea:focus-visible {
           <button class="sub-tab-btn" onclick="switchSubTab('customize', this)">🎨 カスタマイズ</button>
           <button class="sub-tab-btn" onclick="switchSubTab('kintone', this)">🔗 kintone連携</button>
           <button class="sub-tab-btn" onclick="switchSubTab('backup', this)">💾 バックアップ</button>
+          <button class="sub-tab-btn" onclick="switchSubTab('fcManagement', this)">🏪 FC管理</button>
         </nav>
 
         <!-- スタッフ管理 -->
@@ -4139,6 +4140,35 @@ textarea:focus-visible {
             </div>
 
             <div id="backupStatus" style="margin-top: 24px;"></div>
+          </div>
+        </div>
+
+        <!-- FC管理 -->
+        <div id="fcManagementPanel" class="sub-tab-panel">
+          <div style="max-width: 1200px; margin: 0 auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+              <div>
+                <h2 style="margin: 0; font-size: 24px; font-weight: 700;">🏪 FC（フランチャイズ）管理</h2>
+                <p style="margin: 8px 0 0; color: var(--text-secondary);">FC先にホワイトラベル版を発行・管理できます。</p>
+              </div>
+              <button class="btn btn-primary" onclick="openFcModal()">+ FC追加</button>
+            </div>
+
+            <div class="card" style="margin-bottom: 24px; padding: 20px;">
+              <h3 style="margin: 0 0 12px; font-size: 16px;">FC専用URLについて</h3>
+              <p style="margin: 0; color: var(--text-secondary); font-size: 14px; line-height: 1.6;">
+                FC先には専用のURLが発行されます。<br>
+                例: <code style="background: var(--bg-tertiary); padding: 2px 8px; border-radius: 4px;">https://nandemo-nu.vercel.app/fc/tokyo-fc/</code><br>
+                FC専用URLでアクセスすると、Gハウスのブランディングが非表示になり、設定したカスタムロゴ・カラーが表示されます。
+              </p>
+            </div>
+
+            <div id="fcListContainer">
+              <div class="empty-state">
+                <div class="empty-icon">🏪</div>
+                <p>FCが登録されていません<br><small>「+ FC追加」ボタンから登録してください</small></p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -4469,6 +4499,70 @@ textarea:focus-visible {
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeTaskModal()">キャンセル</button>
       <button class="btn btn-primary" onclick="saveTask()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- モーダル：FC追加/編集 -->
+<div id="fcModal" class="modal">
+  <div class="modal-content" style="max-width: 600px;">
+    <div class="modal-header">
+      <h2 class="modal-title" id="fcModalTitle">FC追加</h2>
+      <button class="close" onclick="closeFcModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form id="fcForm">
+        <input type="hidden" id="fcId">
+
+        <div class="form-group">
+          <label class="form-label">FC名 *</label>
+          <input type="text" class="form-input" id="fcName" placeholder="例：東京フランチャイズ" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">URLスラッグ *</label>
+          <input type="text" class="form-input" id="fcSlug" placeholder="例：tokyo-fc" required pattern="[a-z0-9-]+" title="半角英数字とハイフンのみ使用可能">
+          <div class="form-hint">半角英数字とハイフンのみ。例: tokyo-fc → /fc/tokyo-fc/ でアクセス可能</div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div class="form-group">
+            <label class="form-label">連絡先メール</label>
+            <input type="email" class="form-input" id="fcEmail" placeholder="contact@example.com">
+          </div>
+          <div class="form-group">
+            <label class="form-label">連絡先電話</label>
+            <input type="tel" class="form-input" id="fcTel" placeholder="03-1234-5678">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">ブランドカラー</label>
+          <div style="display: flex; gap: 12px; align-items: center;">
+            <input type="color" id="fcColor" value="#2563EB" style="width: 50px; height: 36px; border: none; border-radius: 4px; cursor: pointer;">
+            <input type="text" class="form-input" id="fcColorText" value="#2563EB" style="width: 120px;" oninput="document.getElementById('fcColor').value = this.value">
+          </div>
+          <div class="form-hint">FC専用画面で使用されるメインカラー</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">カスタムロゴURL</label>
+          <input type="url" class="form-input" id="fcLogoUrl" placeholder="https://example.com/logo.png">
+          <div class="form-hint">空白の場合はデフォルトのシステムアイコンが表示されます</div>
+        </div>
+
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="fcIsActive" checked>
+            <span>有効</span>
+          </label>
+          <div class="form-hint">無効にするとFC専用URLにアクセスできなくなります</div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeFcModal()">キャンセル</button>
+      <button class="btn btn-primary" onclick="saveFc()">保存</button>
     </div>
   </div>
 </div>
@@ -5471,29 +5565,14 @@ function detectFCMode() {
     }
   }
 
-  // FCモードの場合はUI調整
+  // FCモードの場合はUI調整（非同期で実行）
   if (isFCMode) {
-    applyFCMode();
+    applyFCMode().catch(e => warn('FCモード適用エラー:', e));
   }
 }
 
-function applyFCMode() {
+async function applyFCMode() {
   log('🎨 FCモードUI適用中...');
-
-  // タイトルからGハウスを削除
-  document.title = '設計業務管理システム';
-
-  // ログイン画面のGハウス表示を非表示
-  const loginBranding = document.querySelector('#loginContainer p[style*="color: var(--text-muted)"]');
-  if (loginBranding && loginBranding.textContent.includes('Gハウス')) {
-    loginBranding.style.display = 'none';
-  }
-
-  // ログイン画面のロゴテキストを変更
-  const loginLogoText = document.querySelector('.login-logo-text');
-  if (loginLogoText) {
-    loginLogoText.innerHTML = '<span style="color: var(--primary-color);">設計業務</span>管理システム';
-  }
 
   // 管理者ボタンを非表示にするCSS追加
   const fcStyle = document.createElement('style');
@@ -5516,19 +5595,89 @@ function applyFCMode() {
   `;
   document.head.appendChild(fcStyle);
 
-  // ヘッダーロゴのテキストを変更（DOMContentLoaded後に実行）
-  setTimeout(() => {
-    const headerLogo = document.querySelector('.header-logo-text');
-    if (headerLogo && headerLogo.innerHTML.includes('Gハウス')) {
-      headerLogo.innerHTML = '<span style="color: var(--primary-color);">Archi</span>Deck';
+  // FC組織情報をDBから読み込み
+  let fcOrg = null;
+  try {
+    const { data, error } = await supabase
+      .from('fc_organizations')
+      .select('*')
+      .eq('slug', fcSlug)
+      .eq('is_active', true)
+      .single();
+
+    if (!error && data) {
+      fcOrg = data;
+      log('📦 FC組織情報取得:', fcOrg.name);
+    }
+  } catch (e) {
+    warn('FC組織情報取得エラー:', e);
+  }
+
+  // FC組織のカスタム設定を適用
+  if (fcOrg) {
+    // タイトル設定
+    document.title = fcOrg.name + ' | 設計業務管理システム';
+
+    // プライマリカラーを適用
+    if (fcOrg.primary_color) {
+      document.documentElement.style.setProperty('--primary-color', fcOrg.primary_color);
     }
 
-    // 設定画面で組織名を表示
-    const orgNameDisplay = document.getElementById('orgNameDisplay');
-    if (orgNameDisplay && fcSlug) {
-      orgNameDisplay.textContent = fcSlug + ' 専用システム';
+    // ロゴを適用（ヘッダー）
+    setTimeout(() => {
+      const headerLogo = document.querySelector('.header-logo-text');
+      if (headerLogo) {
+        if (fcOrg.logo_url) {
+          headerLogo.innerHTML = `<img src="${escapeHtml(fcOrg.logo_url)}" alt="${escapeHtml(fcOrg.name)}" style="height: 32px; vertical-align: middle;">`;
+        } else {
+          headerLogo.innerHTML = `<span style="color: var(--primary-color);">${escapeHtml(fcOrg.name)}</span>`;
+        }
+      }
+
+      // ログイン画面のロゴテキストを変更
+      const loginLogoText = document.querySelector('.login-logo-text');
+      if (loginLogoText) {
+        if (fcOrg.logo_url) {
+          loginLogoText.innerHTML = `<img src="${escapeHtml(fcOrg.logo_url)}" alt="${escapeHtml(fcOrg.name)}" style="height: 48px;">`;
+        } else {
+          loginLogoText.innerHTML = `<span style="color: var(--primary-color);">${escapeHtml(fcOrg.name)}</span>`;
+        }
+      }
+
+      // 設定画面で組織名を表示
+      const orgNameDisplay = document.getElementById('orgNameDisplay');
+      if (orgNameDisplay) {
+        orgNameDisplay.textContent = fcOrg.name;
+      }
+    }, 100);
+  } else {
+    // FC組織が見つからない場合はデフォルト設定
+    document.title = '設計業務管理システム';
+
+    // ログイン画面のGハウス表示を非表示
+    const loginBranding = document.querySelector('#loginContainer p[style*="color: var(--text-muted)"]');
+    if (loginBranding && loginBranding.textContent.includes('Gハウス')) {
+      loginBranding.style.display = 'none';
     }
-  }, 100);
+
+    // ログイン画面のロゴテキストを変更
+    const loginLogoText = document.querySelector('.login-logo-text');
+    if (loginLogoText) {
+      loginLogoText.innerHTML = '<span style="color: var(--primary-color);">設計業務</span>管理システム';
+    }
+
+    setTimeout(() => {
+      const headerLogo = document.querySelector('.header-logo-text');
+      if (headerLogo && headerLogo.innerHTML.includes('Gハウス')) {
+        headerLogo.innerHTML = '<span style="color: var(--primary-color);">Archi</span>Deck';
+      }
+
+      const orgNameDisplay = document.getElementById('orgNameDisplay');
+      if (orgNameDisplay && fcSlug) {
+        orgNameDisplay.textContent = fcSlug + ' 専用システム';
+      }
+    }, 100);
+  }
 
   log('✅ FCモードUI適用完了');
 }
@@ -5703,12 +5852,13 @@ async function init() {
       loadTasksV2(),
       loadVendorsV2(),
       loadTaskVendorMappings(),
-      loadProducts()
+      loadProducts(),
+      loadFcOrganizations()
     ]);
 
     // 各結果を確認
     results.forEach((result, index) => {
-      const names = ['スタッフ', '現在のスタッフ', '案件', 'テンプレート', '業者', 'タスク設定'];
+      const names = ['スタッフ', '現在のスタッフ', '案件', 'テンプレート', '業者', 'タスク設定', 'カテゴリ', 'タスクV2', '業者V2', 'タスク業者紐づけ', '商品', 'FC組織'];
       if (result.status === 'rejected') {
         logError(`❌ ${names[index]}の読み込み失敗:`, result.reason);
       } else {
@@ -14014,6 +14164,250 @@ function startVoiceInput(targetInputId) {
 
 // 初期化時に音声入力をセットアップ
 document.addEventListener('DOMContentLoaded', initVoiceInput);
+
+// ============================================
+// FC（フランチャイズ）管理
+// ============================================
+let fcOrganizations = [];
+
+async function loadFcOrganizations() {
+  try {
+    const { data, error } = await supabase
+      .from('fc_organizations')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      // テーブルが存在しない場合はスキップ
+      if (error.code === '42P01') {
+        warn('fc_organizationsテーブルが存在しません。SQLを実行してください。');
+        return;
+      }
+      throw error;
+    }
+
+    fcOrganizations = data || [];
+    renderFcList();
+  } catch (e) {
+    warn('FC組織読み込みエラー:', e);
+  }
+}
+
+function renderFcList() {
+  const container = document.getElementById('fcListContainer');
+  if (!container) return;
+
+  if (fcOrganizations.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">🏪</div>
+        <p>FCが登録されていません<br><small>「+ FC追加」ボタンから登録してください</small></p>
+      </div>
+    `;
+    return;
+  }
+
+  const baseUrl = window.location.origin;
+
+  container.innerHTML = `
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>FC名</th>
+            <th>スラッグ</th>
+            <th>専用URL</th>
+            <th>ステータス</th>
+            <th>作成日</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${fcOrganizations.map(fc => `
+            <tr>
+              <td>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="display: inline-block; width: 16px; height: 16px; border-radius: 4px; background: ${escapeHtml(fc.primary_color || '#2563EB')};"></span>
+                  <strong>${escapeHtml(fc.name)}</strong>
+                </div>
+              </td>
+              <td><code style="background: var(--bg-tertiary); padding: 2px 8px; border-radius: 4px;">${escapeHtml(fc.slug)}</code></td>
+              <td>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <a href="${baseUrl}/fc/${escapeHtml(fc.slug)}/" target="_blank" style="font-size: 13px; color: var(--primary-color);">
+                    /fc/${escapeHtml(fc.slug)}/
+                  </a>
+                  <button class="btn btn-ghost btn-small" onclick="copyFcUrl('${escapeHtml(fc.slug)}')" title="URLをコピー">📋</button>
+                </div>
+              </td>
+              <td>
+                ${fc.is_active
+                  ? '<span class="badge badge-success">有効</span>'
+                  : '<span class="badge badge-secondary">無効</span>'}
+              </td>
+              <td style="font-size: 13px; color: var(--text-secondary);">${new Date(fc.created_at).toLocaleDateString('ja-JP')}</td>
+              <td>
+                <div style="display: flex; gap: 8px;">
+                  <button class="btn btn-ghost btn-small" onclick="editFc('${fc.id}')">編集</button>
+                  <button class="btn btn-danger btn-small" onclick="deleteFc('${fc.id}')">削除</button>
+                </div>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function copyFcUrl(slug) {
+  const baseUrl = window.location.origin;
+  const url = `${baseUrl}/fc/${slug}/`;
+  navigator.clipboard.writeText(url).then(() => {
+    showToast('URLをコピーしました', 'success');
+  }).catch(() => {
+    showToast('コピーに失敗しました', 'error');
+  });
+}
+
+function openFcModal(fcId = null) {
+  const modal = document.getElementById('fcModal');
+  const title = document.getElementById('fcModalTitle');
+
+  document.getElementById('fcForm').reset();
+  document.getElementById('fcId').value = '';
+  document.getElementById('fcColor').value = '#2563EB';
+  document.getElementById('fcColorText').value = '#2563EB';
+  document.getElementById('fcIsActive').checked = true;
+
+  if (fcId) {
+    const fc = fcOrganizations.find(f => f.id === fcId);
+    if (!fc) return;
+
+    title.textContent = 'FC編集';
+    document.getElementById('fcId').value = fc.id;
+    document.getElementById('fcName').value = fc.name;
+    document.getElementById('fcSlug').value = fc.slug;
+    document.getElementById('fcEmail').value = fc.contact_email || '';
+    document.getElementById('fcTel').value = fc.contact_tel || '';
+    document.getElementById('fcColor').value = fc.primary_color || '#2563EB';
+    document.getElementById('fcColorText').value = fc.primary_color || '#2563EB';
+    document.getElementById('fcLogoUrl').value = fc.logo_url || '';
+    document.getElementById('fcIsActive').checked = fc.is_active !== false;
+  } else {
+    title.textContent = 'FC追加';
+  }
+
+  // カラーピッカーの同期
+  document.getElementById('fcColor').addEventListener('input', function() {
+    document.getElementById('fcColorText').value = this.value;
+  });
+
+  modal.style.display = 'flex';
+}
+
+function closeFcModal() {
+  document.getElementById('fcModal').style.display = 'none';
+}
+
+async function saveFc() {
+  // 二重クリック防止
+  if (SaveGuard.isLocked('saveFc')) return;
+
+  const id = document.getElementById('fcId').value;
+  const name = document.getElementById('fcName').value.trim();
+  const slug = document.getElementById('fcSlug').value.trim().toLowerCase();
+  const contactEmail = document.getElementById('fcEmail').value.trim();
+  const contactTel = document.getElementById('fcTel').value.trim();
+  const primaryColor = document.getElementById('fcColor').value;
+  const logoUrl = document.getElementById('fcLogoUrl').value.trim();
+  const isActive = document.getElementById('fcIsActive').checked;
+
+  if (!name || !slug) {
+    showToast('FC名とスラッグは必須です', 'error');
+    return;
+  }
+
+  // スラッグの形式チェック
+  if (!/^[a-z0-9-]+$/.test(slug)) {
+    showToast('スラッグは半角英数字とハイフンのみ使用可能です', 'error');
+    return;
+  }
+
+  await SaveGuard.run('saveFc', async () => {
+    showStatus('保存中...', 'saving');
+
+    const fcData = {
+      name,
+      slug,
+      contact_email: contactEmail || null,
+      contact_tel: contactTel || null,
+      primary_color: primaryColor,
+      logo_url: logoUrl || null,
+      is_active: isActive,
+      updated_at: new Date().toISOString()
+    };
+
+    let result;
+    if (id) {
+      result = await supabase
+        .from('fc_organizations')
+        .update(fcData)
+        .eq('id', id)
+        .select();
+    } else {
+      result = await supabase
+        .from('fc_organizations')
+        .insert([fcData])
+        .select();
+    }
+
+    if (result.error) {
+      if (result.error.code === '23505') {
+        showToast('このスラッグは既に使用されています', 'error');
+      } else {
+        showToast('保存に失敗しました: ' + result.error.message, 'error');
+      }
+      showStatus('エラー', 'error');
+      return;
+    }
+
+    showStatus('保存済み', 'saved');
+    showToast(id ? 'FCを更新しました' : 'FCを追加しました', 'success');
+    closeFcModal();
+    await loadFcOrganizations();
+  });
+}
+
+function editFc(fcId) {
+  openFcModal(fcId);
+}
+
+async function deleteFc(fcId) {
+  const fc = fcOrganizations.find(f => f.id === fcId);
+  if (!fc) return;
+
+  if (!confirm(`FC「${fc.name}」を削除しますか？\n\n削除すると、FC専用URLにアクセスできなくなります。`)) {
+    return;
+  }
+
+  showStatus('削除中...', 'saving');
+
+  const { error } = await supabase
+    .from('fc_organizations')
+    .delete()
+    .eq('id', fcId);
+
+  if (error) {
+    showStatus('エラー', 'error');
+    showToast('削除に失敗しました: ' + error.message, 'error');
+    return;
+  }
+
+  showStatus('保存済み', 'saved');
+  showToast('FCを削除しました', 'success');
+  await loadFcOrganizations();
+}
 
 // ============================================
 // カスタマイズ機能（FC向けノーコード）
