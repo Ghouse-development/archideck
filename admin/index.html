@@ -783,6 +783,15 @@ body {
     </div>
 
     <div class="sidebar-section">
+      <div class="sidebar-label">FC管理</div>
+      <ul class="sidebar-nav">
+        <li><a data-tab="fc-list"><span class="icon">🏠</span>FC一覧</a></li>
+        <li><a data-tab="fc-create"><span class="icon">➕</span>FC新規作成</a></li>
+        <li><a data-tab="fc-data"><span class="icon">📈</span>FCデータ閲覧</a></li>
+      </ul>
+    </div>
+
+    <div class="sidebar-section">
       <div class="sidebar-label">設定</div>
       <ul class="sidebar-nav">
         <li><a data-tab="plans"><span class="icon">📋</span>プラン管理</a></li>
@@ -1173,6 +1182,194 @@ body {
           </div>
         </div>
       </div>
+
+      <!-- FC一覧 -->
+      <div class="tab-panel" id="fc-listPanel">
+        <div class="kpi-grid" style="margin-bottom: 24px;">
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <div class="kpi-label">FC総数</div>
+              <div class="kpi-icon blue">🏠</div>
+            </div>
+            <div class="kpi-value" id="totalFCs">0</div>
+            <span class="kpi-change neutral">フランチャイズ加盟店</span>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <div class="kpi-label">アクティブFC</div>
+              <div class="kpi-icon green">✓</div>
+            </div>
+            <div class="kpi-value" id="activeFCs">0</div>
+            <span class="kpi-change positive">稼働中</span>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <div class="kpi-label">FC総案件数</div>
+              <div class="kpi-icon yellow">📋</div>
+            </div>
+            <div class="kpi-value" id="totalFCProjects">0</div>
+            <span class="kpi-change neutral">全FC合計</span>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <div class="kpi-label">今月新規FC</div>
+              <div class="kpi-icon red">🆕</div>
+            </div>
+            <div class="kpi-value" id="newFCs">0</div>
+            <span class="kpi-change positive">+今月</span>
+          </div>
+        </div>
+
+        <div class="table-card">
+          <div class="table-header">
+            <h3 class="table-title">フランチャイズ一覧</h3>
+            <div class="table-actions">
+              <div class="search-box">
+                <span>🔍</span>
+                <input type="text" placeholder="FC名で検索..." id="fcSearch" oninput="filterFCs()">
+              </div>
+              <button class="btn btn-primary" onclick="showTab('fc-create')">+ 新規FC作成</button>
+            </div>
+          </div>
+          <div class="table-wrapper">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>FC名</th>
+                  <th>専用URL</th>
+                  <th>管理者</th>
+                  <th>案件数</th>
+                  <th>スタッフ数</th>
+                  <th>ステータス</th>
+                  <th>登録日</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="fcTable">
+                <tr>
+                  <td colspan="8">
+                    <div class="empty-state">
+                      <div class="empty-state-text">読み込み中...</div>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- FC新規作成 -->
+      <div class="tab-panel" id="fc-createPanel">
+        <div class="chart-card">
+          <h3 class="chart-title" style="margin-bottom: 24px;">新規フランチャイズ登録</h3>
+          <p style="color: var(--text-light); margin-bottom: 24px;">
+            新しいフランチャイズ加盟店を登録します。登録完了後、専用URLとログイン情報が発行されます。
+          </p>
+
+          <div class="form-group">
+            <label class="form-label">FC名（会社名） *</label>
+            <input type="text" class="form-input" id="fcName" placeholder="例：株式会社○○工務店">
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">URLスラッグ *</label>
+              <input type="text" class="form-input" id="fcSlug" placeholder="例：sample-koumuten" oninput="formatFCSlug(this); previewFCUrl()">
+              <small style="color: var(--text-light); font-size: 12px;">英数字とハイフンのみ。専用URLに使用されます。</small>
+            </div>
+            <div class="form-group">
+              <label class="form-label">専用URL（自動生成）</label>
+              <input type="text" class="form-input" id="fcUrlPreview" readonly style="background: var(--bg);">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">管理者メールアドレス *</label>
+              <input type="email" class="form-input" id="fcEmail" placeholder="admin@example.com">
+            </div>
+            <div class="form-group">
+              <label class="form-label">電話番号</label>
+              <input type="tel" class="form-input" id="fcPhone" placeholder="03-1234-5678">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">初期パスワード</label>
+              <div style="display: flex; gap: 8px;">
+                <input type="text" class="form-input" id="fcPassword" readonly style="background: var(--bg);">
+                <button class="btn btn-secondary" onclick="generateFCPassword()">生成</button>
+              </div>
+              <small style="color: var(--text-light); font-size: 12px;">FCに通知する初期パスワード</small>
+            </div>
+            <div class="form-group">
+              <label class="form-label">プラン</label>
+              <select class="form-select" id="fcPlan">
+                <option value="starter">スターター（¥9,800/月）</option>
+                <option value="professional" selected>プロフェッショナル（¥19,800/月）</option>
+                <option value="enterprise">エンタープライズ（¥49,800/月）</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">備考</label>
+            <textarea class="form-textarea" id="fcNote" placeholder="FC加盟に関するメモなど"></textarea>
+          </div>
+
+          <div style="display: flex; gap: 12px; margin-top: 24px;">
+            <button class="btn btn-primary" onclick="createFC()">FCを作成</button>
+            <button class="btn btn-secondary" onclick="showTab('fc-list')">キャンセル</button>
+          </div>
+        </div>
+
+        <div class="chart-card" style="margin-top: 24px; background: #F0FDF4; border-color: #BBF7D0;">
+          <h3 class="chart-title" style="margin-bottom: 16px; color: #166534;">💡 FC作成後の流れ</h3>
+          <ol style="color: #166534; font-size: 14px; line-height: 1.8; padding-left: 20px;">
+            <li>専用URLが自動生成されます（例：https://archideck.vercel.app/fc/sample-koumuten/）</li>
+            <li>管理者アカウントが作成され、メールで通知されます</li>
+            <li>FCは専用URLからログインし、自社のスタッフ・案件を管理できます</li>
+            <li>Gハウス本部は管理画面からFCのデータを閲覧できます（FCには非表示）</li>
+          </ol>
+        </div>
+      </div>
+
+      <!-- FCデータ閲覧 -->
+      <div class="tab-panel" id="fc-dataPanel">
+        <div class="chart-card" style="margin-bottom: 24px;">
+          <div class="chart-header">
+            <h3 class="chart-title">FC選択</h3>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">閲覧するFCを選択</label>
+              <select class="form-select" id="fcDataSelect" onchange="loadFCData()">
+                <option value="">-- FCを選択してください --</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">データ種別</label>
+              <select class="form-select" id="fcDataType" onchange="loadFCData()">
+                <option value="summary">サマリー</option>
+                <option value="projects">案件一覧</option>
+                <option value="staff">スタッフ一覧</option>
+                <option value="tasks">タスク進捗</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div id="fcDataContent">
+          <div class="chart-card">
+            <div class="empty-state">
+              <div class="empty-state-icon">📊</div>
+              <div class="empty-state-text">FCを選択するとデータが表示されます</div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </main>
 </div>
@@ -1310,6 +1507,8 @@ let users = [];
 let logs = [];
 let filteredOrgs = [];
 let filteredUsers = [];
+let franchises = [];
+let filteredFCs = [];
 
 // デモデータ
 const demoData = {
@@ -1344,6 +1543,13 @@ const demoData = {
     { id: '2', user_email: 'suzuki@sample.jp', organization: 'サンプル住宅', action: 'signup', details: '新規登録完了', created_at: '2025-12-10T09:00:00Z' },
     { id: '3', user_email: 'tanaka@g-house.jp', organization: '株式会社Gハウス', action: 'update', details: '案件「山田邸」を更新', created_at: '2025-12-12T14:00:00Z' },
     { id: '4', user_email: 'yamada@demo.jp', organization: 'デモ建設', action: 'login', details: 'ログイン成功', created_at: '2025-12-10T14:20:00Z' },
+  ],
+  franchises: [
+    { id: 'fc1', name: '東京FC工務店', slug: 'tokyo-fc', email: 'admin@tokyo-fc.jp', phone: '03-1111-2222', status: 'active', plan: 'professional', projects: 15, staff: 4, created_at: '2025-10-01T00:00:00Z' },
+    { id: 'fc2', name: '大阪FC住宅', slug: 'osaka-fc', email: 'admin@osaka-fc.jp', phone: '06-3333-4444', status: 'active', plan: 'professional', projects: 12, staff: 3, created_at: '2025-10-15T00:00:00Z' },
+    { id: 'fc3', name: '名古屋FCホーム', slug: 'nagoya-fc', email: 'admin@nagoya-fc.jp', phone: '052-5555-6666', status: 'active', plan: 'starter', projects: 8, staff: 2, created_at: '2025-11-01T00:00:00Z' },
+    { id: 'fc4', name: '福岡FC建設', slug: 'fukuoka-fc', email: 'admin@fukuoka-fc.jp', phone: '092-7777-8888', status: 'trial', plan: 'starter', projects: 3, staff: 2, created_at: '2025-12-01T00:00:00Z' },
+    { id: 'fc5', name: '札幌FCハウジング', slug: 'sapporo-fc', email: 'admin@sapporo-fc.jp', phone: '011-9999-0000', status: 'suspended', plan: 'starter', projects: 0, staff: 1, created_at: '2025-09-01T00:00:00Z' },
   ],
 };
 
@@ -1451,18 +1657,23 @@ function loadDemoData() {
   plans = [...demoData.plans];
   users = [...demoData.users];
   logs = [...demoData.logs];
+  franchises = [...demoData.franchises];
   renderAll();
 }
 
 function renderAll() {
   filteredOrgs = [...organizations];
   filteredUsers = [...users];
+  filteredFCs = [...franchises];
   updateDashboard();
   renderOrgsTable();
   renderSubsTable();
   renderPlansTable();
   renderUsersTable();
   renderLogsTable();
+  renderFCTable();
+  updateFCKPIs();
+  populateFCSelect();
 }
 
 // ダッシュボード更新
@@ -1646,9 +1857,18 @@ function showTab(tabName) {
     users: 'ユーザー管理',
     plans: 'プラン管理',
     settings: 'システム設定',
-    logs: '監査ログ'
+    logs: '監査ログ',
+    'fc-list': 'FC一覧',
+    'fc-create': 'FC新規作成',
+    'fc-data': 'FCデータ閲覧'
   };
   document.getElementById('pageTitle').textContent = titles[tabName] || tabName;
+
+  // FC作成画面では初期パスワードを自動生成
+  if (tabName === 'fc-create') {
+    generateFCPassword();
+    previewFCUrl();
+  }
 }
 
 // 検索・フィルタ
@@ -1964,6 +2184,556 @@ function exportLogs() {
   link.download = `audit_logs_${new Date().toISOString().split('T')[0]}.csv`;
   link.click();
   showToast('ログをエクスポートしました', 'success');
+}
+
+// ===================
+// FC管理機能
+// ===================
+
+// FC KPI更新
+function updateFCKPIs() {
+  const totalFCs = franchises.length;
+  const activeFCs = franchises.filter(f => f.status === 'active').length;
+  const totalProjects = franchises.reduce((sum, f) => sum + (f.projects || 0), 0);
+
+  // 今月登録のFC
+  const thisMonth = new Date();
+  thisMonth.setDate(1);
+  thisMonth.setHours(0, 0, 0, 0);
+  const newFCs = franchises.filter(f => new Date(f.created_at) >= thisMonth).length;
+
+  document.getElementById('totalFCs').textContent = totalFCs;
+  document.getElementById('activeFCs').textContent = activeFCs;
+  document.getElementById('totalFCProjects').textContent = totalProjects;
+  document.getElementById('newFCs').textContent = newFCs;
+}
+
+// FCテーブル描画
+function renderFCTable() {
+  const tbody = document.getElementById('fcTable');
+  if (!tbody) return;
+
+  tbody.innerHTML = filteredFCs.length ? filteredFCs.map(fc => {
+    const fcUrl = `https://archideck.vercel.app/fc/${fc.slug}/`;
+    return `
+      <tr>
+        <td><strong>${escapeHtml(fc.name)}</strong></td>
+        <td>
+          <a href="${fcUrl}" target="_blank" style="color: var(--primary); text-decoration: none; font-size: 12px;">
+            ${fcUrl}
+          </a>
+          <button class="btn btn-secondary btn-small" style="margin-left: 8px; padding: 2px 6px; font-size: 11px;" onclick="copyToClipboard('${fcUrl}')">コピー</button>
+        </td>
+        <td>${escapeHtml(fc.email)}</td>
+        <td><strong>${fc.projects || 0}</strong> 件</td>
+        <td>${fc.staff || 0} 名</td>
+        <td><span class="badge badge-${fc.status}">${getStatusName(fc.status)}</span></td>
+        <td>${formatDate(fc.created_at)}</td>
+        <td>
+          <div class="action-btns">
+            <button class="btn btn-secondary btn-small" onclick="viewFCData('${fc.id}')">データ</button>
+            <button class="btn btn-secondary btn-small" onclick="editFC('${fc.id}')">編集</button>
+            <button class="btn btn-secondary btn-small" onclick="toggleFCStatus('${fc.id}')" style="color: ${fc.status === 'suspended' ? 'var(--secondary)' : 'var(--warning)'};">
+              ${fc.status === 'suspended' ? '再開' : '停止'}
+            </button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('') : '<tr><td colspan="8"><div class="empty-state"><div class="empty-state-icon">🏠</div><div class="empty-state-text">FCが登録されていません</div></div></td></tr>';
+}
+
+// FC検索
+function filterFCs() {
+  const query = document.getElementById('fcSearch').value.toLowerCase();
+  filteredFCs = franchises.filter(fc =>
+    fc.name.toLowerCase().includes(query) ||
+    fc.slug.toLowerCase().includes(query) ||
+    fc.email.toLowerCase().includes(query)
+  );
+  renderFCTable();
+}
+
+// FCスラッグフォーマット
+function formatFCSlug(input) {
+  input.value = input.value.toLowerCase().replace(/[^a-z0-9-]/g, '').replace(/--+/g, '-');
+}
+
+// FC URL プレビュー
+function previewFCUrl() {
+  const slug = document.getElementById('fcSlug')?.value || 'fc-name';
+  const preview = document.getElementById('fcUrlPreview');
+  if (preview) {
+    preview.value = `https://archideck.vercel.app/fc/${slug || 'fc-name'}/`;
+  }
+}
+
+// パスワード生成
+function generateFCPassword() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+  let password = '';
+  for (let i = 0; i < 10; i++) {
+    password += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  const passwordInput = document.getElementById('fcPassword');
+  if (passwordInput) {
+    passwordInput.value = password;
+  }
+  return password;
+}
+
+// FC作成
+async function createFC() {
+  const name = document.getElementById('fcName').value.trim();
+  const slug = document.getElementById('fcSlug').value.trim();
+  const email = document.getElementById('fcEmail').value.trim();
+  const phone = document.getElementById('fcPhone').value.trim();
+  const password = document.getElementById('fcPassword').value;
+  const plan = document.getElementById('fcPlan').value;
+  const note = document.getElementById('fcNote').value.trim();
+
+  // バリデーション
+  if (!name || !slug || !email) {
+    showToast('FC名、URLスラッグ、メールアドレスは必須です', 'error');
+    return;
+  }
+
+  // スラッグ重複チェック
+  if (franchises.some(f => f.slug === slug)) {
+    showToast('このURLスラッグは既に使用されています', 'error');
+    return;
+  }
+
+  // メール形式チェック
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    showToast('有効なメールアドレスを入力してください', 'error');
+    return;
+  }
+
+  const newFC = {
+    id: 'fc' + Date.now(),
+    name,
+    slug,
+    email,
+    phone,
+    password,
+    plan,
+    note,
+    status: 'active',
+    projects: 0,
+    staff: 1,
+    created_at: new Date().toISOString()
+  };
+
+  if (isDemoMode) {
+    franchises.unshift(newFC);
+    filteredFCs = [...franchises];
+    renderFCTable();
+    updateFCKPIs();
+    populateFCSelect();
+
+    // フォームリセット
+    document.getElementById('fcName').value = '';
+    document.getElementById('fcSlug').value = '';
+    document.getElementById('fcEmail').value = '';
+    document.getElementById('fcPhone').value = '';
+    document.getElementById('fcNote').value = '';
+    generateFCPassword();
+    previewFCUrl();
+
+    showToast(`FC「${name}」を作成しました`, 'success');
+
+    // 作成完了モーダル表示
+    const fcUrl = `https://archideck.vercel.app/fc/${slug}/`;
+    alert(`FC作成完了！\n\n` +
+      `■ FC名: ${name}\n` +
+      `■ 専用URL: ${fcUrl}\n` +
+      `■ 管理者メール: ${email}\n` +
+      `■ 初期パスワード: ${password}\n\n` +
+      `※ この情報をFC加盟店に通知してください`);
+
+    showTab('fc-list');
+    return;
+  }
+
+  // 実際のDB操作
+  try {
+    showToast('FC作成中...', 'info');
+
+    // 1. 組織を作成
+    const { data: orgData, error: orgError } = await supabase
+      .from('organizations')
+      .insert({
+        name: name,
+        slug: slug,
+        email: email,
+        phone: phone,
+        status: 'active',
+        is_fc: true,
+        fc_note: note,
+        settings: {
+          plan: plan,
+          branding: {
+            hide_ghouse: true,
+            custom_title: '設計業務管理システム'
+          }
+        }
+      })
+      .select()
+      .single();
+
+    if (orgError) {
+      if (orgError.code === '23505') {
+        showToast('このURLスラッグは既に使用されています', 'error');
+      } else {
+        throw orgError;
+      }
+      return;
+    }
+
+    // 2. サブスクリプションを作成
+    const planPrices = { starter: 9800, professional: 19800, enterprise: 49800 };
+    const { error: subError } = await supabase
+      .from('subscriptions')
+      .insert({
+        organization_id: orgData.id,
+        plan_type: plan,
+        price_monthly: planPrices[plan] || 9800,
+        status: 'active',
+        current_period_start: new Date().toISOString(),
+        current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+      });
+
+    if (subError) {
+      console.error('サブスクリプション作成エラー:', subError);
+      // 組織は作成済みなので続行
+    }
+
+    // 3. 管理者ユーザーを作成
+    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+      email: email,
+      password: password,
+      email_confirm: true,
+      user_metadata: {
+        organization_id: orgData.id,
+        role: 'admin',
+        name: name + ' 管理者'
+      }
+    });
+
+    if (authError) {
+      console.error('ユーザー作成エラー:', authError);
+      // 組織は作成済みなので警告表示のみ
+      showToast('組織は作成されましたが、ユーザー作成に失敗しました。手動で作成してください。', 'error');
+    }
+
+    // 4. organization_membersに追加（ユーザー作成成功時）
+    if (authData?.user) {
+      await supabase.from('organization_members').insert({
+        organization_id: orgData.id,
+        user_id: authData.user.id,
+        role: 'admin'
+      });
+    }
+
+    // フォームリセット
+    document.getElementById('fcName').value = '';
+    document.getElementById('fcSlug').value = '';
+    document.getElementById('fcEmail').value = '';
+    document.getElementById('fcPhone').value = '';
+    document.getElementById('fcNote').value = '';
+    generateFCPassword();
+    previewFCUrl();
+
+    // 成功通知
+    const fcUrl = `https://archideck.vercel.app/fc/${slug}/`;
+    showToast(`FC「${name}」を作成しました`, 'success');
+
+    alert(`FC作成完了！\n\n` +
+      `■ FC名: ${name}\n` +
+      `■ 専用URL: ${fcUrl}\n` +
+      `■ 管理者メール: ${email}\n` +
+      `■ 初期パスワード: ${password}\n\n` +
+      `※ この情報をFC加盟店に通知してください`);
+
+    // データ再読み込み
+    await loadData();
+    showTab('fc-list');
+
+  } catch (error) {
+    console.error('FC作成エラー:', error);
+    showToast(error.message || 'FC作成に失敗しました', 'error');
+  }
+}
+
+// FCデータ選択プルダウン更新
+function populateFCSelect() {
+  const select = document.getElementById('fcDataSelect');
+  if (!select) return;
+
+  select.innerHTML = '<option value="">-- FCを選択してください --</option>' +
+    franchises.map(fc => `<option value="${fc.id}">${escapeHtml(fc.name)}</option>`).join('');
+}
+
+// FCデータ閲覧
+function viewFCData(fcId) {
+  document.getElementById('fcDataSelect').value = fcId;
+  showTab('fc-data');
+  loadFCData();
+}
+
+// FCデータ読み込み
+function loadFCData() {
+  const fcId = document.getElementById('fcDataSelect').value;
+  const dataType = document.getElementById('fcDataType').value;
+  const container = document.getElementById('fcDataContent');
+
+  if (!fcId) {
+    container.innerHTML = `
+      <div class="chart-card">
+        <div class="empty-state">
+          <div class="empty-state-icon">📊</div>
+          <div class="empty-state-text">FCを選択するとデータが表示されます</div>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  const fc = franchises.find(f => f.id === fcId);
+  if (!fc) return;
+
+  switch (dataType) {
+    case 'summary':
+      container.innerHTML = renderFCSummary(fc);
+      break;
+    case 'projects':
+      container.innerHTML = renderFCProjects(fc);
+      break;
+    case 'staff':
+      container.innerHTML = renderFCStaff(fc);
+      break;
+    case 'tasks':
+      container.innerHTML = renderFCTasks(fc);
+      break;
+  }
+}
+
+// FCサマリー
+function renderFCSummary(fc) {
+  return `
+    <div class="kpi-grid" style="margin-bottom: 24px;">
+      <div class="kpi-card">
+        <div class="kpi-header">
+          <div class="kpi-label">案件数</div>
+          <div class="kpi-icon blue">📋</div>
+        </div>
+        <div class="kpi-value">${fc.projects || 0}</div>
+        <span class="kpi-change neutral">登録済み案件</span>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-header">
+          <div class="kpi-label">スタッフ数</div>
+          <div class="kpi-icon green">👥</div>
+        </div>
+        <div class="kpi-value">${fc.staff || 0}</div>
+        <span class="kpi-change neutral">アクティブユーザー</span>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-header">
+          <div class="kpi-label">進行中</div>
+          <div class="kpi-icon yellow">🔄</div>
+        </div>
+        <div class="kpi-value">${Math.floor((fc.projects || 0) * 0.6)}</div>
+        <span class="kpi-change neutral">進行中案件</span>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-header">
+          <div class="kpi-label">完了</div>
+          <div class="kpi-icon red">✓</div>
+        </div>
+        <div class="kpi-value">${Math.floor((fc.projects || 0) * 0.4)}</div>
+        <span class="kpi-change positive">完了案件</span>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <h3 class="chart-title" style="margin-bottom: 16px;">FC情報</h3>
+      <table class="table" style="min-width: auto;">
+        <tr><td style="width: 150px; font-weight: 600;">FC名</td><td>${escapeHtml(fc.name)}</td></tr>
+        <tr><td style="font-weight: 600;">専用URL</td><td><a href="https://archideck.vercel.app/fc/${fc.slug}/" target="_blank">https://archideck.vercel.app/fc/${fc.slug}/</a></td></tr>
+        <tr><td style="font-weight: 600;">管理者メール</td><td>${escapeHtml(fc.email)}</td></tr>
+        <tr><td style="font-weight: 600;">電話番号</td><td>${escapeHtml(fc.phone || '-')}</td></tr>
+        <tr><td style="font-weight: 600;">プラン</td><td>${getPlanName(fc.plan)}</td></tr>
+        <tr><td style="font-weight: 600;">ステータス</td><td><span class="badge badge-${fc.status}">${getStatusName(fc.status)}</span></td></tr>
+        <tr><td style="font-weight: 600;">登録日</td><td>${formatDate(fc.created_at)}</td></tr>
+      </table>
+    </div>
+  `;
+}
+
+// FC案件一覧（デモ）
+function renderFCProjects(fc) {
+  const demoProjects = [
+    { name: '山田邸', assignee: '田中', status: '進行中', progress: 65 },
+    { name: '佐藤邸', assignee: '鈴木', status: '進行中', progress: 40 },
+    { name: '高橋邸', assignee: '田中', status: '完了', progress: 100 },
+  ];
+
+  return `
+    <div class="table-card">
+      <div class="table-header">
+        <h3 class="table-title">${escapeHtml(fc.name)} - 案件一覧</h3>
+        <button class="btn btn-secondary btn-small" onclick="exportFCData('${fc.id}', 'projects')">CSVエクスポート</button>
+      </div>
+      <div class="table-wrapper">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>物件名</th>
+              <th>担当者</th>
+              <th>ステータス</th>
+              <th>進捗</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${demoProjects.map(p => `
+              <tr>
+                <td><strong>${escapeHtml(p.name)}</strong></td>
+                <td>${escapeHtml(p.assignee)}</td>
+                <td><span class="badge badge-${p.status === '完了' ? 'active' : 'trial'}">${p.status}</span></td>
+                <td>
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="flex: 1; height: 8px; background: var(--bg); border-radius: 4px; overflow: hidden;">
+                      <div style="width: ${p.progress}%; height: 100%; background: ${p.progress === 100 ? 'var(--secondary)' : 'var(--primary)'};"></div>
+                    </div>
+                    <span style="font-size: 12px; font-weight: 600;">${p.progress}%</span>
+                  </div>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+// FCスタッフ一覧（デモ）
+function renderFCStaff(fc) {
+  const demoStaff = [
+    { name: '田中太郎', email: 'tanaka@example.jp', role: 'admin', projects: 5 },
+    { name: '鈴木花子', email: 'suzuki@example.jp', role: 'member', projects: 3 },
+  ];
+
+  return `
+    <div class="table-card">
+      <div class="table-header">
+        <h3 class="table-title">${escapeHtml(fc.name)} - スタッフ一覧</h3>
+      </div>
+      <div class="table-wrapper">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>名前</th>
+              <th>メール</th>
+              <th>役割</th>
+              <th>担当案件数</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${demoStaff.map(s => `
+              <tr>
+                <td><strong>${escapeHtml(s.name)}</strong></td>
+                <td>${escapeHtml(s.email)}</td>
+                <td><span class="badge badge-${s.role}">${s.role === 'admin' ? '管理者' : 'スタッフ'}</span></td>
+                <td>${s.projects} 件</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+// FCタスク進捗（デモ）
+function renderFCTasks(fc) {
+  const taskProgress = [
+    { name: '契約書・引継書チェック', completed: 8, total: 10 },
+    { name: '現地調査', completed: 7, total: 10 },
+    { name: '間取確定', completed: 5, total: 10 },
+    { name: '構造依頼', completed: 4, total: 10 },
+    { name: '申請GO', completed: 3, total: 10 },
+  ];
+
+  return `
+    <div class="chart-card">
+      <div class="chart-header">
+        <h3 class="chart-title">${escapeHtml(fc.name)} - タスク進捗</h3>
+      </div>
+      <div class="bar-chart">
+        ${taskProgress.map(t => {
+          const percent = Math.round((t.completed / t.total) * 100);
+          return `
+            <div class="bar-item">
+              <span class="bar-label">${escapeHtml(t.name)}</span>
+              <div class="bar-track">
+                <div class="bar-fill ${percent >= 80 ? 'green' : percent >= 50 ? 'blue' : 'yellow'}" style="width: ${percent}%;">${t.completed}/${t.total}</div>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+// FCデータエクスポート
+function exportFCData(fcId, type) {
+  const fc = franchises.find(f => f.id === fcId);
+  if (!fc) return;
+  showToast(`${fc.name}の${type}データをエクスポートしました`, 'success');
+}
+
+// FC編集
+function editFC(fcId) {
+  const fc = franchises.find(f => f.id === fcId);
+  if (!fc) return;
+  alert(`FC編集機能（デモ）\n\nFC名: ${fc.name}\nスラッグ: ${fc.slug}\nメール: ${fc.email}\n\n※ 実際の編集機能は開発中です`);
+}
+
+// FCステータス切り替え
+function toggleFCStatus(fcId) {
+  const fc = franchises.find(f => f.id === fcId);
+  if (!fc) return;
+
+  const newStatus = fc.status === 'suspended' ? 'active' : 'suspended';
+  const action = newStatus === 'suspended' ? '停止' : '再開';
+
+  if (!confirm(`${fc.name}のアカウントを${action}しますか？`)) return;
+
+  fc.status = newStatus;
+  filteredFCs = [...franchises];
+  renderFCTable();
+  updateFCKPIs();
+  showToast(`${fc.name}を${action}しました`, 'success');
+}
+
+// クリップボードにコピー
+function copyToClipboard(text) {
+  navigator.clipboard.writeText(text).then(() => {
+    showToast('URLをコピーしました', 'success');
+  }).catch(() => {
+    // フォールバック
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textarea);
+    showToast('URLをコピーしました', 'success');
+  });
 }
 
 // ユーティリティ

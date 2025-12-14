@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#2563EB">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="description" content="設計業務を効率化するタスク管理システム">
+<title>設計業務管理システム</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🏠</text></svg>">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --primary-color: #2563EB;
+  --primary-hover: #1D4ED8;
+  --primary-light: #DBEAFE;
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --bg-secondary: #F8FAFC;
+  --border-color: #E2E8F0;
+}
+
+body {
+  font-family: 'Inter', 'Noto Sans JP', -apple-system, sans-serif;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-container {
+  text-align: center;
+  padding: 40px;
+}
+
+.loading-icon {
+  font-size: 64px;
+  margin-bottom: 24px;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.8; }
+}
+
+.loading-text {
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--border-color);
+  border-top-color: var(--primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.error-container {
+  text-align: center;
+  padding: 40px;
+  max-width: 400px;
+}
+
+.error-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.error-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+}
+
+.error-message {
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.btn {
+  display: inline-block;
+  padding: 12px 24px;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  margin-top: 20px;
+}
+
+.btn:hover {
+  background: var(--primary-hover);
+}
+</style>
+</head>
+<body>
+
+<div id="loadingContainer" class="loading-container">
+  <div class="loading-icon">🏠</div>
+  <div class="loading-text">読み込み中...</div>
+  <div class="loading-spinner"></div>
+</div>
+
+<div id="errorContainer" class="error-container" style="display: none;">
+  <div class="error-icon">⚠️</div>
+  <div class="error-title">アクセスエラー</div>
+  <div class="error-message" id="errorMessage">
+    このURLは有効ではありません。正しいURLをご確認ください。
+  </div>
+  <button class="btn" onclick="location.reload()">再読み込み</button>
+</div>
+
+<script>
+// FC専用エントリーポイント
+// URLからFCスラッグを取得してFC専用モードで起動
+
+const SUPABASE_URL = 'https://twzsirpfudqwboeyakta.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3enNpcnBmdWRxd2JvZXlha3RhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE0MzM4NjgsImV4cCI6MjA3NzAwOTg2OH0.E_8GxfsO6Scjc0dDoEoyxq3i4lfvNxYZvnSL1OlSDSM';
+
+function showError(message) {
+  document.getElementById('loadingContainer').style.display = 'none';
+  document.getElementById('errorContainer').style.display = 'block';
+  document.getElementById('errorMessage').textContent = message;
+}
+
+async function initFC() {
+  try {
+    // URLからFCスラッグを取得
+    // 例: /fc/tokyo-fc/ -> "tokyo-fc"
+    const pathParts = window.location.pathname.split('/').filter(p => p);
+
+    // /fc/{slug}/ の形式を期待
+    if (pathParts.length < 2 || pathParts[0] !== 'fc') {
+      showError('URLの形式が正しくありません。');
+      return;
+    }
+
+    const fcSlug = pathParts[1];
+
+    if (!fcSlug) {
+      showError('フランチャイズIDが指定されていません。');
+      return;
+    }
+
+    // FCモード情報をlocalStorageに保存
+    const fcConfig = {
+      slug: fcSlug,
+      mode: 'fc',
+      timestamp: Date.now()
+    };
+
+    localStorage.setItem('fc_mode', JSON.stringify(fcConfig));
+
+    // タイトルを更新（Gハウス表示なし）
+    document.title = '設計業務管理システム';
+
+    // メインアプリにリダイレクト（FCモードフラグ付き）
+    // 本来はFC専用アプリを読み込むが、デモではリダイレクト
+    window.location.href = '/archideck/index.html?fc=' + encodeURIComponent(fcSlug);
+
+  } catch (error) {
+    console.error('FC初期化エラー:', error);
+    showError('システムの初期化に失敗しました。しばらくしてから再度お試しください。');
+  }
+}
+
+// 初期化実行
+document.addEventListener('DOMContentLoaded', initFC);
+</script>
+
+</body>
+</html>

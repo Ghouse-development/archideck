@@ -96,6 +96,56 @@
   --space-2xl: 48px;
 }
 
+/* ダークモード - Dark Mode Theme */
+[data-theme="dark"] {
+  --primary-color: #3B82F6;
+  --primary-hover: #2563EB;
+  --primary-light: #1E3A5F;
+  --primary-dark: #60A5FA;
+
+  --secondary-color: #10B981;
+  --secondary-hover: #059669;
+  --secondary-light: #064E3B;
+
+  --accent-color: #8B5CF6;
+  --accent-light: #2E1065;
+
+  --danger-color: #EF4444;
+  --danger-light: #450A0A;
+  --warning-color: #F59E0B;
+  --warning-light: #451A03;
+  --success-color: #22C55E;
+  --success-light: #052E16;
+  --info-color: #06B6D4;
+  --info-light: #083344;
+
+  --text-primary: #F1F5F9;
+  --text-secondary: #94A3B8;
+  --text-muted: #64748B;
+  --text-light: #475569;
+
+  --bg-primary: #0F172A;
+  --bg-secondary: #1E293B;
+  --bg-tertiary: #334155;
+  --bg-hover: #475569;
+
+  --border-color: #334155;
+  --border-light: #1E293B;
+  --border-focus: #3B82F6;
+
+  --shadow-xs: 0 1px 2px rgba(0,0,0,0.3);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.4), 0 2px 4px -2px rgba(0,0,0,0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.4), 0 4px 6px -4px rgba(0,0,0,0.2);
+  --shadow-xl: 0 20px 25px -5px rgba(0,0,0,0.4), 0 8px 10px -6px rgba(0,0,0,0.2);
+  --shadow-glow: 0 0 20px rgba(59, 130, 246, 0.3);
+}
+
+/* ダークモードのトランジション */
+body, .header, .sidebar, .modal-content, .card, .project-card, .btn {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
 body {
   font-family: 'Inter', 'Noto Sans JP', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   background: var(--bg-secondary);
@@ -790,6 +840,53 @@ body {
   opacity: 1;
 }
 
+/* お気に入りカード */
+.project-card.favorite {
+  border-color: var(--warning-color);
+  background: linear-gradient(to bottom, var(--warning-light) 0%, white 100px);
+}
+
+.project-card.favorite::before {
+  background: var(--warning-color);
+  opacity: 1;
+}
+
+/* 選択中カード */
+.project-card.selected {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px var(--primary-light);
+}
+
+/* お気に入りボタン */
+.favorite-btn {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: var(--text-muted);
+  padding: 4px;
+  line-height: 1;
+  transition: all var(--transition-fast);
+}
+
+.favorite-btn:hover {
+  color: var(--warning-color);
+  transform: scale(1.2);
+}
+
+.favorite-btn.active {
+  color: var(--warning-color);
+}
+
+/* バッチ選択チェックボックス */
+.batch-checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--primary-color);
+  margin-top: 2px;
+}
+
 .card-header {
   display: flex;
   justify-content: space-between;
@@ -834,6 +931,7 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .card-subtitle::before {
@@ -2859,9 +2957,347 @@ input:checked + .toggle-slider:before {
 .sidebar-section-exterior .sidebar-section-title {
   color: #689f38;
 }
+
+/* ============================================
+   スケルトンローディング
+   ============================================ */
+.skeleton-line,
+.skeleton-circle {
+  background: linear-gradient(90deg, var(--bg-tertiary) 25%, var(--bg-hover) 50%, var(--bg-tertiary) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+.skeleton-circle {
+  border-radius: 50%;
+}
+
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skeleton-card {
+  padding: 20px;
+  background: var(--bg-primary);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+}
+
+.animate-pulse {
+  animation: pulse-opacity 2s ease-in-out infinite;
+}
+
+@keyframes pulse-opacity {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* ============================================
+   モバイル追加改善
+   ============================================ */
+@media (max-width: 768px) {
+  /* タッチターゲット最適化 */
+  .btn, button, a.btn {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* フォーム入力拡大 */
+  input, select, textarea {
+    font-size: 16px !important; /* iOS zoom防止 */
+  }
+
+  /* モーダル全画面化 */
+  .modal-content {
+    width: 100vw;
+    height: 100vh;
+    max-height: 100vh;
+    border-radius: 0;
+    margin: 0;
+  }
+
+  .modal {
+    padding: 0;
+  }
+
+  /* カード内ボタン配置 */
+  .card-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .card-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* テーブルスクロール */
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* 検索バー */
+  .search-box {
+    width: 100%;
+  }
+
+  /* ボトムナビ用スペース */
+  .main-content {
+    padding-bottom: 80px;
+  }
+
+  /* タスクアイテム改善 */
+  .task-item {
+    padding: 12px;
+    gap: 8px;
+  }
+
+  .task-label {
+    font-size: 14px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .task-state-select {
+    font-size: 13px;
+    min-width: 100px;
+  }
+
+  .task-email-btn {
+    min-width: 36px;
+    min-height: 36px;
+  }
+
+  /* 日付入力改善 */
+  .task-due-input {
+    min-width: 130px;
+  }
+}
+
+/* 超小画面対応 */
+@media (max-width: 360px) {
+  .header {
+    padding: 8px 12px;
+  }
+
+  .logo {
+    font-size: 18px;
+  }
+
+  .tab-nav-btn {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+
+  .project-card {
+    padding: 12px;
+  }
+
+  .card-title {
+    font-size: 16px;
+  }
+}
+
+/* タッチデバイス向けホバー無効化 */
+@media (hover: none) {
+  .btn:hover,
+  .project-card:hover,
+  .task-item:hover {
+    transform: none;
+    box-shadow: inherit;
+  }
+}
+
+/* ============================================
+   アクセシビリティ - Accessibility
+   ============================================ */
+
+/* スクリーンリーダー専用 */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* スキップリンク */
+.skip-link {
+  position: fixed;
+  top: -100px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--primary-color);
+  color: white;
+  padding: 12px 24px;
+  border-radius: var(--radius-md);
+  z-index: 10001;
+  font-weight: 600;
+  text-decoration: none;
+  transition: top 0.3s ease;
+}
+
+.skip-link:focus {
+  top: 10px;
+  outline: 3px solid var(--warning-color);
+  outline-offset: 2px;
+}
+
+/* フォーカス表示の強化 */
+:focus-visible {
+  outline: 3px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid var(--primary-color);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+}
+
+/* 高コントラストモード対応 */
+@media (prefers-contrast: high) {
+  :root {
+    --text-primary: #000000;
+    --text-secondary: #1a1a1a;
+    --border-color: #000000;
+  }
+
+  [data-theme="dark"] {
+    --text-primary: #ffffff;
+    --text-secondary: #e0e0e0;
+    --border-color: #ffffff;
+  }
+
+  .btn {
+    border: 2px solid currentColor;
+  }
+}
+
+/* 動きを減らすモード */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .loading-spinner {
+    animation: none;
+    border-color: var(--primary-color);
+  }
+}
+
+/* ============================================
+   印刷スタイル - Print Styles
+   ============================================ */
+@media print {
+  /* 非表示要素 */
+  .header,
+  .sidebar,
+  .tabs-nav,
+  .btn,
+  button,
+  .modal-overlay,
+  .skip-link,
+  .status-indicator,
+  .toast-container {
+    display: none !important;
+  }
+
+  /* 基本スタイル */
+  body {
+    background: white !important;
+    color: black !important;
+    font-size: 12pt;
+    line-height: 1.4;
+  }
+
+  /* メインコンテンツ */
+  .main-container,
+  .app-layout,
+  .main-content {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* カード・プロジェクト */
+  .project-card {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    border: 1px solid #ccc !important;
+    box-shadow: none !important;
+    margin-bottom: 16pt !important;
+  }
+
+  /* タスクリスト */
+  .task-item {
+    border-bottom: 1px solid #eee;
+    padding: 8pt 0;
+  }
+
+  /* ステータスバッジを白黒で */
+  .status-badge {
+    border: 1px solid black !important;
+    background: white !important;
+    color: black !important;
+  }
+
+  /* リンクにURLを表示 */
+  a[href^="http"]:after {
+    content: " (" attr(href) ")";
+    font-size: 10pt;
+    color: #666;
+  }
+
+  /* ページ設定 */
+  @page {
+    margin: 2cm;
+    size: A4;
+  }
+
+  /* ヘッダー・フッター */
+  .print-header {
+    display: block !important;
+    text-align: center;
+    margin-bottom: 20pt;
+    font-size: 18pt;
+    font-weight: bold;
+  }
+
+  .print-footer {
+    display: block !important;
+    text-align: center;
+    margin-top: 20pt;
+    font-size: 10pt;
+    color: #666;
+  }
+}
 </style>
 </head>
 <body>
+
+<!-- スキップリンク（アクセシビリティ） -->
+<a href="#mainContent" class="skip-link">メインコンテンツへスキップ</a>
+
+<!-- ライブリージョン（スクリーンリーダー用） -->
+<div id="liveRegion" class="sr-only" aria-live="polite" aria-atomic="true"></div>
 
 <!-- ログイン画面 -->
 <div id="loginContainer" class="login-container">
@@ -2915,7 +3351,7 @@ input:checked + .toggle-slider:before {
 <!-- メインアプリケーション -->
 <div id="mainContainer" class="main-container">
   <!-- ヘッダー -->
-  <header class="header">
+  <header class="header" role="banner" aria-label="サイトヘッダー">
     <div class="header-left">
       <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
       <div class="logo">ArchiDeck</div>
@@ -2940,6 +3376,9 @@ input:checked + .toggle-slider:before {
           <button onclick="switchCategory('admin')">👑 管理者</button>
         </div>
       </div>
+      <button class="btn btn-ghost btn-small" onclick="UndoManager.undo()" title="元に戻す (Ctrl+Z)" id="undoBtn" disabled>↩️</button>
+      <button class="btn btn-ghost btn-small" onclick="UndoManager.redo()" title="やり直す (Ctrl+Y)" id="redoBtn" disabled>↪️</button>
+      <button class="btn btn-ghost btn-small" onclick="toggleDarkMode()" title="ダークモード切替" id="darkModeToggle">🌙</button>
       <button class="btn btn-ghost btn-small" onclick="forceReloadData()" title="データを再読み込み">🔄</button>
       <button class="btn btn-ghost btn-small" onclick="showDebugInfo()" title="デバッグ情報">🔍</button>
       <button class="btn btn-ghost btn-small" onclick="signOut()">ログアウト</button>
@@ -2951,15 +3390,16 @@ input:checked + .toggle-slider:before {
     <!-- サイドバーオーバーレイ（モバイル用） -->
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
     <!-- サイドバー -->
-    <aside class="sidebar" id="sidebar">
+    <aside class="sidebar" id="sidebar" role="navigation" aria-label="サイドバーナビゲーション">
       <div id="sidebarContent"></div>
     </aside>
 
     <!-- メインコンテンツ -->
-    <main class="main-content">
+    <main class="main-content" id="mainContent" role="main" aria-label="メインコンテンツ">
       <!-- タブナビゲーション -->
       <nav class="tabs-nav">
         <button class="tab-nav-btn active" onclick="switchMainTab('projects', this)">📋 案件管理</button>
+        <button class="tab-nav-btn" onclick="switchMainTab('calendar', this)">📅 カレンダー</button>
         <button class="tab-nav-btn" onclick="switchMainTab('analytics', this)">📊 分析</button>
         <button class="tab-nav-btn" onclick="switchMainTab('settings', this)">⚙️ 設定</button>
       </nav>
@@ -2968,7 +3408,7 @@ input:checked + .toggle-slider:before {
       <div id="projectsTab" class="tab-panel active">
         <div class="toolbar">
           <div class="toolbar-left">
-            <input type="text" class="input" id="searchQuery" placeholder="検索..." oninput="renderProjects()">
+            <input type="text" class="input" id="searchQuery" placeholder="検索... (Ctrl+K)" oninput="debouncedRenderProjects()" aria-label="案件を検索">
             <select class="select" id="specFilter" onchange="renderProjects()">
               <option value="">すべての商品</option>
               <option>LIFE</option>
@@ -2982,10 +3422,23 @@ input:checked + .toggle-slider:before {
               <option value="active">アクティブのみ</option>
               <option value="all">すべて表示</option>
               <option value="archived">完了済みのみ</option>
+              <option value="favorites">★ お気に入り</option>
             </select>
           </div>
           <div class="toolbar-right">
-            <button class="btn btn-ghost" onclick="exportCSV()">CSV出力</button>
+            <div style="position: relative; display: inline-block;">
+              <button id="presetBtn" class="btn btn-ghost btn-small" onclick="FilterPresets.toggleMenu()" title="保存済みフィルター">📋 プリセット ▼</button>
+              <div id="presetMenu" style="display: none; position: absolute; top: 100%; right: 0; margin-top: 4px; background: white; border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); min-width: 280px; z-index: 100;">
+                <div style="padding: 12px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                  <span style="font-weight: 600; font-size: 14px;">フィルタープリセット</span>
+                  <button class="btn btn-primary btn-small" onclick="FilterPresets.showSaveModal(); document.getElementById('presetMenu').style.display='none';">+ 保存</button>
+                </div>
+                <div id="presetDropdown" style="max-height: 300px; overflow-y: auto;"></div>
+              </div>
+            </div>
+            <button class="btn btn-ghost btn-small" onclick="BatchOperations.selectAll()" title="全て選択">☑ 全選択</button>
+            <button class="btn btn-ghost" onclick="DataImporter.showModal()" title="CSV/JSONインポート">📥 取込</button>
+            <button class="btn btn-ghost" onclick="exportCSV()" title="CSV/JSON/印刷出力">📤 出力</button>
             <button class="btn btn-primary" onclick="openProjectModal()">+ 案件追加</button>
       </div>
     </div>
@@ -3099,6 +3552,18 @@ input:checked + .toggle-slider:before {
             </div>
             <div id="reportPreview" class="report-preview" style="display: none;"></div>
           </div>
+        </div>
+      </div>
+
+      <!-- カレンダータブ -->
+      <div id="calendarTab" class="tab-panel">
+        <div style="max-width: 900px; margin: 0 auto; padding: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 style="font-size: 24px; font-weight: 700;">📅 カレンダービュー</h2>
+            <button class="btn btn-ghost" onclick="TemplateManager.showManageModal()">📋 テンプレート管理</button>
+          </div>
+          <p style="color: var(--text-secondary); margin-bottom: 24px;">期限が設定された案件をカレンダー形式で表示します。案件カードの「📅 期限設定」から期限を設定してください。</p>
+          <div id="calendarContainer"></div>
         </div>
       </div>
 
@@ -3461,9 +3926,15 @@ input:checked + .toggle-slider:before {
         <textarea class="form-textarea" id="projectMemo" placeholder="要望・注意点など"></textarea>
       </div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeProjectModal()">キャンセル</button>
-      <button class="btn btn-primary" onclick="saveProject()">保存</button>
+    <div class="modal-footer" style="display: flex; justify-content: space-between;">
+      <div id="templateButtons" style="display: none;">
+        <button class="btn btn-ghost btn-small" onclick="TemplateManager.createFromProject(editingProjectId)" title="現在の設定をテンプレートとして保存">📋 テンプレート保存</button>
+        <button class="btn btn-ghost btn-small" onclick="TemplateManager.showSelectModal(editingProjectId)" title="保存済みテンプレートを適用">📋 テンプレート適用</button>
+      </div>
+      <div style="display: flex; gap: 12px;">
+        <button class="btn btn-ghost" onclick="closeProjectModal()">キャンセル</button>
+        <button class="btn btn-primary" onclick="saveProject()">保存</button>
+      </div>
     </div>
   </div>
 </div>
@@ -3791,7 +4262,7 @@ input:checked + .toggle-slider:before {
 // ============================================
 // バージョン管理 & キャッシュクリア
 // ============================================
-const APP_VERSION = '4.3.1-' + Date.now();
+const APP_VERSION = '4.11.0-' + Date.now();
 console.log('🚀 ArchiDeck バージョン:', APP_VERSION);
 
 // 起動時にキャッシュを強制クリア
@@ -3817,6 +4288,316 @@ console.log('🚀 ArchiDeck バージョン:', APP_VERSION);
     console.log('キャッシュクリアエラー（無視可）:', e);
   }
 })();
+
+// ============================================
+// ユーティリティ関数
+// ============================================
+
+// デバウンス関数 - 連続呼び出しを制限
+function debounce(func, wait = 300) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
+// スロットル関数 - 一定間隔で実行を制限
+function throttle(func, limit = 100) {
+  let inThrottle;
+  return function(...args) {
+    if (!inThrottle) {
+      func.apply(this, args);
+      inThrottle = true;
+      setTimeout(() => inThrottle = false, limit);
+    }
+  };
+}
+
+// メモ化関数 - 結果をキャッシュ
+function memoize(fn, ttl = 60000) {
+  const cache = new Map();
+  return function(...args) {
+    const key = JSON.stringify(args);
+    const cached = cache.get(key);
+    if (cached && Date.now() - cached.time < ttl) {
+      return cached.value;
+    }
+    const result = fn.apply(this, args);
+    cache.set(key, { value: result, time: Date.now() });
+    return result;
+  };
+}
+
+// リクエストアイドルコールバック（ポリフィル付き）
+const requestIdleCallback = window.requestIdleCallback || function(cb) {
+  const start = Date.now();
+  return setTimeout(() => {
+    cb({
+      didTimeout: false,
+      timeRemaining: () => Math.max(0, 50 - (Date.now() - start))
+    });
+  }, 1);
+};
+
+// デバウンス済み検索関数
+const debouncedRenderProjects = debounce(() => {
+  renderProjects();
+}, 250);
+
+// ============================================
+// Undo/Redo 管理
+// ============================================
+const UndoManager = {
+  history: [],
+  redoStack: [],
+  maxHistory: 50,
+  isUndoing: false,
+
+  // アクションを記録
+  record(action) {
+    if (this.isUndoing) return;
+
+    this.history.push({
+      ...action,
+      timestamp: Date.now()
+    });
+
+    // 履歴の上限を超えたら古いものを削除
+    if (this.history.length > this.maxHistory) {
+      this.history.shift();
+    }
+
+    // 新しいアクションが記録されたらRedoスタックをクリア
+    this.redoStack = [];
+
+    this.updateUI();
+    console.log(`📝 操作記録: ${action.description}`, action);
+  },
+
+  // 元に戻す
+  async undo() {
+    if (this.history.length === 0) {
+      showToast('元に戻す操作がありません', 'info');
+      return;
+    }
+
+    this.isUndoing = true;
+
+    try {
+      const action = this.history.pop();
+      this.redoStack.push(action);
+
+      await this.revert(action);
+
+      showToast(`↩️ 元に戻しました: ${action.description}`, 'success');
+      announceToScreenReader(`元に戻しました: ${action.description}`);
+    } catch (error) {
+      console.error('Undo失敗:', error);
+      showToast('元に戻す操作に失敗しました', 'error');
+    } finally {
+      this.isUndoing = false;
+      this.updateUI();
+    }
+  },
+
+  // やり直す
+  async redo() {
+    if (this.redoStack.length === 0) {
+      showToast('やり直す操作がありません', 'info');
+      return;
+    }
+
+    this.isUndoing = true;
+
+    try {
+      const action = this.redoStack.pop();
+      this.history.push(action);
+
+      await this.apply(action);
+
+      showToast(`↪️ やり直しました: ${action.description}`, 'success');
+      announceToScreenReader(`やり直しました: ${action.description}`);
+    } catch (error) {
+      console.error('Redo失敗:', error);
+      showToast('やり直す操作に失敗しました', 'error');
+    } finally {
+      this.isUndoing = false;
+      this.updateUI();
+    }
+  },
+
+  // アクションを元に戻す
+  async revert(action) {
+    switch (action.type) {
+      case 'UPDATE_PROJECT':
+        await supabase
+          .from('projects')
+          .update(action.oldValue)
+          .eq('id', action.projectId);
+        // ローカルデータも更新
+        const projectIdx = projects.findIndex(p => p.id === action.projectId);
+        if (projectIdx !== -1) {
+          Object.assign(projects[projectIdx], action.oldValue);
+        }
+        renderProjects();
+        break;
+
+      case 'UPDATE_TASK':
+        const proj = projects.find(p => p.id === action.projectId);
+        if (proj && proj.tasks) {
+          proj.tasks[action.taskKey] = { ...action.oldValue };
+          await supabase
+            .from('projects')
+            .update({ tasks: proj.tasks })
+            .eq('id', action.projectId);
+        }
+        renderProjects();
+        break;
+
+      case 'CREATE_PROJECT':
+        await supabase.from('projects').delete().eq('id', action.projectId);
+        projects = projects.filter(p => p.id !== action.projectId);
+        renderProjects();
+        renderSidebar();
+        break;
+
+      case 'DELETE_PROJECT':
+        const { data } = await supabase
+          .from('projects')
+          .insert(action.oldValue)
+          .select()
+          .single();
+        if (data) {
+          projects.push(data);
+        }
+        renderProjects();
+        renderSidebar();
+        break;
+
+      case 'ARCHIVE_PROJECT':
+        await supabase
+          .from('projects')
+          .update({ is_archived: action.oldValue })
+          .eq('id', action.projectId);
+        const archiveIdx = projects.findIndex(p => p.id === action.projectId);
+        if (archiveIdx !== -1) {
+          projects[archiveIdx].is_archived = action.oldValue;
+        }
+        renderProjects();
+        renderSidebar();
+        break;
+
+      default:
+        console.warn('未対応のアクションタイプ:', action.type);
+    }
+  },
+
+  // アクションを再適用
+  async apply(action) {
+    switch (action.type) {
+      case 'UPDATE_PROJECT':
+        await supabase
+          .from('projects')
+          .update(action.newValue)
+          .eq('id', action.projectId);
+        const projectIdx = projects.findIndex(p => p.id === action.projectId);
+        if (projectIdx !== -1) {
+          Object.assign(projects[projectIdx], action.newValue);
+        }
+        renderProjects();
+        break;
+
+      case 'UPDATE_TASK':
+        const proj = projects.find(p => p.id === action.projectId);
+        if (proj && proj.tasks) {
+          proj.tasks[action.taskKey] = { ...action.newValue };
+          await supabase
+            .from('projects')
+            .update({ tasks: proj.tasks })
+            .eq('id', action.projectId);
+        }
+        renderProjects();
+        break;
+
+      case 'CREATE_PROJECT':
+        const { data } = await supabase
+          .from('projects')
+          .insert(action.newValue)
+          .select()
+          .single();
+        if (data) {
+          projects.push(data);
+        }
+        renderProjects();
+        renderSidebar();
+        break;
+
+      case 'DELETE_PROJECT':
+        await supabase.from('projects').delete().eq('id', action.projectId);
+        projects = projects.filter(p => p.id !== action.projectId);
+        renderProjects();
+        renderSidebar();
+        break;
+
+      case 'ARCHIVE_PROJECT':
+        await supabase
+          .from('projects')
+          .update({ is_archived: action.newValue })
+          .eq('id', action.projectId);
+        const archiveIdx = projects.findIndex(p => p.id === action.projectId);
+        if (archiveIdx !== -1) {
+          projects[archiveIdx].is_archived = action.newValue;
+        }
+        renderProjects();
+        renderSidebar();
+        break;
+
+      default:
+        console.warn('未対応のアクションタイプ:', action.type);
+    }
+  },
+
+  // UI更新
+  updateUI() {
+    const undoBtn = document.getElementById('undoBtn');
+    const redoBtn = document.getElementById('redoBtn');
+
+    if (undoBtn) {
+      undoBtn.disabled = this.history.length === 0;
+      undoBtn.title = this.history.length > 0
+        ? `元に戻す: ${this.history[this.history.length - 1].description}`
+        : '元に戻す操作がありません';
+    }
+
+    if (redoBtn) {
+      redoBtn.disabled = this.redoStack.length === 0;
+      redoBtn.title = this.redoStack.length > 0
+        ? `やり直す: ${this.redoStack[this.redoStack.length - 1].description}`
+        : 'やり直す操作がありません';
+    }
+  },
+
+  // 履歴をクリア
+  clear() {
+    this.history = [];
+    this.redoStack = [];
+    this.updateUI();
+  },
+
+  // 操作可能かチェック
+  canUndo() {
+    return this.history.length > 0;
+  },
+
+  canRedo() {
+    return this.redoStack.length > 0;
+  }
+};
 
 // ============================================
 // Supabase初期化
@@ -3857,6 +4638,10 @@ let products = [];
 // マルチテナント対応（SaaS版）
 let currentOrganization = null;
 let currentSubscription = null;
+
+// FCモード（フランチャイズ向けホワイトラベル）
+let isFCMode = false;
+let fcSlug = null;
 let organizationSettings = null;
 
 // 組織情報を読み込む
@@ -4276,11 +5061,303 @@ async function switchCategory(category) {
 }
 
 // ============================================
+// FCモード（フランチャイズ向けホワイトラベル）
+// ============================================
+function detectFCMode() {
+  // URLパラメータからFCスラッグを取得
+  const urlParams = new URLSearchParams(window.location.search);
+  const fcParam = urlParams.get('fc');
+
+  // localStorageからFCモード情報を取得
+  const fcModeData = localStorage.getItem('fc_mode');
+
+  if (fcParam) {
+    isFCMode = true;
+    fcSlug = fcParam;
+    console.log('🏪 FCモード検出（URLパラメータ）:', fcSlug);
+  } else if (fcModeData) {
+    try {
+      const fcConfig = JSON.parse(fcModeData);
+      // 24時間以内の設定のみ有効
+      if (fcConfig.timestamp && (Date.now() - fcConfig.timestamp < 24 * 60 * 60 * 1000)) {
+        isFCMode = true;
+        fcSlug = fcConfig.slug;
+        console.log('🏪 FCモード検出（localStorage）:', fcSlug);
+      }
+    } catch (e) {
+      console.warn('FC設定の解析に失敗:', e);
+    }
+  }
+
+  // FCモードの場合はUI調整
+  if (isFCMode) {
+    applyFCMode();
+  }
+}
+
+function applyFCMode() {
+  console.log('🎨 FCモードUI適用中...');
+
+  // タイトルからGハウスを削除
+  document.title = '設計業務管理システム';
+
+  // ログイン画面のGハウス表示を非表示
+  const loginBranding = document.querySelector('#loginContainer p[style*="color: var(--text-muted)"]');
+  if (loginBranding && loginBranding.textContent.includes('Gハウス')) {
+    loginBranding.style.display = 'none';
+  }
+
+  // ログイン画面のロゴテキストを変更
+  const loginLogoText = document.querySelector('.login-logo-text');
+  if (loginLogoText) {
+    loginLogoText.innerHTML = '<span style="color: var(--primary-color);">設計業務</span>管理システム';
+  }
+
+  // 管理者ボタンを非表示にするCSS追加
+  const fcStyle = document.createElement('style');
+  fcStyle.id = 'fc-mode-styles';
+  fcStyle.textContent = `
+    /* FCモード: 管理者関連を非表示 */
+    .fc-hide { display: none !important; }
+
+    /* アカウント選択画面の管理者ボタン */
+    button[onclick="selectAccountType('admin')"] { display: none !important; }
+
+    /* カテゴリ切り替えの管理者ボタン */
+    button[onclick="switchCategory('admin')"] { display: none !important; }
+
+    /* 設定画面の管理者専用セクション */
+    .admin-only-section { display: none !important; }
+
+    /* ヘッダーのGハウスロゴ */
+    .header-logo-text .ghouse-text { display: none !important; }
+  `;
+  document.head.appendChild(fcStyle);
+
+  // ヘッダーロゴのテキストを変更（DOMContentLoaded後に実行）
+  setTimeout(() => {
+    const headerLogo = document.querySelector('.header-logo-text');
+    if (headerLogo && headerLogo.innerHTML.includes('Gハウス')) {
+      headerLogo.innerHTML = '<span style="color: var(--primary-color);">Archi</span>Deck';
+    }
+
+    // 設定画面で組織名を表示
+    const orgNameDisplay = document.getElementById('orgNameDisplay');
+    if (orgNameDisplay && fcSlug) {
+      orgNameDisplay.textContent = fcSlug + ' 専用システム';
+    }
+  }, 100);
+
+  console.log('✅ FCモードUI適用完了');
+}
+
+function exitFCMode() {
+  localStorage.removeItem('fc_mode');
+  isFCMode = false;
+  fcSlug = null;
+  // URLパラメータを削除してリロード
+  const url = new URL(window.location);
+  url.searchParams.delete('fc');
+  window.location.href = url.toString();
+}
+
+// ============================================
+// ダークモード
+// ============================================
+function initDarkMode() {
+  const savedTheme = localStorage.getItem('theme');
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+  if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    updateDarkModeIcon(true);
+  }
+
+  // システム設定の変更を監視
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+    if (!localStorage.getItem('theme')) {
+      document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+      updateDarkModeIcon(e.matches);
+    }
+  });
+}
+
+function toggleDarkMode() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const newTheme = isDark ? 'light' : 'dark';
+
+  document.documentElement.setAttribute('data-theme', newTheme);
+  localStorage.setItem('theme', newTheme);
+  updateDarkModeIcon(!isDark);
+
+  showToast(isDark ? 'ライトモードに切り替えました' : 'ダークモードに切り替えました', 'info');
+}
+
+function updateDarkModeIcon(isDark) {
+  const btn = document.getElementById('darkModeToggle');
+  if (btn) {
+    btn.textContent = isDark ? '☀️' : '🌙';
+    btn.title = isDark ? 'ライトモードに切替' : 'ダークモードに切替';
+  }
+}
+
+// ============================================
+// キーボードショートカット
+// ============================================
+function initKeyboardShortcuts() {
+  document.addEventListener('keydown', handleKeyboardShortcut);
+}
+
+function handleKeyboardShortcut(e) {
+  // モーダルが開いている場合のEscapeキー
+  if (e.key === 'Escape') {
+    const modals = document.querySelectorAll('.modal-overlay[style*="flex"], .modal[style*="flex"]');
+    modals.forEach(modal => {
+      if (modal.style.display === 'flex') {
+        modal.style.display = 'none';
+      }
+    });
+    // サイドバーを閉じる
+    closeSidebar();
+    return;
+  }
+
+  // Ctrl/Cmd + キー のショートカット
+  if (e.ctrlKey || e.metaKey) {
+    switch (e.key.toLowerCase()) {
+      case 'n':
+        // 新規案件作成
+        if (!isLoginScreen()) {
+          e.preventDefault();
+          showNewProjectModal();
+        }
+        break;
+      case 's':
+        // 保存（現在の状態を同期）
+        e.preventDefault();
+        forceReloadData();
+        showToast('データを同期しました', 'success');
+        break;
+      case 'k':
+        // クイック検索
+        e.preventDefault();
+        const searchInput = document.querySelector('#searchQuery');
+        if (searchInput) {
+          searchInput.focus();
+        }
+        break;
+      case 'd':
+        // ダークモード切替
+        e.preventDefault();
+        toggleDarkMode();
+        break;
+      case 'z':
+        // 元に戻す / やり直す
+        e.preventDefault();
+        if (e.shiftKey) {
+          // Ctrl+Shift+Z = やり直す
+          UndoManager.redo();
+        } else {
+          // Ctrl+Z = 元に戻す
+          UndoManager.undo();
+        }
+        break;
+      case 'y':
+        // Ctrl+Y = やり直す（Windows標準）
+        e.preventDefault();
+        UndoManager.redo();
+        break;
+    }
+  }
+
+  // Shift + キー のショートカット
+  if (e.shiftKey && !e.ctrlKey && !e.metaKey) {
+    switch (e.key) {
+      case '?':
+        // ショートカットヘルプを表示
+        showShortcutHelp();
+        break;
+    }
+  }
+}
+
+function isLoginScreen() {
+  const loginContainer = document.getElementById('loginContainer');
+  return loginContainer && loginContainer.style.display !== 'none';
+}
+
+function showShortcutHelp() {
+  const helpContent = `
+    <div style="padding: 20px;">
+      <h3 style="margin-bottom: 16px; font-size: 18px;">⌨️ キーボードショートカット</h3>
+      <div style="display: grid; gap: 12px;">
+        <div style="display: flex; justify-content: space-between; padding: 8px; background: var(--bg-tertiary); border-radius: 6px;">
+          <span>Ctrl/Cmd + Z</span><span>元に戻す（Undo）</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 8px; background: var(--bg-tertiary); border-radius: 6px;">
+          <span>Ctrl/Cmd + Shift + Z</span><span>やり直す（Redo）</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 8px; background: var(--bg-tertiary); border-radius: 6px;">
+          <span>Ctrl/Cmd + Y</span><span>やり直す（Redo）</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 8px; background: var(--bg-tertiary); border-radius: 6px;">
+          <span>Ctrl/Cmd + N</span><span>新規案件作成</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 8px; background: var(--bg-tertiary); border-radius: 6px;">
+          <span>Ctrl/Cmd + S</span><span>データ同期</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 8px; background: var(--bg-tertiary); border-radius: 6px;">
+          <span>Ctrl/Cmd + D</span><span>ダークモード切替</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 8px; background: var(--bg-tertiary); border-radius: 6px;">
+          <span>Ctrl/Cmd + K</span><span>検索にフォーカス</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 8px; background: var(--bg-tertiary); border-radius: 6px;">
+          <span>Escape</span><span>モーダルを閉じる</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 8px; background: var(--bg-tertiary); border-radius: 6px;">
+          <span>Shift + ?</span><span>このヘルプを表示</span>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // 簡易モーダルで表示
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 10000;';
+  modal.innerHTML = `
+    <div class="modal-content" style="background: var(--bg-primary); border-radius: 12px; max-width: 400px; width: 90%;">
+      ${helpContent}
+      <div style="padding: 0 20px 20px; text-align: right;">
+        <button class="btn btn-primary" onclick="this.closest('.modal-overlay').remove()">閉じる</button>
+      </div>
+    </div>
+  `;
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) modal.remove();
+  });
+  document.body.appendChild(modal);
+}
+
+// ============================================
 // 初期化
 // ============================================
 async function init() {
   console.log('🚀 初期化開始...');
   showStatus('読み込み中...', 'saving');
+
+  // ダークモード初期化（早期に実行してフラッシュを防ぐ）
+  initDarkMode();
+
+  // キーボードショートカット初期化
+  initKeyboardShortcuts();
+
+  // セッションタイムアウト初期化
+  SessionManager.init();
+
+  // FCモード検出
+  detectFCMode();
 
   try {
     // マルチテナント: 組織情報を先に読み込む
@@ -4346,6 +5423,14 @@ async function init() {
     renderCategoriesList();       // カテゴリ管理
     renderTasksManagement();      // タスク管理
     renderProductsList();         // 商品管理
+
+    // モバイルスワイプジェスチャー初期化
+    MobileGestures.init();
+
+    // 期限リマインダーのチェック（3秒後に実行）
+    setTimeout(() => {
+      DeadlineManager.checkReminders();
+    }, 3000);
 
     console.log('✅ 初期化完了');
     showStatus('保存済み', 'saved');
@@ -6142,6 +7227,11 @@ function switchMainTab(tabName, element) {
     updateAnalyticsDashboard();
   }
 
+  // カレンダータブの場合は描画
+  if (tabName === 'calendar') {
+    CalendarView.render();
+  }
+
   // URLを更新（handleHashChange処理中でない場合のみ）
   if (!isHandlingHashChange && window.location.hash !== '#' + tabName) {
     console.log('🔗 switchMainTab: URLを更新:', tabName);
@@ -6257,10 +7347,159 @@ function showToast(message, type = 'success') {
   const toast = document.getElementById('toast');
   toast.className = 'toast toast-' + type + ' show';
   toast.textContent = message;
+
+  // スクリーンリーダーにも通知
+  announceToScreenReader(message);
+
   setTimeout(() => {
     toast.classList.remove('show');
   }, 3000);
 }
+
+// スクリーンリーダー用アナウンス
+function announceToScreenReader(message, priority = 'polite') {
+  const liveRegion = document.getElementById('liveRegion');
+  if (liveRegion) {
+    liveRegion.setAttribute('aria-live', priority);
+    liveRegion.textContent = message;
+    // 同じメッセージでも再通知するために一度クリア
+    setTimeout(() => {
+      liveRegion.textContent = '';
+    }, 1000);
+  }
+}
+
+// ============================================
+// ブラウザ通知システム
+// ============================================
+const NotificationSystem = {
+  permission: 'default',
+  soundEnabled: localStorage.getItem('notificationSound') !== 'false',
+
+  async init() {
+    if ('Notification' in window) {
+      this.permission = Notification.permission;
+      console.log('🔔 通知権限:', this.permission);
+    }
+  },
+
+  async requestPermission() {
+    if (!('Notification' in window)) {
+      showToast('このブラウザは通知に対応していません', 'warning');
+      return false;
+    }
+
+    try {
+      const permission = await Notification.requestPermission();
+      this.permission = permission;
+
+      if (permission === 'granted') {
+        showToast('通知が有効になりました', 'success');
+        return true;
+      } else {
+        showToast('通知が許可されませんでした', 'warning');
+        return false;
+      }
+    } catch (error) {
+      console.error('通知権限リクエストエラー:', error);
+      return false;
+    }
+  },
+
+  async send(title, options = {}) {
+    if (this.permission !== 'granted') {
+      console.log('通知権限がありません');
+      return null;
+    }
+
+    const defaultOptions = {
+      icon: '/archideck/icon-192.png',
+      badge: '/archideck/badge.png',
+      tag: 'archideck-notification',
+      requireInteraction: false,
+      ...options
+    };
+
+    try {
+      // サウンド再生
+      if (this.soundEnabled && options.sound !== false) {
+        this.playSound();
+      }
+
+      const notification = new Notification(title, defaultOptions);
+
+      notification.onclick = () => {
+        window.focus();
+        notification.close();
+        if (options.onClick) options.onClick();
+      };
+
+      return notification;
+    } catch (error) {
+      console.error('通知送信エラー:', error);
+      return null;
+    }
+  },
+
+  playSound() {
+    try {
+      // シンプルな通知音を生成
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      oscillator.frequency.value = 800;
+      oscillator.type = 'sine';
+
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.3);
+    } catch (e) {
+      console.log('通知音再生エラー（無視可）:', e);
+    }
+  },
+
+  toggleSound() {
+    this.soundEnabled = !this.soundEnabled;
+    localStorage.setItem('notificationSound', this.soundEnabled);
+    showToast(this.soundEnabled ? '通知音をオンにしました' : '通知音をオフにしました', 'info');
+    return this.soundEnabled;
+  },
+
+  // 期限間近の案件を通知
+  async checkDeadlines() {
+    const today = new Date();
+    const threeDaysLater = new Date(today);
+    threeDaysLater.setDate(today.getDate() + 3);
+
+    const upcomingDeadlines = projects.filter(p => {
+      if (!p.tasks || p.status === 'completed' || p.is_archived) return false;
+
+      return Object.entries(p.tasks).some(([key, task]) => {
+        if (!task.due_date || task.status === 'completed') return false;
+        const dueDate = new Date(task.due_date);
+        return dueDate >= today && dueDate <= threeDaysLater;
+      });
+    });
+
+    if (upcomingDeadlines.length > 0) {
+      await this.send('期限間近のタスクがあります', {
+        body: `${upcomingDeadlines.length}件の案件に期限が近いタスクがあります`,
+        tag: 'deadline-warning'
+      });
+    }
+  }
+};
+
+// 通知システム初期化
+document.addEventListener('DOMContentLoaded', () => {
+  NotificationSystem.init();
+});
 
 // ============================================
 // メール作成（新システム）
@@ -6535,6 +7774,7 @@ function renderProjects() {
     const isArchived = p.is_archived || false;
     if (archiveFilter === 'active' && isArchived) return false;
     if (archiveFilter === 'archived' && !isArchived) return false;
+    if (archiveFilter === 'favorites' && !FavoritesManager.isFavorite(p.id)) return false;
 
     const query = document.getElementById('searchQuery').value.toLowerCase();
     if (query && !p.customer.toLowerCase().includes(query) && !(p.memo || '').toLowerCase().includes(query)) return false;
@@ -6547,6 +7787,13 @@ function renderProjects() {
 
   console.log('✅ フィルタ後の案件数:', filtered.length);
   console.log('✅ フィルタ後の案件:', filtered.map(p => ({ customer: p.customer, assigned_to: p.assigned_to })));
+
+  // お気に入りを先頭にソート
+  filtered.sort((a, b) => {
+    const aFav = FavoritesManager.isFavorite(a.id) ? 1 : 0;
+    const bFav = FavoritesManager.isFavorite(b.id) ? 1 : 0;
+    return bFav - aFav;
+  });
 
   if (filtered.length === 0) {
     container.style.display = 'none';
@@ -6742,11 +7989,18 @@ function renderProjectCard(project) {
       <span class="task-label">${taskDef.task_name}</span>${stateSelect}${emailBtn}${dueBadge}${dueInput}</div>`;
   }).join('');
 
-  return `<div class="project-card" data-project-id="${project.id}">
+  const isFavorite = FavoritesManager.isFavorite(project.id);
+  const isSelected = BatchOperations.isSelected(project.id);
+
+  return `<div class="project-card ${isFavorite ? 'favorite' : ''} ${isSelected ? 'selected' : ''}" data-project-id="${project.id}">
     <div class="card-header">
-      <div>
-        <div class="card-title"><span class="customer-name">${project.customer}</span><span class="badge badge-primary">${project.specifications || 'LIFE'}</span>${project.is_archived ? '<span class="badge badge-success">完了済み</span>' : ''}</div>
-        <div class="card-subtitle">設計：${project.assigned_to || '未割当'}${project.ic_assignee ? ` | IC：${project.ic_assignee}` : ''}${project.exterior_assignee ? ` | 外構：${project.exterior_assignee}` : ''}</div>
+      <div style="display: flex; align-items: flex-start; gap: 8px;">
+        <input type="checkbox" class="batch-checkbox" data-project-id="${project.id}" ${isSelected ? 'checked' : ''} onclick="event.stopPropagation(); BatchOperations.toggle('${project.id}')" title="選択">
+        <button class="favorite-btn ${isFavorite ? 'active' : ''}" onclick="event.stopPropagation(); FavoritesManager.toggle('${project.id}')" title="${isFavorite ? 'お気に入り解除' : 'お気に入り登録'}">${isFavorite ? '★' : '☆'}</button>
+        <div>
+          <div class="card-title"><span class="customer-name">${project.customer}</span><span class="badge badge-primary">${project.specifications || 'LIFE'}</span>${project.is_archived ? '<span class="badge badge-success">完了済み</span>' : ''}</div>
+          <div class="card-subtitle"><span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this)" style="cursor: pointer; text-decoration: underline dotted;" title="クリックで担当者変更">設計：${project.assigned_to || '未割当'}</span>${project.ic_assignee ? ` | IC：${project.ic_assignee}` : ''}${project.exterior_assignee ? ` | 外構：${project.exterior_assignee}` : ''}${(() => { const ds = DeadlineManager.getStatus(project.id); return ds ? ` <span style="background: ${ds.color}; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-left: 8px;" onclick="event.stopPropagation(); DeadlineManager.showModal('${project.id}')" title="期限を変更">📅 ${ds.label}</span>` : ` <span style="color: var(--text-muted); font-size: 11px; cursor: pointer;" onclick="event.stopPropagation(); DeadlineManager.showModal('${project.id}')" title="期限を設定">📅 期限設定</span>`; })()}</div>
+        </div>
       </div>
       <div style="display: flex; gap: 8px;">
         ${project.is_archived ? `<button class="btn btn-success btn-small" onclick="toggleArchive('${project.id}', false)">復元</button>` : canArchive ? `<button class="btn btn-warning btn-small" onclick="toggleArchive('${project.id}', true)">完了済みにする</button>` : ''}
@@ -6788,6 +8042,9 @@ async function updateTaskStatus(projectId, taskKey, completed) {
   const project = projects.find(p => p.id === projectId);
   if (!project) return;
 
+  // Undo用に変更前の状態を保存
+  const oldProgress = JSON.parse(JSON.stringify(project.progress || {}));
+
   const progressData = project.progress || {};
   if (!progressData[taskKey]) progressData[taskKey] = {};
   progressData[taskKey].completed = completed;
@@ -6806,6 +8063,16 @@ async function updateTaskStatus(projectId, taskKey, completed) {
     showToast('保存に失敗しました: ' + error.message, 'error');
     return;
   }
+
+  // Undo記録
+  const taskDef = tasksV2.find(t => t.task_key === taskKey);
+  UndoManager.record({
+    type: 'UPDATE_PROJECT',
+    projectId: projectId,
+    description: `${project.customer} - ${taskDef?.task_name || taskKey}を${completed ? '完了' : '未完了'}に変更`,
+    oldValue: { progress: oldProgress },
+    newValue: { progress: progressData }
+  });
 
   project.progress = progressData;
   project.updated_at = new Date().toISOString();
@@ -6843,6 +8110,19 @@ async function updateTaskDueDate(projectId, taskKey, dueDate) {
   const project = projects.find(p => p.id === projectId);
   if (!project) return;
 
+  // 過去日付チェック（警告のみ、保存は許可）
+  if (dueDate && !Validators.isNotPastDate(dueDate)) {
+    const confirmPast = confirm('過去の日付が設定されています。この日付で保存しますか？');
+    if (!confirmPast) {
+      renderProjects();
+      return;
+    }
+  }
+
+  // Undo用に変更前の状態を保存
+  const oldProgress = JSON.parse(JSON.stringify(project.progress || {}));
+  const oldDueDate = oldProgress[taskKey]?.due_date || '';
+
   const progressData = project.progress || {};
   if (!progressData[taskKey]) progressData[taskKey] = { completed: false, date: '', state: '' };
   progressData[taskKey].due_date = dueDate;
@@ -6855,9 +8135,19 @@ async function updateTaskDueDate(projectId, taskKey, dueDate) {
 
   if (error) {
     showStatus('エラー', 'error');
-    showToast('期限の保存に失敗しました', 'error');
+    ErrorHandler.handle(error, '期限保存');
     return;
   }
+
+  // Undo記録
+  const taskDef = tasksV2.find(t => t.task_key === taskKey);
+  UndoManager.record({
+    type: 'UPDATE_PROJECT',
+    projectId: projectId,
+    description: `${project.customer} - ${taskDef?.task_name || taskKey}の期限を${dueDate || '解除'}に変更`,
+    oldValue: { progress: oldProgress },
+    newValue: { progress: progressData }
+  });
 
   project.progress = progressData;
   project.updated_at = new Date().toISOString();
@@ -6871,6 +8161,10 @@ async function updateTaskDueDate(projectId, taskKey, dueDate) {
 async function updateTaskState(projectId, taskKey, state) {
   const project = projects.find(p => p.id === projectId);
   if (!project) return;
+
+  // Undo用に変更前の状態を保存
+  const oldProgress = JSON.parse(JSON.stringify(project.progress || {}));
+  const oldState = oldProgress[taskKey]?.state || '';
 
   const progressData = project.progress || {};
   if (!progressData[taskKey]) progressData[taskKey] = {};
@@ -6887,6 +8181,16 @@ async function updateTaskState(projectId, taskKey, state) {
     showToast('保存に失敗しました: ' + error.message, 'error');
     return;
   }
+
+  // Undo記録
+  const taskDef = tasksV2.find(t => t.task_key === taskKey);
+  UndoManager.record({
+    type: 'UPDATE_PROJECT',
+    projectId: projectId,
+    description: `${project.customer} - ${taskDef?.task_name || taskKey}を「${state || '未設定'}」に変更`,
+    oldValue: { progress: oldProgress },
+    newValue: { progress: progressData }
+  });
 
   project.progress = progressData;
   project.updated_at = new Date().toISOString();
@@ -6961,6 +8265,12 @@ function openProjectModal(projectId = null) {
       // 編集時: 既存のIC担当者を選択
       icAssigneeSelect.value = project.ic_assignee || '';
     }
+  }
+
+  // テンプレートボタンの表示制御（編集時のみ表示）
+  const templateButtons = document.getElementById('templateButtons');
+  if (templateButtons) {
+    templateButtons.style.display = projectId ? 'block' : 'none';
   }
 
   console.log('🎬 モーダルを表示します...');
@@ -8344,18 +9654,18 @@ function showEmailModal(project, taskDef, vendors, initialSubject, initialBody) 
   const modal = document.getElementById('emailModal');
   const content = document.getElementById('emailComposerContent');
 
-  // 業者選択チェックボックスのHTML
+  // 業者選択チェックボックスのHTML（XSS対策: escapeHtml適用）
   const vendorCheckboxes = vendors.map((v, idx) => `
     <label style="display: flex; align-items: center; gap: 8px; padding: 12px; background: var(--bg-secondary); border-radius: var(--radius-md); cursor: pointer;">
       <input type="checkbox"
-        id="vendor_${v.id}"
-        value="${v.id}"
+        id="vendor_${escapeHtml(v.id)}"
+        value="${escapeHtml(v.id)}"
         ${idx === 0 ? 'checked' : ''}
         onchange="updateEmailPreview()"
         style="width: 18px; height: 18px; cursor: pointer;">
       <div style="flex: 1;">
-        <div style="font-weight: 600; margin-bottom: 2px;">${v.company}</div>
-        <div style="font-size: 13px; color: var(--text-secondary);">${v.contact || ''} - ${v.email || ''}</div>
+        <div style="font-weight: 600; margin-bottom: 2px;">${escapeHtml(v.company)}</div>
+        <div style="font-size: 13px; color: var(--text-secondary);">${escapeHtml(v.contact || '')} - ${escapeHtml(v.email || '')}</div>
       </div>
     </label>
   `).join('');
@@ -8363,8 +9673,8 @@ function showEmailModal(project, taskDef, vendors, initialSubject, initialBody) 
   content.innerHTML = `
     <div style="display: flex; flex-direction: column; gap: 20px;">
       <div>
-        <h3 style="margin: 0 0 8px 0; font-size: 18px;">📧 ${taskDef.task_name} - メール作成</h3>
-        <div style="font-size: 14px; color: var(--text-secondary);">案件: ${project.customer}</div>
+        <h3 style="margin: 0 0 8px 0; font-size: 18px;">📧 ${escapeHtml(taskDef.task_name)} - メール作成</h3>
+        <div style="font-size: 14px; color: var(--text-secondary);">案件: ${escapeHtml(project.customer)}</div>
       </div>
 
       <div>
@@ -8376,17 +9686,19 @@ function showEmailModal(project, taskDef, vendors, initialSubject, initialBody) 
 
       <div>
         <label style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 14px;">件名</label>
-        <input type="text" id="emailSubject" class="form-input" value="${initialSubject}">
+        <input type="text" id="emailSubject" class="form-input" value="${escapeHtml(initialSubject)}">
       </div>
 
       <div>
         <label style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 14px;">本文</label>
-        <textarea id="emailBody" class="form-textarea" rows="15" style="font-family: inherit; line-height: 1.8;">${initialBody}</textarea>
+        <textarea id="emailBody" class="form-textarea" rows="15" style="font-family: inherit; line-height: 1.8;">${escapeHtml(initialBody)}</textarea>
       </div>
 
-      <div style="display: flex; gap: 12px; justify-content: flex-end;">
+      <div style="display: flex; gap: 12px; justify-content: flex-end; flex-wrap: wrap;">
         <button class="btn btn-secondary" onclick="closeEmailModal()">キャンセル</button>
-        <button class="btn btn-primary" onclick="openGmailFromModal()">📧 Gmailで開く</button>
+        <button class="btn btn-secondary" onclick="copyEmailToClipboard()">📋 コピー</button>
+        <button class="btn btn-secondary" onclick="openOutlookFromModal()">📨 Outlook</button>
+        <button class="btn btn-primary" onclick="openGmailFromModal()">📧 Gmail</button>
       </div>
     </div>
   `;
@@ -8401,19 +9713,18 @@ function updateEmailPreview() {
   // 必要に応じて件名・本文のプレビュー更新処理を追加
 }
 
-function openGmailFromModal() {
-  const subject = document.getElementById('emailSubject').value;
-  const body = document.getElementById('emailBody').value;
+// メールアドレス取得共通関数
+function getSelectedEmailAddresses() {
+  const { vendors } = window.__emailModalData || {};
+  if (!vendors) return { addresses: '', vendors: [] };
 
-  // 選択された業者のメールアドレスを取得
-  const { vendors } = window.__emailModalData;
   const selectedVendorIds = vendors
     .filter(v => document.getElementById(`vendor_${v.id}`)?.checked)
     .map(v => v.id);
 
   if (selectedVendorIds.length === 0) {
     showToast('業者を選択してください', 'error');
-    return;
+    return { addresses: '', vendors: [] };
   }
 
   const selectedVendors = vendors.filter(v => selectedVendorIds.includes(v.id));
@@ -8421,20 +9732,100 @@ function openGmailFromModal() {
 
   if (!emailAddresses) {
     showToast('選択された業者にメールアドレスが設定されていません', 'error');
-    return;
+    return { addresses: '', vendors: [] };
   }
 
+  return { addresses: emailAddresses, vendors: selectedVendors };
+}
+
+function openGmailFromModal() {
+  const subject = document.getElementById('emailSubject').value;
+  const body = document.getElementById('emailBody').value;
+  const { addresses } = getSelectedEmailAddresses();
+
+  if (!addresses) return;
+
   // Gmail URLを生成
-  const gmailUrl = `https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(emailAddresses)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  const gmailUrl = `https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(addresses)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 
   // Gmailを新しいタブで開く
   window.open(gmailUrl, '_blank');
+
+  // 送信履歴を記録
+  logEmailSent('gmail', addresses, subject);
 
   // モーダルを閉じる
   closeEmailModal();
 
   // トーストで通知
   showToast('Gmailを開きました', 'success');
+}
+
+function openOutlookFromModal() {
+  const subject = document.getElementById('emailSubject').value;
+  const body = document.getElementById('emailBody').value;
+  const { addresses } = getSelectedEmailAddresses();
+
+  if (!addresses) return;
+
+  // Outlook Web URLを生成
+  const outlookUrl = `https://outlook.office.com/mail/deeplink/compose?to=${encodeURIComponent(addresses)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+  // Outlookを新しいタブで開く
+  window.open(outlookUrl, '_blank');
+
+  // 送信履歴を記録
+  logEmailSent('outlook', addresses, subject);
+
+  // モーダルを閉じる
+  closeEmailModal();
+
+  showToast('Outlookを開きました', 'success');
+}
+
+function copyEmailToClipboard() {
+  const subject = document.getElementById('emailSubject').value;
+  const body = document.getElementById('emailBody').value;
+  const { addresses } = getSelectedEmailAddresses();
+
+  if (!addresses) return;
+
+  const emailText = `宛先: ${addresses}\n件名: ${subject}\n\n${body}`;
+
+  navigator.clipboard.writeText(emailText).then(() => {
+    showToast('メール内容をコピーしました', 'success');
+  }).catch(() => {
+    // フォールバック
+    const textarea = document.createElement('textarea');
+    textarea.value = emailText;
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textarea);
+    showToast('メール内容をコピーしました', 'success');
+  });
+}
+
+// メール送信履歴を記録
+async function logEmailSent(method, to, subject) {
+  const { project, taskDef } = window.__emailModalData || {};
+  if (!project || !taskDef) return;
+
+  console.log(`📧 メール送信記録: ${method} -> ${to}, 件名: ${subject}`);
+
+  // 将来: Supabaseに送信履歴を保存
+  // try {
+  //   await supabase.from('email_logs').insert({
+  //     project_id: project.id,
+  //     task_key: taskDef.task_key,
+  //     method,
+  //     recipients: to,
+  //     subject,
+  //     sent_at: new Date().toISOString()
+  //   });
+  // } catch (e) {
+  //   console.error('メール履歴保存失敗:', e);
+  // }
 }
 
 // テンプレート選択画面を表示
@@ -8810,43 +10201,1544 @@ function populateStandaloneTemplateSelect() {
 // ============================================
 // エクスポート機能
 // ============================================
-function exportCSV() {
-  if (projects.length === 0) {
-    showToast('エクスポートする案件がありません', 'error');
-    return;
+const ExportManager = {
+  // エクスポートモーダルを表示
+  showModal() {
+    const modal = document.createElement('div');
+    modal.id = 'exportModal';
+    modal.className = 'modal-overlay';
+    modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 10000;';
+    modal.innerHTML = `
+      <div class="modal-content" style="background: var(--bg-primary); border-radius: 12px; max-width: 500px; width: 90%;">
+        <div class="modal-header" style="padding: 20px; border-bottom: 1px solid var(--border-color);">
+          <h3 style="font-size: 18px; font-weight: 600;">📁 データエクスポート</h3>
+        </div>
+        <div class="modal-body" style="padding: 20px;">
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label class="form-label" style="font-weight: 500; margin-bottom: 8px; display: block;">エクスポート形式</label>
+            <div style="display: grid; gap: 8px;">
+              <label style="display: flex; align-items: center; gap: 8px; padding: 12px; background: var(--bg-secondary); border-radius: 8px; cursor: pointer;">
+                <input type="radio" name="exportFormat" value="csv" checked> CSV（Excel対応）
+              </label>
+              <label style="display: flex; align-items: center; gap: 8px; padding: 12px; background: var(--bg-secondary); border-radius: 8px; cursor: pointer;">
+                <input type="radio" name="exportFormat" value="json"> JSON
+              </label>
+              <label style="display: flex; align-items: center; gap: 8px; padding: 12px; background: var(--bg-secondary); border-radius: 8px; cursor: pointer;">
+                <input type="radio" name="exportFormat" value="print"> 印刷用レポート
+              </label>
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label class="form-label" style="font-weight: 500; margin-bottom: 8px; display: block;">エクスポート対象</label>
+            <div style="display: grid; gap: 8px;">
+              <label style="display: flex; align-items: center; gap: 8px;">
+                <input type="checkbox" id="exportProjects" checked> 案件データ（${projects.length}件）
+              </label>
+              <label style="display: flex; align-items: center; gap: 8px;">
+                <input type="checkbox" id="exportWithTasks" checked> タスク詳細を含める
+              </label>
+              <label style="display: flex; align-items: center; gap: 8px;">
+                <input type="checkbox" id="exportOnlyActive" checked> アクティブな案件のみ
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer" style="padding: 16px 20px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 12px;">
+          <button class="btn btn-ghost" onclick="document.getElementById('exportModal').remove()">キャンセル</button>
+          <button class="btn btn-primary" onclick="ExportManager.execute()">エクスポート</button>
+        </div>
+      </div>
+    `;
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) modal.remove();
+    });
+    document.body.appendChild(modal);
+  },
+
+  execute() {
+    const format = document.querySelector('input[name="exportFormat"]:checked').value;
+    const includeProjects = document.getElementById('exportProjects').checked;
+    const includeTasks = document.getElementById('exportWithTasks').checked;
+    const onlyActive = document.getElementById('exportOnlyActive').checked;
+
+    document.getElementById('exportModal').remove();
+
+    let dataToExport = projects;
+    if (onlyActive) {
+      dataToExport = dataToExport.filter(p => p.status !== 'completed' && !p.is_archived);
+    }
+
+    switch (format) {
+      case 'csv':
+        this.exportCSV(dataToExport, includeTasks);
+        break;
+      case 'json':
+        this.exportJSON(dataToExport, includeTasks);
+        break;
+      case 'print':
+        this.exportPrint(dataToExport, includeTasks);
+        break;
+    }
+  },
+
+  exportCSV(data, includeTasks) {
+    if (data.length === 0) {
+      showToast('エクスポートする案件がありません', 'error');
+      return;
+    }
+
+    let headers, rows;
+
+    if (includeTasks) {
+      headers = ['顧客名', '担当者', 'IC担当', '商品', '進捗率', 'タスク名', 'タスク状態', '期限', 'メモ', '作成日'];
+      rows = [];
+      data.forEach(p => {
+        const progress = calculateProgress(p);
+        const tasks = p.tasks || {};
+        const taskEntries = Object.entries(tasks);
+
+        if (taskEntries.length === 0) {
+          rows.push([
+            this.csvEscape(p.customer),
+            this.csvEscape(p.assigned_to),
+            this.csvEscape(p.ic_assignee),
+            this.csvEscape(p.specifications || 'LIFE'),
+            `${progress}%`,
+            '', '', '',
+            this.csvEscape(p.memo),
+            p.created_at || ''
+          ].join(','));
+        } else {
+          taskEntries.forEach(([key, task], idx) => {
+            const taskDef = tasksV2.find(t => t.task_key === key);
+            rows.push([
+              idx === 0 ? this.csvEscape(p.customer) : '',
+              idx === 0 ? this.csvEscape(p.assigned_to) : '',
+              idx === 0 ? this.csvEscape(p.ic_assignee) : '',
+              idx === 0 ? this.csvEscape(p.specifications || 'LIFE') : '',
+              idx === 0 ? `${progress}%` : '',
+              this.csvEscape(taskDef?.task_name || key),
+              this.csvEscape(task.status || ''),
+              task.due_date || '',
+              idx === 0 ? this.csvEscape(p.memo) : '',
+              idx === 0 ? (p.created_at || '') : ''
+            ].join(','));
+          });
+        }
+      });
+    } else {
+      headers = ['顧客名', '担当者', 'IC担当', '商品', '進捗率', 'メモ', '作成日', '更新日'];
+      rows = data.map(p => {
+        const progress = calculateProgress(p);
+        return [
+          this.csvEscape(p.customer),
+          this.csvEscape(p.assigned_to),
+          this.csvEscape(p.ic_assignee),
+          this.csvEscape(p.specifications || 'LIFE'),
+          `${progress}%`,
+          this.csvEscape(p.memo),
+          p.created_at || '',
+          p.updated_at || ''
+        ].join(',');
+      });
+    }
+
+    const csvContent = [headers.join(','), ...rows].join('\n');
+    this.download(csvContent, 'csv', 'projects');
+    showToast(`${data.length}件の案件をCSVでエクスポートしました`, 'success');
+  },
+
+  exportJSON(data, includeTasks) {
+    if (data.length === 0) {
+      showToast('エクスポートする案件がありません', 'error');
+      return;
+    }
+
+    const exportData = data.map(p => {
+      const base = {
+        customer: p.customer,
+        assigned_to: p.assigned_to,
+        ic_assignee: p.ic_assignee,
+        specifications: p.specifications,
+        progress: calculateProgress(p),
+        status: p.status,
+        memo: p.memo,
+        created_at: p.created_at,
+        updated_at: p.updated_at
+      };
+
+      if (includeTasks && p.tasks) {
+        base.tasks = Object.entries(p.tasks).map(([key, task]) => {
+          const taskDef = tasksV2.find(t => t.task_key === key);
+          return {
+            task_key: key,
+            task_name: taskDef?.task_name || key,
+            status: task.status,
+            due_date: task.due_date,
+            completed_at: task.completed_at
+          };
+        });
+      }
+
+      return base;
+    });
+
+    const jsonContent = JSON.stringify({
+      exported_at: new Date().toISOString(),
+      version: APP_VERSION,
+      count: exportData.length,
+      projects: exportData
+    }, null, 2);
+
+    this.download(jsonContent, 'json', 'projects');
+    showToast(`${data.length}件の案件をJSONでエクスポートしました`, 'success');
+  },
+
+  exportPrint(data, includeTasks) {
+    if (data.length === 0) {
+      showToast('エクスポートする案件がありません', 'error');
+      return;
+    }
+
+    const printWindow = window.open('', '_blank');
+    const html = `
+      <!DOCTYPE html>
+      <html lang="ja">
+      <head>
+        <meta charset="UTF-8">
+        <title>ArchiDeck - 案件レポート</title>
+        <style>
+          body { font-family: 'Noto Sans JP', sans-serif; padding: 20mm; color: #333; }
+          h1 { text-align: center; border-bottom: 2px solid #2563EB; padding-bottom: 10px; }
+          .meta { text-align: right; color: #666; margin-bottom: 20px; }
+          table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+          th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+          th { background: #f5f5f5; font-weight: 600; }
+          .project-section { margin-bottom: 30px; page-break-inside: avoid; }
+          .project-title { background: #2563EB; color: white; padding: 10px; margin-bottom: 10px; }
+          .tasks-table { font-size: 12px; }
+          .progress { font-weight: bold; color: #2563EB; }
+          @media print {
+            body { padding: 10mm; }
+            .project-section { page-break-inside: avoid; }
+          }
+        </style>
+      </head>
+      <body>
+        <h1>ArchiDeck 案件レポート</h1>
+        <div class="meta">
+          出力日時: ${new Date().toLocaleString('ja-JP')}<br>
+          案件数: ${data.length}件
+        </div>
+        ${data.map(p => {
+          const progress = calculateProgress(p);
+          const taskRows = includeTasks && p.tasks ? Object.entries(p.tasks).map(([key, task]) => {
+            const taskDef = tasksV2.find(t => t.task_key === key);
+            return `<tr>
+              <td>${this.escapeHtml(taskDef?.task_name || key)}</td>
+              <td>${this.escapeHtml(task.status || '未着手')}</td>
+              <td>${task.due_date || '-'}</td>
+            </tr>`;
+          }).join('') : '';
+
+          return `
+            <div class="project-section">
+              <div class="project-title">${this.escapeHtml(p.customer)} - ${this.escapeHtml(p.specifications || 'LIFE')}</div>
+              <table>
+                <tr><th>担当者</th><td>${this.escapeHtml(p.assigned_to || '-')}</td><th>IC担当</th><td>${this.escapeHtml(p.ic_assignee || '-')}</td></tr>
+                <tr><th>進捗</th><td class="progress">${progress}%</td><th>作成日</th><td>${p.created_at?.split('T')[0] || '-'}</td></tr>
+                ${p.memo ? `<tr><th>メモ</th><td colspan="3">${this.escapeHtml(p.memo)}</td></tr>` : ''}
+              </table>
+              ${includeTasks && taskRows ? `
+                <table class="tasks-table">
+                  <thead><tr><th>タスク</th><th>状態</th><th>期限</th></tr></thead>
+                  <tbody>${taskRows}</tbody>
+                </table>
+              ` : ''}
+            </div>
+          `;
+        }).join('')}
+      </body>
+      </html>
+    `;
+
+    printWindow.document.write(html);
+    printWindow.document.close();
+    printWindow.onload = () => printWindow.print();
+    showToast('印刷用レポートを生成しました', 'success');
+  },
+
+  csvEscape(str) {
+    if (!str) return '""';
+    return `"${String(str).replace(/"/g, '""')}"`;
+  },
+
+  escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/[&<>"']/g, m => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[m]));
+  },
+
+  download(content, type, prefix) {
+    const mimeTypes = {
+      csv: 'text/csv;charset=utf-8;',
+      json: 'application/json;charset=utf-8;'
+    };
+    const extensions = { csv: 'csv', json: 'json' };
+
+    const bom = type === 'csv' ? new Uint8Array([0xEF, 0xBB, 0xBF]) : new Uint8Array([]);
+    const blob = new Blob([bom, content], { type: mimeTypes[type] });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${prefix}_${new Date().toISOString().split('T')[0]}.${extensions[type]}`;
+    link.click();
+    URL.revokeObjectURL(url);
   }
+};
 
-  // CSVヘッダー
-  const headers = ['顧客名', '担当者', '商品', '進捗率', 'メモ', '作成日', '更新日'];
-
-  // CSVボディ
-  const rows = projects.map(p => {
-    const progress = calculateProgress(p);
-    return [
-      `"${(p.customer || '').replace(/"/g, '""')}"`,
-      `"${(p.assigned_to || '').replace(/"/g, '""')}"`,
-      `"${(p.specifications || 'LIFE').replace(/"/g, '""')}"`,
-      `${progress}%`,
-      `"${(p.memo || '').replace(/"/g, '""')}"`,
-      `"${p.created_at || ''}"`,
-      `"${p.updated_at || ''}"`
-    ].join(',');
-  });
-
-  const csvContent = [headers.join(','), ...rows].join('\n');
-
-  // BOM付きUTF-8でエクスポート（Excel対応）
-  const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
-  const dataBlob = new Blob([bom, csvContent], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(dataBlob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = `projects_${new Date().toISOString().split('T')[0]}.csv`;
-  link.click();
-  URL.revokeObjectURL(url);
-
-  showToast('CSVファイルをエクスポートしました', 'success');
+// 後方互換性のため旧関数を残す
+function exportCSV() {
+  ExportManager.showModal();
 }
+
+// ============================================
+// データインポート機能
+// ============================================
+const DataImporter = {
+  showModal() {
+    const modal = document.createElement('div');
+    modal.id = 'importModal';
+    modal.className = 'modal-overlay';
+    modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 10000;';
+    modal.innerHTML = `
+      <div class="modal-content" style="background: var(--bg-primary); border-radius: 12px; max-width: 500px; width: 90%;">
+        <div class="modal-header" style="padding: 20px; border-bottom: 1px solid var(--border-color);">
+          <h3 style="font-size: 18px; font-weight: 600;">📥 データインポート</h3>
+        </div>
+        <div class="modal-body" style="padding: 20px;">
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label class="form-label" style="font-weight: 500; margin-bottom: 8px; display: block;">インポート形式</label>
+            <select id="importFormat" class="form-input" style="width: 100%; padding: 10px;">
+              <option value="csv">CSV（Excel出力ファイル）</option>
+              <option value="json">JSON（バックアップファイル）</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label class="form-label" style="font-weight: 500; margin-bottom: 8px; display: block;">ファイル選択</label>
+            <input type="file" id="importFile" accept=".csv,.json" style="width: 100%;">
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 8px;">
+              CSV: 顧客名,担当者,IC担当,商品,メモ の形式<br>
+              JSON: エクスポートしたバックアップファイル
+            </p>
+          </div>
+          <div id="importPreview" style="display: none; margin-bottom: 16px;">
+            <label class="form-label" style="font-weight: 500; margin-bottom: 8px; display: block;">プレビュー</label>
+            <div id="importPreviewContent" style="max-height: 200px; overflow-y: auto; background: var(--bg-secondary); padding: 12px; border-radius: 8px; font-size: 13px;"></div>
+          </div>
+          <div class="form-group">
+            <label style="display: flex; align-items: center; gap: 8px;">
+              <input type="checkbox" id="importSkipDuplicates" checked>
+              <span>重複する顧客名はスキップ</span>
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer" style="padding: 16px 20px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 12px;">
+          <button class="btn btn-ghost" onclick="document.getElementById('importModal').remove()">キャンセル</button>
+          <button class="btn btn-primary" id="importExecuteBtn" onclick="DataImporter.execute()" disabled>インポート</button>
+        </div>
+      </div>
+    `;
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) modal.remove();
+    });
+    document.body.appendChild(modal);
+
+    // ファイル選択時のプレビュー
+    document.getElementById('importFile').addEventListener('change', (e) => {
+      this.previewFile(e.target.files[0]);
+    });
+  },
+
+  async previewFile(file) {
+    if (!file) return;
+
+    const format = document.getElementById('importFormat').value;
+    const previewDiv = document.getElementById('importPreview');
+    const previewContent = document.getElementById('importPreviewContent');
+    const executeBtn = document.getElementById('importExecuteBtn');
+
+    try {
+      const text = await file.text();
+      let data;
+
+      if (format === 'csv') {
+        data = this.parseCSV(text);
+      } else {
+        data = this.parseJSON(text);
+      }
+
+      if (data.length === 0) {
+        previewContent.innerHTML = '<p style="color: var(--danger-color);">データが見つかりません</p>';
+        executeBtn.disabled = true;
+        previewDiv.style.display = 'block';
+        return;
+      }
+
+      // プレビュー表示（最大5件）
+      const previewItems = data.slice(0, 5);
+      previewContent.innerHTML = `
+        <p style="margin-bottom: 8px; font-weight: 500;">${data.length}件のデータを検出</p>
+        ${previewItems.map(item => `
+          <div style="padding: 8px; background: var(--bg-primary); border-radius: 4px; margin-bottom: 4px;">
+            ${item.customer || item.顧客名 || '(顧客名なし)'} - ${item.specifications || item.商品 || 'LIFE'}
+          </div>
+        `).join('')}
+        ${data.length > 5 ? `<p style="color: var(--text-muted);">...他 ${data.length - 5}件</p>` : ''}
+      `;
+
+      this.pendingData = data;
+      executeBtn.disabled = false;
+      previewDiv.style.display = 'block';
+
+    } catch (error) {
+      previewContent.innerHTML = `<p style="color: var(--danger-color);">ファイル読み込みエラー: ${error.message}</p>`;
+      executeBtn.disabled = true;
+      previewDiv.style.display = 'block';
+    }
+  },
+
+  parseCSV(text) {
+    const lines = text.split('\n').filter(line => line.trim());
+    if (lines.length < 2) return [];
+
+    // ヘッダー解析
+    const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+    const data = [];
+
+    for (let i = 1; i < lines.length; i++) {
+      const values = this.parseCSVLine(lines[i]);
+      if (values.length === 0) continue;
+
+      const row = {};
+      headers.forEach((header, idx) => {
+        row[header] = values[idx] || '';
+      });
+
+      // 顧客名があれば有効なデータとして追加
+      if (row['顧客名'] || row['customer']) {
+        data.push({
+          customer: row['顧客名'] || row['customer'] || '',
+          assigned_to: row['担当者'] || row['assigned_to'] || '',
+          ic_assignee: row['IC担当'] || row['ic_assignee'] || '',
+          specifications: row['商品'] || row['specifications'] || 'LIFE',
+          memo: row['メモ'] || row['memo'] || ''
+        });
+      }
+    }
+
+    return data;
+  },
+
+  parseCSVLine(line) {
+    const result = [];
+    let current = '';
+    let inQuotes = false;
+
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      if (char === '"') {
+        if (inQuotes && line[i + 1] === '"') {
+          current += '"';
+          i++;
+        } else {
+          inQuotes = !inQuotes;
+        }
+      } else if (char === ',' && !inQuotes) {
+        result.push(current.trim());
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+    result.push(current.trim());
+    return result;
+  },
+
+  parseJSON(text) {
+    const json = JSON.parse(text);
+    // エクスポート形式の場合
+    if (json.projects && Array.isArray(json.projects)) {
+      return json.projects;
+    }
+    // 配列の場合
+    if (Array.isArray(json)) {
+      return json;
+    }
+    return [];
+  },
+
+  async execute() {
+    if (!this.pendingData || this.pendingData.length === 0) {
+      showToast('インポートするデータがありません', 'error');
+      return;
+    }
+
+    const skipDuplicates = document.getElementById('importSkipDuplicates').checked;
+    const existingCustomers = new Set(projects.map(p => p.customer?.toLowerCase()));
+
+    let imported = 0;
+    let skipped = 0;
+
+    showStatus('インポート中...', 'saving');
+
+    for (const item of this.pendingData) {
+      // 重複チェック
+      if (skipDuplicates && existingCustomers.has(item.customer?.toLowerCase())) {
+        skipped++;
+        continue;
+      }
+
+      try {
+        const newProject = {
+          customer: item.customer,
+          assigned_to: item.assigned_to || null,
+          ic_assignee: item.ic_assignee || null,
+          specifications: item.specifications || 'LIFE',
+          memo: item.memo || '',
+          status: 'active',
+          progress: {},
+          tasks: {}
+        };
+
+        const { data, error } = await supabase
+          .from('projects')
+          .insert(newProject)
+          .select()
+          .single();
+
+        if (!error && data) {
+          projects.push(data);
+          existingCustomers.add(item.customer?.toLowerCase());
+          imported++;
+        }
+      } catch (e) {
+        console.error('インポートエラー:', e);
+      }
+    }
+
+    document.getElementById('importModal').remove();
+    renderProjects();
+    renderSidebar();
+    showStatus('保存済み', 'saved');
+
+    let message = `${imported}件をインポートしました`;
+    if (skipped > 0) {
+      message += `（${skipped}件は重複のためスキップ）`;
+    }
+    showToast(message, 'success');
+
+    this.pendingData = null;
+  },
+
+  pendingData: null
+};
+
+// ============================================
+// お気に入り管理
+// ============================================
+const FavoritesManager = {
+  favorites: new Set(JSON.parse(localStorage.getItem('favorites') || '[]')),
+
+  toggle(projectId) {
+    if (this.favorites.has(projectId)) {
+      this.favorites.delete(projectId);
+      showToast('お気に入りから削除しました', 'info');
+    } else {
+      this.favorites.add(projectId);
+      showToast('お気に入りに追加しました', 'success');
+    }
+    this.save();
+    renderProjects();
+  },
+
+  isFavorite(projectId) {
+    return this.favorites.has(projectId);
+  },
+
+  save() {
+    localStorage.setItem('favorites', JSON.stringify([...this.favorites]));
+  },
+
+  getCount() {
+    return this.favorites.size;
+  }
+};
+
+// ============================================
+// バッチ操作
+// ============================================
+const BatchOperations = {
+  selected: new Set(),
+
+  toggle(projectId) {
+    if (this.selected.has(projectId)) {
+      this.selected.delete(projectId);
+    } else {
+      this.selected.add(projectId);
+    }
+    this.updateUI();
+  },
+
+  selectAll() {
+    const visibleCards = document.querySelectorAll('.project-card[data-project-id]');
+    visibleCards.forEach(card => {
+      this.selected.add(card.dataset.projectId);
+    });
+    this.updateUI();
+    renderProjects();
+  },
+
+  deselectAll() {
+    this.selected.clear();
+    this.updateUI();
+    renderProjects();
+  },
+
+  isSelected(projectId) {
+    return this.selected.has(projectId);
+  },
+
+  updateUI() {
+    const toolbar = document.getElementById('batchToolbar');
+    const count = this.selected.size;
+
+    if (count > 0) {
+      if (!toolbar) {
+        this.showToolbar();
+      }
+      document.getElementById('batchCount').textContent = `${count}件選択中`;
+    } else {
+      if (toolbar) toolbar.remove();
+    }
+
+    // チェックボックスの状態を更新
+    document.querySelectorAll('.batch-checkbox').forEach(cb => {
+      cb.checked = this.selected.has(cb.dataset.projectId);
+    });
+  },
+
+  showToolbar() {
+    const toolbar = document.createElement('div');
+    toolbar.id = 'batchToolbar';
+    toolbar.style.cssText = `
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+      background: var(--bg-primary); border: 1px solid var(--border-color);
+      padding: 12px 20px; border-radius: 12px; box-shadow: var(--shadow-lg);
+      display: flex; align-items: center; gap: 16px; z-index: 1000;
+    `;
+    toolbar.innerHTML = `
+      <span id="batchCount" style="font-weight: 600;">0件選択中</span>
+      <button class="btn btn-ghost btn-small" onclick="BatchOperations.archiveSelected()">📦 一括完了</button>
+      <button class="btn btn-ghost btn-small" onclick="BatchOperations.showAssignModal()">👤 担当変更</button>
+      <button class="btn btn-ghost btn-small" onclick="BatchOperations.deselectAll()">✕ 選択解除</button>
+    `;
+    document.body.appendChild(toolbar);
+  },
+
+  async archiveSelected() {
+    if (this.selected.size === 0) return;
+
+    const confirmed = confirm(`${this.selected.size}件の案件を完了済みにしますか？`);
+    if (!confirmed) return;
+
+    showStatus('処理中...', 'saving');
+    let count = 0;
+
+    for (const projectId of this.selected) {
+      const { error } = await supabase
+        .from('projects')
+        .update({ is_archived: true, updated_at: new Date().toISOString() })
+        .eq('id', projectId);
+
+      if (!error) {
+        const project = projects.find(p => p.id === projectId);
+        if (project) project.is_archived = true;
+        count++;
+      }
+    }
+
+    this.selected.clear();
+    this.updateUI();
+    renderProjects();
+    renderSidebar();
+    showStatus('保存済み', 'saved');
+    showToast(`${count}件を完了済みにしました`, 'success');
+  },
+
+  showAssignModal() {
+    if (this.selected.size === 0) return;
+
+    const modal = document.createElement('div');
+    modal.id = 'batchAssignModal';
+    modal.className = 'modal-overlay';
+    modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 10000;';
+
+    const designerOptions = designers
+      .filter(d => d.category === '設計')
+      .map(d => `<option value="${d.name}">${d.name}</option>`)
+      .join('');
+
+    modal.innerHTML = `
+      <div class="modal-content" style="background: var(--bg-primary); border-radius: 12px; max-width: 400px; width: 90%;">
+        <div class="modal-header" style="padding: 20px; border-bottom: 1px solid var(--border-color);">
+          <h3 style="font-size: 18px; font-weight: 600;">👤 一括担当者変更</h3>
+        </div>
+        <div class="modal-body" style="padding: 20px;">
+          <p style="margin-bottom: 16px; color: var(--text-secondary);">${this.selected.size}件の案件の担当者を変更します</p>
+          <select id="batchAssignee" class="form-input" style="width: 100%;">
+            <option value="">担当者を選択</option>
+            ${designerOptions}
+          </select>
+        </div>
+        <div class="modal-footer" style="padding: 16px 20px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 12px;">
+          <button class="btn btn-ghost" onclick="document.getElementById('batchAssignModal').remove()">キャンセル</button>
+          <button class="btn btn-primary" onclick="BatchOperations.applyAssign()">変更</button>
+        </div>
+      </div>
+    `;
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) modal.remove();
+    });
+    document.body.appendChild(modal);
+  },
+
+  async applyAssign() {
+    const assignee = document.getElementById('batchAssignee').value;
+    if (!assignee) {
+      showToast('担当者を選択してください', 'error');
+      return;
+    }
+
+    document.getElementById('batchAssignModal').remove();
+    showStatus('処理中...', 'saving');
+    let count = 0;
+
+    for (const projectId of this.selected) {
+      const { error } = await supabase
+        .from('projects')
+        .update({ assigned_to: assignee, updated_at: new Date().toISOString() })
+        .eq('id', projectId);
+
+      if (!error) {
+        const project = projects.find(p => p.id === projectId);
+        if (project) project.assigned_to = assignee;
+        count++;
+      }
+    }
+
+    this.selected.clear();
+    this.updateUI();
+    renderProjects();
+    renderSidebar();
+    showStatus('保存済み', 'saved');
+    showToast(`${count}件の担当者を${assignee}に変更しました`, 'success');
+  }
+};
+
+// ============================================
+// フィルタープリセット管理
+// ============================================
+const FilterPresets = {
+  presets: JSON.parse(localStorage.getItem('filterPresets') || '[]'),
+
+  save() {
+    localStorage.setItem('filterPresets', JSON.stringify(this.presets));
+  },
+
+  getCurrentFilter() {
+    return {
+      designer: currentDesignerTab,
+      archive: document.getElementById('archiveFilter')?.value || 'active',
+      search: document.getElementById('searchQuery')?.value || '',
+      spec: document.getElementById('specFilter')?.value || ''
+    };
+  },
+
+  addPreset(name) {
+    if (!name || !name.trim()) {
+      showToast('プリセット名を入力してください', 'error');
+      return false;
+    }
+
+    const filter = this.getCurrentFilter();
+    const preset = {
+      id: Date.now().toString(),
+      name: name.trim(),
+      filter: filter,
+      createdAt: new Date().toISOString()
+    };
+
+    this.presets.unshift(preset);
+    this.save();
+    this.renderDropdown();
+    showToast(`「${name}」を保存しました`, 'success');
+    return true;
+  },
+
+  deletePreset(id) {
+    const preset = this.presets.find(p => p.id === id);
+    if (preset && confirm(`「${preset.name}」を削除しますか？`)) {
+      this.presets = this.presets.filter(p => p.id !== id);
+      this.save();
+      this.renderDropdown();
+      showToast('プリセットを削除しました', 'info');
+    }
+  },
+
+  applyPreset(id) {
+    const preset = this.presets.find(p => p.id === id);
+    if (!preset) return;
+
+    const { filter } = preset;
+
+    // 担当者タブを切り替え
+    if (filter.designer) {
+      currentDesignerTab = filter.designer;
+      renderDesignerTabs();
+    }
+
+    // フィルター値を設定
+    const archiveFilter = document.getElementById('archiveFilter');
+    const searchQuery = document.getElementById('searchQuery');
+    const specFilter = document.getElementById('specFilter');
+
+    if (archiveFilter) archiveFilter.value = filter.archive || 'active';
+    if (searchQuery) searchQuery.value = filter.search || '';
+    if (specFilter) specFilter.value = filter.spec || '';
+
+    renderProjects();
+    showToast(`「${preset.name}」を適用しました`, 'success');
+  },
+
+  showSaveModal() {
+    const filter = this.getCurrentFilter();
+    const filterDesc = this.describeFilter(filter);
+
+    const modal = document.createElement('div');
+    modal.id = 'presetSaveModal';
+    modal.className = 'modal-overlay';
+    modal.style.cssText = 'position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 9999;';
+    modal.innerHTML = `
+      <div class="modal-content" style="background: var(--bg-primary); border-radius: 12px; width: 90%; max-width: 400px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+        <div class="modal-header" style="padding: 20px; border-bottom: 1px solid var(--border-color);">
+          <h3 style="font-size: 18px; font-weight: 600;">フィルターを保存</h3>
+        </div>
+        <div class="modal-body" style="padding: 20px;">
+          <div style="margin-bottom: 16px; padding: 12px; background: var(--bg-secondary); border-radius: 8px; font-size: 13px; color: var(--text-secondary);">
+            <strong>現在のフィルター:</strong><br>${filterDesc}
+          </div>
+          <label style="display: block; margin-bottom: 8px; font-weight: 500;">プリセット名</label>
+          <input type="text" id="presetName" class="form-input" style="width: 100%;" placeholder="例: 田中さんの進行中案件" autofocus>
+        </div>
+        <div class="modal-footer" style="padding: 16px 20px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 12px;">
+          <button class="btn btn-ghost" onclick="document.getElementById('presetSaveModal').remove()">キャンセル</button>
+          <button class="btn btn-primary" onclick="FilterPresets.confirmSave()">保存</button>
+        </div>
+      </div>
+    `;
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) modal.remove();
+    });
+    document.body.appendChild(modal);
+
+    // Enterキーで保存
+    document.getElementById('presetName').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') FilterPresets.confirmSave();
+    });
+  },
+
+  confirmSave() {
+    const name = document.getElementById('presetName').value;
+    if (this.addPreset(name)) {
+      document.getElementById('presetSaveModal').remove();
+    }
+  },
+
+  describeFilter(filter) {
+    const parts = [];
+    if (filter.designer && filter.designer !== 'ALL') {
+      parts.push(`担当: ${filter.designer}`);
+    }
+    if (filter.archive && filter.archive !== 'active') {
+      const labels = { all: '全て', archived: '完了済み', favorites: 'お気に入り' };
+      parts.push(labels[filter.archive] || filter.archive);
+    }
+    if (filter.search) {
+      parts.push(`検索: "${filter.search}"`);
+    }
+    if (filter.spec) {
+      parts.push(`仕様: ${filter.spec}`);
+    }
+    return parts.length > 0 ? parts.join('、') : 'フィルターなし';
+  },
+
+  renderDropdown() {
+    const container = document.getElementById('presetDropdown');
+    if (!container) return;
+
+    if (this.presets.length === 0) {
+      container.innerHTML = '<div style="padding: 12px; color: var(--text-secondary); font-size: 13px;">保存済みプリセットはありません</div>';
+      return;
+    }
+
+    container.innerHTML = this.presets.map(preset => `
+      <div class="preset-item" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-bottom: 1px solid var(--border-color); cursor: pointer;"
+           onmouseenter="this.style.background='var(--bg-secondary)'"
+           onmouseleave="this.style.background='white'">
+        <div style="flex: 1;" onclick="FilterPresets.applyPreset('${preset.id}'); document.getElementById('presetMenu').style.display='none';">
+          <div style="font-weight: 500; font-size: 14px;">${preset.name}</div>
+          <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">${this.describeFilter(preset.filter)}</div>
+        </div>
+        <button class="btn btn-ghost btn-small" style="padding: 4px 8px; font-size: 12px;" onclick="event.stopPropagation(); FilterPresets.deletePreset('${preset.id}')">削除</button>
+      </div>
+    `).join('');
+  },
+
+  toggleMenu() {
+    const menu = document.getElementById('presetMenu');
+    if (!menu) return;
+
+    if (menu.style.display === 'none' || !menu.style.display) {
+      this.renderDropdown();
+      menu.style.display = 'block';
+      // 外側クリックで閉じる
+      setTimeout(() => {
+        document.addEventListener('click', this.closeMenuOnClickOutside);
+      }, 10);
+    } else {
+      menu.style.display = 'none';
+      document.removeEventListener('click', this.closeMenuOnClickOutside);
+    }
+  },
+
+  closeMenuOnClickOutside(e) {
+    const menu = document.getElementById('presetMenu');
+    const btn = document.getElementById('presetBtn');
+    if (menu && !menu.contains(e.target) && !btn.contains(e.target)) {
+      menu.style.display = 'none';
+      document.removeEventListener('click', FilterPresets.closeMenuOnClickOutside);
+    }
+  }
+};
+
+// ============================================
+// クイック編集
+// ============================================
+const QuickEdit = {
+  showAssigneeDropdown(projectId, element) {
+    // 既存のドロップダウンを削除
+    document.querySelectorAll('.quick-edit-dropdown').forEach(el => el.remove());
+
+    const project = projects.find(p => p.id === projectId);
+    if (!project) return;
+
+    const rect = element.getBoundingClientRect();
+    const designerList = designers.filter(d => d.category === '設計' || d.category === 'IC');
+
+    const dropdown = document.createElement('div');
+    dropdown.className = 'quick-edit-dropdown';
+    dropdown.style.cssText = `position: fixed; top: ${rect.bottom + 4}px; left: ${rect.left}px; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 9999; min-width: 150px;`;
+
+    dropdown.innerHTML = `
+      <div style="padding: 8px 12px; border-bottom: 1px solid var(--border-color); font-size: 12px; color: var(--text-secondary);">担当者を変更</div>
+      ${designerList.map(d => `
+        <div class="quick-edit-option" style="padding: 10px 12px; cursor: pointer; font-size: 14px; ${project.assigned_to === d.name ? 'background: var(--primary-light); font-weight: 500;' : ''}"
+             onmouseenter="this.style.background='var(--bg-secondary)'"
+             onmouseleave="this.style.background='${project.assigned_to === d.name ? 'var(--primary-light)' : ''}'"
+             onclick="QuickEdit.changeAssignee('${projectId}', '${d.name}')">${d.name}</div>
+      `).join('')}
+    `;
+
+    document.body.appendChild(dropdown);
+
+    // 外側クリックで閉じる
+    setTimeout(() => {
+      document.addEventListener('click', QuickEdit.closeDropdown);
+    }, 10);
+  },
+
+  closeDropdown(e) {
+    if (!e.target.closest('.quick-edit-dropdown') && !e.target.closest('.quick-edit-trigger')) {
+      document.querySelectorAll('.quick-edit-dropdown').forEach(el => el.remove());
+      document.removeEventListener('click', QuickEdit.closeDropdown);
+    }
+  },
+
+  async changeAssignee(projectId, assignee) {
+    document.querySelectorAll('.quick-edit-dropdown').forEach(el => el.remove());
+
+    const project = projects.find(p => p.id === projectId);
+    if (!project) return;
+
+    const oldAssignee = project.assigned_to;
+    showStatus('保存中...', 'saving');
+
+    const { error } = await supabase
+      .from('projects')
+      .update({ assigned_to: assignee, updated_at: new Date().toISOString() })
+      .eq('id', projectId);
+
+    if (error) {
+      showStatus('エラー', 'error');
+      showToast('変更に失敗しました', 'error');
+      return;
+    }
+
+    UndoManager.record({
+      type: 'UPDATE_PROJECT',
+      projectId,
+      description: `${project.customer} - 担当者を${oldAssignee || '未割当'}から${assignee}に変更`,
+      oldValue: { assigned_to: oldAssignee },
+      newValue: { assigned_to: assignee }
+    });
+
+    project.assigned_to = assignee;
+    project.updated_at = new Date().toISOString();
+    renderProjects();
+    renderSidebar();
+    showStatus('保存済み', 'saved');
+    showToast(`担当者を${assignee}に変更しました`, 'success');
+  }
+};
+
+// ============================================
+// 期限・リマインダー管理
+// ============================================
+const DeadlineManager = {
+  reminders: JSON.parse(localStorage.getItem('projectReminders') || '{}'),
+
+  setDeadline(projectId, deadline) {
+    this.reminders[projectId] = { deadline, notified: false };
+    this.save();
+  },
+
+  getDeadline(projectId) {
+    return this.reminders[projectId]?.deadline || null;
+  },
+
+  save() {
+    localStorage.setItem('projectReminders', JSON.stringify(this.reminders));
+  },
+
+  checkReminders() {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    projects.forEach(project => {
+      const reminder = this.reminders[project.id];
+      if (!reminder || reminder.notified || project.is_archived) return;
+
+      const deadline = new Date(reminder.deadline);
+      deadline.setHours(0, 0, 0, 0);
+      const diffDays = Math.ceil((deadline - today) / (1000 * 60 * 60 * 24));
+
+      if (diffDays <= 3 && diffDays >= 0) {
+        const msg = diffDays === 0 ? '本日が期限です' : `あと${diffDays}日で期限です`;
+        showToast(`📅 ${project.customer}: ${msg}`, 'warning');
+        this.reminders[project.id].notified = true;
+        this.save();
+      } else if (diffDays < 0) {
+        showToast(`⚠️ ${project.customer}: 期限を${Math.abs(diffDays)}日過ぎています`, 'error');
+        this.reminders[project.id].notified = true;
+        this.save();
+      }
+    });
+  },
+
+  getStatus(projectId) {
+    const deadline = this.getDeadline(projectId);
+    if (!deadline) return null;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const due = new Date(deadline);
+    due.setHours(0, 0, 0, 0);
+    const diffDays = Math.ceil((due - today) / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 0) return { class: 'overdue', label: `${Math.abs(diffDays)}日超過`, color: '#EF4444' };
+    if (diffDays === 0) return { class: 'today', label: '本日', color: '#F59E0B' };
+    if (diffDays <= 3) return { class: 'soon', label: `あと${diffDays}日`, color: '#F59E0B' };
+    return { class: 'normal', label: `${due.getMonth() + 1}/${due.getDate()}`, color: '#6B7280' };
+  },
+
+  showModal(projectId) {
+    const project = projects.find(p => p.id === projectId);
+    if (!project) return;
+
+    const currentDeadline = this.getDeadline(projectId) || '';
+
+    const modal = document.createElement('div');
+    modal.id = 'deadlineModal';
+    modal.style.cssText = 'position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 9999;';
+    modal.innerHTML = `
+      <div style="background: var(--bg-primary); border-radius: 12px; width: 90%; max-width: 360px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+        <div style="padding: 20px; border-bottom: 1px solid var(--border-color);">
+          <h3 style="font-size: 18px; font-weight: 600;">期限を設定</h3>
+          <p style="font-size: 14px; color: var(--text-secondary); margin-top: 4px;">${project.customer}</p>
+        </div>
+        <div style="padding: 20px;">
+          <input type="date" id="deadlineInput" class="form-input" style="width: 100%;" value="${currentDeadline}">
+          <p style="font-size: 12px; color: var(--text-secondary); margin-top: 8px;">期限の3日前から通知が表示されます</p>
+        </div>
+        <div style="padding: 16px 20px; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between;">
+          <button class="btn btn-ghost" onclick="DeadlineManager.clearDeadline('${projectId}')">クリア</button>
+          <div style="display: flex; gap: 12px;">
+            <button class="btn btn-ghost" onclick="document.getElementById('deadlineModal').remove()">キャンセル</button>
+            <button class="btn btn-primary" onclick="DeadlineManager.saveFromModal('${projectId}')">保存</button>
+          </div>
+        </div>
+      </div>
+    `;
+    modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+    document.body.appendChild(modal);
+  },
+
+  saveFromModal(projectId) {
+    const deadline = document.getElementById('deadlineInput').value;
+    if (deadline) {
+      this.setDeadline(projectId, deadline);
+      showToast('期限を設定しました', 'success');
+    }
+    document.getElementById('deadlineModal').remove();
+    renderProjects();
+  },
+
+  clearDeadline(projectId) {
+    delete this.reminders[projectId];
+    this.save();
+    document.getElementById('deadlineModal').remove();
+    renderProjects();
+    showToast('期限をクリアしました', 'info');
+  }
+};
+
+// ============================================
+// カレンダービュー
+// ============================================
+const CalendarView = {
+  currentMonth: new Date(),
+
+  render() {
+    const container = document.getElementById('calendarContainer');
+    if (!container) return;
+
+    const year = this.currentMonth.getFullYear();
+    const month = this.currentMonth.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const startDayOfWeek = firstDay.getDay();
+
+    // 案件を期限でグループ化
+    const projectsByDate = {};
+    projects.forEach(project => {
+      if (project.is_archived) return;
+      const deadline = DeadlineManager.getDeadline(project.id);
+      if (deadline) {
+        if (!projectsByDate[deadline]) projectsByDate[deadline] = [];
+        projectsByDate[deadline].push(project);
+      }
+    });
+
+    const monthNames = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
+    const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
+
+    let html = `
+      <div class="calendar-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <button class="btn btn-ghost" onclick="CalendarView.prevMonth()">◀</button>
+        <h3 style="font-size: 18px; font-weight: 600;">${year}年 ${monthNames[month]}</h3>
+        <button class="btn btn-ghost" onclick="CalendarView.nextMonth()">▶</button>
+      </div>
+      <div class="calendar-grid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: var(--border-color); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;">
+        ${dayNames.map((day, i) => `<div style="padding: 8px; text-align: center; font-weight: 600; font-size: 12px; background: var(--bg-secondary); color: ${i === 0 ? '#EF4444' : i === 6 ? '#3B82F6' : 'var(--text-primary)'};">${day}</div>`).join('')}
+    `;
+
+    // 空白セル
+    for (let i = 0; i < startDayOfWeek; i++) {
+      html += '<div style="padding: 8px; background: white; min-height: 80px;"></div>';
+    }
+
+    // 日付セル
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    for (let day = 1; day <= lastDay.getDate(); day++) {
+      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const dateProjects = projectsByDate[dateStr] || [];
+      const isToday = new Date(year, month, day).getTime() === today.getTime();
+      const dayOfWeek = new Date(year, month, day).getDay();
+
+      html += `
+        <div style="padding: 6px; background: ${isToday ? 'var(--primary-light)' : 'white'}; min-height: 80px; cursor: pointer;" onclick="CalendarView.showDateProjects('${dateStr}')">
+          <div style="font-size: 14px; font-weight: ${isToday ? '600' : '400'}; color: ${dayOfWeek === 0 ? '#EF4444' : dayOfWeek === 6 ? '#3B82F6' : 'var(--text-primary)'}; margin-bottom: 4px;">${day}</div>
+          ${dateProjects.slice(0, 3).map(p => `<div style="font-size: 11px; padding: 2px 4px; background: var(--primary-color); color: white; border-radius: 4px; margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${p.customer}</div>`).join('')}
+          ${dateProjects.length > 3 ? `<div style="font-size: 10px; color: var(--text-secondary);">+${dateProjects.length - 3}件</div>` : ''}
+        </div>
+      `;
+    }
+
+    html += '</div>';
+    container.innerHTML = html;
+  },
+
+  prevMonth() {
+    this.currentMonth.setMonth(this.currentMonth.getMonth() - 1);
+    this.render();
+  },
+
+  nextMonth() {
+    this.currentMonth.setMonth(this.currentMonth.getMonth() + 1);
+    this.render();
+  },
+
+  showDateProjects(dateStr) {
+    const dateProjects = projects.filter(p => {
+      const deadline = DeadlineManager.getDeadline(p.id);
+      return deadline === dateStr && !p.is_archived;
+    });
+
+    if (dateProjects.length === 0) {
+      showToast('この日に期限の案件はありません', 'info');
+      return;
+    }
+
+    const date = new Date(dateStr);
+    const modal = document.createElement('div');
+    modal.id = 'dateProjectsModal';
+    modal.style.cssText = 'position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 9999;';
+    modal.innerHTML = `
+      <div style="background: var(--bg-primary); border-radius: 12px; width: 90%; max-width: 400px; max-height: 80vh; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+        <div style="padding: 20px; border-bottom: 1px solid var(--border-color);">
+          <h3 style="font-size: 18px; font-weight: 600;">${date.getMonth() + 1}/${date.getDate()} の案件</h3>
+        </div>
+        <div style="padding: 12px; max-height: 400px; overflow-y: auto;">
+          ${dateProjects.map(p => `
+            <div style="padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 8px; cursor: pointer;"
+                 onclick="document.getElementById('dateProjectsModal').remove(); editProject('${p.id}')">
+              <div style="font-weight: 500;">${p.customer}</div>
+              <div style="font-size: 13px; color: var(--text-secondary);">担当: ${p.assigned_to || '未割当'}</div>
+            </div>
+          `).join('')}
+        </div>
+        <div style="padding: 16px 20px; border-top: 1px solid var(--border-color);">
+          <button class="btn btn-ghost" style="width: 100%;" onclick="document.getElementById('dateProjectsModal').remove()">閉じる</button>
+        </div>
+      </div>
+    `;
+    modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+    document.body.appendChild(modal);
+  }
+};
+
+// ============================================
+// プロジェクトテンプレート
+// ============================================
+const TemplateManager = {
+  templates: JSON.parse(localStorage.getItem('projectTemplates') || '[]'),
+
+  save() {
+    localStorage.setItem('projectTemplates', JSON.stringify(this.templates));
+  },
+
+  createFromProject(projectId) {
+    const project = projects.find(p => p.id === projectId);
+    if (!project) return;
+
+    const name = prompt('テンプレート名を入力してください:', `${project.specifications || 'LIFE'}テンプレート`);
+    if (!name) return;
+
+    const template = {
+      id: Date.now().toString(),
+      name: name,
+      specifications: project.specifications,
+      progress: project.progress || {},
+      createdAt: new Date().toISOString()
+    };
+
+    this.templates.push(template);
+    this.save();
+    showToast(`テンプレート「${name}」を作成しました`, 'success');
+  },
+
+  applyTemplate(templateId, projectId) {
+    const template = this.templates.find(t => t.id === templateId);
+    const project = projects.find(p => p.id === projectId);
+    if (!template || !project) return;
+
+    project.specifications = template.specifications;
+    project.progress = JSON.parse(JSON.stringify(template.progress));
+
+    this.saveProject(project);
+    showToast(`テンプレート「${template.name}」を適用しました`, 'success');
+  },
+
+  async saveProject(project) {
+    const { error } = await supabase
+      .from('projects')
+      .update({
+        specifications: project.specifications,
+        progress: project.progress,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', project.id);
+
+    if (!error) {
+      renderProjects();
+    }
+  },
+
+  deleteTemplate(templateId) {
+    const template = this.templates.find(t => t.id === templateId);
+    if (template && confirm(`テンプレート「${template.name}」を削除しますか？`)) {
+      this.templates = this.templates.filter(t => t.id !== templateId);
+      this.save();
+      showToast('テンプレートを削除しました', 'info');
+    }
+  },
+
+  showSelectModal(projectId) {
+    if (this.templates.length === 0) {
+      showToast('保存済みテンプレートがありません', 'info');
+      return;
+    }
+
+    const modal = document.createElement('div');
+    modal.id = 'templateSelectModal';
+    modal.style.cssText = 'position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 9999;';
+    modal.innerHTML = `
+      <div style="background: var(--bg-primary); border-radius: 12px; width: 90%; max-width: 400px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+        <div style="padding: 20px; border-bottom: 1px solid var(--border-color);">
+          <h3 style="font-size: 18px; font-weight: 600;">テンプレートを適用</h3>
+        </div>
+        <div style="padding: 12px; max-height: 300px; overflow-y: auto;">
+          ${this.templates.map(t => `
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 8px;">
+              <div>
+                <div style="font-weight: 500;">${t.name}</div>
+                <div style="font-size: 12px; color: var(--text-secondary);">${t.specifications || 'LIFE'}</div>
+              </div>
+              <button class="btn btn-primary btn-small" onclick="TemplateManager.applyTemplate('${t.id}', '${projectId}'); document.getElementById('templateSelectModal').remove();">適用</button>
+            </div>
+          `).join('')}
+        </div>
+        <div style="padding: 16px 20px; border-top: 1px solid var(--border-color);">
+          <button class="btn btn-ghost" style="width: 100%;" onclick="document.getElementById('templateSelectModal').remove()">キャンセル</button>
+        </div>
+      </div>
+    `;
+    modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+    document.body.appendChild(modal);
+  },
+
+  showManageModal() {
+    const modal = document.createElement('div');
+    modal.id = 'templateManageModal';
+    modal.style.cssText = 'position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 9999;';
+    modal.innerHTML = `
+      <div style="background: white; border-radius: 12px; width: 90%; max-width: 450px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+        <div style="padding: 20px; border-bottom: 1px solid var(--border-color);">
+          <h3 style="font-size: 18px; font-weight: 600;">テンプレート管理</h3>
+        </div>
+        <div style="padding: 12px; max-height: 400px; overflow-y: auto;">
+          ${this.templates.length === 0 ? '<p style="padding: 20px; text-align: center; color: var(--text-secondary);">テンプレートがありません<br><small>案件の編集画面から「テンプレート保存」で作成できます</small></p>' : this.templates.map(t => `
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 8px;">
+              <div>
+                <div style="font-weight: 500;">${t.name}</div>
+                <div style="font-size: 12px; color: var(--text-secondary);">${t.specifications || 'LIFE'} | ${new Date(t.createdAt).toLocaleDateString()}</div>
+              </div>
+              <button class="btn btn-ghost btn-small" style="color: #EF4444;" onclick="TemplateManager.deleteTemplate('${t.id}'); document.getElementById('templateManageModal').remove(); TemplateManager.showManageModal();">削除</button>
+            </div>
+          `).join('')}
+        </div>
+        <div style="padding: 16px 20px; border-top: 1px solid var(--border-color);">
+          <button class="btn btn-ghost" style="width: 100%;" onclick="document.getElementById('templateManageModal').remove()">閉じる</button>
+        </div>
+      </div>
+    `;
+    modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+    document.body.appendChild(modal);
+  }
+};
+
+// ============================================
+// モバイルスワイプ操作
+// ============================================
+const MobileGestures = {
+  startX: 0,
+  startY: 0,
+  currentCard: null,
+
+  init() {
+    document.addEventListener('touchstart', this.handleTouchStart.bind(this), { passive: true });
+    document.addEventListener('touchmove', this.handleTouchMove.bind(this), { passive: false });
+    document.addEventListener('touchend', this.handleTouchEnd.bind(this), { passive: true });
+  },
+
+  handleTouchStart(e) {
+    const card = e.target.closest('.project-card');
+    if (!card) return;
+
+    this.startX = e.touches[0].clientX;
+    this.startY = e.touches[0].clientY;
+    this.currentCard = card;
+  },
+
+  handleTouchMove(e) {
+    if (!this.currentCard) return;
+
+    const diffX = e.touches[0].clientX - this.startX;
+    const diffY = e.touches[0].clientY - this.startY;
+
+    // 横方向のスワイプを検出
+    if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 30) {
+      e.preventDefault();
+      const maxSwipe = 100;
+      const translateX = Math.max(-maxSwipe, Math.min(maxSwipe, diffX));
+      this.currentCard.style.transform = `translateX(${translateX}px)`;
+      this.currentCard.style.transition = 'none';
+
+      // スワイプ方向に応じた背景色
+      if (diffX > 50) {
+        this.currentCard.style.background = 'linear-gradient(to right, #10B981 0%, white 30%)';
+      } else if (diffX < -50) {
+        this.currentCard.style.background = 'linear-gradient(to left, #F59E0B 0%, white 30%)';
+      } else {
+        this.currentCard.style.background = '';
+      }
+    }
+  },
+
+  handleTouchEnd(e) {
+    if (!this.currentCard) return;
+
+    const diffX = e.changedTouches[0].clientX - this.startX;
+    const projectId = this.currentCard.dataset.projectId;
+
+    this.currentCard.style.transform = '';
+    this.currentCard.style.transition = 'transform 0.2s ease';
+    this.currentCard.style.background = '';
+
+    if (diffX > 80 && projectId) {
+      // 右スワイプ: お気に入り切り替え
+      FavoritesManager.toggle(projectId);
+    } else if (diffX < -80 && projectId) {
+      // 左スワイプ: 完了切り替え
+      const project = projects.find(p => p.id === projectId);
+      if (project && calculateProgress(project) >= 100) {
+        toggleArchive(projectId, !project.is_archived);
+      } else {
+        showToast('完了にするには進捗100%が必要です', 'info');
+      }
+    }
+
+    this.currentCard = null;
+  }
+};
+
+// ============================================
+// セッションタイムアウト管理
+// ============================================
+const SessionManager = {
+  timeoutMinutes: 60,
+  warningMinutes: 5,
+  lastActivity: Date.now(),
+  timeoutId: null,
+  warningId: null,
+  warningShown: false,
+
+  init() {
+    this.resetTimer();
+    this.setupActivityListeners();
+    console.log('🔒 セッション管理開始（タイムアウト: ' + this.timeoutMinutes + '分）');
+  },
+
+  setupActivityListeners() {
+    const events = ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart', 'click'];
+    events.forEach(event => {
+      document.addEventListener(event, () => this.onActivity(), { passive: true });
+    });
+  },
+
+  onActivity() {
+    this.lastActivity = Date.now();
+    if (this.warningShown) {
+      this.hideWarning();
+    }
+    this.resetTimer();
+  },
+
+  resetTimer() {
+    if (this.timeoutId) clearTimeout(this.timeoutId);
+    if (this.warningId) clearTimeout(this.warningId);
+
+    // 警告表示タイマー
+    const warningMs = (this.timeoutMinutes - this.warningMinutes) * 60 * 1000;
+    this.warningId = setTimeout(() => this.showWarning(), warningMs);
+
+    // タイムアウトタイマー
+    const timeoutMs = this.timeoutMinutes * 60 * 1000;
+    this.timeoutId = setTimeout(() => this.onTimeout(), timeoutMs);
+  },
+
+  showWarning() {
+    if (this.warningShown) return;
+    this.warningShown = true;
+
+    const warning = document.createElement('div');
+    warning.id = 'sessionWarning';
+    warning.style.cssText = `
+      position: fixed; bottom: 20px; right: 20px; z-index: 10001;
+      background: var(--warning-color); color: white;
+      padding: 16px 20px; border-radius: 8px;
+      box-shadow: var(--shadow-lg); max-width: 320px;
+    `;
+    warning.innerHTML = `
+      <div style="font-weight: 600; margin-bottom: 8px;">⏰ セッション期限</div>
+      <div style="font-size: 14px; margin-bottom: 12px;">
+        ${this.warningMinutes}分間操作がないとログアウトします
+      </div>
+      <button onclick="SessionManager.extendSession()"
+        style="background: white; color: var(--warning-color); border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: 600;">
+        セッションを延長
+      </button>
+    `;
+    document.body.appendChild(warning);
+  },
+
+  hideWarning() {
+    this.warningShown = false;
+    const warning = document.getElementById('sessionWarning');
+    if (warning) warning.remove();
+  },
+
+  extendSession() {
+    this.onActivity();
+    showToast('セッションを延長しました', 'success');
+  },
+
+  onTimeout() {
+    this.hideWarning();
+    showToast('セッションがタイムアウトしました。再度ログインしてください。', 'warning');
+    setTimeout(() => signOut(), 2000);
+  },
+
+  stop() {
+    if (this.timeoutId) clearTimeout(this.timeoutId);
+    if (this.warningId) clearTimeout(this.warningId);
+    this.hideWarning();
+  }
+};
 
 // ============================================
 // ドラッグ&ドロップ並び替え
@@ -9833,7 +12725,183 @@ function formatDate(dateStr) {
 // HTMLエスケープ
 function escapeHtml(str) {
   if (!str) return '';
-  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+// ============================================
+// バリデーション関数
+// ============================================
+const Validators = {
+  // メールアドレス検証
+  isValidEmail(email) {
+    if (!email) return false;
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  },
+
+  // パスワード検証（8文字以上、英数字混在）
+  isValidPassword(password) {
+    if (!password || password.length < 8) return false;
+    return /^(?=.*[a-zA-Z])(?=.*\d).{8,}$/.test(password);
+  },
+
+  // 電話番号検証
+  isValidPhone(phone) {
+    if (!phone) return true; // 任意フィールド
+    return /^[\d\-\+\(\)\s]{10,}$/.test(phone);
+  },
+
+  // 日付が過去でないかチェック
+  isNotPastDate(dateStr) {
+    if (!dateStr) return true;
+    const inputDate = new Date(dateStr);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return inputDate >= today;
+  },
+
+  // 日付が有効かチェック
+  isValidDate(dateStr) {
+    if (!dateStr) return true;
+    const date = new Date(dateStr);
+    return !isNaN(date.getTime());
+  },
+
+  // 必須フィールドチェック
+  isRequired(value) {
+    if (value === null || value === undefined) return false;
+    if (typeof value === 'string') return value.trim().length > 0;
+    return true;
+  },
+
+  // 文字数制限チェック
+  maxLength(value, max) {
+    if (!value) return true;
+    return String(value).length <= max;
+  },
+
+  // 数値範囲チェック
+  inRange(value, min, max) {
+    const num = Number(value);
+    if (isNaN(num)) return false;
+    return num >= min && num <= max;
+  }
+};
+
+// フォームバリデーション結果
+function validateForm(rules) {
+  const errors = [];
+  for (const [fieldName, validations] of Object.entries(rules)) {
+    for (const { validate, message, value } of validations) {
+      if (!validate(value)) {
+        errors.push({ field: fieldName, message });
+      }
+    }
+  }
+  return errors;
+}
+
+// ============================================
+// エラーハンドリング
+// ============================================
+const ErrorHandler = {
+  // エラーメッセージのマッピング
+  messages: {
+    'Invalid login credentials': 'メールアドレスまたはパスワードが正しくありません',
+    'Email not confirmed': 'メールアドレスの確認が完了していません',
+    'User already registered': 'このメールアドレスは既に登録されています',
+    'Password should be at least': 'パスワードは8文字以上で設定してください',
+    'Network error': 'ネットワークエラーが発生しました。接続を確認してください',
+    'timeout': 'タイムアウトしました。再度お試しください',
+    'duplicate key': 'このデータは既に登録されています',
+    'foreign key constraint': '関連するデータが存在するため削除できません',
+    'permission denied': 'この操作を行う権限がありません',
+  },
+
+  // エラーメッセージを変換
+  getUserMessage(error) {
+    if (!error) return '予期せぬエラーが発生しました';
+
+    const errorMsg = error.message || String(error);
+
+    // マッピングから検索
+    for (const [key, userMsg] of Object.entries(this.messages)) {
+      if (errorMsg.toLowerCase().includes(key.toLowerCase())) {
+        return userMsg;
+      }
+    }
+
+    // Supabaseエラーコード対応
+    if (error.code === 'PGRST116') return 'データが見つかりません';
+    if (error.code === '23505') return 'このデータは既に存在します';
+    if (error.code === '23503') return '関連するデータが存在しません';
+    if (error.code === '42501') return 'この操作を行う権限がありません';
+
+    // デフォルトメッセージ
+    return 'エラーが発生しました。時間をおいて再度お試しください';
+  },
+
+  // エラーをログ＆通知
+  handle(error, context = '') {
+    console.error(`❌ エラー [${context}]:`, error);
+
+    const userMessage = this.getUserMessage(error);
+    showToast(userMessage, 'error');
+
+    // 本番環境ではエラーログを送信（将来実装）
+    // this.sendErrorLog(error, context);
+  }
+};
+
+// ============================================
+// ローディング表示
+// ============================================
+function showSkeletonLoading(containerId, type = 'card') {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  const skeletons = {
+    card: `
+      <div class="skeleton-card animate-pulse">
+        <div class="skeleton-line" style="width: 60%; height: 20px; margin-bottom: 12px;"></div>
+        <div class="skeleton-line" style="width: 80%; height: 14px; margin-bottom: 8px;"></div>
+        <div class="skeleton-line" style="width: 40%; height: 14px;"></div>
+      </div>
+    `,
+    list: `
+      <div class="skeleton-list animate-pulse">
+        ${Array(5).fill().map(() => `
+          <div class="skeleton-item" style="display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border-color);">
+            <div class="skeleton-circle" style="width: 40px; height: 40px; border-radius: 50%;"></div>
+            <div style="flex: 1;">
+              <div class="skeleton-line" style="width: 50%; height: 16px; margin-bottom: 8px;"></div>
+              <div class="skeleton-line" style="width: 30%; height: 12px;"></div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `,
+    table: `
+      <div class="skeleton-table animate-pulse">
+        ${Array(5).fill().map(() => `
+          <div style="display: flex; gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--border-color);">
+            <div class="skeleton-line" style="width: 20%; height: 14px;"></div>
+            <div class="skeleton-line" style="width: 30%; height: 14px;"></div>
+            <div class="skeleton-line" style="width: 25%; height: 14px;"></div>
+            <div class="skeleton-line" style="width: 15%; height: 14px;"></div>
+          </div>
+        `).join('')}
+      </div>
+    `
+  };
+
+  container.innerHTML = skeletons[type] || skeletons.card;
+}
+
+function hideSkeletonLoading(containerId) {
+  const container = document.getElementById(containerId);
+  if (container) {
+    container.innerHTML = '';
+  }
 }
 
 // ============================================
