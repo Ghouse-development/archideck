@@ -8687,10 +8687,33 @@ async function updateTaskState(projectId, taskKey, state) {
   if (!progressData[taskKey]) progressData[taskKey] = {};
   progressData[taskKey].state = state;
 
+  // 申請Goが完了済みの場合、条件を再チェック
+  let applicationGoCleared = false;
+  if (progressData['application']?.completed) {
+    // 一時的にprogressを更新して条件チェック
+    const tempProject = { ...project, progress: progressData };
+    if (!canPressApplicationGo(tempProject)) {
+      // 条件から外れたので申請Goをクリア
+      progressData['application'].completed = false;
+      progressData['application'].date = null;
+      applicationGoCleared = true;
+    }
+  }
+
   showStatus('保存中...', 'saving');
+
+  // 申請Goがクリアされた場合、is_archivedもfalseに戻す
+  const updateData = {
+    progress: progressData,
+    updated_at: new Date().toISOString()
+  };
+  if (applicationGoCleared) {
+    updateData.is_archived = false;
+  }
+
   const { error } = await supabase
     .from('projects')
-    .update({ progress: progressData, updated_at: new Date().toISOString() })
+    .update(updateData)
     .eq('id', projectId);
 
   if (error) {
@@ -8711,6 +8734,12 @@ async function updateTaskState(projectId, taskKey, state) {
 
   project.progress = progressData;
   project.updated_at = new Date().toISOString();
+  if (applicationGoCleared) {
+    project.is_archived = false;
+    renderProjects();
+    renderSidebar();
+    showToast('申請Go条件から外れたため、完了状態を解除しました', 'warning');
+  }
   showStatus('保存済み', 'saved');
 }
 
