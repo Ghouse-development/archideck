@@ -13,7 +13,7 @@
 <title>ArchiDeck | Gハウス 設計業務管理システム</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🏠</text></svg>">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%232563EB' width='100' height='100' rx='20'/><text x='50' y='68' font-size='50' text-anchor='middle' fill='white'>A</text></svg>">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.87.1/dist/umd/supabase.min.js" integrity="sha256-irgXd6FipXeK55mhaPb0+jDrk1XQ1PbQHZakU5bzRRo=" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.87.1/dist/umd/supabase.min.js" integrity="sha256-mgB0KFXEH7op01hbCXulq3TZjSqvaCMD35XeKkoTqL8=" crossorigin="anonymous"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -5363,6 +5363,9 @@ function updateUserDisplay(displayName) {
   if (userAvatarEl) userAvatarEl.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=4A90E2&color=fff&size=32`;
 }
 
+// デモモードフラグ
+let isDemoMode = false;
+
 // デモモード（パスワード無しでログイン）
 async function enterDemoMode() {
   log('🎭 デモモードで入場...');
@@ -5371,9 +5374,6 @@ async function enterDemoMode() {
   // 管理者モードで直接メイン画面へ
   await selectAccountType('admin');
 }
-
-// デモモードフラグ
-let isDemoMode = false;
 
 // パスワード再設定UI表示
 function showForgotPassword() {
