@@ -146,6 +146,202 @@ body, .header, .sidebar, .modal-content, .card, .project-card, .btn {
   transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
+/* ダークモード追加スタイル */
+[data-theme="dark"] .sidebar {
+  background: var(--bg-secondary);
+}
+
+[data-theme="dark"] .sidebar-item,
+[data-theme="dark"] .sidebar-section-title {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .sidebar-item:hover {
+  background: var(--bg-tertiary);
+}
+
+[data-theme="dark"] .input,
+[data-theme="dark"] .select,
+[data-theme="dark"] .form-input,
+[data-theme="dark"] input[type="text"],
+[data-theme="dark"] input[type="email"],
+[data-theme="dark"] input[type="password"],
+[data-theme="dark"] input[type="date"],
+[data-theme="dark"] input[type="number"],
+[data-theme="dark"] select,
+[data-theme="dark"] textarea {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .input::placeholder,
+[data-theme="dark"] .form-input::placeholder,
+[data-theme="dark"] textarea::placeholder {
+  color: var(--text-muted);
+}
+
+[data-theme="dark"] select option {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .task-state-select {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .task-item {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .task-label {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .card-section-header {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .card-section-content {
+  background: var(--bg-secondary);
+}
+
+[data-theme="dark"] .table {
+  background: var(--bg-primary);
+}
+
+[data-theme="dark"] .table th {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .table td {
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .table tr:hover {
+  background: var(--bg-secondary);
+}
+
+[data-theme="dark"] .modal-content {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .modal-header,
+[data-theme="dark"] .modal-footer {
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .badge {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .progress-bar {
+  background: var(--bg-tertiary);
+}
+
+[data-theme="dark"] .designer-tab {
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .designer-tab:hover {
+  background: var(--bg-hover);
+}
+
+[data-theme="dark"] .designer-tab.active {
+  background: var(--primary-color);
+  color: white;
+}
+
+/* 分析画面ダークモード */
+[data-theme="dark"] .analytics-section {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .section-title {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .kpi-card {
+  background: var(--bg-tertiary);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .kpi-value,
+[data-theme="dark"] .kpi-label {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .prediction-card {
+  background: var(--bg-tertiary);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .prediction-header,
+[data-theme="dark"] .prediction-content {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .gantt-container {
+  background: var(--bg-tertiary);
+}
+
+[data-theme="dark"] .report-preview {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+/* data-table スタイル（分析画面用） */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.data-table th,
+.data-table td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.data-table th {
+  background: var(--bg-secondary);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.data-table td {
+  color: var(--text-primary);
+}
+
+.data-table tr:hover td {
+  background: var(--bg-hover);
+}
+
+[data-theme="dark"] .data-table th {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .data-table td {
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .data-table tr:hover td {
+  background: var(--bg-hover);
+}
+
 body {
   font-family: 'Inter', 'Noto Sans JP', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   background: var(--bg-secondary);
@@ -12335,26 +12531,41 @@ async function addProjectTask(projectId, taskName, dueDate) {
   }
 
   const project = projects.find(p => p.id === projectId);
-  const { error } = await supabase
-    .from('project_tasks')
-    .insert({
-      project_id: projectId,
-      task_name: taskName.trim(),
-      due_date: dueDate || null,
-      assigned_to: project?.assigned_to || ''
-    });
 
-  if (error) {
-    showToast('タスク追加に失敗しました', 'error');
-    return;
+  try {
+    const { data, error } = await supabase
+      .from('project_tasks')
+      .insert({
+        project_id: projectId,
+        task_name: taskName.trim(),
+        due_date: dueDate || null,
+        assigned_to: project?.assigned_to || '',
+        is_completed: false
+      })
+      .select();
+
+    if (error) {
+      console.error('タスク追加エラー:', error);
+      if (error.code === '42501') {
+        showToast('タスク追加の権限がありません。管理者に連絡してください。', 'error');
+      } else if (error.code === '42P01') {
+        showToast('タスクテーブルが存在しません。データベースを確認してください。', 'error');
+      } else {
+        showToast(`タスク追加に失敗しました: ${error.message}`, 'error');
+      }
+      return;
+    }
+
+    // 入力欄をクリア
+    document.getElementById(`newTaskName_${projectId}`).value = '';
+    document.getElementById(`newTaskDue_${projectId}`).value = '';
+
+    showToast('タスクを追加しました', 'success');
+    await loadProjectTasksList(projectId);
+  } catch (err) {
+    console.error('タスク追加例外:', err);
+    showToast('タスク追加中にエラーが発生しました', 'error');
   }
-
-  // 入力欄をクリア
-  document.getElementById(`newTaskName_${projectId}`).value = '';
-  document.getElementById(`newTaskDue_${projectId}`).value = '';
-
-  showToast('タスクを追加しました', 'success');
-  await loadProjectTasksList(projectId);
 }
 
 // 申請GO条件チェック
