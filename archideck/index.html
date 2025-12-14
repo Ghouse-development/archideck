@@ -7133,7 +7133,7 @@ function populateProductDropdown() {
 
   const currentValue = select.value;
   select.innerHTML = '<option value="">選択してください</option>' +
-    products.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
+    products.map(p => `<option value="${escapeHtml(p.name)}">${escapeHtml(p.name)}</option>`).join('');
 
   if (currentValue) select.value = currentValue;
 }
@@ -7859,7 +7859,7 @@ function populateVendorCategoryDropdown() {
   if (!dropdown) return;
 
   dropdown.innerHTML = '<option value="">カテゴリを選択...</option>' +
-    vendorCategories.map(cat => `<option value="${cat.id}">${cat.name}</option>`).join('');
+    vendorCategories.map(cat => `<option value="${escapeHtml(cat.id)}">${escapeHtml(cat.name)}</option>`).join('');
 }
 
 function showStatus(message, type) {
@@ -8028,199 +8028,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ============================================
-// メール作成（新システム）
-// ============================================
-function openEmailFromTask(projectId, taskKey) {
-  const project = projects.find(p => p.id === projectId);
-  if (!project) return;
-
-  const taskDef = tasksV2.find(t => t.task_key === taskKey);
-  if (!taskDef) {
-    showToast('タスク定義が見つかりません', 'error');
-    return;
-  }
-
-  // このタスクに紐づく業者を取得
-  const mappings = taskVendorMappings.filter(m => m.task_id === taskDef.id);
-  const linkedVendors = mappings.map(m => vendorsV2.find(v => v.id === m.vendor_id)).filter(v => v);
-
-  if (linkedVendors.length === 0) {
-    showToast('このタスクには業者が紐づいていません', 'error');
-    return;
-  }
-
-  if (linkedVendors.length === 1) {
-    // 業者が1つの場合は直接メール作成画面を表示
-    openEmailComposer(project, taskDef, linkedVendors[0]);
-  } else {
-    // 業者が複数の場合は選択画面を表示
-    showVendorSelection(project, taskDef, linkedVendors);
-  }
-}
-
-// メール変数置換の共通関数
-function replaceEmailVariables(template, variables) {
-  if (!template) return '';
-  return Object.keys(variables).reduce((result, key) => {
-    return result.replace(new RegExp(`\\{${key}\\}`, 'g'), variables[key]);
-  }, template);
-}
-
-function showVendorSelection(project, taskDef, vendors) {
-  const modal = document.getElementById('emailModal');
-  const content = document.getElementById('emailComposerContent');
-
-  content.innerHTML = `
-    <h3 style="margin-bottom: 16px;">業者を選択してください</h3>
-    <div style="display: flex; flex-direction: column; gap: 12px;">
-      ${vendors.map(vendor => `
-        <button class="template-select-btn" onclick="openEmailComposer(
-          projects.find(p => p.id === '${project.id}'),
-          tasksV2.find(t => t.id === '${taskDef.id}'),
-          vendorsV2.find(v => v.id === '${vendor.id}')
-        )">
-          <div style="font-weight: 600; margin-bottom: 4px;">${escapeHtml(vendor.company)}</div>
-          <div style="font-size: 13px; color: var(--text-secondary);">${escapeHtml(vendor.contact || '')}</div>
-        </button>
-      `).join('')}
-    </div>
-  `;
-
-  modal.style.display = 'flex';
-}
-
-function openEmailComposer(project, taskDef, vendor) {
-  const modal = document.getElementById('emailModal');
-  const content = document.getElementById('emailComposerContent');
-
-  // 現在の担当者情報を取得
-  const assignee = designers.find(d => d.name === project.assigned_to);
-  const staffName = assignee?.name || project.assigned_to;
-
-  // 期日を計算（今日+1週間）
-  const dueDate = new Date();
-  dueDate.setDate(dueDate.getDate() + 7);
-  const dueDateStr = `${dueDate.getMonth() + 1}/${dueDate.getDate()}`;
-
-  // 変数置換用のデータ
-  const variables = {
-    company: vendor.company,
-    contact: vendor.contact || '',
-    customerName: project.customer,
-    dueDate: dueDateStr,
-    staffName: staffName,
-    specialContent: vendor.default_special_content || ''
-  };
-
-  // 件名と本文の置換（共通関数を使用）
-  const subject = replaceEmailVariables(vendor.subject_format, variables);
-  const body = replaceEmailVariables(vendor.template_text, variables);
-
-  // メール作成UI
-  content.innerHTML = `
-    <div style="display: flex; flex-direction: column; gap: 20px;">
-      <div>
-        <div style="font-weight: 600; margin-bottom: 8px; font-size: 14px;">業者</div>
-        <div style="padding: 12px; background: var(--bg-secondary); border-radius: var(--radius-md);">
-          <div style="font-weight: 600;">${escapeHtml(vendor.company)}</div>
-          <div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">${escapeHtml(vendor.contact || '')}</div>
-        </div>
-      </div>
-
-      <div>
-        <label style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 14px;">宛先</label>
-        <input type="email" id="emailTo" class="form-input" value="${escapeHtml(vendor.email || '')}" placeholder="メールアドレス">
-      </div>
-
-      <div>
-        <label style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 14px;">件名</label>
-        <input type="text" id="emailSubject" class="form-input" value="${subject}">
-      </div>
-
-      ${vendor.has_special_content ? `
-        <div>
-          <label style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 14px;">特別コンテンツ</label>
-          <textarea id="emailSpecialContent" class="form-textarea" rows="3">${vendor.default_special_content || ''}</textarea>
-          <div class="form-hint">本文中の {specialContent} に置換されます</div>
-        </div>
-      ` : ''}
-
-      <div>
-        <label style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 14px;">期日</label>
-        <input type="text" id="emailDueDate" class="form-input" value="${dueDateStr}">
-      </div>
-
-      <div>
-        <label style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 14px;">本文プレビュー</label>
-        <textarea id="emailBody" class="form-textarea" rows="15">${body}</textarea>
-      </div>
-
-      <div style="display: flex; gap: 12px; justify-content: flex-end;">
-        <button class="btn btn-ghost" onclick="closeEmailModal()">キャンセル</button>
-        <button class="btn btn-primary" onclick="copyEmailToClipboard()">📋 クリップボードにコピー</button>
-      </div>
-    </div>
-  `;
-
-  // 特別コンテンツや期日の変更時に本文を更新
-  // イベントハンドラを保存して後で削除できるようにする
-  const updateHandler = () => updateEmailBody(vendor, variables);
-
-  if (vendor.has_special_content) {
-    const specialInput = document.getElementById('emailSpecialContent');
-    specialInput.addEventListener('input', updateHandler);
-    specialInput._emailHandler = updateHandler;
-  }
-
-  const dueDateInput = document.getElementById('emailDueDate');
-  dueDateInput.addEventListener('input', updateHandler);
-  dueDateInput._emailHandler = updateHandler;
-
-  modal.style.display = 'flex';
-}
-
-function updateEmailBody(vendor, baseVariables) {
-  const specialContent = document.getElementById('emailSpecialContent')?.value || baseVariables.specialContent;
-  const dueDate = document.getElementById('emailDueDate').value;
-
-  const variables = { ...baseVariables, specialContent, dueDate };
-  const body = replaceEmailVariables(vendor.template_text, variables);
-
-  document.getElementById('emailBody').value = body;
-}
-
-function copyEmailToClipboard() {
-  const to = document.getElementById('emailTo').value;
-  const subject = document.getElementById('emailSubject').value;
-  const body = document.getElementById('emailBody').value;
-
-  const emailText = `To: ${to}\nSubject: ${subject}\n\n${body}`;
-
-  navigator.clipboard.writeText(emailText).then(() => {
-    showToast('クリップボードにコピーしました', 'success');
-  }).catch(err => {
-    showToast('コピーに失敗しました', 'error');
-  });
-}
-
-function closeEmailModal() {
-  // イベントリスナーを削除（メモリリーク防止）
-  const specialInput = document.getElementById('emailSpecialContent');
-  if (specialInput && specialInput._emailHandler) {
-    specialInput.removeEventListener('input', specialInput._emailHandler);
-    delete specialInput._emailHandler;
-  }
-
-  const dueDateInput = document.getElementById('emailDueDate');
-  if (dueDateInput && dueDateInput._emailHandler) {
-    dueDateInput.removeEventListener('input', dueDateInput._emailHandler);
-    delete dueDateInput._emailHandler;
-  }
-
-  document.getElementById('emailModal').style.display = 'none';
-}
-
-// ============================================
 // 案件管理
 // ============================================
 function renderDesignerTabs() {
@@ -8361,12 +8168,18 @@ function renderProjects() {
   emptyState.style.display = 'none';
   container.innerHTML = filtered.map(project => renderProjectCard(project)).join('');
 
-  // カード描画後にタスクと議事録を読み込む（DOM描画完了を待つ）
-  setTimeout(() => {
-    filtered.forEach(project => {
-      loadProjectTasksList(project.id);
-      loadMinutesList(project.id);
-    });
+  // カード描画後にタスクと議事録を読み込む（バッチ処理でN+1問題を回避）
+  setTimeout(async () => {
+    const BATCH_SIZE = 5; // 同時に5件まで
+    for (let i = 0; i < filtered.length; i += BATCH_SIZE) {
+      const batch = filtered.slice(i, i + BATCH_SIZE);
+      await Promise.all(
+        batch.flatMap(project => [
+          loadProjectTasksList(project.id),
+          loadMinutesList(project.id)
+        ])
+      );
+    }
   }, 100);
 }
 
@@ -8756,7 +8569,7 @@ function openProjectModal(projectId = null) {
 
   if (assignedToSelect) {
     assignedToSelect.innerHTML = '<option value="">選択してください</option>' +
-      sekkeiDesigners.map(d => `<option value="${d.name}">${d.name}</option>`).join('');
+      sekkeiDesigners.map(d => `<option value="${escapeHtml(d.name)}">${escapeHtml(d.name)}</option>`).join('');
 
     // 値を設定（innerHTML後に実行）
     if (projectId && project) {
@@ -8781,7 +8594,7 @@ function openProjectModal(projectId = null) {
 
   if (icAssigneeSelect) {
     icAssigneeSelect.innerHTML = '<option value="">未定</option>' +
-      icDesigners.map(d => `<option value="${d.name}">${d.name}</option>`).join('');
+      icDesigners.map(d => `<option value="${escapeHtml(d.name)}">${escapeHtml(d.name)}</option>`).join('');
 
     // 値を設定（innerHTML後に実行）
     if (projectId && project) {
@@ -9878,7 +9691,7 @@ function renderVendors() {
   // フィルターオプションを更新（すべてのテンプレートを表示）
   filterSelect.innerHTML = '<option value="">すべてのテンプレート</option>' +
     emailTemplates.map(t =>
-      `<option value="${t.template_id}">${t.display_name}</option>`
+      `<option value="${escapeHtml(t.template_id)}">${escapeHtml(t.display_name)}</option>`
     ).join('');
   if (templateFilter) filterSelect.value = templateFilter;
 
@@ -9936,7 +9749,7 @@ function openVendorModal(vendorId = null) {
   // テンプレートセレクトを更新
   const templateSelect = document.getElementById('vendorTemplateId');
   templateSelect.innerHTML = '<option value="">選択してください</option>' +
-    emailTemplates.map(t => `<option value="${t.template_id}">${t.display_name}</option>`).join('');
+    emailTemplates.map(t => `<option value="${escapeHtml(t.template_id)}">${escapeHtml(t.display_name)}</option>`).join('');
 
   if (vendorId) {
     const vendor = vendors.find(v => v.id === vendorId);
@@ -10108,156 +9921,6 @@ async function saveMappings() {
   renderProjects();
   showStatus('保存済み', 'saved');
   showToast('タスク設定を保存しました', 'success');
-}
-
-// ============================================
-function openEmailFromTask(projectId, taskKey) {
-  const project = projects.find(p => p.id === projectId);
-  if (!project) return;
-
-  const templateId = taskMappings[taskKey];
-  if (!templateId) {
-    showToast('このタスクにメールテンプレートが設定されていません。\n「タスク設定」タブから設定してください。', 'error');
-    return;
-  }
-
-  const template = emailTemplates.find(t => t.template_id === templateId);
-  if (!template) {
-    showToast('テンプレートが見つかりません', 'error');
-    return;
-  }
-
-  const taskDate = project.progress?.[taskKey]?.date;
-  const dueDate = taskDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-
-  const modal = document.getElementById('emailModal');
-  const content = document.getElementById('emailComposerContent');
-
-  // テンプレートの業者リストを取得
-  const templateVendors = vendors.filter(v => v.template_id === templateId);
-  const hasVendorOptions = template.has_sub_options && templateVendors.length > 0;
-
-  // 業者選択ドロップダウン
-  let vendorSelectHtml = '';
-  if (hasVendorOptions) {
-    vendorSelectHtml = `
-      <div class="form-group">
-        <label class="form-label">業者選択</label>
-        <select class="form-select" id="emailVendorSelect" onchange="updateVendorInfo('${templateId}')">
-          <option value="">業者を選択してください</option>
-          ${templateVendors.map(v => `<option value="${v.id}">${v.company} - ${v.contact}</option>`).join('')}
-        </select>
-      </div>
-    `;
-  }
-
-  content.innerHTML = `
-    <div class="form-group">
-      <label class="form-label">担当者名（署名用）</label>
-      <input type="text" class="form-input" id="emailStaffName" value="${project.assigned_to}">
-    </div>
-    <div class="form-group">
-      <label class="form-label">期日</label>
-      <input type="date" class="form-input" id="emailDueDate" value="${dueDate}">
-    </div>
-    ${vendorSelectHtml}
-    <div class="form-group">
-      <label class="form-label">内容詳細（任意）</label>
-      <textarea class="form-textarea" id="emailSpecialContent" placeholder="必要に応じて詳細を入力"></textarea>
-    </div>
-    <button class="btn btn-primary" onclick="generateEmail('${project.id}', '${taskKey}')">メールを生成</button>
-    <div id="generatedEmailSection" style="display: none; margin-top: 32px;">
-      <h3 style="margin-bottom: 12px; font-size: 18px; font-weight: 600;">📧 件名</h3>
-      <div id="emailSubject" class="email-output"></div>
-      <button class="btn btn-secondary btn-small" onclick="copyText('emailSubject')">件名をコピー</button>
-
-      <h3 style="margin: 24px 0 12px; font-size: 18px; font-weight: 600;">📮 宛先</h3>
-      <div id="emailAddress" class="email-output"></div>
-      <button class="btn btn-secondary btn-small" onclick="copyText('emailAddress')">宛先をコピー</button>
-
-      <h3 style="margin: 24px 0 12px; font-size: 18px; font-weight: 600;">📨 本文</h3>
-      <div id="emailBody" class="email-output"></div>
-      <button class="btn btn-secondary btn-small" onclick="copyText('emailBody')">本文をコピー</button>
-    </div>
-  `;
-
-  modal.classList.add('show');
-}
-
-// 業者選択時に情報を更新
-function updateVendorInfo(templateId) {
-  const select = document.getElementById('emailVendorSelect');
-  if (!select) return;
-
-  // 選択されていない場合は何もしない
-  if (!select.value) return;
-
-  // 選択された業者を取得
-  const selectedVendor = vendors.find(v => v.id === select.value);
-  if (selectedVendor) {
-    // 特別なフィードバックは不要（generateEmail時に使用）
-    log('業者選択:', selectedVendor.company);
-  }
-}
-
-function generateEmail(projectId, taskKey) {
-  const project = projects.find(p => p.id === projectId);
-  const templateId = taskMappings[taskKey];
-  const template = emailTemplates.find(t => t.template_id === templateId);
-
-  const staffName = document.getElementById('emailStaffName').value.trim();
-  const dueDate = document.getElementById('emailDueDate').value;
-  const specialContent = document.getElementById('emailSpecialContent').value.trim();
-
-  // 業者選択がある場合は業者情報を使用
-  let company = template.company;
-  let contact = template.contact || 'ご担当者様';
-  let email = template.email;
-
-  const vendorSelect = document.getElementById('emailVendorSelect');
-  if (vendorSelect && vendorSelect.value) {
-    const selectedVendor = vendors.find(v => v.id === vendorSelect.value);
-    if (selectedVendor) {
-      company = selectedVendor.company;
-      contact = selectedVendor.contact;
-      email = selectedVendor.email;
-    }
-  }
-
-  const replacements = {
-    '{customerName}': project.customer,
-    '{dueDate}': dueDate,
-    '{staffName}': staffName,
-    '{company}': company,
-    '{contact}': contact,
-    '{specialContent}': specialContent || template.default_special_content || ''
-  };
-
-  let subject = template.subject_format;
-  let body = template.template_text;
-
-  Object.keys(replacements).forEach(key => {
-    const regex = new RegExp(key.replace(/[{}]/g, '\\$&'), 'g');
-    subject = subject.replace(regex, replacements[key]);
-    body = body.replace(regex, replacements[key]);
-  });
-
-  document.getElementById('emailSubject').textContent = subject;
-  document.getElementById('emailAddress').textContent = email || 'メールアドレスが設定されていません';
-  document.getElementById('emailBody').textContent = body;
-  document.getElementById('generatedEmailSection').style.display = 'block';
-}
-
-function copyText(elementId) {
-  const element = document.getElementById(elementId);
-  const text = element.textContent;
-
-  navigator.clipboard.writeText(text).then(() => {
-    showToast('コピーしました！', 'success');
-  }).catch(err => {
-    logError('コピーに失敗:', err);
-    showToast('コピーに失敗しました', 'error');
-  });
 }
 
 // ============================================
@@ -10589,7 +10252,7 @@ function createEmailComposer(project, template, staffName, taskKey) {
         <label class="form-label">業者選択:</label>
         <select class="form-select" id="modalVendorSelect" onchange="updateModalEmail()">
           <option value="">選択してください</option>
-          ${templateVendors.map(v => `<option value="${v.vendor_id}">${v.company}</option>`).join('')}
+          ${templateVendors.map(v => `<option value="${escapeHtml(v.vendor_id)}">${escapeHtml(v.company)}</option>`).join('')}
         </select>
       </div>
     `;
@@ -10783,7 +10446,7 @@ function updateStandaloneEmail() {
       const templateVendors = vendors.filter(v => v.template_id === templateId);
       vendorSelect.innerHTML = '<option value="">業者を選択してください</option>' +
         templateVendors.map(v =>
-          `<option value="${v.vendor_id}">${v.company}</option>`
+          `<option value="${escapeHtml(v.vendor_id)}">${escapeHtml(v.company)}</option>`
         ).join('');
     }
 
@@ -10869,7 +10532,7 @@ function populateStandaloneTemplateSelect() {
 
   select.innerHTML = '<option value="">テンプレートを選択してください</option>' +
     filtered.map(t =>
-      `<option value="${t.template_id}">${t.display_name}</option>`
+      `<option value="${escapeHtml(t.template_id)}">${escapeHtml(t.display_name)}</option>`
     ).join('');
 }
 
@@ -11562,7 +11225,7 @@ const BatchOperations = {
 
     const designerOptions = designers
       .filter(d => d.category === '設計')
-      .map(d => `<option value="${d.name}">${d.name}</option>`)
+      .map(d => `<option value="${escapeHtml(d.name)}">${escapeHtml(d.name)}</option>`)
       .join('');
 
     modal.innerHTML = `
@@ -14936,7 +14599,7 @@ function populateExteriorAssigneeDropdown(projectId = null, project = null) {
 
   if (exteriorAssigneeSelect) {
     exteriorAssigneeSelect.innerHTML = '<option value="">未定</option>' +
-      exteriorDesigners.map(d => `<option value="${d.name}">${d.name}</option>`).join('');
+      exteriorDesigners.map(d => `<option value="${escapeHtml(d.name)}">${escapeHtml(d.name)}</option>`).join('');
 
     if (projectId && project) {
       exteriorAssigneeSelect.value = project.exterior_assignee || '';
