@@ -8440,8 +8440,12 @@ function renderProjectCard(project) {
           <div class="application-go-arrow">→</div>
         </div>`;
       } else {
-        // 条件が揃っていない場合：無効表示
-        return `<div class="application-go-container application-go-disabled" title="太陽光:保存済、給排水:保存済、換気:保存済、サッシ:保存済 が必要">
+        // 条件が揃っていない場合：無効表示（動的にツールチップ生成）
+        const requiredTasks = getApplicationGoRequiredTasks();
+        const tooltip = requiredTasks.length > 0
+          ? requiredTasks.map(r => `${r.task_name}:${r.finalState}`).join('、') + ' が必要'
+          : '太陽光:保存済、給排水:保存済、換気:保存済、サッシ:保存済 が必要';
+        return `<div class="application-go-container application-go-disabled" title="${tooltip}">
           <div class="application-go-icon">🔒</div>
           <div class="application-go-text">${taskDef.task_name}</div>
           <div class="application-go-status">条件未達</div>
@@ -12505,17 +12509,67 @@ async function addProjectTask(projectId, taskName, dueDate) {
   }
 }
 
-// 申請GO条件チェック
+// 主要タスクのステータスを動的に取得（レポート用）
+function getMainTaskStatuses(progressData) {
+  const statuses = [];
+  const mainKeywords = ['太陽光', '給排水', '換気', 'サッシ', '構造', 'エボルツ', 'evoltz'];
+
+  tasksV2.forEach(task => {
+    if (task.task_name && task.has_state) {
+      const isMain = mainKeywords.some(k => task.task_name.includes(k));
+      if (isMain && progressData[task.task_key]?.state) {
+        // タスク名を短縮（「依頼」を除去）
+        const shortName = task.task_name.replace(/依頼$/, '');
+        statuses.push(`${shortName}:${progressData[task.task_key].state}`);
+      }
+    }
+  });
+
+  return statuses;
+}
+
+// 申請GO条件チェック（動的にタスクを検索）
+function getApplicationGoRequiredTasks() {
+  // タスク名のキーワードで必要なタスクを検索
+  const keywords = ['太陽光', '給排水', '換気', 'サッシ'];
+  const requiredTasks = [];
+
+  keywords.forEach(keyword => {
+    const task = tasksV2.find(t => t.task_name && t.task_name.includes(keyword) && t.has_state);
+    if (task) {
+      // 最終状態（state_optionsの最後の値）を取得
+      const finalState = Array.isArray(task.state_options) && task.state_options.length > 0
+        ? task.state_options[task.state_options.length - 1]
+        : '保存済';
+      requiredTasks.push({
+        task_key: task.task_key,
+        task_name: task.task_name,
+        finalState: finalState
+      });
+    }
+  });
+
+  return requiredTasks;
+}
+
 function canPressApplicationGo(project) {
   const progressData = project.progress || {};
+  const requiredTasks = getApplicationGoRequiredTasks();
 
-  // 条件: 太陽光依頼・給排水図依頼・換気図依頼・サッシ依頼が全て「保存済」
-  const solarOk = progressData['solar']?.state === '保存済';
-  const plumbingOk = progressData['plumbing']?.state === '保存済';
-  const ventilationOk = progressData['ventilation']?.state === '保存済';
-  const sashOk = progressData['sash']?.state === '保存済';
+  // 必要なタスクが見つからない場合は旧ロジックにフォールバック
+  if (requiredTasks.length === 0) {
+    const solarOk = progressData['solar']?.state === '保存済';
+    const plumbingOk = progressData['plumbing']?.state === '保存済';
+    const ventilationOk = progressData['ventilation']?.state === '保存済';
+    const sashOk = progressData['sash']?.state === '保存済';
+    return solarOk && plumbingOk && ventilationOk && sashOk;
+  }
 
-  return solarOk && plumbingOk && ventilationOk && sashOk;
+  // 全ての必要タスクが最終状態かチェック
+  return requiredTasks.every(req => {
+    const currentState = progressData[req.task_key]?.state;
+    return currentState === req.finalState;
+  });
 }
 
 // 申請GO確認モーダル
@@ -12527,14 +12581,26 @@ function confirmApplicationGo(projectId) {
 
   applicationGoProjectId = projectId;
   const progressData = project.progress || {};
+  const requiredTasks = getApplicationGoRequiredTasks();
 
-  // 条件表示
-  const conditions = [
-    { label: '太陽光依頼', ok: progressData['solar']?.state === '保存済', value: progressData['solar']?.state || '-' },
-    { label: '給排水図依頼', ok: progressData['plumbing']?.state === '保存済', value: progressData['plumbing']?.state || '-' },
-    { label: '換気図依頼', ok: progressData['ventilation']?.state === '保存済', value: progressData['ventilation']?.state || '-' },
-    { label: 'サッシ依頼', ok: progressData['sash']?.state === '保存済', value: progressData['sash']?.state || '-' }
-  ];
+  // 条件表示（動的に生成）
+  let conditions;
+  if (requiredTasks.length > 0) {
+    conditions = requiredTasks.map(req => ({
+      label: req.task_name,
+      ok: progressData[req.task_key]?.state === req.finalState,
+      value: progressData[req.task_key]?.state || '-',
+      required: req.finalState
+    }));
+  } else {
+    // フォールバック
+    conditions = [
+      { label: '太陽光依頼', ok: progressData['solar']?.state === '保存済', value: progressData['solar']?.state || '-', required: '保存済' },
+      { label: '給排水図依頼', ok: progressData['plumbing']?.state === '保存済', value: progressData['plumbing']?.state || '-', required: '保存済' },
+      { label: '換気図依頼', ok: progressData['ventilation']?.state === '保存済', value: progressData['ventilation']?.state || '-', required: '保存済' },
+      { label: 'サッシ依頼', ok: progressData['sash']?.state === '保存済', value: progressData['sash']?.state || '-', required: '保存済' }
+    ];
+  }
 
   document.getElementById('applicationGoProjectName').textContent = project.customer;
   document.getElementById('applicationGoConditions').innerHTML = conditions.map(c =>
@@ -13188,13 +13254,8 @@ function generateWeeklyReport() {
         const progress = calculateProgress(p);
         const progressData = p.progress || {};
 
-        // 主要タスクのステータスを取得
-        const statuses = [];
-        if (progressData['solar']?.state) statuses.push(`太陽光:${progressData['solar'].state}`);
-        if (progressData['plumbing']?.state) statuses.push(`給排水:${progressData['plumbing'].state}`);
-        if (progressData['ventilation']?.state) statuses.push(`換気:${progressData['ventilation'].state}`);
-        if (progressData['sash']?.state) statuses.push(`サッシ:${progressData['sash'].state}`);
-
+        // 主要タスクのステータスを取得（動的）
+        const statuses = getMainTaskStatuses(progressData);
         const statusText = statuses.length > 0 ? statuses.join(' / ') : '未着手';
         const wasUpdated = new Date(p.updated_at) >= weekAgo;
 
@@ -13294,14 +13355,8 @@ function generateMonthlyReport() {
         const updatedAt = new Date(p.updated_at);
         const isUpdated = updatedAt >= monthAgo;
 
-        // タスクステータスを収集
-        const statuses = [];
-        if (progressData['solar']?.state) statuses.push(`太陽光:${progressData['solar'].state}`);
-        if (progressData['plumbing']?.state) statuses.push(`給排水:${progressData['plumbing'].state}`);
-        if (progressData['ventilation']?.state) statuses.push(`換気:${progressData['ventilation'].state}`);
-        if (progressData['sash']?.state) statuses.push(`サッシ:${progressData['sash'].state}`);
-        if (progressData['structure']?.state) statuses.push(`構造:${progressData['structure'].state}`);
-        if (progressData['evoltz']?.state) statuses.push(`エボルツ:${progressData['evoltz'].state}`);
+        // タスクステータスを収集（動的）
+        const statuses = getMainTaskStatuses(progressData);
 
         const statusTags = statuses.map(s =>
           `<span class="report-status-tag active">${s}</span>`
