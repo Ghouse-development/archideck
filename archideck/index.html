@@ -43,6 +43,7 @@
   --warning-light: #FEF3C7;
   --success-color: #16A34A;
   --success-light: #DCFCE7;
+  --success-bg: #DCFCE7;
   --info-color: #0891B2;
   --info-light: #CFFAFE;
 
@@ -117,6 +118,7 @@
   --warning-light: #451A03;
   --success-color: #22C55E;
   --success-light: #052E16;
+  --success-bg: #052E16;
   --info-color: #06B6D4;
   --info-light: #083344;
 
@@ -3140,6 +3142,44 @@ input:checked + .toggle-slider:before {
 .report-status-tag.active {
   background: var(--primary);
   color: white;
+}
+
+/* ダークモード対応 - レポート */
+[data-theme="dark"] .report-designer-section {
+  background: #1e293b;
+  border: 1px solid #334155;
+}
+
+[data-theme="dark"] .report-designer-name {
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .report-project-detail {
+  background: #0f172a;
+  border-left-color: #475569;
+}
+
+[data-theme="dark"] .report-project-detail.updated {
+  background: linear-gradient(90deg, rgba(16, 185, 129, 0.15), #0f172a);
+  border-left-color: #10b981;
+}
+
+[data-theme="dark"] .report-project-title .project-name {
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .report-status-tag {
+  background: #334155;
+  color: #e2e8f0;
+}
+
+[data-theme="dark"] .report-status-tag.active {
+  background: #3b82f6;
+  color: white;
+}
+
+[data-theme="dark"] .report-designer-header {
+  border-bottom-color: #475569;
 }
 
 /* ===== ArchiDeck v3.0 新機能スタイル ===== */
@@ -10065,29 +10105,10 @@ async function deleteVendor(vendorId) {
 // ============================================
 function renderMappings() {
   const container = document.getElementById('mappingsGrid');
-  if (!container) return; // 要素が存在しない場合は何もしない
+  if (!container) return;
 
   // 旧システムは使用しないため、空のメッセージを表示
   container.innerHTML = '<div class="empty-state"><div class="empty-icon">⚙️</div><div class="empty-title">タスク-テンプレート紐づけは旧システムです</div><div class="empty-description">新システムでは「✅ タスク管理」から業者を紐づけてください</div></div>';
-  return;
-
-  container.innerHTML = Object.keys({}).map(taskKey => {
-    const templateOptions = emailTemplates.map(t =>
-      `<option value="${t.template_id}" ${taskMappings[taskKey] === t.template_id ? 'selected' : ''}>
-        ${t.display_name} (${t.category})
-      </option>`
-    ).join('');
-
-    return `
-      <div style="display: flex; align-items: center; gap: 16px; padding: 16px; background: var(--bg-secondary); border-radius: var(--radius-md);">
-        <label style="flex: 0 0 200px; font-weight: 600;">${TASK_NAMES[taskKey]}</label>
-        <select class="form-select" id="mapping_${taskKey}" style="flex: 1;">
-          <option value="">メールテンプレートなし</option>
-          ${templateOptions}
-        </select>
-      </div>
-    `;
-  }).join('');
 }
 
 async function saveMappings() {
@@ -12447,30 +12468,49 @@ const SessionManager = {
 // ============================================
 let draggedProject = null;
 
+let dragAndDropInitialized = false;
+
 function enableDragAndDrop() {
-  // プロジェクトカードにドラッグ可能属性を追加
+  const container = document.getElementById('projectsContainer');
+  if (!container || dragAndDropInitialized) return;
+
+  dragAndDropInitialized = true;
+
+  // イベントデリゲーションで親要素に1つだけリスナーを登録（メモリリーク防止）
+  container.addEventListener('dragstart', (e) => {
+    const card = e.target.closest('.project-card');
+    if (card) handleDragStart.call(card, e);
+  });
+
+  container.addEventListener('dragover', (e) => {
+    const card = e.target.closest('.project-card');
+    if (card) handleDragOver.call(card, e);
+  });
+
+  container.addEventListener('drop', (e) => {
+    const card = e.target.closest('.project-card');
+    if (card) handleDrop.call(card, e);
+  });
+
+  container.addEventListener('dragend', (e) => {
+    const card = e.target.closest('.project-card');
+    if (card) handleDragEnd.call(card, e);
+  });
+
+  // カードにdraggable属性を付与（MutationObserverで監視）
   const updateDraggable = () => {
-    const cards = document.querySelectorAll('.project-card');
+    const cards = container.querySelectorAll('.project-card');
     cards.forEach((card, index) => {
       card.setAttribute('draggable', 'true');
       card.dataset.projectIndex = index;
-
-      card.addEventListener('dragstart', handleDragStart);
-      card.addEventListener('dragover', handleDragOver);
-      card.addEventListener('drop', handleDrop);
-      card.addEventListener('dragend', handleDragEnd);
     });
   };
 
-  // 初回とrenderProjects後に実行
   updateDraggable();
 
-  // MutationObserverでDOM変更を監視
+  // DOM変更時にdraggable属性を付与（イベントリスナーは追加しない）
   const observer = new MutationObserver(updateDraggable);
-  const container = document.getElementById('projectsContainer');
-  if (container) {
-    observer.observe(container, { childList: true, subtree: true });
-  }
+  observer.observe(container, { childList: true, subtree: true });
 }
 
 function handleDragStart(e) {
