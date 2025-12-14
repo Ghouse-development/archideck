@@ -6724,23 +6724,25 @@ async function deleteVendorV2(vendorId) {
 
   if (!confirm(`「${vendor.company}」を削除しますか？`)) return;
 
-  showStatus('削除中...', 'saving');
+  await SaveGuard.run(`deleteVendor_${vendorId}`, async () => {
+    showStatus('削除中...', 'saving');
 
-  const { error } = await supabase
-    .from('vendors_v2')
-    .delete()
-    .eq('id', vendorId);
+    const { error } = await supabase
+      .from('vendors_v2')
+      .delete()
+      .eq('id', vendorId);
 
-  if (error) {
-    showStatus('削除失敗', 'error');
-    showToast('削除に失敗しました: ' + error.message, 'error');
-    return;
-  }
+    if (error) {
+      showStatus('削除失敗', 'error');
+      showToast('削除に失敗しました: ' + error.message, 'error');
+      return;
+    }
 
-  showStatus('削除完了', 'success');
-  showToast('業者を削除しました', 'success');
-  await loadVendorsV2();
-  renderVendorsV2();
+    showStatus('削除完了', 'success');
+    showToast('業者を削除しました', 'success');
+    await loadVendorsV2();
+    renderVendorsV2();
+  });
 }
 
 // ============================================
@@ -6877,24 +6879,26 @@ async function deleteCategory(categoryId) {
 
   if (!confirm(`カテゴリ「${category.name}」を削除しますか？`)) return;
 
-  showStatus('削除中...', 'saving');
+  await SaveGuard.run(`deleteCategory_${categoryId}`, async () => {
+    showStatus('削除中...', 'saving');
 
-  const { error } = await supabase
-    .from('vendor_categories')
-    .delete()
-    .eq('id', categoryId);
+    const { error } = await supabase
+      .from('vendor_categories')
+      .delete()
+      .eq('id', categoryId);
 
-  if (error) {
-    showStatus('削除失敗', 'error');
-    showToast('削除に失敗しました: ' + error.message, 'error');
-    return;
-  }
+    if (error) {
+      showStatus('削除失敗', 'error');
+      showToast('削除に失敗しました: ' + error.message, 'error');
+      return;
+    }
 
-  showStatus('削除完了', 'success');
-  showToast('カテゴリを削除しました', 'success');
-  await loadVendorCategories();
-  renderCategoriesList();
-  renderCategoryFilters();
+    showStatus('削除完了', 'success');
+    showToast('カテゴリを削除しました', 'success');
+    await loadVendorCategories();
+    renderCategoriesList();
+    renderCategoryFilters();
+  });
 }
 
 // ドラッグ&ドロップでカテゴリの表示順を変更
@@ -7572,23 +7576,25 @@ async function deleteTask(taskId) {
 
   if (!confirm(`タスク「${task.task_name}」を削除しますか？`)) return;
 
-  showStatus('削除中...', 'saving');
+  await SaveGuard.run(`deleteTask_${taskId}`, async () => {
+    showStatus('削除中...', 'saving');
 
-  const { error } = await supabase
-    .from('tasks')
-    .delete()
-    .eq('id', taskId);
+    const { error } = await supabase
+      .from('tasks')
+      .delete()
+      .eq('id', taskId);
 
-  if (error) {
-    showStatus('削除失敗', 'error');
-    showToast('削除に失敗しました: ' + error.message, 'error');
-    return;
-  }
+    if (error) {
+      showStatus('削除失敗', 'error');
+      showToast('削除に失敗しました: ' + error.message, 'error');
+      return;
+    }
 
-  showStatus('削除完了', 'success');
-  showToast('タスクを削除しました', 'success');
-  await loadTasksV2();
-  renderTasksManagement();
+    showStatus('削除完了', 'success');
+    showToast('タスクを削除しました', 'success');
+    await loadTasksV2();
+    renderTasksManagement();
+  });
 }
 
 // ドラッグ&ドロップでタスクの表示順を変更
@@ -8769,23 +8775,25 @@ function editProject(projectId) {
 async function deleteProject(projectId) {
   if (!confirm('この案件を削除しますか？')) return;
 
-  showStatus('削除中...', 'saving');
-  const { error } = await supabase
-    .from('projects')
-    .delete()
-    .eq('id', projectId);
+  await SaveGuard.run(`deleteProject_${projectId}`, async () => {
+    showStatus('削除中...', 'saving');
+    const { error } = await supabase
+      .from('projects')
+      .delete()
+      .eq('id', projectId);
 
-  if (error) {
-    showStatus('エラー', 'error');
-    showToast('削除に失敗しました: ' + error.message, 'error');
-    return;
-  }
+    if (error) {
+      showStatus('エラー', 'error');
+      showToast('削除に失敗しました: ' + error.message, 'error');
+      return;
+    }
 
-  projects = projects.filter(p => p.id !== projectId);
-  renderDesignerTabs();
-  renderProjects();
-  showStatus('保存済み', 'saved');
-  showToast('案件を削除しました', 'success');
+    projects = projects.filter(p => p.id !== projectId);
+    renderDesignerTabs();
+    renderProjects();
+    showStatus('保存済み', 'saved');
+    showToast('案件を削除しました', 'success');
+  });
 }
 
 async function toggleArchive(projectId, isArchived) {
@@ -8962,24 +8970,26 @@ async function deleteDesigner(designerId) {
 
   if (!confirm(`${designer.name}を削除しますか？`)) return;
 
-  showStatus('削除中...', 'saving');
-  const { error } = await supabase
-    .from('designers')
-    .delete()
-    .eq('id', designerId);
+  await SaveGuard.run(`deleteDesigner_${designerId}`, async () => {
+    showStatus('削除中...', 'saving');
+    const { error } = await supabase
+      .from('designers')
+      .delete()
+      .eq('id', designerId);
 
-  if (error) {
-    showStatus('エラー', 'error');
-    showToast('削除に失敗しました: ' + error.message, 'error');
-    return;
-  }
+    if (error) {
+      showStatus('エラー', 'error');
+      showToast('削除に失敗しました: ' + error.message, 'error');
+      return;
+    }
 
-  designers = designers.filter(d => d.id !== designerId);
-  renderDesignerList();
-  renderDesignerListInline();
-  renderSidebar();
-  showStatus('保存済み', 'saved');
-  showToast('スタッフを削除しました', 'success');
+    designers = designers.filter(d => d.id !== designerId);
+    renderDesignerList();
+    renderDesignerListInline();
+    renderSidebar();
+    showStatus('保存済み', 'saved');
+    showToast('スタッフを削除しました', 'success');
+  });
 }
 
 // インライン版スタッフ管理関数
@@ -14739,33 +14749,36 @@ window.addEventListener('DOMContentLoaded', () => {
   checkAuth();
   // URL直接アクセスの処理はcheckAuth() → init()完了後に自動実行される
 
-  // Service Worker登録（PWA対応）- 強制更新
+  // Service Worker登録（PWA対応）- 順序制御付き
   if ('serviceWorker' in navigator) {
-    // 古いキャッシュを全てクリア
-    caches.keys().then(cacheNames => {
-      cacheNames.forEach(cacheName => {
-        caches.delete(cacheName);
-        log('🗑️ キャッシュをクリア:', cacheName);
-      });
-    });
+    (async () => {
+      try {
+        // 1. 古いキャッシュを全てクリア
+        const cacheNames = await caches.keys();
+        await Promise.all(cacheNames.map(async (cacheName) => {
+          await caches.delete(cacheName);
+          log('🗑️ キャッシュをクリア:', cacheName);
+        }));
 
-    // 既存のService Workerを更新
-    navigator.serviceWorker.getRegistrations().then(registrations => {
-      registrations.forEach(registration => {
-        registration.update();
-        log('🔄 Service Worker更新を確認');
-      });
-    });
+        // 2. 既存のService Workerを更新
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(registrations.map(async (registration) => {
+          await registration.update();
+          log('🔄 Service Worker更新を確認');
+        }));
 
-    navigator.serviceWorker.register('/archideck/sw.js', { updateViaCache: 'none' })
-      .then(reg => {
+        // 3. Service Workerを登録
+        const reg = await navigator.serviceWorker.register('/archideck/sw.js', { updateViaCache: 'none' });
         log('✅ Service Worker registered:', reg.scope);
+
         // 新しいService Workerがあれば即座にアクティベート
         if (reg.waiting) {
           reg.waiting.postMessage({ type: 'SKIP_WAITING' });
         }
-      })
-      .catch(err => log('❌ Service Worker registration failed:', err));
+      } catch (err) {
+        logError('❌ Service Worker処理エラー:', err);
+      }
+    })();
   }
 
   // プッシュ通知の許可リクエスト

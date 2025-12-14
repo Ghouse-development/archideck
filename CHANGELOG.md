@@ -35,6 +35,22 @@
 
 ---
 
+## v4.22.0 (2025-12-14)
+
+### 安定性向上
+
+#### 削除操作の二重実行防止
+- 主要な削除関数にSaveGuard追加（連打対策）
+  - `deleteVendorV2`, `deleteCategory`, `deleteProject`
+  - `deleteDesigner`, `deleteTask`
+
+#### Service Worker処理の順序制御
+- キャッシュクリア → SW更新 → 再登録の順に実行
+- Promise.allで並列処理しつつ各ステップを順次実行
+- エラー時はlogErrorで記録
+
+---
+
 ## v4.21.0 (2025-12-14)
 
 ### 堅牢性向上
