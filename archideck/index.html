@@ -3852,28 +3852,6 @@ textarea:focus-visible {
   </div>
 </div>
 
-<!-- アカウント選択画面 -->
-<div id="accountSelectContainer" class="login-container" style="display: none;">
-  <div class="login-card">
-    <h1>アカウント選択</h1>
-    <p>ご利用の業務を選択してください</p>
-    <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 24px;">
-      <button class="btn btn-primary" style="width: 100%; padding: 16px; font-size: 16px;" onclick="selectAccountType('設計')">
-        📐 設計担当
-      </button>
-      <button class="btn btn-primary" style="width: 100%; padding: 16px; font-size: 16px;" onclick="selectAccountType('IC')">
-        🎨 IC担当
-      </button>
-      <button class="btn btn-primary" style="width: 100%; padding: 16px; font-size: 16px; background: linear-gradient(135deg, #8bc34a, #689f38);" onclick="selectAccountType('外構')">
-        🌳 外構担当
-      </button>
-      <button class="btn btn-secondary" style="width: 100%; padding: 16px; font-size: 16px;" onclick="selectAccountType('admin')">
-        👑 管理者（全権限）
-      </button>
-    </div>
-  </div>
-</div>
-
 <!-- メインアプリケーション -->
 <div id="mainContainer" class="main-container">
   <!-- ヘッダー -->
@@ -5426,10 +5404,10 @@ async function checkAuth() {
     currentUser = session.user;
     document.getElementById('loginContainer').style.display = 'none';
 
-    // admin@ghouse.jpの場合はアカウント選択画面を表示
+    // admin@ghouse.jpの場合は管理者モードで直接メイン画面へ
     if (currentUser.email === 'admin@ghouse.jp') {
-      log('👑 管理者ログイン - アカウント選択画面を表示');
-      document.getElementById('accountSelectContainer').style.display = 'flex';
+      log('👑 管理者ログイン - 全権限モード');
+      await selectAccountType('admin');
       return;
     }
 
@@ -5485,10 +5463,10 @@ supabase.auth.onAuthStateChange(async (event, session) => {
     currentUser = session.user;
     document.getElementById('loginContainer').style.display = 'none';
 
-    // admin@ghouse.jpの場合はアカウント選択画面を表示
+    // admin@ghouse.jpの場合は管理者モードで直接メイン画面へ
     if (currentUser.email === 'admin@ghouse.jp') {
-      log('👑 管理者ログイン - アカウント選択画面を表示');
-      document.getElementById('accountSelectContainer').style.display = 'flex';
+      log('👑 管理者ログイン - 全権限モード');
+      await selectAccountType('admin');
       isAuthProcessing = false;
       return;
     }
@@ -7673,11 +7651,18 @@ function renderSidebar() {
   const icDesigners = designers.filter(d => d.category === 'IC').sort((a, b) => (a.display_order || 999) - (b.display_order || 999));
   const allCount = projects.filter(p => p.status !== 'completed').length;
 
+  // 完了済の件数
+  const archivedCount = projects.filter(p => p.is_archived).length;
+
   let html = `
     <div class="sidebar-section">
       <div class="sidebar-item ${currentDesignerTab === 'ALL' ? 'active' : ''}" onclick="selectDesigner('ALL')">
         <span class="sidebar-item-label">全案件</span>
         <span class="sidebar-item-count">${allCount}</span>
+      </div>
+      <div class="sidebar-item ${currentDesignerTab === 'ARCHIVED' ? 'active' : ''}" onclick="selectDesigner('ARCHIVED')" style="background: ${currentDesignerTab === 'ARCHIVED' ? 'var(--success-bg)' : 'transparent'};">
+        <span class="sidebar-item-label" style="color: var(--success-color);">✓ 完了済</span>
+        <span class="sidebar-item-count" style="background: var(--success-color); color: white;">${archivedCount}</span>
       </div>
     </div>
   `;
@@ -7738,17 +7723,6 @@ function renderSidebar() {
     });
     html += '</div>';
   }
-
-  // 完了済セクション
-  const archivedCount = projects.filter(p => p.is_archived).length;
-  html += `
-    <div class="sidebar-section" style="margin-top: 16px; border-top: 1px solid var(--border-color); padding-top: 16px;">
-      <div class="sidebar-item ${currentDesignerTab === 'ARCHIVED' ? 'active' : ''}" onclick="selectDesigner('ARCHIVED')" style="background: ${currentDesignerTab === 'ARCHIVED' ? 'var(--success-bg)' : 'transparent'};">
-        <span class="sidebar-item-label" style="color: var(--success-color);">✓ 完了済</span>
-        <span class="sidebar-item-count" style="background: var(--success-color); color: white;">${archivedCount}</span>
-      </div>
-    </div>
-  `;
 
   container.innerHTML = html;
 }
