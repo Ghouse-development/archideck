@@ -8552,11 +8552,8 @@ function renderProjectCard(project) {
     if (stateOptions && Array.isArray(stateOptions)) {
       // ステータス色分け: 最後の選択肢=青、空/-=白、その他=黄
       const lastOption = stateOptions[stateOptions.length - 1];
-      let stateClass = '';
-      if (task.state && task.state !== '-' && task.state !== '') {
-        stateClass = task.state === lastOption ? 'state-blue' : 'state-yellow';
-      }
-      stateSelect = `<select class="task-state-select ${stateClass}" onchange="updateTaskState('${project.id}', '${key}', this.value)">${stateOptions.map(state => `<option value="${state}" ${task.state === state ? 'selected' : ''}>${state || '-'}</option>`).join('')}</select>`;
+      let stateClass = getStateColorClass(task.state, lastOption);
+      stateSelect = `<select class="task-state-select ${stateClass}" data-last-option="${lastOption}" onchange="updateTaskStateWithColor(this, '${project.id}', '${key}')">${stateOptions.map(state => `<option value="${state}" ${task.state === state ? 'selected' : ''}>${state || '-'}</option>`).join('')}</select>`;
     }
 
     return `<div class="task-item">
@@ -8736,6 +8733,36 @@ async function updateTaskDueDate(projectId, taskKey, dueDate) {
   }
 }
 
+// ステータス色分けのクラスを取得
+function getStateColorClass(state, lastOption) {
+  // 空、-、null → 色なし（白）
+  if (!state || state === '-' || state === '') {
+    return '';
+  }
+  // 最後の選択肢（完了状態）→ 青
+  if (state === lastOption) {
+    return 'state-blue';
+  }
+  // その他（進行中）→ 黄
+  return 'state-yellow';
+}
+
+// ステータス変更時に色も更新
+function updateTaskStateWithColor(selectEl, projectId, taskKey) {
+  const state = selectEl.value;
+  const lastOption = selectEl.dataset.lastOption || '';
+
+  // CSSクラスを更新
+  selectEl.classList.remove('state-blue', 'state-yellow');
+  const newClass = getStateColorClass(state, lastOption);
+  if (newClass) {
+    selectEl.classList.add(newClass);
+  }
+
+  // データを保存
+  updateTaskState(projectId, taskKey, state);
+}
+
 async function updateTaskState(projectId, taskKey, state) {
   const project = projects.find(p => p.id === projectId);
   if (!project) return;
@@ -8772,7 +8799,6 @@ async function updateTaskState(projectId, taskKey, state) {
 
   project.progress = progressData;
   project.updated_at = new Date().toISOString();
-  // ステータス変更はselectの値が既に変わっているため、再描画不要
   showStatus('保存済み', 'saved');
 }
 
