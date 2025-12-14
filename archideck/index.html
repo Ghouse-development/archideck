@@ -4632,6 +4632,17 @@ const SaveGuard = {
   }
 };
 
+// 安全なJSONパース（エラー時はデフォルト値を返す）
+function safeJsonParse(str, defaultValue = null) {
+  if (!str) return defaultValue;
+  try {
+    return JSON.parse(str);
+  } catch (e) {
+    warn('JSON.parseエラー:', e.message);
+    return defaultValue;
+  }
+}
+
 // モーダル管理ユーティリティ
 const ModalManager = {
   activeModal: null,
@@ -6275,14 +6286,14 @@ async function loadVendorsV2() {
 
   if (error) {
     logError('❌ 業者読み込みエラー:', error);
-    alert('業者データ読み込みエラー: ' + error.message);
+    showToast('業者データ読み込みエラー: ' + error.message, 'error');
     vendorsV2 = [];
     return;
   }
 
   if (!data || data.length === 0) {
     logError('⚠️ CRITICAL: vendors_v2テーブルにデータが0件です！');
-    alert('⚠️ vendors_v2テーブルにデータが登録されていません。Supabaseで確認してください。');
+    warn('vendors_v2テーブルにデータが登録されていません');
     vendorsV2 = [];
     return;
   }
@@ -6406,13 +6417,13 @@ function renderVendorsV2() {
     return `
       <div class="vendor-card">
         <div class="vendor-header">
-          <h3>${vendor.company}</h3>
-          <span class="badge badge-primary">${categoryName}</span>
+          <h3>${escapeHtml(vendor.company)}</h3>
+          <span class="badge badge-primary">${escapeHtml(categoryName)}</span>
         </div>
         <div class="vendor-info">
-          <div><strong>担当者:</strong> ${vendor.contact || '-'}</div>
-          <div><strong>TEL:</strong> ${vendor.tel || '-'}</div>
-          <div><strong>Email:</strong> ${vendor.email || '-'}</div>
+          <div><strong>担当者:</strong> ${escapeHtml(vendor.contact || '-')}</div>
+          <div><strong>TEL:</strong> ${escapeHtml(vendor.tel || '-')}</div>
+          <div><strong>Email:</strong> ${escapeHtml(vendor.email || '-')}</div>
         </div>
         <div class="vendor-actions">
           <button class="btn btn-secondary btn-small" onclick="editVendorV2('${vendor.id}')">編集</button>
@@ -6423,10 +6434,12 @@ function renderVendorsV2() {
   }).join('');
 }
 
-function setCategoryFilter(categoryId) {
+function setCategoryFilter(categoryId, e) {
   currentCategoryFilter = categoryId;
   document.querySelectorAll('.category-filter-btn').forEach(btn => btn.classList.remove('active'));
-  event.target.classList.add('active');
+  if (e && e.target) {
+    e.target.classList.add('active');
+  }
   renderVendorsV2();
 }
 
@@ -6782,11 +6795,11 @@ function renderCategoryFilters() {
   const container = document.getElementById('categoryFilters');
   if (!container) return;
 
-  let html = `<button class="category-filter-btn ${currentCategoryFilter === 'ALL' ? 'active' : ''}" onclick="setCategoryFilter('ALL')">全て (${vendorsV2.length})</button>`;
+  let html = `<button class="category-filter-btn ${currentCategoryFilter === 'ALL' ? 'active' : ''}" onclick="setCategoryFilter('ALL', event)">全て (${vendorsV2.length})</button>`;
 
   vendorCategories.forEach(cat => {
     const count = vendorsV2.filter(v => v.category_id === cat.id).length;
-    html += `<button class="category-filter-btn ${currentCategoryFilter === cat.id ? 'active' : ''}" onclick="setCategoryFilter('${cat.id}')">${cat.name} (${count})</button>`;
+    html += `<button class="category-filter-btn ${currentCategoryFilter === cat.id ? 'active' : ''}" onclick="setCategoryFilter('${cat.id}', event)">${escapeHtml(cat.name)} (${count})</button>`;
   });
 
   container.innerHTML = html;
@@ -6811,7 +6824,7 @@ function renderProductsList() {
     sortedProducts.map(product => `
       <tr draggable="true" ondragstart="handleProductDragStart(event, '${product.id}')" ondragover="handleProductDragOver(event)" ondrop="handleProductDrop(event, '${product.id}')" style="cursor: move;">
         <td><span style="color: var(--text-muted);">⋮⋮</span></td>
-        <td><strong>${product.name}</strong></td>
+        <td><strong>${escapeHtml(product.name)}</strong></td>
         <td><button class="btn btn-danger btn-small" onclick="deleteProductInline('${product.id}')">削除</button></td>
       </tr>
     `).join('') +
@@ -7060,10 +7073,10 @@ function renderTaskRow(task) {
   return `
     <tr draggable="true" ondragstart="handleTaskDragStart(event, '${task.id}')" ondragover="handleTaskDragOver(event)" ondrop="handleTaskDrop(event, '${task.id}')" style="cursor: move;">
       <td><span style="color: var(--text-muted);">⋮⋮</span></td>
-      <td><strong>${task.task_name}</strong></td>
+      <td><strong>${escapeHtml(task.task_name)}</strong></td>
       <td>${stateInfo}</td>
       <td>${emailButtonInfo}</td>
-      <td>${vendorNames || '-'}</td>
+      <td>${escapeHtml(vendorNames || '-')}</td>
       <td>
         <button class="btn btn-secondary btn-small" onclick="editTask('${task.id}')">編集</button>
         <button class="btn btn-danger btn-small" onclick="deleteTask('${task.id}')">削除</button>
@@ -7088,7 +7101,7 @@ const defaultExteriorTasks = [
 ];
 
 // 外構タスクをローカルストレージから読み込み
-let exteriorTasks = JSON.parse(localStorage.getItem('exteriorTasks')) || defaultExteriorTasks;
+let exteriorTasks = safeJsonParse(localStorage.getItem('exteriorTasks'), defaultExteriorTasks);
 
 function renderExteriorTasksManagement() {
   const container = document.getElementById('exteriorTasksGrid');
@@ -7240,7 +7253,7 @@ function populateTaskVendorSelection(taskId) {
                    value="${vendor.id}"
                    ${currentMappings.includes(vendor.id) ? 'checked' : ''}
                    style="margin-right: 8px;">
-            ${vendor.company}
+            ${escapeHtml(vendor.company)}
           </label>
         `).join('')}
       </div>
@@ -7916,8 +7929,8 @@ function showVendorSelection(project, taskDef, vendors) {
           tasksV2.find(t => t.id === '${taskDef.id}'),
           vendorsV2.find(v => v.id === '${vendor.id}')
         )">
-          <div style="font-weight: 600; margin-bottom: 4px;">${vendor.company}</div>
-          <div style="font-size: 13px; color: var(--text-secondary);">${vendor.contact || ''}</div>
+          <div style="font-weight: 600; margin-bottom: 4px;">${escapeHtml(vendor.company)}</div>
+          <div style="font-size: 13px; color: var(--text-secondary);">${escapeHtml(vendor.contact || '')}</div>
         </button>
       `).join('')}
     </div>
@@ -7959,14 +7972,14 @@ function openEmailComposer(project, taskDef, vendor) {
       <div>
         <div style="font-weight: 600; margin-bottom: 8px; font-size: 14px;">業者</div>
         <div style="padding: 12px; background: var(--bg-secondary); border-radius: var(--radius-md);">
-          <div style="font-weight: 600;">${vendor.company}</div>
-          <div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">${vendor.contact || ''}</div>
+          <div style="font-weight: 600;">${escapeHtml(vendor.company)}</div>
+          <div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">${escapeHtml(vendor.contact || '')}</div>
         </div>
       </div>
 
       <div>
         <label style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 14px;">宛先</label>
-        <input type="email" id="emailTo" class="form-input" value="${vendor.email || ''}" placeholder="メールアドレス">
+        <input type="email" id="emailTo" class="form-input" value="${escapeHtml(vendor.email || '')}" placeholder="メールアドレス">
       </div>
 
       <div>
@@ -9746,11 +9759,11 @@ function renderVendors() {
           const template = emailTemplates.find(t => t.template_id === vendor.template_id);
           return `
             <tr>
-              <td><strong>${vendor.company}</strong></td>
-              <td>${vendor.contact}</td>
-              <td>${vendor.tel || '—'}</td>
-              <td>${vendor.email}</td>
-              <td>${template ? template.display_name : '—'}</td>
+              <td><strong>${escapeHtml(vendor.company)}</strong></td>
+              <td>${escapeHtml(vendor.contact || '')}</td>
+              <td>${escapeHtml(vendor.tel || '—')}</td>
+              <td>${escapeHtml(vendor.email || '')}</td>
+              <td>${escapeHtml(template ? template.display_name : '—')}</td>
               <td>
                 <div style="display: flex; gap: 8px;">
                   <button class="btn btn-ghost btn-small" onclick="editVendor('${vendor.id}')">編集</button>
@@ -11261,7 +11274,7 @@ const DataImporter = {
 // お気に入り管理
 // ============================================
 const FavoritesManager = {
-  favorites: new Set(JSON.parse(localStorage.getItem('favorites') || '[]')),
+  favorites: new Set(safeJsonParse(localStorage.getItem('favorites'), [])),
 
   toggle(projectId) {
     if (this.favorites.has(projectId)) {
@@ -11463,7 +11476,7 @@ const BatchOperations = {
 // フィルタープリセット管理
 // ============================================
 const FilterPresets = {
-  presets: JSON.parse(localStorage.getItem('filterPresets') || '[]'),
+  presets: safeJsonParse(localStorage.getItem('filterPresets'), []),
 
   save() {
     localStorage.setItem('filterPresets', JSON.stringify(this.presets));
@@ -11729,7 +11742,7 @@ const QuickEdit = {
 // 期限・リマインダー管理
 // ============================================
 const DeadlineManager = {
-  reminders: JSON.parse(localStorage.getItem('projectReminders') || '{}'),
+  reminders: safeJsonParse(localStorage.getItem('projectReminders'), {}),
 
   setDeadline(projectId, deadline) {
     this.reminders[projectId] = { deadline, notified: false };
@@ -11957,7 +11970,7 @@ const CalendarView = {
 // プロジェクトテンプレート
 // ============================================
 const TemplateManager = {
-  templates: JSON.parse(localStorage.getItem('projectTemplates') || '[]'),
+  templates: safeJsonParse(localStorage.getItem('projectTemplates'), []),
 
   save() {
     localStorage.setItem('projectTemplates', JSON.stringify(this.templates));
@@ -12676,14 +12689,14 @@ async function renderStaffTasksList() {
     });
 
     for (const [customer, customerTasks] of Object.entries(grouped)) {
-      html += `<div class="task-list-group"><div class="task-list-group-title">${customer}</div>`;
+      html += `<div class="task-list-group"><div class="task-list-group-title">${escapeHtml(customer)}</div>`;
       customerTasks.forEach(task => {
         const isOverdue = task.due_date && task.due_date < today;
         html += `
           <div class="project-task-item">
             <input type="checkbox" class="project-task-checkbox" onchange="toggleProjectTask('${task.id}', this.checked)">
-            <span class="project-task-name">${task.task_name}</span>
-            ${task.due_date ? `<span class="project-task-due ${isOverdue ? 'overdue' : ''}">${task.due_date}</span>` : ''}
+            <span class="project-task-name">${escapeHtml(task.task_name)}</span>
+            ${task.due_date ? `<span class="project-task-due ${isOverdue ? 'overdue' : ''}">${escapeHtml(task.due_date)}</span>` : ''}
           </div>
         `;
       });
@@ -12697,9 +12710,9 @@ async function renderStaffTasksList() {
       html += `
         <div class="project-task-item">
           <input type="checkbox" class="project-task-checkbox" onchange="toggleProjectTask('${task.id}', this.checked)">
-          <span class="project-task-name">${task.task_name}</span>
-          <span style="font-size: 12px; color: var(--text-muted);">${project?.customer || ''}</span>
-          ${task.due_date ? `<span class="project-task-due ${isOverdue ? 'overdue' : ''}">${task.due_date}</span>` : ''}
+          <span class="project-task-name">${escapeHtml(task.task_name)}</span>
+          <span style="font-size: 12px; color: var(--text-muted);">${escapeHtml(project?.customer || '')}</span>
+          ${task.due_date ? `<span class="project-task-due ${isOverdue ? 'overdue' : ''}">${escapeHtml(task.due_date)}</span>` : ''}
         </div>
       `;
     });
@@ -14180,7 +14193,7 @@ function saveAutoBackup() {
     localStorage.setItem('archideck_last_backup', new Date().toISOString());
 
     // バックアップ履歴を保持（最大3件）
-    const history = JSON.parse(localStorage.getItem('archideck_backup_history') || '[]');
+    const history = safeJsonParse(localStorage.getItem('archideck_backup_history'), []);
     history.unshift({
       timestamp: new Date().toISOString(),
       projectCount: projects.length,
@@ -14207,7 +14220,7 @@ function updateBackupUI() {
   }
 
   if (countEl) {
-    const history = JSON.parse(localStorage.getItem('archideck_backup_history') || '[]');
+    const history = safeJsonParse(localStorage.getItem('archideck_backup_history'), []);
     countEl.textContent = history.length.toString();
   }
 
