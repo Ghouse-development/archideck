@@ -8040,8 +8040,8 @@ function updateSingleProjectCard(projectId) {
   cardElement.replaceWith(newCardElement);
 
   // 議事録・タスクの再ロード
-  loadProjectMinutes(projectId);
-  loadProjectTasks(projectId);
+  loadMinutesList(projectId);
+  loadProjectTasksList(projectId);
   loadHandover(projectId);
 }
 
