@@ -6466,34 +6466,46 @@ async function cleanupProjectAssignees() {
     // "null"という文字列もnullとして扱う
     let assigned = (project.assigned_to || '').trim();
     let icAssigned = (project.ic_assignee || '').trim();
+    let exteriorAssigned = (project.exterior_assignee || '').trim();
+    let realestateAssigned = (project.realestate_assignee || '').trim();
 
     if (assigned === 'null' || assigned === 'undefined') assigned = '';
     if (icAssigned === 'null' || icAssigned === 'undefined') icAssigned = '';
+    if (exteriorAssigned === 'null' || exteriorAssigned === 'undefined') exteriorAssigned = '';
+    if (realestateAssigned === 'null' || realestateAssigned === 'undefined') realestateAssigned = '';
 
     let needsUpdate = false;
 
     // trim()した結果が元の値と違う場合、または"null"文字列の場合は更新
     if (project.assigned_to !== assigned ||
         project.ic_assignee !== icAssigned ||
+        project.exterior_assignee !== exteriorAssigned ||
+        project.realestate_assignee !== realestateAssigned ||
         project.assigned_to === 'null' ||
-        project.ic_assignee === 'null') {
+        project.ic_assignee === 'null' ||
+        project.exterior_assignee === 'null' ||
+        project.realestate_assignee === 'null') {
       needsUpdate = true;
     }
 
     if (needsUpdate) {
-      log(`🔧 クリーンアップ: ${project.customer} (assigned_to: "${project.assigned_to}" → "${assigned || 'null'}", ic_assignee: "${project.ic_assignee}" → "${icAssigned || 'null'}")`);
+      log(`🔧 クリーンアップ: ${project.customer}`);
 
       const { error } = await supabase
         .from('projects')
         .update({
           assigned_to: assigned || null,
-          ic_assignee: icAssigned || null
+          ic_assignee: icAssigned || null,
+          exterior_assignee: exteriorAssigned || null,
+          realestate_assignee: realestateAssigned || null
         })
         .eq('id', project.id);
 
       if (!error) {
         project.assigned_to = assigned || null;
         project.ic_assignee = icAssigned || null;
+        project.exterior_assignee = exteriorAssigned || null;
+        project.realestate_assignee = realestateAssigned || null;
         updatedCount++;
       } else {
         logError('❌ クリーンアップ失敗:', project.customer, error);
@@ -8515,7 +8527,7 @@ function renderProjectCard(project) {
         <button class="favorite-btn ${isFavorite ? 'active' : ''}" onclick="event.stopPropagation(); FavoritesManager.toggle('${project.id}')" title="${isFavorite ? 'お気に入り解除' : 'お気に入り登録'}">${isFavorite ? '★' : '☆'}</button>
         <div>
           <div class="card-title"><span class="customer-name">${escapeHtml(project.customer)}</span><span class="badge badge-primary">${escapeHtml(project.specifications || 'LIFE')}</span>${project.is_archived ? '<span class="badge badge-success">完了済み</span>' : ''}</div>
-          <div class="card-subtitle"><span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this)" style="cursor: pointer; text-decoration: underline dotted;" title="クリックで担当者変更">設計：${escapeHtml(project.assigned_to || '未割当')}</span>${project.ic_assignee ? `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'ic_assignee')" style="cursor: pointer; text-decoration: underline dotted;" title="クリックでIC担当者変更"> | IC：${escapeHtml(project.ic_assignee)}</span>` : ''}${project.exterior_assignee ? `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'exterior_assignee')" style="cursor: pointer; text-decoration: underline dotted;" title="クリックで外構担当者変更"> | 外構：${escapeHtml(project.exterior_assignee)}</span>` : ''}${project.realestate_assignee ? `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'realestate_assignee')" style="cursor: pointer; text-decoration: underline dotted;" title="クリックで不動産担当者変更"> | 不動産：${escapeHtml(project.realestate_assignee)}</span>` : ''}${(() => { const ds = DeadlineManager.getStatus(project.id); return ds ? ` <span style="background: ${ds.color}; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-left: 8px;" onclick="event.stopPropagation(); DeadlineManager.showModal('${project.id}')" title="期限を変更">📅 ${ds.label}</span>` : ` <span style="color: var(--text-muted); font-size: 11px; cursor: pointer;" onclick="event.stopPropagation(); DeadlineManager.showModal('${project.id}')" title="期限を設定">📅 期限設定</span>`; })()}</div>
+          <div class="card-subtitle"><span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this)" style="cursor: pointer; text-decoration: underline dotted;" title="クリックで担当者変更">設計：${escapeHtml(project.assigned_to || '未割当')}</span>${project.ic_assignee ? `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'ic_assignee')" style="cursor: pointer; text-decoration: underline dotted;" title="クリックでIC担当者変更"> | IC：${escapeHtml(project.ic_assignee)}</span>` : `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'ic_assignee')" style="cursor: pointer; color: var(--text-muted); font-size: 11px;" title="IC担当者を追加"> | +IC</span>`}${project.exterior_assignee ? `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'exterior_assignee')" style="cursor: pointer; text-decoration: underline dotted;" title="クリックで外構担当者変更"> | 外構：${escapeHtml(project.exterior_assignee)}</span>` : `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'exterior_assignee')" style="cursor: pointer; color: var(--text-muted); font-size: 11px;" title="外構担当者を追加"> | +外構</span>`}${project.realestate_assignee ? `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'realestate_assignee')" style="cursor: pointer; text-decoration: underline dotted;" title="クリックで不動産担当者変更"> | 不動産：${escapeHtml(project.realestate_assignee)}</span>` : `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'realestate_assignee')" style="cursor: pointer; color: var(--text-muted); font-size: 11px;" title="不動産担当者を追加"> | +不動産</span>`}${(() => { const ds = DeadlineManager.getStatus(project.id); return ds ? ` <span style="background: ${ds.color}; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-left: 8px;" onclick="event.stopPropagation(); DeadlineManager.showModal('${project.id}')" title="期限を変更">📅 ${ds.label}</span>` : ` <span style="color: var(--text-muted); font-size: 11px; cursor: pointer;" onclick="event.stopPropagation(); DeadlineManager.showModal('${project.id}')" title="期限を設定">📅 期限設定</span>`; })()}</div>
         </div>
       </div>
       <div style="display: flex; gap: 8px; align-items: center;">
