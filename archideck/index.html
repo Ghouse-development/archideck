@@ -5225,6 +5225,10 @@ let currentDesigner = null;
 let currentUserCategory = null; // 'admin' | '設計' | 'IC'
 let projects = [];
 let designers = [];
+
+// IC関連定数
+const IC_MAKER_TASKS = ['ic_kitchen', 'ic_bath', 'ic_washroom', 'ic_toilet', 'ic_lighting', 'ic_tategu', 'ic_curtain', 'ic_zousaku', 'ic_furniture'];
+const INTERNAL_STATUSES = ['オリジナル', 'GRAFTECT', '-', '']; // 社内対応ステータス（メール不要）
 let emailTemplates = [];
 let vendors = [];
 let taskMappings = {};
@@ -8462,8 +8466,7 @@ function renderProjectCard(project) {
 
     const hasVendor = taskVendorMappings.some(m => m.task_id === taskDef.id);
     // メールボタン表示条件: タスク設定でメール有効 & 業者紐づけあり & 社内対応でないステータス
-    const internalStatuses = ['オリジナル', 'GRAFTECT', '-', ''];
-    const isInternalStatus = internalStatuses.includes(task.state);
+    const isInternalStatus = INTERNAL_STATUSES.includes(task.state);
     const showEmailButton = taskDef.has_email_button !== false && hasVendor && !isInternalStatus;
     const emailBtn = showEmailButton ?
       `<button class="task-email-btn" onclick="openEmailFromTask('${project.id}', '${key}')" title="メール作成">📧</button>` : '';
@@ -8475,11 +8478,9 @@ function renderProjectCard(project) {
       const lastOption = stateOptions[stateOptions.length - 1];
       let stateClass = getStateColorClass(task.state, lastOption, key);
       // メーカー選択時のツールチップを生成
-      const icMakerTasks = ['ic_kitchen', 'ic_bath', 'ic_washroom', 'ic_toilet', 'ic_lighting', 'ic_tategu', 'ic_curtain', 'ic_zousaku', 'ic_furniture'];
       let tooltip = '';
-      if (icMakerTasks.includes(key) && task.state && task.state !== '-') {
-        const internalStatuses = ['オリジナル', 'GRAFTECT', '-', ''];
-        if (!internalStatuses.includes(task.state)) {
+      if (IC_MAKER_TASKS.includes(key) && task.state && task.state !== '-') {
+        if (!INTERNAL_STATUSES.includes(task.state)) {
           tooltip = ` title="📧 ${task.state}にメール送信可能"`;
         }
       }
@@ -8712,8 +8713,7 @@ function updateTaskStateWithColor(selectEl, projectId, taskKey) {
 
   // メールボタンの表示/非表示を動的に更新
   const taskItem = selectEl.closest('.task-item');
-  const internalStatuses = ['オリジナル', 'GRAFTECT', '-', ''];
-  const isInternalStatus = internalStatuses.includes(state);
+  const isInternalStatus = INTERNAL_STATUSES.includes(state);
   if (taskItem) {
     const emailBtn = taskItem.querySelector('.task-email-btn');
     if (emailBtn) {
@@ -8722,8 +8722,7 @@ function updateTaskStateWithColor(selectEl, projectId, taskKey) {
   }
 
   // ツールチップを更新（メーカー選択タスク）
-  const icMakerTasks = ['ic_kitchen', 'ic_bath', 'ic_washroom', 'ic_toilet', 'ic_lighting', 'ic_tategu', 'ic_curtain', 'ic_zousaku', 'ic_furniture'];
-  if (icMakerTasks.includes(taskKey)) {
+  if (IC_MAKER_TASKS.includes(taskKey)) {
     if (state && !isInternalStatus) {
       selectEl.title = `📧 ${state}にメール送信可能`;
     } else {
@@ -10035,8 +10034,7 @@ async function openEmailFromTask(projectId, taskKey) {
   }
 
   // ICタスクの場合: 選択中のメーカー名に対応した業者を優先的に選択
-  const icMakerTasks = ['ic_kitchen', 'ic_bath', 'ic_washroom', 'ic_toilet', 'ic_lighting'];
-  if (icMakerTasks.includes(taskKey)) {
+  if (IC_MAKER_TASKS.includes(taskKey)) {
     const progressData = project.progress || {};
     const selectedMaker = progressData[taskKey]?.state || '';
 
