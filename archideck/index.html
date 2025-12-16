@@ -3737,6 +3737,7 @@ textarea:focus-visible {
           <button onclick="switchCategory('設計')">📐 設計担当</button>
           <button onclick="switchCategory('IC')">🎨 IC担当</button>
           <button onclick="switchCategory('外構')">🌳 外構担当</button>
+          <button onclick="switchCategory('不動産')">🏠 不動産担当</button>
           <button onclick="switchCategory('admin')">👑 管理者</button>
         </div>
       </div>
@@ -3862,6 +3863,7 @@ textarea:focus-visible {
                   <option value="設計">設計担当</option>
                   <option value="IC">IC担当</option>
                   <option value="外構">外構担当</option>
+                  <option value="不動産">不動産担当</option>
                 </select>
                 <button class="btn btn-primary" onclick="addDesignerInline()">追加</button>
               </div>
@@ -4214,6 +4216,12 @@ textarea:focus-visible {
         <div class="form-group">
           <label class="form-label">担当（外構）</label>
           <select class="form-select" id="projectExteriorAssignee">
+            <option value="">未定</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">担当（不動産）</label>
+          <select class="form-select" id="projectRealestateAssignee">
             <option value="">未定</option>
           </select>
         </div>
@@ -5622,6 +5630,10 @@ function updateCategorySwitchButton() {
     label.textContent = '📐 設計';
   } else if (currentUserCategory === 'IC') {
     label.textContent = '🎨 IC';
+  } else if (currentUserCategory === '外構') {
+    label.textContent = '🌳 外構';
+  } else if (currentUserCategory === '不動産') {
+    label.textContent = '🏠 不動産';
   } else if (currentUserCategory === 'admin') {
     label.textContent = '👑 管理者';
   }
@@ -8305,14 +8317,16 @@ function renderProjects() {
       return true;
     }
 
-    // 担当者フィルター（設計またはIC担当者）
+    // 担当者フィルター（設計/IC/外構/不動産担当）
     if (currentDesignerTab !== 'ALL') {
       const assigned = (p.assigned_to || '').trim();
       const icAssigned = (p.ic_assignee || '').trim();
+      const exteriorAssigned = (p.exterior_assignee || '').trim();
+      const realestateAssigned = (p.realestate_assignee || '').trim();
       const currentTab = currentDesignerTab.trim();
 
-      if (assigned !== currentTab && icAssigned !== currentTab) {
-        log(`❌ フィルタで除外: ${p.customer} (assigned_to: "${p.assigned_to}" (trim: "${assigned}"), ic_assignee: "${p.ic_assignee}" (trim: "${icAssigned}"), currentTab: "${currentTab}")`);
+      if (assigned !== currentTab && icAssigned !== currentTab && exteriorAssigned !== currentTab && realestateAssigned !== currentTab) {
+        log(`❌ フィルタで除外: ${p.customer} (assigned_to: "${assigned}", ic: "${icAssigned}", 外構: "${exteriorAssigned}", 不動産: "${realestateAssigned}", currentTab: "${currentTab}")`);
         return false;
       }
     }
@@ -8501,7 +8515,7 @@ function renderProjectCard(project) {
         <button class="favorite-btn ${isFavorite ? 'active' : ''}" onclick="event.stopPropagation(); FavoritesManager.toggle('${project.id}')" title="${isFavorite ? 'お気に入り解除' : 'お気に入り登録'}">${isFavorite ? '★' : '☆'}</button>
         <div>
           <div class="card-title"><span class="customer-name">${escapeHtml(project.customer)}</span><span class="badge badge-primary">${escapeHtml(project.specifications || 'LIFE')}</span>${project.is_archived ? '<span class="badge badge-success">完了済み</span>' : ''}</div>
-          <div class="card-subtitle"><span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this)" style="cursor: pointer; text-decoration: underline dotted;" title="クリックで担当者変更">設計：${escapeHtml(project.assigned_to || '未割当')}</span>${project.ic_assignee ? ` | IC：${escapeHtml(project.ic_assignee)}` : ''}${project.exterior_assignee ? ` | 外構：${escapeHtml(project.exterior_assignee)}` : ''}${(() => { const ds = DeadlineManager.getStatus(project.id); return ds ? ` <span style="background: ${ds.color}; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-left: 8px;" onclick="event.stopPropagation(); DeadlineManager.showModal('${project.id}')" title="期限を変更">📅 ${ds.label}</span>` : ` <span style="color: var(--text-muted); font-size: 11px; cursor: pointer;" onclick="event.stopPropagation(); DeadlineManager.showModal('${project.id}')" title="期限を設定">📅 期限設定</span>`; })()}</div>
+          <div class="card-subtitle"><span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this)" style="cursor: pointer; text-decoration: underline dotted;" title="クリックで担当者変更">設計：${escapeHtml(project.assigned_to || '未割当')}</span>${project.ic_assignee ? ` | IC：${escapeHtml(project.ic_assignee)}` : ''}${project.exterior_assignee ? ` | 外構：${escapeHtml(project.exterior_assignee)}` : ''}${project.realestate_assignee ? ` | 不動産：${escapeHtml(project.realestate_assignee)}` : ''}${(() => { const ds = DeadlineManager.getStatus(project.id); return ds ? ` <span style="background: ${ds.color}; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-left: 8px;" onclick="event.stopPropagation(); DeadlineManager.showModal('${project.id}')" title="期限を変更">📅 ${ds.label}</span>` : ` <span style="color: var(--text-muted); font-size: 11px; cursor: pointer;" onclick="event.stopPropagation(); DeadlineManager.showModal('${project.id}')" title="期限を設定">📅 期限設定</span>`; })()}</div>
         </div>
       </div>
       <div style="display: flex; gap: 8px; align-items: center;">
@@ -9331,6 +9345,17 @@ function renderDesignerListInline() {
     html += '</tbody></table></div>';
   }
 
+  // 不動産担当
+  const realestateDesigners = [...designers].filter(d => d.category === '不動産').sort((a, b) => (a.display_order || 999) - (b.display_order || 999));
+  if (realestateDesigners.length > 0) {
+    html += '<h4 style="margin: 20px 0 12px; color: #8B4513;">🏠 不動産担当</h4>';
+    html += '<div class="table-container"><table class="table"><thead><tr><th width="40"></th><th>スタッフ名</th><th>メールアドレス</th><th>担当案件数</th><th>操作</th></tr></thead><tbody id="realestateTbody">';
+    realestateDesigners.forEach(designer => {
+      html += renderDesignerRow(designer, '不動産', 'realestate_assignee');
+    });
+    html += '</tbody></table></div>';
+  }
+
   container.innerHTML = html;
 
   // ドラッグ&ドロップイベント設定
@@ -9367,6 +9392,7 @@ function openEditDesignerModal(designerId) {
             <option value="設計" ${designer.category === '設計' ? 'selected' : ''}>設計担当</option>
             <option value="IC" ${designer.category === 'IC' ? 'selected' : ''}>IC担当</option>
             <option value="外構" ${designer.category === '外構' ? 'selected' : ''}>外構担当</option>
+            <option value="不動産" ${designer.category === '不動産' ? 'selected' : ''}>不動産担当</option>
           </select>
         </div>
       </div>
@@ -12279,8 +12305,11 @@ function getIcDesigners() {
 function getExteriorDesigners() {
   return getDesignersByCategory('外構');
 }
+function getRealestateDesigners() {
+  return getDesignersByCategory('不動産');
+}
 
-// サイドバーに外構担当セクションを追加（renderSidebar関数の拡張）
+// サイドバーに外構担当・不動産担当セクションを追加（renderSidebar関数の拡張）
 const originalRenderSidebar = renderSidebar;
 renderSidebar = function() {
   const container = document.getElementById('sidebarContent');
@@ -12289,6 +12318,7 @@ renderSidebar = function() {
   const sekkeiDesigners = getSekkeiDesigners();
   const icDesigners = getIcDesigners();
   const exteriorDesigners = getExteriorDesigners();
+  const realestateDesigners = getRealestateDesigners();
   const allCount = projects.filter(p => p.status !== 'completed' && !p.is_archived).length;
   const archivedCount = projects.filter(p => p.is_archived).length;
 
@@ -12388,6 +12418,37 @@ renderSidebar = function() {
       }).length;
 
       // 色分けロジック（外構用）
+      let countClass = 'count-blue';
+      let nameClass = '';
+      if (count >= 7) {
+        nameClass = 'name-red';
+        countClass = 'count-yellow';
+      } else if (count >= 5) {
+        countClass = 'count-yellow';
+      }
+
+      html += `
+        <div class="sidebar-item ${currentDesignerTab === designer.name ? 'active' : ''}" onclick="selectDesigner('${designer.name}')">
+          <span class="sidebar-item-label ${nameClass}">${designer.name}</span>
+          <button class="sidebar-task-btn" onclick="event.stopPropagation(); openStaffTasksModal('${designer.name}')" title="タスク一覧">📋</button>
+          <span class="sidebar-item-count ${countClass}">${count}</span>
+        </div>
+      `;
+    });
+    html += '</div>';
+  }
+
+  // 不動産担当セクション（色分け付き）
+  if (realestateDesigners.length > 0) {
+    html += '<div class="sidebar-section"><div class="sidebar-section-title">🏠 不動産担当</div>';
+    realestateDesigners.forEach(designer => {
+      const count = projects.filter(p => {
+        const realestateAssigned = (p.realestate_assignee || '').trim();
+        const designerName = designer.name.trim();
+        return realestateAssigned === designerName && p.status !== 'completed' && !p.is_archived;
+      }).length;
+
+      // 色分けロジック（不動産用）
       let countClass = 'count-blue';
       let nameClass = '';
       if (count >= 7) {
@@ -14746,6 +14807,21 @@ function populateExteriorAssigneeDropdown(projectId = null, project = null) {
   }
 }
 
+// 不動産担当ドロップダウンを設定
+function populateRealestateAssigneeDropdown(projectId = null, project = null) {
+  const realestateDesigners = designers.filter(d => d.category === '不動産');
+  const realestateAssigneeSelect = document.getElementById('projectRealestateAssignee');
+
+  if (realestateAssigneeSelect) {
+    realestateAssigneeSelect.innerHTML = '<option value="">未定</option>' +
+      realestateDesigners.map(d => `<option value="${escapeHtml(d.name)}">${escapeHtml(d.name)}</option>`).join('');
+
+    if (projectId && project) {
+      realestateAssigneeSelect.value = project.realestate_assignee || '';
+    }
+  }
+}
+
 // openProjectModalを拡張
 const originalOpenProjectModal = openProjectModal;
 openProjectModal = function(projectId = null) {
@@ -14753,6 +14829,7 @@ openProjectModal = function(projectId = null) {
 
   const project = projectId ? projects.find(p => p.id === projectId) : null;
   populateExteriorAssigneeDropdown(projectId, project);
+  populateRealestateAssigneeDropdown(projectId, project);
 };
 
 // saveProjectを拡張
@@ -14767,6 +14844,7 @@ saveProject = async function() {
     localStorage.setItem('archideck_last_assignee', assignedTo);
   }
   const exteriorAssignee = document.getElementById('projectExteriorAssignee')?.value.trim() || '';
+  const realestateAssignee = document.getElementById('projectRealestateAssignee')?.value.trim() || '';
   const specifications = document.getElementById('projectSpecifications').value;
   const memo = document.getElementById('projectMemo').value.trim();
 
@@ -14782,6 +14860,7 @@ saveProject = async function() {
     assigned_to: assignedTo,
     ic_assignee: icAssignee || null,
     exterior_assignee: exteriorAssignee || null,
+    realestate_assignee: realestateAssignee || null,
     specifications,
     memo,
     updated_at: new Date().toISOString()
