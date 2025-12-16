@@ -8410,6 +8410,7 @@ function updateSingleProjectCard(projectId) {
 
 function renderProjectCard(project) {
   const progress = calculateProgress(project);
+  const icProgress = calculateICProgress(project);
   const progressData = project.progress || {};
   const tasks = getTasksForAssignee(project.assigned_to);
 
@@ -8460,7 +8461,10 @@ function renderProjectCard(project) {
     }
 
     const hasVendor = taskVendorMappings.some(m => m.task_id === taskDef.id);
-    const showEmailButton = taskDef.has_email_button !== false && hasVendor;
+    // メールボタン表示条件: タスク設定でメール有効 & 業者紐づけあり & 社内対応でないステータス
+    const internalStatuses = ['オリジナル', 'GRAFTECT', '-', ''];
+    const isInternalStatus = internalStatuses.includes(task.state);
+    const showEmailButton = taskDef.has_email_button !== false && hasVendor && !isInternalStatus;
     const emailBtn = showEmailButton ?
       `<button class="task-email-btn" onclick="openEmailFromTask('${project.id}', '${key}')" title="メール作成">📧</button>` : '';
 
@@ -8470,7 +8474,16 @@ function renderProjectCard(project) {
       // ステータス色分け: 最後の選択肢=青、空/-=白、その他=黄、ICタスク特別処理あり
       const lastOption = stateOptions[stateOptions.length - 1];
       let stateClass = getStateColorClass(task.state, lastOption, key);
-      stateSelect = `<select class="task-state-select ${stateClass}" data-last-option="${lastOption}" onchange="updateTaskStateWithColor(this, '${project.id}', '${key}')">${stateOptions.map(state => `<option value="${state}" ${task.state === state ? 'selected' : ''}>${state || '-'}</option>`).join('')}</select>`;
+      // メーカー選択時のツールチップを生成
+      const icMakerTasks = ['ic_kitchen', 'ic_bath', 'ic_washroom', 'ic_toilet', 'ic_lighting', 'ic_tategu', 'ic_curtain', 'ic_zousaku', 'ic_furniture'];
+      let tooltip = '';
+      if (icMakerTasks.includes(key) && task.state && task.state !== '-') {
+        const internalStatuses = ['オリジナル', 'GRAFTECT', '-', ''];
+        if (!internalStatuses.includes(task.state)) {
+          tooltip = ` title="📧 ${task.state}にメール送信可能"`;
+        }
+      }
+      stateSelect = `<select class="task-state-select ${stateClass}" data-last-option="${lastOption}"${tooltip} onchange="updateTaskStateWithColor(this, '${project.id}', '${key}')">${stateOptions.map(state => `<option value="${state}" ${task.state === state ? 'selected' : ''}>${state || '-'}</option>`).join('')}</select>`;
     }
 
     return `<div class="task-item">
@@ -8500,7 +8513,7 @@ function renderProjectCard(project) {
         <button class="btn btn-ghost btn-small" onclick="editProject('${project.id}')">編集</button>
       </div>
     </div>
-    <div class="progress-section"><div class="progress-header"><span class="progress-label">進捗状況</span><span class="progress-value">${progress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width: ${progress}%"></div></div></div>
+    <div class="progress-section"><div class="progress-header"><span class="progress-label">設計進捗</span><span class="progress-value">${progress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width: ${progress}%"></div></div>${icProgress !== null ? `<div class="progress-header" style="margin-top:8px"><span class="progress-label">IC進捗</span><span class="progress-value">${icProgress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width: ${icProgress}%; background: var(--info-color)"></div></div>` : ''}</div>
 
     <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">✅ タスク</span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><div id="projectTasksList_${project.id}" class="project-task-list"></div><div class="add-task-form"><input type="text" id="newTaskName_${project.id}" placeholder="タスク名" inputmode="text"><input type="date" id="newTaskDue_${project.id}"><button class="btn btn-small btn-primary" onclick="addProjectTask('${project.id}', document.getElementById('newTaskName_${project.id}').value, document.getElementById('newTaskDue_${project.id}').value)">追加</button></div></div></div>
 
@@ -8522,6 +8535,17 @@ function calculateProgress(project) {
   if (tasks.length === 0) return 0;
   const completed = tasks.filter(taskDef => progressData[taskDef.task_key]?.completed).length;
   return Math.round((completed / tasks.length) * 100);
+}
+
+// IC担当者用の進捗率計算（ICタスクベース）
+function calculateICProgress(project) {
+  if (!project.ic_assignee) return null;
+  const progressData = project.progress || {};
+  // ICカテゴリのタスクを取得
+  const icTasks = tasksV2.filter(t => t.category === 'IC').sort((a, b) => a.display_order - b.display_order);
+  if (icTasks.length === 0) return null;
+  const completed = icTasks.filter(taskDef => progressData[taskDef.task_key]?.completed).length;
+  return Math.round((completed / icTasks.length) * 100);
 }
 
 function formatDateTime(dateStr) {
@@ -8684,6 +8708,27 @@ function updateTaskStateWithColor(selectEl, projectId, taskKey) {
   const newClass = getStateColorClass(state, lastOption, taskKey);
   if (newClass) {
     selectEl.classList.add(newClass);
+  }
+
+  // メールボタンの表示/非表示を動的に更新
+  const taskItem = selectEl.closest('.task-item');
+  const internalStatuses = ['オリジナル', 'GRAFTECT', '-', ''];
+  const isInternalStatus = internalStatuses.includes(state);
+  if (taskItem) {
+    const emailBtn = taskItem.querySelector('.task-email-btn');
+    if (emailBtn) {
+      emailBtn.style.display = isInternalStatus ? 'none' : '';
+    }
+  }
+
+  // ツールチップを更新（メーカー選択タスク）
+  const icMakerTasks = ['ic_kitchen', 'ic_bath', 'ic_washroom', 'ic_toilet', 'ic_lighting', 'ic_tategu', 'ic_curtain', 'ic_zousaku', 'ic_furniture'];
+  if (icMakerTasks.includes(taskKey)) {
+    if (state && !isInternalStatus) {
+      selectEl.title = `📧 ${state}にメール送信可能`;
+    } else {
+      selectEl.removeAttribute('title');
+    }
   }
 
   // データを保存
