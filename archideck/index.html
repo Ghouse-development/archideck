@@ -3924,6 +3924,11 @@ textarea:focus-visible {
             </div>
           </div>
           <p style="margin-bottom: 16px; color: var(--text-secondary);">IC担当者が使用するタスクを管理します。</p>
+          <div style="margin-bottom: 16px; padding: 12px; background: var(--primary-light); border-radius: var(--radius-md); border-left: 4px solid var(--primary-color);">
+            <p style="margin: 0; font-size: 13px; color: var(--primary-color);">
+              💡 <strong>メール送信機能の設定</strong>: キッチン・お風呂・洗面・トイレ・照明プランのメーカー選択に対応したメールを送信するには、「🏢 業者・メール管理」タブで各メーカーのメールアドレスを設定してください。
+            </p>
+          </div>
           <div id="icTasksGrid"></div>
         </div>
 
@@ -8462,9 +8467,9 @@ function renderProjectCard(project) {
     let stateSelect = '';
     const stateOptions = getTaskStateOptions(key);
     if (stateOptions && Array.isArray(stateOptions)) {
-      // ステータス色分け: 最後の選択肢=青、空/-=白、その他=黄
+      // ステータス色分け: 最後の選択肢=青、空/-=白、その他=黄、ICタスク特別処理あり
       const lastOption = stateOptions[stateOptions.length - 1];
-      let stateClass = getStateColorClass(task.state, lastOption);
+      let stateClass = getStateColorClass(task.state, lastOption, key);
       stateSelect = `<select class="task-state-select ${stateClass}" data-last-option="${lastOption}" onchange="updateTaskStateWithColor(this, '${project.id}', '${key}')">${stateOptions.map(state => `<option value="${state}" ${task.state === state ? 'selected' : ''}>${state || '-'}</option>`).join('')}</select>`;
     }
 
@@ -8647,11 +8652,20 @@ async function updateTaskDueDate(projectId, taskKey, dueDate) {
 }
 
 // ステータス色分けのクラスを取得
-function getStateColorClass(state, lastOption) {
+// taskKey: オプション。ICタスクの特別な色分けに使用
+function getStateColorClass(state, lastOption, taskKey = '') {
   // 空、-、null → 色なし（白）
   if (!state || state === '-' || state === '') {
     return '';
   }
+
+  // ICタスク特別処理: 造作業者紹介・家具見積依頼は「無し」も青色
+  if (taskKey === 'ic_zousaku' || taskKey === 'ic_furniture') {
+    if (state === '無し' || state === '依頼済') {
+      return 'state-blue';
+    }
+  }
+
   // 最後の選択肢（完了状態）→ 青
   if (state === lastOption) {
     return 'state-blue';
@@ -8667,7 +8681,7 @@ function updateTaskStateWithColor(selectEl, projectId, taskKey) {
 
   // CSSクラスを更新
   selectEl.classList.remove('state-blue', 'state-yellow');
-  const newClass = getStateColorClass(state, lastOption);
+  const newClass = getStateColorClass(state, lastOption, taskKey);
   if (newClass) {
     selectEl.classList.add(newClass);
   }
@@ -9966,13 +9980,31 @@ async function openEmailFromTask(projectId, taskKey) {
   }
 
   // 業者情報を取得
-  const taskVendors = mappings
+  let taskVendors = mappings
     .map(m => vendorsV2.find(v => v.id === m.vendor_id))
     .filter(v => v != null);
 
   if (taskVendors.length === 0) {
     showToast('業者情報が見つかりません', 'error');
     return;
+  }
+
+  // ICタスクの場合: 選択中のメーカー名に対応した業者を優先的に選択
+  const icMakerTasks = ['ic_kitchen', 'ic_bath', 'ic_washroom', 'ic_toilet', 'ic_lighting'];
+  if (icMakerTasks.includes(taskKey)) {
+    const progressData = project.progress || {};
+    const selectedMaker = progressData[taskKey]?.state || '';
+
+    if (selectedMaker && selectedMaker !== '-') {
+      // 選択中のメーカー名に一致する業者を先頭に並び替え
+      const matchingVendor = taskVendors.find(v =>
+        v.company.toLowerCase().includes(selectedMaker.toLowerCase()) ||
+        v.company === selectedMaker
+      );
+      if (matchingVendor) {
+        taskVendors = [matchingVendor, ...taskVendors.filter(v => v.id !== matchingVendor.id)];
+      }
+    }
   }
 
   // 担当者情報を取得
@@ -9984,7 +10016,7 @@ async function openEmailFromTask(projectId, taskKey) {
   const dueDate = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
   const dueDateStr = dueDate.toLocaleDateString('ja-JP', { month: 'long', day: 'numeric' }).replace('/', '月') + '日';
 
-  // 最初の業者のテンプレートを使用
+  // 選択中のメーカーに対応した業者（または最初の業者）のテンプレートを使用
   const vendor = taskVendors[0];
 
   // プレースホルダー置換
@@ -12579,16 +12611,24 @@ async function addProjectTask(projectId, taskName, dueDate) {
 }
 
 // 主要タスクのステータスを動的に取得（レポート用）
-function getMainTaskStatuses(progressData) {
+// category: '設計' or 'IC' - 表示するカテゴリ
+function getMainTaskStatuses(progressData, category = '設計') {
   const statuses = [];
-  const mainKeywords = ['太陽光', '給排水', '換気', 'サッシ', '構造', 'エボルツ', 'evoltz'];
 
-  tasksV2.forEach(task => {
+  // カテゴリ別の主要キーワード
+  const mainKeywords = category === 'IC'
+    ? ['キッチン', 'お風呂', '洗面', 'トイレ', '照明', '仕様書', '実施図', '確定図']
+    : ['太陽光', '給排水', '換気', 'サッシ', '構造', 'エボルツ', 'evoltz'];
+
+  tasksV2.filter(t => t.category === category).forEach(task => {
     if (task.task_name && task.has_state) {
       const isMain = mainKeywords.some(k => task.task_name.includes(k));
       if (isMain && progressData[task.task_key]?.state) {
-        // タスク名を短縮（「依頼」を除去）
-        const shortName = task.task_name.replace(/依頼$/, '');
+        // タスク名を短縮
+        let shortName = task.task_name
+          .replace(/依頼$/, '')
+          .replace(/作成$/, '')
+          .replace(/プラン$/, '');
         statuses.push(`${shortName}:${progressData[task.task_key].state}`);
       }
     }
@@ -13316,43 +13356,57 @@ function generateWeeklyReport() {
     return updated >= weekAgo;
   });
 
-  // 担当者別にグループ化
+  // 設計担当者別にグループ化
   const designerProjects = {};
   designers.filter(d => d.category === '設計').forEach(d => {
     designerProjects[d.name] = activeProjects.filter(p => p.assigned_to === d.name);
   });
 
-  // 担当者別セクションを生成
-  const designerSections = Object.entries(designerProjects)
-    .filter(([name, projs]) => projs.length > 0)
-    .map(([name, projs]) => {
-      const projectDetails = projs.map(p => {
-        const progress = calculateProgress(p);
-        const progressData = p.progress || {};
+  // IC担当者別にグループ化
+  const icProjects = {};
+  designers.filter(d => d.category === 'IC').forEach(d => {
+    icProjects[d.name] = activeProjects.filter(p => p.ic_assignee === d.name);
+  });
 
-        // 主要タスクのステータスを取得（動的）
-        const statuses = getMainTaskStatuses(progressData);
-        const statusText = statuses.length > 0 ? statuses.join(' / ') : '未着手';
-        const wasUpdated = new Date(p.updated_at) >= weekAgo;
+  // 担当者別セクションを生成（共通関数）
+  const generateDesignerSection = (projs, name, categoryLabel, weekAgo) => {
+    const projectDetails = projs.map(p => {
+      const progress = calculateProgress(p);
+      const progressData = p.progress || {};
 
-        return `<div class="report-project-detail ${wasUpdated ? 'updated' : ''}">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-            <span style="font-weight: 600;">${escapeHtml(p.customer)}</span>
-            <span class="report-progress-badge ${getProgressBadgeClass(progress)}">${progress}%</span>
-          </div>
-          <div style="font-size: 12px; color: var(--text-secondary);">${statusText}</div>
-          ${wasUpdated ? '<div style="font-size: 11px; color: var(--primary-color); margin-top: 4px;">📝 今週更新</div>' : ''}
-        </div>`;
-      }).join('');
+      // 主要タスクのステータスを取得（動的）
+      const statuses = getMainTaskStatuses(progressData, categoryLabel === 'IC' ? 'IC' : '設計');
+      const statusText = statuses.length > 0 ? statuses.join(' / ') : '未着手';
+      const wasUpdated = new Date(p.updated_at) >= weekAgo;
 
-      return `<div class="report-designer-section">
-        <div class="report-designer-header">
-          <span class="report-designer-name">${escapeHtml(name)}</span>
-          <span class="report-designer-count">${projs.length}件</span>
+      return `<div class="report-project-detail ${wasUpdated ? 'updated' : ''}">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+          <span style="font-weight: 600;">${escapeHtml(p.customer)}</span>
+          <span class="report-progress-badge ${getProgressBadgeClass(progress)}">${progress}%</span>
         </div>
-        ${projectDetails}
+        <div style="font-size: 12px; color: var(--text-secondary);">${statusText}</div>
+        ${wasUpdated ? '<div style="font-size: 11px; color: var(--primary-color); margin-top: 4px;">📝 今週更新</div>' : ''}
       </div>`;
     }).join('');
+
+    return `<div class="report-designer-section">
+      <div class="report-designer-header">
+        <span class="report-designer-name">${escapeHtml(name)}</span>
+        <span class="report-designer-count">${projs.length}件</span>
+      </div>
+      ${projectDetails}
+    </div>`;
+  };
+
+  const designerSections = Object.entries(designerProjects)
+    .filter(([name, projs]) => projs.length > 0)
+    .map(([name, projs]) => generateDesignerSection(projs, name, '設計', weekAgo))
+    .join('');
+
+  const icSections = Object.entries(icProjects)
+    .filter(([name, projs]) => projs.length > 0)
+    .map(([name, projs]) => generateDesignerSection(projs, name, 'IC', weekAgo))
+    .join('');
 
   const report = `
     <div class="report-card">
@@ -13375,9 +13429,14 @@ function generateWeeklyReport() {
         </div>
       </div>
       <div class="report-section">
-        <div class="report-section-title">担当者別 案件状況</div>
+        <div class="report-section-title">📐 設計担当者別 案件状況</div>
         ${designerSections || '<div class="report-empty">進行中の案件はありません</div>'}
       </div>
+      ${icSections ? `
+      <div class="report-section">
+        <div class="report-section-title">🎨 IC担当者別 案件状況</div>
+        ${icSections}
+      </div>` : ''}
       ${completedThisWeek.length > 0 ? `
       <div class="report-section">
         <div class="report-section-title">今週の完了案件</div>
@@ -13416,45 +13475,59 @@ function generateMonthlyReport() {
 
   const completionRate = projects.length > 0 ? Math.round(completedThisMonth.length / projects.length * 100) : 0;
 
-  // 担当者別にグループ化
+  // 設計担当者別にグループ化
   const designerProjects = {};
   designers.filter(d => d.category === '設計').forEach(d => {
     designerProjects[d.name] = activeProjects.filter(p => p.assigned_to === d.name);
   });
 
-  // 担当者ごとのセクション生成
-  const designerSections = Object.entries(designerProjects)
-    .filter(([name, projs]) => projs.length > 0)
-    .map(([name, projs]) => {
-      const projectDetails = projs.map(p => {
-        const progressData = p.progress || {};
-        const updatedAt = new Date(p.updated_at);
-        const isUpdated = updatedAt >= monthAgo;
+  // IC担当者別にグループ化
+  const icProjects = {};
+  designers.filter(d => d.category === 'IC').forEach(d => {
+    icProjects[d.name] = activeProjects.filter(p => p.ic_assignee === d.name);
+  });
 
-        // タスクステータスを収集（動的）
-        const statuses = getMainTaskStatuses(progressData);
+  // 担当者ごとのセクション生成（共通関数）
+  const generateMonthlySection = (projs, name, category, monthAgo) => {
+    const projectDetails = projs.map(p => {
+      const progressData = p.progress || {};
+      const updatedAt = new Date(p.updated_at);
+      const isUpdated = updatedAt >= monthAgo;
 
-        const statusTags = statuses.map(s =>
-          `<span class="report-status-tag active">${s}</span>`
-        ).join('');
+      // タスクステータスを収集（動的）
+      const statuses = getMainTaskStatuses(progressData, category);
 
-        return `<div class="report-project-detail ${isUpdated ? 'updated' : ''}">
-          <div class="report-project-title">
-            <span class="project-name">${escapeHtml(p.customer)}</span>
-            ${isUpdated ? '<span class="report-updated-badge">今月更新</span>' : ''}
-          </div>
-          ${statusTags ? `<div class="report-status-list">${statusTags}</div>` : '<div class="report-status-list"><span class="report-status-tag">未着手</span></div>'}
-        </div>`;
-      }).join('');
+      const statusTags = statuses.map(s =>
+        `<span class="report-status-tag active">${s}</span>`
+      ).join('');
 
-      return `<div class="report-designer-section">
-        <div class="report-designer-header">
-          <span class="report-designer-name">${escapeHtml(name)}</span>
-          <span class="report-designer-count">${projs.length}件</span>
+      return `<div class="report-project-detail ${isUpdated ? 'updated' : ''}">
+        <div class="report-project-title">
+          <span class="project-name">${escapeHtml(p.customer)}</span>
+          ${isUpdated ? '<span class="report-updated-badge">今月更新</span>' : ''}
         </div>
-        ${projectDetails}
+        ${statusTags ? `<div class="report-status-list">${statusTags}</div>` : '<div class="report-status-list"><span class="report-status-tag">未着手</span></div>'}
       </div>`;
     }).join('');
+
+    return `<div class="report-designer-section">
+      <div class="report-designer-header">
+        <span class="report-designer-name">${escapeHtml(name)}</span>
+        <span class="report-designer-count">${projs.length}件</span>
+      </div>
+      ${projectDetails}
+    </div>`;
+  };
+
+  const designerSections = Object.entries(designerProjects)
+    .filter(([name, projs]) => projs.length > 0)
+    .map(([name, projs]) => generateMonthlySection(projs, name, '設計', monthAgo))
+    .join('');
+
+  const icSections = Object.entries(icProjects)
+    .filter(([name, projs]) => projs.length > 0)
+    .map(([name, projs]) => generateMonthlySection(projs, name, 'IC', monthAgo))
+    .join('');
 
   const report = `
     <div class="report-card">
@@ -13481,9 +13554,14 @@ function generateMonthlyReport() {
         </div>
       </div>
       <div class="report-section">
-        <div class="report-section-title">担当者別 案件状況</div>
+        <div class="report-section-title">📐 設計担当者別 案件状況</div>
         ${designerSections || '<div class="report-empty">進行中の案件はありません</div>'}
       </div>
+      ${icSections ? `
+      <div class="report-section">
+        <div class="report-section-title">🎨 IC担当者別 案件状況</div>
+        ${icSections}
+      </div>` : ''}
       ${completedThisMonth.length > 0 ? `
       <div class="report-section">
         <div class="report-section-title">今月の完了案件</div>
