@@ -8515,7 +8515,7 @@ function renderProjectCard(project) {
         <button class="favorite-btn ${isFavorite ? 'active' : ''}" onclick="event.stopPropagation(); FavoritesManager.toggle('${project.id}')" title="${isFavorite ? 'お気に入り解除' : 'お気に入り登録'}">${isFavorite ? '★' : '☆'}</button>
         <div>
           <div class="card-title"><span class="customer-name">${escapeHtml(project.customer)}</span><span class="badge badge-primary">${escapeHtml(project.specifications || 'LIFE')}</span>${project.is_archived ? '<span class="badge badge-success">完了済み</span>' : ''}</div>
-          <div class="card-subtitle"><span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this)" style="cursor: pointer; text-decoration: underline dotted;" title="クリックで担当者変更">設計：${escapeHtml(project.assigned_to || '未割当')}</span>${project.ic_assignee ? ` | IC：${escapeHtml(project.ic_assignee)}` : ''}${project.exterior_assignee ? ` | 外構：${escapeHtml(project.exterior_assignee)}` : ''}${project.realestate_assignee ? ` | 不動産：${escapeHtml(project.realestate_assignee)}` : ''}${(() => { const ds = DeadlineManager.getStatus(project.id); return ds ? ` <span style="background: ${ds.color}; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-left: 8px;" onclick="event.stopPropagation(); DeadlineManager.showModal('${project.id}')" title="期限を変更">📅 ${ds.label}</span>` : ` <span style="color: var(--text-muted); font-size: 11px; cursor: pointer;" onclick="event.stopPropagation(); DeadlineManager.showModal('${project.id}')" title="期限を設定">📅 期限設定</span>`; })()}</div>
+          <div class="card-subtitle"><span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this)" style="cursor: pointer; text-decoration: underline dotted;" title="クリックで担当者変更">設計：${escapeHtml(project.assigned_to || '未割当')}</span>${project.ic_assignee ? `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'ic_assignee')" style="cursor: pointer; text-decoration: underline dotted;" title="クリックでIC担当者変更"> | IC：${escapeHtml(project.ic_assignee)}</span>` : ''}${project.exterior_assignee ? `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'exterior_assignee')" style="cursor: pointer; text-decoration: underline dotted;" title="クリックで外構担当者変更"> | 外構：${escapeHtml(project.exterior_assignee)}</span>` : ''}${project.realestate_assignee ? `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'realestate_assignee')" style="cursor: pointer; text-decoration: underline dotted;" title="クリックで不動産担当者変更"> | 不動産：${escapeHtml(project.realestate_assignee)}</span>` : ''}${(() => { const ds = DeadlineManager.getStatus(project.id); return ds ? ` <span style="background: ${ds.color}; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-left: 8px;" onclick="event.stopPropagation(); DeadlineManager.showModal('${project.id}')" title="期限を変更">📅 ${ds.label}</span>` : ` <span style="color: var(--text-muted); font-size: 11px; cursor: pointer;" onclick="event.stopPropagation(); DeadlineManager.showModal('${project.id}')" title="期限を設定">📅 期限設定</span>`; })()}</div>
         </div>
       </div>
       <div style="display: flex; gap: 8px; align-items: center;">
@@ -11599,7 +11599,7 @@ const FilterPresets = {
 // クイック編集
 // ============================================
 const QuickEdit = {
-  showAssigneeDropdown(projectId, element) {
+  showAssigneeDropdown(projectId, element, assigneeType = 'assigned_to') {
     // 既存のドロップダウンを削除
     document.querySelectorAll('.quick-edit-dropdown').forEach(el => el.remove());
 
@@ -11607,19 +11607,40 @@ const QuickEdit = {
     if (!project) return;
 
     const rect = element.getBoundingClientRect();
-    const designerList = designers.filter(d => d.category === '設計' || d.category === 'IC');
+
+    // 担当者タイプに応じてフィルタ
+    const categoryMap = {
+      'assigned_to': '設計',
+      'ic_assignee': 'IC',
+      'exterior_assignee': '外構',
+      'realestate_assignee': '不動産'
+    };
+    const labelMap = {
+      'assigned_to': '設計担当者',
+      'ic_assignee': 'IC担当者',
+      'exterior_assignee': '外構担当者',
+      'realestate_assignee': '不動産担当者'
+    };
+    const category = categoryMap[assigneeType] || '設計';
+    const label = labelMap[assigneeType] || '担当者';
+    const designerList = designers.filter(d => d.category === category);
+    const currentAssignee = project[assigneeType] || '';
 
     const dropdown = document.createElement('div');
     dropdown.className = 'quick-edit-dropdown';
-    dropdown.style.cssText = `position: fixed; top: ${rect.bottom + 4}px; left: ${rect.left}px; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 9999; min-width: 150px;`;
+    dropdown.style.cssText = `position: fixed; top: ${rect.bottom + 4}px; left: ${rect.left}px; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 9999; min-width: 150px; max-height: 300px; overflow-y: auto;`;
 
     dropdown.innerHTML = `
-      <div style="padding: 8px 12px; border-bottom: 1px solid var(--border-color); font-size: 12px; color: var(--text-secondary);">担当者を変更</div>
+      <div style="padding: 8px 12px; border-bottom: 1px solid var(--border-color); font-size: 12px; color: var(--text-secondary);">${label}を変更</div>
+      <div class="quick-edit-option" style="padding: 10px 12px; cursor: pointer; font-size: 14px; ${!currentAssignee ? 'background: var(--primary-light); font-weight: 500;' : ''}"
+           onmouseenter="this.style.background='var(--bg-secondary)'"
+           onmouseleave="this.style.background='${!currentAssignee ? 'var(--primary-light)' : ''}'"
+           onclick="QuickEdit.changeAssignee('${projectId}', '', '${assigneeType}')">（未設定）</div>
       ${designerList.map(d => `
-        <div class="quick-edit-option" style="padding: 10px 12px; cursor: pointer; font-size: 14px; ${project.assigned_to === d.name ? 'background: var(--primary-light); font-weight: 500;' : ''}"
+        <div class="quick-edit-option" style="padding: 10px 12px; cursor: pointer; font-size: 14px; ${currentAssignee === d.name ? 'background: var(--primary-light); font-weight: 500;' : ''}"
              onmouseenter="this.style.background='var(--bg-secondary)'"
-             onmouseleave="this.style.background='${project.assigned_to === d.name ? 'var(--primary-light)' : ''}'"
-             onclick="QuickEdit.changeAssignee('${projectId}', '${d.name}')">${d.name}</div>
+             onmouseleave="this.style.background='${currentAssignee === d.name ? 'var(--primary-light)' : ''}'"
+             onclick="QuickEdit.changeAssignee('${projectId}', '${d.name}', '${assigneeType}')">${d.name}</div>
       `).join('')}
     `;
 
@@ -11638,18 +11659,28 @@ const QuickEdit = {
     }
   },
 
-  async changeAssignee(projectId, assignee) {
+  async changeAssignee(projectId, assignee, assigneeType = 'assigned_to') {
     document.querySelectorAll('.quick-edit-dropdown').forEach(el => el.remove());
 
     const project = projects.find(p => p.id === projectId);
     if (!project) return;
 
-    const oldAssignee = project.assigned_to;
+    const labelMap = {
+      'assigned_to': '設計担当者',
+      'ic_assignee': 'IC担当者',
+      'exterior_assignee': '外構担当者',
+      'realestate_assignee': '不動産担当者'
+    };
+    const label = labelMap[assigneeType] || '担当者';
+    const oldAssignee = project[assigneeType];
     showStatus('保存中...', 'saving');
+
+    const updateData = { updated_at: new Date().toISOString() };
+    updateData[assigneeType] = assignee || null;
 
     const { error } = await supabase
       .from('projects')
-      .update({ assigned_to: assignee, updated_at: new Date().toISOString() })
+      .update(updateData)
       .eq('id', projectId);
 
     if (error) {
@@ -11661,17 +11692,17 @@ const QuickEdit = {
     UndoManager.record({
       type: 'UPDATE_PROJECT',
       projectId,
-      description: `${project.customer} - 担当者を${oldAssignee || '未割当'}から${assignee}に変更`,
-      oldValue: { assigned_to: oldAssignee },
-      newValue: { assigned_to: assignee }
+      description: `${project.customer} - ${label}を${oldAssignee || '未設定'}から${assignee || '未設定'}に変更`,
+      oldValue: { [assigneeType]: oldAssignee },
+      newValue: { [assigneeType]: assignee || null }
     });
 
-    project.assigned_to = assignee;
+    project[assigneeType] = assignee || null;
     project.updated_at = new Date().toISOString();
     renderProjects();
     renderSidebar();
     showStatus('保存済み', 'saved');
-    showToast(`担当者を${assignee}に変更しました`, 'success');
+    showToast(`${label}を${assignee || '未設定'}に変更しました`, 'success');
   }
 };
 
@@ -13472,6 +13503,18 @@ function generateWeeklyReport() {
     icProjects[d.name] = activeProjects.filter(p => p.ic_assignee === d.name);
   });
 
+  // 外構担当者別にグループ化
+  const exteriorProjects = {};
+  designers.filter(d => d.category === '外構').forEach(d => {
+    exteriorProjects[d.name] = activeProjects.filter(p => p.exterior_assignee === d.name);
+  });
+
+  // 不動産担当者別にグループ化
+  const realestateProjects = {};
+  designers.filter(d => d.category === '不動産').forEach(d => {
+    realestateProjects[d.name] = activeProjects.filter(p => p.realestate_assignee === d.name);
+  });
+
   // 担当者別セクションを生成（共通関数）
   const generateDesignerSection = (projs, name, categoryLabel, weekAgo) => {
     const projectDetails = projs.map(p => {
@@ -13512,6 +13555,16 @@ function generateWeeklyReport() {
     .map(([name, projs]) => generateDesignerSection(projs, name, 'IC', weekAgo))
     .join('');
 
+  const exteriorSections = Object.entries(exteriorProjects)
+    .filter(([name, projs]) => projs.length > 0)
+    .map(([name, projs]) => generateDesignerSection(projs, name, '外構', weekAgo))
+    .join('');
+
+  const realestateSections = Object.entries(realestateProjects)
+    .filter(([name, projs]) => projs.length > 0)
+    .map(([name, projs]) => generateDesignerSection(projs, name, '不動産', weekAgo))
+    .join('');
+
   const report = `
     <div class="report-card">
       <div class="report-header">
@@ -13540,6 +13593,16 @@ function generateWeeklyReport() {
       <div class="report-section">
         <div class="report-section-title">🎨 IC担当者別 案件状況</div>
         ${icSections}
+      </div>` : ''}
+      ${exteriorSections ? `
+      <div class="report-section">
+        <div class="report-section-title">🌳 外構担当者別 案件状況</div>
+        ${exteriorSections}
+      </div>` : ''}
+      ${realestateSections ? `
+      <div class="report-section">
+        <div class="report-section-title">🏠 不動産担当者別 案件状況</div>
+        ${realestateSections}
       </div>` : ''}
       ${completedThisWeek.length > 0 ? `
       <div class="report-section">
@@ -13591,6 +13654,18 @@ function generateMonthlyReport() {
     icProjects[d.name] = activeProjects.filter(p => p.ic_assignee === d.name);
   });
 
+  // 外構担当者別にグループ化
+  const exteriorProjects = {};
+  designers.filter(d => d.category === '外構').forEach(d => {
+    exteriorProjects[d.name] = activeProjects.filter(p => p.exterior_assignee === d.name);
+  });
+
+  // 不動産担当者別にグループ化
+  const realestateProjects = {};
+  designers.filter(d => d.category === '不動産').forEach(d => {
+    realestateProjects[d.name] = activeProjects.filter(p => p.realestate_assignee === d.name);
+  });
+
   // 担当者ごとのセクション生成（共通関数）
   const generateMonthlySection = (projs, name, category, monthAgo) => {
     const projectDetails = projs.map(p => {
@@ -13633,6 +13708,16 @@ function generateMonthlyReport() {
     .map(([name, projs]) => generateMonthlySection(projs, name, 'IC', monthAgo))
     .join('');
 
+  const exteriorSections = Object.entries(exteriorProjects)
+    .filter(([name, projs]) => projs.length > 0)
+    .map(([name, projs]) => generateMonthlySection(projs, name, '外構', monthAgo))
+    .join('');
+
+  const realestateSections = Object.entries(realestateProjects)
+    .filter(([name, projs]) => projs.length > 0)
+    .map(([name, projs]) => generateMonthlySection(projs, name, '不動産', monthAgo))
+    .join('');
+
   const report = `
     <div class="report-card">
       <div class="report-header">
@@ -13666,6 +13751,16 @@ function generateMonthlyReport() {
         <div class="report-section-title">🎨 IC担当者別 案件状況</div>
         ${icSections}
       </div>` : ''}
+      ${exteriorSections ? `
+      <div class="report-section">
+        <div class="report-section-title">🌳 外構担当者別 案件状況</div>
+        ${exteriorSections}
+      </div>` : ''}
+      ${realestateSections ? `
+      <div class="report-section">
+        <div class="report-section-title">🏠 不動産担当者別 案件状況</div>
+        ${realestateSections}
+      </div>` : ''}
       ${completedThisMonth.length > 0 ? `
       <div class="report-section">
         <div class="report-section-title">今月の完了案件</div>
@@ -13686,10 +13781,13 @@ function generateMonthlyReport() {
 }
 
 function exportAnalyticsCSV() {
-  const headers = ['案件名', '担当者', '商品', '進捗率', 'ステータス', '作成日'];
+  const headers = ['案件名', '設計担当', 'IC担当', '外構担当', '不動産担当', '商品', '進捗率', 'ステータス', '作成日'];
   const rows = projects.map(p => [
     p.customer,
     p.assigned_to || '',
+    p.ic_assignee || '',
+    p.exterior_assignee || '',
+    p.realestate_assignee || '',
     p.specifications || '',
     calculateProgress(p) + '%',
     p.is_archived ? '完了' : '進行中',
@@ -14735,13 +14833,16 @@ async function importFromKintone() {
 
 // kintoneへエクスポート（CSV）
 function exportToKintone() {
-  const headers = ['案件ID', 'kintone_record_id', '顧客名', '建築地', '設計担当', '商品', '進捗率', '間取確定日', '着工許可日', '変更契約前会議日', '更新日'];
+  const headers = ['案件ID', 'kintone_record_id', '顧客名', '建築地', '設計担当', 'IC担当', '外構担当', '不動産担当', '商品', '進捗率', '間取確定日', '着工許可日', '変更契約前会議日', '更新日'];
   const rows = projects.map(p => [
     p.id,
     p.kintone_record_id || '',
     p.customer,
     p.building_address || '',
     p.assigned_to,
+    p.ic_assignee || '',
+    p.exterior_assignee || '',
+    p.realestate_assignee || '',
     p.specifications,
     calculateProgress(p) + '%',
     p.layout_confirmed_date || '',
