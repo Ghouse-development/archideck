@@ -3,6 +3,17 @@
 -- 既存の8項目から新しい21項目へ変更
 -- =====================================================
 
+-- ステップ0: tasksテーブルにhas_email_buttonカラムを追加（存在しない場合）
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'tasks' AND column_name = 'has_email_button'
+  ) THEN
+    ALTER TABLE tasks ADD COLUMN has_email_button BOOLEAN DEFAULT true;
+  END IF;
+END $$;
+
 -- ステップ1: 既存ICタスクを削除（紐づけも自動削除される）
 DELETE FROM tasks WHERE category = 'IC';
 
