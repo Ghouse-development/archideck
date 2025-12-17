@@ -1593,6 +1593,17 @@ input:checked + .toggle-slider:before {
   width: 30%;
 }
 
+/* キーボードナビゲーション */
+.project-card.keyboard-focused {
+  outline: 3px solid var(--primary-color);
+  outline-offset: 2px;
+  box-shadow: var(--shadow-glow);
+}
+
+.project-card.keyboard-focused .card-header {
+  background: var(--primary-light);
+}
+
 /* カテゴリフィルター */
 .category-filter-btn {
   padding: 8px 16px;
@@ -6436,10 +6447,88 @@ function handleKeyboardShortcut(e) {
           e.preventDefault();
           toggleFavoriteFilter();
           break;
+        case 'j':
+          // 次のカードへ移動
+          e.preventDefault();
+          CardNavigation.next();
+          break;
+        case 'k':
+          // 前のカードへ移動
+          e.preventDefault();
+          CardNavigation.prev();
+          break;
+        case 'Enter':
+          // 選択カード編集
+          if (CardNavigation.currentIndex >= 0) {
+            e.preventDefault();
+            CardNavigation.edit();
+          }
+          break;
+        case 'x':
+          // カード選択トグル
+          e.preventDefault();
+          CardNavigation.toggleSelect();
+          break;
       }
     }
   }
 }
+
+// カードナビゲーション
+const CardNavigation = {
+  currentIndex: -1,
+
+  getCards() {
+    return [...document.querySelectorAll('#projectsContainer .project-card')];
+  },
+
+  highlightCard(index) {
+    const cards = this.getCards();
+    cards.forEach((card, i) => {
+      card.classList.remove('keyboard-focused');
+      if (i === index) {
+        card.classList.add('keyboard-focused');
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    });
+    this.currentIndex = index;
+  },
+
+  next() {
+    const cards = this.getCards();
+    if (cards.length === 0) return;
+    const newIndex = this.currentIndex < cards.length - 1 ? this.currentIndex + 1 : 0;
+    this.highlightCard(newIndex);
+  },
+
+  prev() {
+    const cards = this.getCards();
+    if (cards.length === 0) return;
+    const newIndex = this.currentIndex > 0 ? this.currentIndex - 1 : cards.length - 1;
+    this.highlightCard(newIndex);
+  },
+
+  edit() {
+    const cards = this.getCards();
+    if (this.currentIndex >= 0 && this.currentIndex < cards.length) {
+      const projectId = cards[this.currentIndex].dataset.projectId;
+      if (projectId) editProject(projectId);
+    }
+  },
+
+  toggleSelect() {
+    const cards = this.getCards();
+    if (this.currentIndex >= 0 && this.currentIndex < cards.length) {
+      const projectId = cards[this.currentIndex].dataset.projectId;
+      if (projectId) BatchOperations.toggle(projectId);
+    }
+  },
+
+  reset() {
+    this.currentIndex = -1;
+    this.getCards().forEach(card => card.classList.remove('keyboard-focused'));
+  }
+};
 
 // フィルターリセット
 function resetAllFilters() {
@@ -6565,6 +6654,19 @@ function showShortcutHelp() {
         </div>
         <div style="display: flex; justify-content: space-between; padding: 8px; background: var(--bg-tertiary); border-radius: 6px;">
           <span>Shift + ?</span><span>このヘルプを表示</span>
+        </div>
+        <div style="font-weight: 600; color: var(--primary-color); margin-top: 8px;">カードナビゲーション</div>
+        <div style="display: flex; justify-content: space-between; padding: 8px; background: var(--bg-tertiary); border-radius: 6px;">
+          <span>J</span><span>次のカードへ移動</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 8px; background: var(--bg-tertiary); border-radius: 6px;">
+          <span>K</span><span>前のカードへ移動</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 8px; background: var(--bg-tertiary); border-radius: 6px;">
+          <span>Enter</span><span>カードを編集</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 8px; background: var(--bg-tertiary); border-radius: 6px;">
+          <span>X</span><span>カード選択トグル</span>
         </div>
       </div>
     </div>
