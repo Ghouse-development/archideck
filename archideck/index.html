@@ -8623,6 +8623,36 @@ function renderProjectCard(project) {
       <span class="task-label">${taskDef.task_name}</span>${stateSelect}${emailBtn}</div>`;
   }).join('');
 
+  // IC業務内容を生成（IC担当者が設定されている場合のみ）
+  const icTasks = tasksV2.filter(t => t.category === 'IC').sort((a, b) => a.display_order - b.display_order);
+  const icTasksHtml = icTasks.map(taskDef => {
+    const key = taskDef.task_key;
+    const task = progressData[key] || { completed: false, date: '', state: '', due_date: '' };
+
+    const hasVendor = taskVendorMappings.some(m => m.task_id === taskDef.id);
+    const isInternalStatus = INTERNAL_STATUSES.includes(task.state);
+    const showEmailButton = taskDef.has_email_button !== false && hasVendor && !isInternalStatus;
+    const emailBtn = showEmailButton ?
+      `<button class="task-email-btn" onclick="openEmailFromTask('${project.id}', '${key}')" title="メール作成">📧</button>` : '';
+
+    let stateSelect = '';
+    const stateOptions = getTaskStateOptions(key);
+    if (stateOptions && Array.isArray(stateOptions)) {
+      const lastOption = stateOptions[stateOptions.length - 1];
+      let stateClass = getStateColorClass(task.state, lastOption, key);
+      let tooltip = '';
+      if (IC_MAKER_TASKS.includes(key) && task.state && task.state !== '-') {
+        if (!INTERNAL_STATUSES.includes(task.state)) {
+          tooltip = ` title="📧 ${task.state}にメール送信可能"`;
+        }
+      }
+      stateSelect = `<select class="task-state-select ${stateClass}" data-last-option="${lastOption}"${tooltip} onchange="updateTaskStateWithColor(this, '${project.id}', '${key}')">${stateOptions.map(state => `<option value="${state}" ${task.state === state ? 'selected' : ''}>${state || '-'}</option>`).join('')}</select>`;
+    }
+
+    return `<div class="task-item">
+      <span class="task-label">${taskDef.task_name}</span>${stateSelect}${emailBtn}</div>`;
+  }).join('');
+
   const isFavorite = FavoritesManager.isFavorite(project.id);
   const isSelected = BatchOperations.isSelected(project.id);
 
@@ -8656,7 +8686,9 @@ function renderProjectCard(project) {
 
     <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">📋 引継書</span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><textarea class="handover-content" id="handover_${project.id}" placeholder="引継書の内容を入力..."></textarea><button class="btn btn-small btn-ghost" style="margin-top:8px" onclick="saveHandover('${project.id}')">引継書を保存</button></div></div>
 
-    <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">📋 業務内容</span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><div class="tasks-grid">${tasksHtml}</div></div></div>
+    <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">📐 設計業務内容</span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><div class="tasks-grid">${tasksHtml}</div></div></div>
+
+    <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">🎨 IC業務内容</span><span class="card-section-toggle">▼</span></div><div class="card-section-content">${icTasks.length > 0 ? `<div class="tasks-grid">${icTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">ICタスクが登録されていません。設定 > ICタスク管理で「21項目に更新」ボタンをクリックしてください。</p>'}</div></div>
 
     <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--bg-secondary);display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;color:var(--text-muted)">更新: ${formatDateTime(project.updated_at)}</span><button class="btn btn-danger btn-small" onclick="deleteProject('${project.id}')">削除</button></div>
   </div>`;
