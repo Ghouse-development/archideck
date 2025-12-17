@@ -8784,7 +8784,22 @@ function renderProjectCard(project) {
         <button class="btn btn-ghost btn-small" onclick="editProject('${project.id}')">編集</button>
       </div>
     </div>
-    <div class="progress-section"><div class="progress-header"><span class="progress-label">設計進捗</span><span class="progress-value">${progress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width: ${progress}%"></div></div>${icProgress !== null ? `<div class="progress-header" style="margin-top:8px"><span class="progress-label">IC進捗</span><span class="progress-value">${icProgress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width: ${icProgress}%; background: var(--info-color)"></div></div>` : ''}</div>
+    ${(() => {
+      // 部署別進捗表示
+      if (currentUserCategory === 'admin' || !currentUserCategory) {
+        // 管理者: すべての進捗を表示
+        return `<div class="progress-section"><div class="progress-header"><span class="progress-label">設計進捗</span><span class="progress-value">${progress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width: ${progress}%"></div></div>${icProgress !== null ? `<div class="progress-header" style="margin-top:8px"><span class="progress-label">IC進捗</span><span class="progress-value">${icProgress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width: ${icProgress}%; background: var(--info-color)"></div></div>` : ''}</div>`;
+      } else if (currentUserCategory === '設計') {
+        // 設計担当: 設計進捗のみ
+        return `<div class="progress-section"><div class="progress-header"><span class="progress-label">設計進捗</span><span class="progress-value">${progress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width: ${progress}%"></div></div></div>`;
+      } else if (currentUserCategory === 'IC') {
+        // IC担当: IC進捗のみ
+        return icProgress !== null ? `<div class="progress-section"><div class="progress-header"><span class="progress-label">IC進捗</span><span class="progress-value">${icProgress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width: ${icProgress}%; background: var(--info-color)"></div></div></div>` : '<div class="progress-section"><p style="color: var(--text-muted); font-size: 13px;">IC担当者が設定されていません</p></div>';
+      } else {
+        // 外構・不動産: 進捗なし（タスクがまだない）
+        return '<div class="progress-section"><p style="color: var(--text-muted); font-size: 13px;">進捗管理は現在設定されていません</p></div>';
+      }
+    })()}
 
     <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">✅ タスク</span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><div id="projectTasksList_${project.id}" class="project-task-list"></div><div class="add-task-form"><input type="text" id="newTaskName_${project.id}" placeholder="タスク名" inputmode="text"><input type="date" id="newTaskDue_${project.id}"><button class="btn btn-small btn-primary" onclick="addProjectTask('${project.id}', document.getElementById('newTaskName_${project.id}').value, document.getElementById('newTaskDue_${project.id}').value)">追加</button></div></div></div>
 
@@ -8794,9 +8809,30 @@ function renderProjectCard(project) {
 
     <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">📋 引継書</span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><textarea class="handover-content" id="handover_${project.id}" placeholder="引継書の内容を入力..."></textarea><button class="btn btn-small btn-ghost" style="margin-top:8px" onclick="saveHandover('${project.id}')">引継書を保存</button></div></div>
 
+    ${(() => {
+      // 部署別業務内容表示
+      if (currentUserCategory === 'admin' || !currentUserCategory) {
+        // 管理者: すべての業務内容を表示
+        return `
     <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">📐 設計業務内容</span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><div class="tasks-grid">${tasksHtml}</div></div></div>
-
-    <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">🎨 IC業務内容</span><span class="card-section-toggle">▼</span></div><div class="card-section-content">${icTasks.length > 0 ? `<div class="tasks-grid">${icTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">ICタスクが登録されていません。設定 > ICタスク管理で「21項目に更新」ボタンをクリックしてください。</p>'}</div></div>
+    <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">🎨 IC業務内容</span><span class="card-section-toggle">▼</span></div><div class="card-section-content">${icTasks.length > 0 ? `<div class="tasks-grid">${icTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">ICタスクが登録されていません</p>'}</div></div>`;
+      } else if (currentUserCategory === '設計') {
+        // 設計担当: 設計業務内容のみ
+        return `<div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">📐 設計業務内容</span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><div class="tasks-grid">${tasksHtml}</div></div></div>`;
+      } else if (currentUserCategory === 'IC') {
+        // IC担当: IC業務内容のみ
+        return `<div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">🎨 IC業務内容</span><span class="card-section-toggle">▼</span></div><div class="card-section-content">${icTasks.length > 0 ? `<div class="tasks-grid">${icTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">ICタスクが登録されていません。設定 > ICタスク管理で「21項目に更新」ボタンをクリックしてください。</p>'}</div></div>`;
+      } else if (currentUserCategory === '外構') {
+        // 外構担当: 外構業務内容（現在はタスクなし）
+        return `<div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">🏡 外構業務内容</span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><p style="color: var(--text-muted); font-size: 13px;">外構タスクは現在設定されていません。設定 > タスク管理で外構タスクを追加できます。</p></div></div>`;
+      } else if (currentUserCategory === '不動産') {
+        // 不動産担当: 不動産業務内容（現在はタスクなし）
+        return `<div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">🏢 不動産業務内容</span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><p style="color: var(--text-muted); font-size: 13px;">不動産タスクは現在設定されていません。設定 > タスク管理で不動産タスクを追加できます。</p></div></div>`;
+      } else {
+        // その他: 何も表示しない
+        return '';
+      }
+    })()}
 
     <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--bg-secondary);display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;color:var(--text-muted)">更新: ${formatDateTime(project.updated_at)}</span><button class="btn btn-danger btn-small" onclick="deleteProject('${project.id}')">削除</button></div>
   </div>`;
