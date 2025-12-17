@@ -1191,6 +1191,99 @@ input:checked + .toggle-slider:before {
   justify-content: flex-end;
 }
 
+/* 統計ダッシュボード */
+.stats-dashboard {
+  background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-color);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 16px;
+}
+
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: var(--bg-primary);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.stat-card.stat-warning {
+  border-color: var(--warning-color);
+  background: var(--warning-light);
+}
+
+.stat-icon {
+  font-size: 28px;
+}
+
+.stat-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.stats-toggle-btn {
+  margin-top: 12px;
+  padding: 6px 12px;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--text-muted);
+  transition: all 0.2s;
+}
+
+.stats-toggle-btn:hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+/* 期限切れ・期限間近のカードスタイル */
+.project-card.overdue {
+  border-left: 4px solid var(--danger-color);
+  background: linear-gradient(90deg, var(--danger-light) 0%, var(--bg-primary) 8%);
+  animation: overdueGlow 2s ease-in-out infinite;
+}
+
+.project-card.due-soon {
+  border-left: 4px solid var(--warning-color);
+  background: linear-gradient(90deg, var(--warning-light) 0%, var(--bg-primary) 8%);
+}
+
+@keyframes overdueGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+  50% { box-shadow: 0 0 8px 2px rgba(220, 38, 38, 0.3); }
+}
+
 /* カテゴリフィルター */
 .category-filter-btn {
   padding: 8px 16px;
@@ -3796,6 +3889,24 @@ textarea:focus-visible {
               <option value="completed">IC完了 (100%)</option>
               <option value="no_ic">IC担当なし</option>
             </select>
+            <select class="select" id="icAssigneeFilter" onchange="renderProjects()" style="margin-left: 12px;">
+              <option value="">IC担当: すべて</option>
+            </select>
+            <select class="select" id="exteriorAssigneeFilter" onchange="renderProjects()" style="margin-left: 12px;">
+              <option value="">外構担当: すべて</option>
+            </select>
+            <select class="select" id="realestateAssigneeFilter" onchange="renderProjects()" style="margin-left: 12px;">
+              <option value="">不動産担当: すべて</option>
+            </select>
+            <select class="select" id="sortOrder" onchange="renderProjects()" style="margin-left: 12px;">
+              <option value="updated_desc">更新日↓ 新しい順</option>
+              <option value="updated_asc">更新日↑ 古い順</option>
+              <option value="progress_desc">進捗率↓ 高い順</option>
+              <option value="progress_asc">進捗率↑ 低い順</option>
+              <option value="customer_asc">顧客名 A-Z</option>
+              <option value="customer_desc">顧客名 Z-A</option>
+              <option value="created_desc">作成日↓ 新しい順</option>
+            </select>
           </div>
           <div class="toolbar-right">
             <div style="position: relative; display: inline-block;">
@@ -3813,6 +3924,47 @@ textarea:focus-visible {
             <button class="btn btn-ghost" onclick="exportCSV()" title="CSV/JSON/印刷出力">📤 出力</button>
             <button class="btn btn-primary" onclick="openProjectModal()">+ 案件追加</button>
       </div>
+    </div>
+    <!-- 統計ダッシュボード -->
+    <div id="statsDashboard" class="stats-dashboard" style="display: none;">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">📊</div>
+          <div class="stat-content">
+            <div class="stat-value" id="statTotalProjects">0</div>
+            <div class="stat-label">アクティブ案件</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📐</div>
+          <div class="stat-content">
+            <div class="stat-value" id="statDesignProgress">0%</div>
+            <div class="stat-label">平均設計進捗</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🎨</div>
+          <div class="stat-content">
+            <div class="stat-value" id="statICProgress">0%</div>
+            <div class="stat-label">平均IC進捗</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">✅</div>
+          <div class="stat-content">
+            <div class="stat-value" id="statCompletedThisMonth">0</div>
+            <div class="stat-label">今月完了</div>
+          </div>
+        </div>
+        <div class="stat-card stat-warning" id="statOverdueCard" style="display: none;">
+          <div class="stat-icon">⚠️</div>
+          <div class="stat-content">
+            <div class="stat-value" id="statOverdue">0</div>
+            <div class="stat-label">期限超過</div>
+          </div>
+        </div>
+      </div>
+      <button class="stats-toggle-btn" onclick="toggleStatsDashboard()">統計を非表示</button>
     </div>
     <div class="cards-container">
       <div class="cards-grid" id="projectsGrid"></div>
@@ -5936,6 +6088,71 @@ function handleKeyboardShortcut(e) {
         break;
     }
   }
+
+  // 数字キーでタブ切り替え（入力中でない場合）
+  if (!e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey) {
+    if (document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA' && document.activeElement.tagName !== 'SELECT') {
+      switch (e.key) {
+        case '1':
+          switchTab('projects');
+          break;
+        case '2':
+          switchTab('analytics');
+          break;
+        case '3':
+          switchTab('settings');
+          break;
+        case 'r':
+          // フィルターリセット
+          e.preventDefault();
+          resetAllFilters();
+          break;
+        case 'd':
+          // 統計ダッシュボード切り替え
+          e.preventDefault();
+          toggleStatsDashboard();
+          break;
+        case 'f':
+          // お気に入りフィルター切り替え
+          e.preventDefault();
+          toggleFavoriteFilter();
+          break;
+      }
+    }
+  }
+}
+
+// フィルターリセット
+function resetAllFilters() {
+  const specFilter = document.getElementById('specFilter');
+  const archiveFilter = document.getElementById('archiveFilter');
+  const icProgressFilter = document.getElementById('icProgressFilter');
+  const icAssigneeFilter = document.getElementById('icAssigneeFilter');
+  const exteriorAssigneeFilter = document.getElementById('exteriorAssigneeFilter');
+  const realestateAssigneeFilter = document.getElementById('realestateAssigneeFilter');
+  const sortOrder = document.getElementById('sortOrder');
+  const searchQuery = document.getElementById('searchQuery');
+
+  if (specFilter) specFilter.value = '';
+  if (archiveFilter) archiveFilter.value = 'active';
+  if (icProgressFilter) icProgressFilter.value = '';
+  if (icAssigneeFilter) icAssigneeFilter.value = '';
+  if (exteriorAssigneeFilter) exteriorAssigneeFilter.value = '';
+  if (realestateAssigneeFilter) realestateAssigneeFilter.value = '';
+  if (sortOrder) sortOrder.value = 'updated_desc';
+  if (searchQuery) searchQuery.value = '';
+
+  renderProjects();
+  showToast('フィルターをリセットしました', 'info');
+}
+
+// お気に入りフィルター切り替え
+function toggleFavoriteFilter() {
+  const archiveFilter = document.getElementById('archiveFilter');
+  if (archiveFilter) {
+    archiveFilter.value = archiveFilter.value === 'favorites' ? 'active' : 'favorites';
+    renderProjects();
+  }
 }
 
 function isLoginScreen() {
@@ -5945,18 +6162,10 @@ function isLoginScreen() {
 
 function showShortcutHelp() {
   const helpContent = `
-    <div style="padding: 20px;">
+    <div style="padding: 20px; max-height: 80vh; overflow-y: auto;">
       <h3 style="margin-bottom: 16px; font-size: 18px;">⌨️ キーボードショートカット</h3>
-      <div style="display: grid; gap: 12px;">
-        <div style="display: flex; justify-content: space-between; padding: 8px; background: var(--bg-tertiary); border-radius: 6px;">
-          <span>Ctrl/Cmd + Z</span><span>元に戻す（Undo）</span>
-        </div>
-        <div style="display: flex; justify-content: space-between; padding: 8px; background: var(--bg-tertiary); border-radius: 6px;">
-          <span>Ctrl/Cmd + Shift + Z</span><span>やり直す（Redo）</span>
-        </div>
-        <div style="display: flex; justify-content: space-between; padding: 8px; background: var(--bg-tertiary); border-radius: 6px;">
-          <span>Ctrl/Cmd + Y</span><span>やり直す（Redo）</span>
-        </div>
+      <div style="display: grid; gap: 8px;">
+        <div style="font-weight: 600; color: var(--primary-color); margin-top: 8px;">基本操作</div>
         <div style="display: flex; justify-content: space-between; padding: 8px; background: var(--bg-tertiary); border-radius: 6px;">
           <span>Ctrl/Cmd + N</span><span>新規案件作成</span>
         </div>
@@ -5967,13 +6176,40 @@ function showShortcutHelp() {
           <span>Ctrl/Cmd + K</span><span>検索にフォーカス</span>
         </div>
         <div style="display: flex; justify-content: space-between; padding: 8px; background: var(--bg-tertiary); border-radius: 6px;">
-          <span>Ctrl/Cmd + E</span><span>CSV出力</span>
+          <span>Escape</span><span>モーダルを閉じる</span>
+        </div>
+        <div style="font-weight: 600; color: var(--primary-color); margin-top: 8px;">タブ切り替え</div>
+        <div style="display: flex; justify-content: space-between; padding: 8px; background: var(--bg-tertiary); border-radius: 6px;">
+          <span>1</span><span>案件タブ</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 8px; background: var(--bg-tertiary); border-radius: 6px;">
+          <span>2</span><span>分析タブ</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 8px; background: var(--bg-tertiary); border-radius: 6px;">
+          <span>3</span><span>設定タブ</span>
+        </div>
+        <div style="font-weight: 600; color: var(--primary-color); margin-top: 8px;">フィルター・表示</div>
+        <div style="display: flex; justify-content: space-between; padding: 8px; background: var(--bg-tertiary); border-radius: 6px;">
+          <span>R</span><span>フィルターリセット</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 8px; background: var(--bg-tertiary); border-radius: 6px;">
+          <span>D</span><span>統計ダッシュボード切り替え</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 8px; background: var(--bg-tertiary); border-radius: 6px;">
+          <span>F</span><span>お気に入りフィルター切り替え</span>
+        </div>
+        <div style="font-weight: 600; color: var(--primary-color); margin-top: 8px;">編集・選択</div>
+        <div style="display: flex; justify-content: space-between; padding: 8px; background: var(--bg-tertiary); border-radius: 6px;">
+          <span>Ctrl/Cmd + Z</span><span>元に戻す（Undo）</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 8px; background: var(--bg-tertiary); border-radius: 6px;">
+          <span>Ctrl/Cmd + Shift + Z</span><span>やり直す（Redo）</span>
         </div>
         <div style="display: flex; justify-content: space-between; padding: 8px; background: var(--bg-tertiary); border-radius: 6px;">
           <span>Ctrl/Cmd + A</span><span>全案件選択</span>
         </div>
         <div style="display: flex; justify-content: space-between; padding: 8px; background: var(--bg-tertiary); border-radius: 6px;">
-          <span>Escape</span><span>モーダルを閉じる</span>
+          <span>Ctrl/Cmd + E</span><span>CSV出力</span>
         </div>
         <div style="display: flex; justify-content: space-between; padding: 8px; background: var(--bg-tertiary); border-radius: 6px;">
           <span>Shift + ?</span><span>このヘルプを表示</span>
@@ -6082,6 +6318,7 @@ async function init() {
 
     renderDesignerListInline();  // スタッフ管理
     renderCategoryFilters();      // カテゴリフィルター
+    populateAssigneeFilters();    // 担当者フィルター
     renderVendorsV2();            // 業者管理
     renderCategoriesList();       // カテゴリ管理
     renderTasksManagement();      // タスク管理
@@ -7353,6 +7590,30 @@ function renderCategoryFilters() {
   container.innerHTML = html;
 }
 
+// 担当者フィルターのドロップダウンを初期化
+function populateAssigneeFilters() {
+  // IC担当者フィルター
+  const icFilter = document.getElementById('icAssigneeFilter');
+  if (icFilter) {
+    const icAssignees = [...new Set(projects.map(p => p.ic_assignee).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ja'));
+    icFilter.innerHTML = '<option value="">IC担当: すべて</option>' + icAssignees.map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join('');
+  }
+
+  // 外構担当者フィルター
+  const exteriorFilter = document.getElementById('exteriorAssigneeFilter');
+  if (exteriorFilter) {
+    const exteriorAssignees = [...new Set(projects.map(p => p.exterior_assignee).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ja'));
+    exteriorFilter.innerHTML = '<option value="">外構担当: すべて</option>' + exteriorAssignees.map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join('');
+  }
+
+  // 不動産担当者フィルター
+  const realestateFilter = document.getElementById('realestateAssigneeFilter');
+  if (realestateFilter) {
+    const realestateAssignees = [...new Set(projects.map(p => p.realestate_assignee).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ja'));
+    realestateFilter.innerHTML = '<option value="">不動産担当: すべて</option>' + realestateAssignees.map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join('');
+  }
+}
+
 // ============================================
 // 商品管理
 // ============================================
@@ -8563,11 +8824,23 @@ function renderProjects() {
       const icProgress = calculateICProgress(p);
       if (icProgressFilter === 'no_ic' && p.ic_assignee) return false;
       if (icProgressFilter === 'no_ic' && !p.ic_assignee) return true;
-      if (!p.ic_assignee) return false; // IC担当なしは他のフィルターでは除外
+      if (!p.ic_assignee) return false;
       if (icProgressFilter === 'not_started' && icProgress !== 0) return false;
       if (icProgressFilter === 'in_progress' && (icProgress === 0 || icProgress === 100)) return false;
       if (icProgressFilter === 'completed' && icProgress !== 100) return false;
     }
+
+    // IC担当者フィルター
+    const icAssigneeFilter = document.getElementById('icAssigneeFilter')?.value || '';
+    if (icAssigneeFilter && (p.ic_assignee || '') !== icAssigneeFilter) return false;
+
+    // 外構担当者フィルター
+    const exteriorAssigneeFilter = document.getElementById('exteriorAssigneeFilter')?.value || '';
+    if (exteriorAssigneeFilter && (p.exterior_assignee || '') !== exteriorAssigneeFilter) return false;
+
+    // 不動産担当者フィルター
+    const realestateAssigneeFilter = document.getElementById('realestateAssigneeFilter')?.value || '';
+    if (realestateAssigneeFilter && (p.realestate_assignee || '') !== realestateAssigneeFilter) return false;
 
     return true;
   });
@@ -8575,11 +8848,33 @@ function renderProjects() {
   log('✅ フィルタ後の案件数:', filtered.length);
   log('✅ フィルタ後の案件:', filtered.map(p => ({ customer: p.customer, assigned_to: p.assigned_to })));
 
-  // お気に入りを先頭にソート
+  // ソート処理
+  const sortOrder = document.getElementById('sortOrder')?.value || 'updated_desc';
   filtered.sort((a, b) => {
+    // まずお気に入りを優先
     const aFav = FavoritesManager.isFavorite(a.id) ? 1 : 0;
     const bFav = FavoritesManager.isFavorite(b.id) ? 1 : 0;
-    return bFav - aFav;
+    if (aFav !== bFav) return bFav - aFav;
+
+    // 次に選択されたソート順
+    switch (sortOrder) {
+      case 'updated_desc':
+        return new Date(b.updated_at || 0) - new Date(a.updated_at || 0);
+      case 'updated_asc':
+        return new Date(a.updated_at || 0) - new Date(b.updated_at || 0);
+      case 'progress_desc':
+        return calculateProgress(b) - calculateProgress(a);
+      case 'progress_asc':
+        return calculateProgress(a) - calculateProgress(b);
+      case 'customer_asc':
+        return (a.customer || '').localeCompare(b.customer || '', 'ja');
+      case 'customer_desc':
+        return (b.customer || '').localeCompare(a.customer || '', 'ja');
+      case 'created_desc':
+        return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+      default:
+        return new Date(b.updated_at || 0) - new Date(a.updated_at || 0);
+    }
   });
 
   if (filtered.length === 0) {
@@ -8605,6 +8900,80 @@ function renderProjects() {
       );
     }
   }, 100);
+
+  // 統計ダッシュボード更新
+  updateStatsDashboard();
+}
+
+// ============================================
+// 統計ダッシュボード機能
+// ============================================
+let statsVisible = localStorage.getItem('statsVisible') !== 'false';
+
+function toggleStatsDashboard() {
+  statsVisible = !statsVisible;
+  localStorage.setItem('statsVisible', statsVisible);
+  const dashboard = document.getElementById('statsDashboard');
+  if (dashboard) {
+    dashboard.style.display = statsVisible ? 'block' : 'none';
+    dashboard.querySelector('.stats-toggle-btn').textContent = statsVisible ? '統計を非表示' : '統計を表示';
+  }
+}
+
+function updateStatsDashboard() {
+  const dashboard = document.getElementById('statsDashboard');
+  if (!dashboard) return;
+
+  // 表示/非表示
+  dashboard.style.display = statsVisible ? 'block' : 'none';
+
+  // アクティブ案件数
+  const activeProjects = projects.filter(p => !p.is_archived);
+  document.getElementById('statTotalProjects').textContent = activeProjects.length;
+
+  // 平均設計進捗
+  if (activeProjects.length > 0) {
+    const avgDesignProgress = Math.round(activeProjects.reduce((sum, p) => sum + calculateProgress(p), 0) / activeProjects.length);
+    document.getElementById('statDesignProgress').textContent = avgDesignProgress + '%';
+  } else {
+    document.getElementById('statDesignProgress').textContent = '0%';
+  }
+
+  // 平均IC進捗
+  const projectsWithIC = activeProjects.filter(p => p.ic_assignee);
+  if (projectsWithIC.length > 0) {
+    const avgICProgress = Math.round(projectsWithIC.reduce((sum, p) => sum + (calculateICProgress(p) || 0), 0) / projectsWithIC.length);
+    document.getElementById('statICProgress').textContent = avgICProgress + '%';
+  } else {
+    document.getElementById('statICProgress').textContent = '-';
+  }
+
+  // 今月完了数
+  const now = new Date();
+  const thisMonth = now.getMonth();
+  const thisYear = now.getFullYear();
+  const completedThisMonth = projects.filter(p => {
+    if (!p.is_archived) return false;
+    const archivedDate = new Date(p.updated_at);
+    return archivedDate.getMonth() === thisMonth && archivedDate.getFullYear() === thisYear;
+  }).length;
+  document.getElementById('statCompletedThisMonth').textContent = completedThisMonth;
+
+  // 期限超過（期限が設定されていて超過しているもの）
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const overdueProjects = activeProjects.filter(p => {
+    const deadline = DeadlineManager.getDeadline(p.id);
+    if (!deadline) return false;
+    return new Date(deadline) < today;
+  });
+  const overdueCard = document.getElementById('statOverdueCard');
+  if (overdueProjects.length > 0) {
+    overdueCard.style.display = 'flex';
+    document.getElementById('statOverdue').textContent = overdueProjects.length;
+  } else {
+    overdueCard.style.display = 'none';
+  }
 }
 
 // 案件カードにスクロール
@@ -8764,7 +9133,14 @@ function renderProjectCard(project) {
   const isFavorite = FavoritesManager.isFavorite(project.id);
   const isSelected = BatchOperations.isSelected(project.id);
 
-  return `<div class="project-card ${isFavorite ? 'favorite' : ''} ${isSelected ? 'selected' : ''}" data-project-id="${project.id}">
+  // 期限超過チェック
+  const deadline = DeadlineManager.getDeadline(project.id);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const isOverdue = deadline && new Date(deadline) < today && !project.is_archived;
+  const isDueSoon = deadline && !isOverdue && (new Date(deadline) - today) <= 3 * 24 * 60 * 60 * 1000 && !project.is_archived;
+
+  return `<div class="project-card ${isFavorite ? 'favorite' : ''} ${isSelected ? 'selected' : ''} ${isOverdue ? 'overdue' : ''} ${isDueSoon ? 'due-soon' : ''}" data-project-id="${project.id}">
     <div class="card-header">
       <div style="display: flex; align-items: flex-start; gap: 8px;">
         <input type="checkbox" class="batch-checkbox" data-project-id="${project.id}" ${isSelected ? 'checked' : ''} onclick="event.stopPropagation(); BatchOperations.toggle('${project.id}')" title="選択">
@@ -11608,9 +11984,95 @@ const BatchOperations = {
       <button class="btn btn-ghost btn-small" onclick="BatchOperations.archiveSelected()">📦 一括完了</button>
       <button class="btn btn-ghost btn-small" onclick="BatchOperations.showAssignModal()">👤 担当変更</button>
       <button class="btn btn-ghost btn-small" onclick="BatchOperations.showICTaskModal()">🎨 IC一括更新</button>
+      <button class="btn btn-ghost btn-small" onclick="BatchOperations.showDeadlineModal()">📅 期限設定</button>
+      <button class="btn btn-danger btn-small" onclick="BatchOperations.deleteSelected()">🗑️ 一括削除</button>
       <button class="btn btn-ghost btn-small" onclick="BatchOperations.deselectAll()">✕ 選択解除</button>
     `;
     document.body.appendChild(toolbar);
+  },
+
+  showDeadlineModal() {
+    if (this.selected.size === 0) return;
+
+    const modal = document.createElement('div');
+    modal.id = 'batchDeadlineModal';
+    modal.className = 'modal-overlay';
+    modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 10000;';
+
+    modal.innerHTML = `
+      <div class="modal-content" style="background: var(--bg-primary); border-radius: 12px; max-width: 400px; width: 90%;">
+        <div class="modal-header" style="padding: 20px; border-bottom: 1px solid var(--border-color);">
+          <h3 style="font-size: 18px; font-weight: 600;">📅 一括期限設定</h3>
+        </div>
+        <div class="modal-body" style="padding: 20px;">
+          <p style="margin-bottom: 16px; color: var(--text-secondary);">${this.selected.size}件の案件に期限を設定します</p>
+          <input type="date" id="batchDeadline" class="form-input" style="width: 100%;">
+        </div>
+        <div class="modal-footer" style="padding: 16px 20px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 12px;">
+          <button class="btn btn-ghost" onclick="document.getElementById('batchDeadlineModal').remove()">キャンセル</button>
+          <button class="btn btn-primary" onclick="BatchOperations.applyDeadline()">設定</button>
+        </div>
+      </div>
+    `;
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) modal.remove();
+    });
+    document.body.appendChild(modal);
+  },
+
+  async applyDeadline() {
+    const deadline = document.getElementById('batchDeadline').value;
+    if (!deadline) {
+      showToast('期限を選択してください', 'error');
+      return;
+    }
+
+    document.getElementById('batchDeadlineModal').remove();
+    showStatus('処理中...', 'saving');
+    let count = 0;
+
+    for (const projectId of this.selected) {
+      DeadlineManager.setDeadline(projectId, deadline);
+      count++;
+    }
+
+    this.selected.clear();
+    this.updateUI();
+    renderProjects();
+    showStatus('保存済み', 'saved');
+    showToast(`${count}件に期限を設定しました`, 'success');
+  },
+
+  async deleteSelected() {
+    if (this.selected.size === 0) return;
+
+    const confirmed = confirm(`${this.selected.size}件の案件を完全に削除しますか？この操作は元に戻せません。`);
+    if (!confirmed) return;
+
+    const doubleConfirm = confirm('本当に削除しますか？');
+    if (!doubleConfirm) return;
+
+    showStatus('処理中...', 'saving');
+    let count = 0;
+
+    for (const projectId of this.selected) {
+      const { error } = await supabase
+        .from('projects')
+        .delete()
+        .eq('id', projectId);
+
+      if (!error) {
+        projects = projects.filter(p => p.id !== projectId);
+        count++;
+      }
+    }
+
+    this.selected.clear();
+    this.updateUI();
+    renderProjects();
+    renderSidebar();
+    showStatus('保存済み', 'saved');
+    showToast(`${count}件を削除しました`, 'success');
   },
 
   async archiveSelected() {
