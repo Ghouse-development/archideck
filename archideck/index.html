@@ -8442,6 +8442,7 @@ function renderProjectCard(project) {
   const progress = calculateProgress(project);
   const icProgress = calculateICProgress(project);
   const progressData = project.progress || {};
+  const staleDays = getProjectStaleDays(project);
   const tasks = getTasksForAssignee(project.assigned_to);
 
   // 全タスク完了チェック
@@ -8526,7 +8527,7 @@ function renderProjectCard(project) {
         <input type="checkbox" class="batch-checkbox" data-project-id="${project.id}" ${isSelected ? 'checked' : ''} onclick="event.stopPropagation(); BatchOperations.toggle('${project.id}')" title="選択">
         <button class="favorite-btn ${isFavorite ? 'active' : ''}" onclick="event.stopPropagation(); FavoritesManager.toggle('${project.id}')" title="${isFavorite ? 'お気に入り解除' : 'お気に入り登録'}">${isFavorite ? '★' : '☆'}</button>
         <div>
-          <div class="card-title"><span class="customer-name">${escapeHtml(project.customer)}</span><span class="badge badge-primary">${escapeHtml(project.specifications || 'LIFE')}</span>${project.is_archived ? '<span class="badge badge-success">完了済み</span>' : ''}</div>
+          <div class="card-title"><span class="customer-name">${escapeHtml(project.customer)}</span><span class="badge badge-primary">${escapeHtml(project.specifications || 'LIFE')}</span>${project.is_archived ? '<span class="badge badge-success">完了済み</span>' : ''}${!project.is_archived && staleDays >= 7 ? `<span class="badge badge-warning" title="${staleDays}日間未更新">⚠️ ${staleDays}日</span>` : ''}</div>
           <div class="card-subtitle"><span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this)" style="cursor: pointer; text-decoration: underline dotted;" title="クリックで担当者変更">設計：${escapeHtml(project.assigned_to || '未割当')}</span>${project.ic_assignee ? `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'ic_assignee')" style="cursor: pointer; text-decoration: underline dotted;" title="クリックでIC担当者変更"> | IC：${escapeHtml(project.ic_assignee)}</span>` : `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'ic_assignee')" style="cursor: pointer; color: var(--text-muted); font-size: 11px;" title="IC担当者を追加"> | +IC</span>`}${project.exterior_assignee ? `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'exterior_assignee')" style="cursor: pointer; text-decoration: underline dotted;" title="クリックで外構担当者変更"> | 外構：${escapeHtml(project.exterior_assignee)}</span>` : `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'exterior_assignee')" style="cursor: pointer; color: var(--text-muted); font-size: 11px;" title="外構担当者を追加"> | +外構</span>`}${project.realestate_assignee ? `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'realestate_assignee')" style="cursor: pointer; text-decoration: underline dotted;" title="クリックで不動産担当者変更"> | 不動産：${escapeHtml(project.realestate_assignee)}</span>` : `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'realestate_assignee')" style="cursor: pointer; color: var(--text-muted); font-size: 11px;" title="不動産担当者を追加"> | +不動産</span>`}${(() => { const ds = DeadlineManager.getStatus(project.id); return ds ? ` <span style="background: ${ds.color}; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-left: 8px;" onclick="event.stopPropagation(); DeadlineManager.showModal('${project.id}')" title="期限を変更">📅 ${ds.label}</span>` : ` <span style="color: var(--text-muted); font-size: 11px; cursor: pointer;" onclick="event.stopPropagation(); DeadlineManager.showModal('${project.id}')" title="期限を設定">📅 期限設定</span>`; })()}</div>
         </div>
       </div>
@@ -8562,6 +8563,15 @@ function calculateProgress(project) {
   if (tasks.length === 0) return 0;
   const completed = tasks.filter(taskDef => progressData[taskDef.task_key]?.completed).length;
   return Math.round((completed / tasks.length) * 100);
+}
+
+// 案件の未更新日数を計算
+function getProjectStaleDays(project) {
+  if (!project.updated_at) return 0;
+  const lastUpdate = new Date(project.updated_at);
+  const now = new Date();
+  const diffMs = now - lastUpdate;
+  return Math.floor(diffMs / (1000 * 60 * 60 * 24));
 }
 
 // IC担当者用の進捗率計算（ICタスクベース）
