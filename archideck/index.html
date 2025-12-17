@@ -3922,10 +3922,16 @@ textarea:focus-visible {
               <h3 style="margin: 0; font-size: 18px;">🎨 ICタスク管理</h3>
             </div>
             <div class="toolbar-right">
+              <button class="btn btn-warning" onclick="runICTasksMigration()" title="21項目のICタスクに更新">🔄 21項目に更新</button>
               <button class="btn btn-primary" onclick="openTaskModal('IC')">+ ICタスク追加</button>
             </div>
           </div>
           <p style="margin-bottom: 16px; color: var(--text-secondary);">IC担当者が使用するタスクを管理します。</p>
+          <div id="icMigrationNotice" style="display: none; margin-bottom: 16px; padding: 12px; background: var(--warning-light); border-radius: var(--radius-md); border-left: 4px solid var(--warning-color);">
+            <p style="margin: 0; font-size: 13px; color: var(--warning-color);">
+              ⚠️ <strong>ICタスクが古い形式です</strong>: 「21項目に更新」ボタンをクリックして、新しい21項目のICタスクに更新してください。
+            </p>
+          </div>
           <div style="margin-bottom: 16px; padding: 12px; background: var(--primary-light); border-radius: var(--radius-md); border-left: 4px solid var(--primary-color);">
             <p style="margin: 0; font-size: 13px; color: var(--primary-color);">
               💡 <strong>メール送信機能の設定</strong>: キッチン・お風呂・洗面・トイレ・照明プランのメーカー選択に対応したメールを送信するには、「🏢 業者・メール管理」タブで各メーカーのメールアドレスを設定してください。
@@ -6613,6 +6619,105 @@ async function loadTasksV2() {
 
   tasksV2 = data || [];
   log('✅ タスク読み込み完了:', tasksV2.length, '件');
+
+  // ICタスクが21項目未満の場合は警告表示
+  const icTasks = tasksV2.filter(t => t.category === 'IC');
+  const notice = document.getElementById('icMigrationNotice');
+  if (notice) {
+    notice.style.display = icTasks.length < 21 ? 'block' : 'none';
+  }
+}
+
+// ICタスク21項目マイグレーション実行
+async function runICTasksMigration() {
+  if (!confirm('ICタスクを21項目に更新します。既存のICタスクは置き換えられます。続行しますか？')) {
+    return;
+  }
+
+  showToast('🔄 ICタスクを更新中...', 'info');
+
+  try {
+    // ステップ0: has_email_buttonカラムが存在するか確認し、なければ追加
+    // Supabaseでは直接ALTER TABLEできないため、RPC経由で実行
+
+    // ステップ1: 既存ICタスクを削除
+    const { error: deleteError } = await supabase
+      .from('tasks')
+      .delete()
+      .eq('category', 'IC');
+
+    if (deleteError) {
+      throw new Error('既存ICタスク削除エラー: ' + deleteError.message);
+    }
+    log('✅ 既存ICタスク削除完了');
+
+    // ステップ2: 業者カテゴリを追加
+    const newCategories = [
+      { name: 'キッチン', display_order: 10 },
+      { name: 'お風呂', display_order: 11 },
+      { name: '洗面', display_order: 12 },
+      { name: 'トイレ', display_order: 13 },
+      { name: '照明', display_order: 14 },
+      { name: '建具', display_order: 15 },
+      { name: 'カーテン', display_order: 16 },
+      { name: '造作', display_order: 17 },
+      { name: '家具', display_order: 18 }
+    ];
+
+    for (const cat of newCategories) {
+      await supabase.from('vendor_categories').upsert(cat, { onConflict: 'name' });
+    }
+    log('✅ 業者カテゴリ追加完了');
+
+    // ステップ3: 新しいICタスク21項目を挿入
+    const newICTasks = [
+      { task_key: 'ic_funding_check', task_name: '資金計画・引継書確認', category: 'IC', display_order: 1, has_state: true, state_options: '["-", "確認済"]', has_email_button: false },
+      { task_key: 'ic_kitchen', task_name: 'キッチン・カップボード', category: 'IC', display_order: 2, has_state: true, state_options: '["-", "GRAFTECT", "オリジナル", "Lixil", "Panasonic", "Takarastandard"]', has_email_button: true },
+      { task_key: 'ic_bath', task_name: 'お風呂', category: 'IC', display_order: 3, has_state: true, state_options: '["-", "Lixil", "Panasonic", "Takarastandard"]', has_email_button: true },
+      { task_key: 'ic_washroom', task_name: '洗面', category: 'IC', display_order: 4, has_state: true, state_options: '["-", "TOTO", "AICA", "Lixil", "Panasonic", "Takarastandard"]', has_email_button: true },
+      { task_key: 'ic_toilet', task_name: 'トイレ', category: 'IC', display_order: 5, has_state: true, state_options: '["-", "TOTO", "Lixil", "Panasonic"]', has_email_button: true },
+      { task_key: 'ic_lighting', task_name: '照明プラン', category: 'IC', display_order: 6, has_state: true, state_options: '["-", "ODELIC", "DAIKO", "KOIZUMI", "Panasonic"]', has_email_button: true },
+      { task_key: 'ic_spec_doc', task_name: '仕様書作成', category: 'IC', display_order: 7, has_state: true, state_options: '["-", "作成済"]', has_email_button: false },
+      { task_key: 'ic_longterm_doc', task_name: '長期資料送付', category: 'IC', display_order: 8, has_state: true, state_options: '["-", "送付済"]', has_email_button: false },
+      { task_key: 'ic_execution_drawing', task_name: '実施図', category: 'IC', display_order: 9, has_state: true, state_options: '["-", "修正依頼済", "図面チェック済"]', has_email_button: false },
+      { task_key: 'ic_exterior_pres', task_name: '外装プレゼン作成', category: 'IC', display_order: 10, has_state: true, state_options: '["-", "作成済"]', has_email_button: false },
+      { task_key: 'ic_interior_pres', task_name: '内装プレゼン作成', category: 'IC', display_order: 11, has_state: true, state_options: '["-", "作成済"]', has_email_button: false },
+      { task_key: 'ic_tategu', task_name: '建具プレゼン依頼', category: 'IC', display_order: 12, has_state: true, state_options: '["-", "依頼済", "保存済"]', has_email_button: true },
+      { task_key: 'ic_tile_pres', task_name: 'タイルプレゼン作成', category: 'IC', display_order: 13, has_state: true, state_options: '["-", "作成済"]', has_email_button: false },
+      { task_key: 'ic_exterior_meeting', task_name: '外構への打合せ依頼', category: 'IC', display_order: 14, has_state: true, state_options: '["-", "依頼済"]', has_email_button: false },
+      { task_key: 'ic_curtain', task_name: 'カーテン紹介', category: 'IC', display_order: 15, has_state: true, state_options: '["-", "依頼済"]', has_email_button: true },
+      { task_key: 'ic_zousaku', task_name: '造作業者紹介', category: 'IC', display_order: 16, has_state: true, state_options: '["-", "無し", "依頼済"]', has_email_button: true },
+      { task_key: 'ic_furniture', task_name: '家具見積依頼', category: 'IC', display_order: 17, has_state: true, state_options: '["-", "無し", "依頼済"]', has_email_button: true },
+      { task_key: 'ic_final_checklist', task_name: '確定図チェックリスト', category: 'IC', display_order: 18, has_state: true, state_options: '["-", "実施済"]', has_email_button: false },
+      { task_key: 'ic_op_check', task_name: 'OP見積チェック', category: 'IC', display_order: 19, has_state: true, state_options: '["-", "依頼済", "保存済"]', has_email_button: false },
+      { task_key: 'ic_meeting_followup', task_name: '会議後確認事項送付', category: 'IC', display_order: 20, has_state: true, state_options: '["-", "送付済"]', has_email_button: false },
+      { task_key: 'ic_final_approval', task_name: '確定図承認', category: 'IC', display_order: 21, has_state: true, state_options: '["-", "依頼中", "ダンドリワーク保存済"]', has_email_button: false }
+    ];
+
+    const { error: insertError } = await supabase
+      .from('tasks')
+      .upsert(newICTasks, { onConflict: 'task_key' });
+
+    if (insertError) {
+      throw new Error('ICタスク挿入エラー: ' + insertError.message);
+    }
+    log('✅ 21項目のICタスク追加完了');
+
+    // データ再読み込み
+    await loadTasksV2();
+    await loadVendorCategories();
+    renderTasksManagement();
+
+    showToast('✅ ICタスクを21項目に更新しました！', 'success');
+
+    // 警告を非表示
+    const notice = document.getElementById('icMigrationNotice');
+    if (notice) notice.style.display = 'none';
+
+  } catch (error) {
+    logError('ICタスクマイグレーションエラー:', error);
+    showToast('❌ ICタスク更新に失敗しました: ' + error.message, 'error');
+  }
 }
 
 async function loadVendorsV2() {
