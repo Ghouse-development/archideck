@@ -9521,6 +9521,8 @@ function updateSingleProjectCard(projectId) {
 function renderProjectCard(project) {
   const progress = calculateProgress(project);
   const icProgress = calculateICProgress(project);
+  const exteriorProgress = calculateExteriorProgress(project);
+  const realestateProgress = calculateRealestateProgress(project);
   const progressData = project.progress || {};
   const staleDays = getProjectStaleDays(project);
   const tasks = getTasksForAssignee(project.assigned_to);
@@ -9628,6 +9630,54 @@ function renderProjectCard(project) {
       <span class="task-label">${taskDef.task_name}</span>${stateSelect}${emailBtn}</div>`;
   }).join('');
 
+  // 外構業務内容を生成
+  const exteriorTasks = tasksV2.filter(t => t.category === '外構').sort((a, b) => a.display_order - b.display_order);
+  const exteriorTasksHtml = exteriorTasks.map(taskDef => {
+    const key = taskDef.task_key;
+    const task = progressData[key] || { completed: false, date: '', state: '', due_date: '' };
+
+    const hasVendor = taskVendorMappings.some(m => m.task_id === taskDef.id);
+    const isInternalStatus = INTERNAL_STATUSES.includes(task.state);
+    const showEmailButton = taskDef.has_email_button !== false && hasVendor && !isInternalStatus;
+    const emailBtn = showEmailButton ?
+      `<button class="task-email-btn" onclick="openEmailFromTask('${project.id}', '${key}')" title="メール作成">📧</button>` : '';
+
+    let stateSelect = '';
+    const stateOptions = getTaskStateOptions(key);
+    if (stateOptions && Array.isArray(stateOptions)) {
+      const lastOption = stateOptions[stateOptions.length - 1];
+      let stateClass = getStateColorClass(task.state, lastOption, key);
+      stateSelect = `<select class="task-state-select ${stateClass}" data-last-option="${lastOption}" onchange="updateTaskStateWithColor(this, '${project.id}', '${key}')">${stateOptions.map(state => `<option value="${state}" ${task.state === state ? 'selected' : ''}>${state || '-'}</option>`).join('')}</select>`;
+    }
+
+    return `<div class="task-item">
+      <span class="task-label">${taskDef.task_name}</span>${stateSelect}${emailBtn}</div>`;
+  }).join('');
+
+  // 不動産業務内容を生成
+  const realestateTasks = tasksV2.filter(t => t.category === '不動産').sort((a, b) => a.display_order - b.display_order);
+  const realestateTasksHtml = realestateTasks.map(taskDef => {
+    const key = taskDef.task_key;
+    const task = progressData[key] || { completed: false, date: '', state: '', due_date: '' };
+
+    const hasVendor = taskVendorMappings.some(m => m.task_id === taskDef.id);
+    const isInternalStatus = INTERNAL_STATUSES.includes(task.state);
+    const showEmailButton = taskDef.has_email_button !== false && hasVendor && !isInternalStatus;
+    const emailBtn = showEmailButton ?
+      `<button class="task-email-btn" onclick="openEmailFromTask('${project.id}', '${key}')" title="メール作成">📧</button>` : '';
+
+    let stateSelect = '';
+    const stateOptions = getTaskStateOptions(key);
+    if (stateOptions && Array.isArray(stateOptions)) {
+      const lastOption = stateOptions[stateOptions.length - 1];
+      let stateClass = getStateColorClass(task.state, lastOption, key);
+      stateSelect = `<select class="task-state-select ${stateClass}" data-last-option="${lastOption}" onchange="updateTaskStateWithColor(this, '${project.id}', '${key}')">${stateOptions.map(state => `<option value="${state}" ${task.state === state ? 'selected' : ''}>${state || '-'}</option>`).join('')}</select>`;
+    }
+
+    return `<div class="task-item">
+      <span class="task-label">${taskDef.task_name}</span>${stateSelect}${emailBtn}</div>`;
+  }).join('');
+
   const isFavorite = FavoritesManager.isFavorite(project.id);
   const isSelected = BatchOperations.isSelected(project.id);
 
@@ -9669,19 +9719,38 @@ function renderProjectCard(project) {
       };
       const designColor = getProgressColor(progress);
       const icColor = icProgress !== null ? getProgressColor(icProgress) : 'var(--info-color)';
+      const extColor = exteriorProgress !== null ? getProgressColor(exteriorProgress) : 'var(--info-color)';
+      const reColor = realestateProgress !== null ? getProgressColor(realestateProgress) : 'var(--info-color)';
 
       // 部署別進捗表示
       if (currentUserCategory === 'admin' || !currentUserCategory) {
-        // 管理者: すべての進捗を表示
-        return `<div class="progress-section"><div class="progress-header"><span class="progress-label">設計進捗</span><span class="progress-value" style="color: ${designColor}">${progress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width: ${progress}%; background: ${designColor}"></div></div>${icProgress !== null ? `<div class="progress-header" style="margin-top:8px"><span class="progress-label">IC進捗</span><span class="progress-value" style="color: ${icColor}">${icProgress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width: ${icProgress}%; background: ${icColor}"></div></div>` : ''}</div>`;
+        // 管理者: すべての進捗を表示（担当者が設定されているもののみ）
+        let html = `<div class="progress-section"><div class="progress-header"><span class="progress-label">設計進捗</span><span class="progress-value" style="color: ${designColor}">${progress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width: ${progress}%; background: ${designColor}"></div></div>`;
+        if (icProgress !== null) {
+          html += `<div class="progress-header" style="margin-top:8px"><span class="progress-label">IC進捗</span><span class="progress-value" style="color: ${icColor}">${icProgress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width: ${icProgress}%; background: ${icColor}"></div></div>`;
+        }
+        if (exteriorProgress !== null) {
+          html += `<div class="progress-header" style="margin-top:8px"><span class="progress-label">外構進捗</span><span class="progress-value" style="color: ${extColor}">${exteriorProgress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width: ${exteriorProgress}%; background: ${extColor}"></div></div>`;
+        }
+        if (realestateProgress !== null) {
+          html += `<div class="progress-header" style="margin-top:8px"><span class="progress-label">不動産進捗</span><span class="progress-value" style="color: ${reColor}">${realestateProgress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width: ${realestateProgress}%; background: ${reColor}"></div></div>`;
+        }
+        html += '</div>';
+        return html;
       } else if (currentUserCategory === '設計') {
         // 設計担当: 設計進捗のみ
         return `<div class="progress-section"><div class="progress-header"><span class="progress-label">設計進捗</span><span class="progress-value" style="color: ${designColor}">${progress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width: ${progress}%; background: ${designColor}"></div></div></div>`;
       } else if (currentUserCategory === 'IC') {
         // IC担当: IC進捗のみ
         return icProgress !== null ? `<div class="progress-section"><div class="progress-header"><span class="progress-label">IC進捗</span><span class="progress-value" style="color: ${icColor}">${icProgress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width: ${icProgress}%; background: ${icColor}"></div></div></div>` : '<div class="progress-section"><p style="color: var(--text-muted); font-size: 13px;">IC担当者が設定されていません</p></div>';
+      } else if (currentUserCategory === '外構') {
+        // 外構担当: 外構進捗のみ
+        return exteriorProgress !== null ? `<div class="progress-section"><div class="progress-header"><span class="progress-label">外構進捗</span><span class="progress-value" style="color: ${extColor}">${exteriorProgress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width: ${exteriorProgress}%; background: ${extColor}"></div></div></div>` : '<div class="progress-section"><p style="color: var(--text-muted); font-size: 13px;">外構タスクが登録されていません</p></div>';
+      } else if (currentUserCategory === '不動産') {
+        // 不動産担当: 不動産進捗のみ
+        return realestateProgress !== null ? `<div class="progress-section"><div class="progress-header"><span class="progress-label">不動産進捗</span><span class="progress-value" style="color: ${reColor}">${realestateProgress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width: ${realestateProgress}%; background: ${reColor}"></div></div></div>` : '<div class="progress-section"><p style="color: var(--text-muted); font-size: 13px;">不動産タスクが登録されていません</p></div>';
       } else {
-        // 外構・不動産: 進捗なし（タスクがまだない）
+        // その他: 進捗なし
         return '<div class="progress-section"><p style="color: var(--text-muted); font-size: 13px;">進捗管理は現在設定されていません</p></div>';
       }
     })()}
@@ -9700,7 +9769,9 @@ function renderProjectCard(project) {
         // 管理者: すべての業務内容を表示
         return `
     <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">📐 設計業務内容</span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><div class="tasks-grid">${tasksHtml}</div></div></div>
-    <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">🎨 IC業務内容</span><span class="card-section-toggle">▼</span></div><div class="card-section-content">${icTasks.length > 0 ? `<div class="tasks-grid">${icTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">ICタスクが登録されていません</p>'}</div></div>`;
+    <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">🎨 IC業務内容</span><span class="card-section-toggle">▼</span></div><div class="card-section-content">${icTasks.length > 0 ? `<div class="tasks-grid">${icTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">ICタスクが登録されていません</p>'}</div></div>
+    <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">🏡 外構業務内容</span><span class="card-section-toggle">▼</span></div><div class="card-section-content">${exteriorTasks.length > 0 ? `<div class="tasks-grid">${exteriorTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">外構タスクが登録されていません</p>'}</div></div>
+    <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">🏢 不動産業務内容</span><span class="card-section-toggle">▼</span></div><div class="card-section-content">${realestateTasks.length > 0 ? `<div class="tasks-grid">${realestateTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">不動産タスクが登録されていません</p>'}</div></div>`;
       } else if (currentUserCategory === '設計') {
         // 設計担当: 設計業務内容のみ
         return `<div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">📐 設計業務内容</span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><div class="tasks-grid">${tasksHtml}</div></div></div>`;
@@ -9708,11 +9779,11 @@ function renderProjectCard(project) {
         // IC担当: IC業務内容のみ
         return `<div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">🎨 IC業務内容</span><span class="card-section-toggle">▼</span></div><div class="card-section-content">${icTasks.length > 0 ? `<div class="tasks-grid">${icTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">ICタスクが登録されていません。設定 > ICタスク管理で「21項目に更新」ボタンをクリックしてください。</p>'}</div></div>`;
       } else if (currentUserCategory === '外構') {
-        // 外構担当: 外構業務内容（現在はタスクなし）
-        return `<div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">🏡 外構業務内容</span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><p style="color: var(--text-muted); font-size: 13px;">外構タスクは現在設定されていません。設定 > タスク管理で外構タスクを追加できます。</p></div></div>`;
+        // 外構担当: 外構業務内容
+        return `<div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">🏡 外構業務内容</span><span class="card-section-toggle">▼</span></div><div class="card-section-content">${exteriorTasks.length > 0 ? `<div class="tasks-grid">${exteriorTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">外構タスクが登録されていません。設定 > タスク管理で外構タスクを追加できます。</p>'}</div></div>`;
       } else if (currentUserCategory === '不動産') {
-        // 不動産担当: 不動産業務内容（現在はタスクなし）
-        return `<div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">🏢 不動産業務内容</span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><p style="color: var(--text-muted); font-size: 13px;">不動産タスクは現在設定されていません。設定 > タスク管理で不動産タスクを追加できます。</p></div></div>`;
+        // 不動産担当: 不動産業務内容
+        return `<div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">🏢 不動産業務内容</span><span class="card-section-toggle">▼</span></div><div class="card-section-content">${realestateTasks.length > 0 ? `<div class="tasks-grid">${realestateTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">不動産タスクが登録されていません。設定 > タスク管理で不動産タスクを追加できます。</p>'}</div></div>`;
       } else {
         // その他: 何も表示しない
         return '';
@@ -9749,6 +9820,28 @@ function calculateICProgress(project) {
   if (icTasks.length === 0) return null;
   const completed = icTasks.filter(taskDef => progressData[taskDef.task_key]?.completed).length;
   return Math.round((completed / icTasks.length) * 100);
+}
+
+// 外構担当者用の進捗率計算（外構タスクベース）
+function calculateExteriorProgress(project) {
+  if (!project.exterior_assignee) return null;
+  const progressData = project.progress || {};
+  // 外構カテゴリのタスクを取得
+  const exteriorTasks = tasksV2.filter(t => t.category === '外構').sort((a, b) => a.display_order - b.display_order);
+  if (exteriorTasks.length === 0) return null;
+  const completed = exteriorTasks.filter(taskDef => progressData[taskDef.task_key]?.completed).length;
+  return Math.round((completed / exteriorTasks.length) * 100);
+}
+
+// 不動産担当者用の進捗率計算（不動産タスクベース）
+function calculateRealestateProgress(project) {
+  if (!project.realestate_assignee) return null;
+  const progressData = project.progress || {};
+  // 不動産カテゴリのタスクを取得
+  const realestateTasks = tasksV2.filter(t => t.category === '不動産').sort((a, b) => a.display_order - b.display_order);
+  if (realestateTasks.length === 0) return null;
+  const completed = realestateTasks.filter(taskDef => progressData[taskDef.task_key]?.completed).length;
+  return Math.round((completed / realestateTasks.length) * 100);
 }
 
 function formatDateTime(dateStr) {
