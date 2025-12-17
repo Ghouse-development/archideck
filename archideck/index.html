@@ -9157,20 +9157,31 @@ function renderProjectCard(project) {
             完了済
           </label>
         ` : ''}
+        <button class="btn btn-ghost btn-small" onclick="quickEmail('${project.id}')" title="メール作成">📧</button>
         <button class="btn btn-ghost btn-small" onclick="editProject('${project.id}')">編集</button>
       </div>
     </div>
     ${(() => {
+      // 進捗率に応じた色を取得
+      const getProgressColor = (pct) => {
+        if (pct >= 80) return 'var(--success-color)';
+        if (pct >= 50) return 'var(--primary-color)';
+        if (pct >= 25) return 'var(--warning-color)';
+        return 'var(--danger-color)';
+      };
+      const designColor = getProgressColor(progress);
+      const icColor = icProgress !== null ? getProgressColor(icProgress) : 'var(--info-color)';
+
       // 部署別進捗表示
       if (currentUserCategory === 'admin' || !currentUserCategory) {
         // 管理者: すべての進捗を表示
-        return `<div class="progress-section"><div class="progress-header"><span class="progress-label">設計進捗</span><span class="progress-value">${progress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width: ${progress}%"></div></div>${icProgress !== null ? `<div class="progress-header" style="margin-top:8px"><span class="progress-label">IC進捗</span><span class="progress-value">${icProgress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width: ${icProgress}%; background: var(--info-color)"></div></div>` : ''}</div>`;
+        return `<div class="progress-section"><div class="progress-header"><span class="progress-label">設計進捗</span><span class="progress-value" style="color: ${designColor}">${progress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width: ${progress}%; background: ${designColor}"></div></div>${icProgress !== null ? `<div class="progress-header" style="margin-top:8px"><span class="progress-label">IC進捗</span><span class="progress-value" style="color: ${icColor}">${icProgress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width: ${icProgress}%; background: ${icColor}"></div></div>` : ''}</div>`;
       } else if (currentUserCategory === '設計') {
         // 設計担当: 設計進捗のみ
-        return `<div class="progress-section"><div class="progress-header"><span class="progress-label">設計進捗</span><span class="progress-value">${progress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width: ${progress}%"></div></div></div>`;
+        return `<div class="progress-section"><div class="progress-header"><span class="progress-label">設計進捗</span><span class="progress-value" style="color: ${designColor}">${progress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width: ${progress}%; background: ${designColor}"></div></div></div>`;
       } else if (currentUserCategory === 'IC') {
         // IC担当: IC進捗のみ
-        return icProgress !== null ? `<div class="progress-section"><div class="progress-header"><span class="progress-label">IC進捗</span><span class="progress-value">${icProgress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width: ${icProgress}%; background: var(--info-color)"></div></div></div>` : '<div class="progress-section"><p style="color: var(--text-muted); font-size: 13px;">IC担当者が設定されていません</p></div>';
+        return icProgress !== null ? `<div class="progress-section"><div class="progress-header"><span class="progress-label">IC進捗</span><span class="progress-value" style="color: ${icColor}">${icProgress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width: ${icProgress}%; background: ${icColor}"></div></div></div>` : '<div class="progress-section"><p style="color: var(--text-muted); font-size: 13px;">IC担当者が設定されていません</p></div>';
       } else {
         // 外構・不動産: 進捗なし（タスクがまだない）
         return '<div class="progress-section"><p style="color: var(--text-muted); font-size: 13px;">進捗管理は現在設定されていません</p></div>';
@@ -10784,6 +10795,50 @@ async function openEmailFromTask(projectId, taskKey) {
 
   // モーダルを表示
   showEmailModal(project, taskDef, taskVendors, initialSubject, initialBody);
+}
+
+// クイックメール機能 - ワンクリックでメール作成画面を開く
+function quickEmail(projectId) {
+  const project = projects.find(p => p.id === projectId);
+  if (!project) return;
+
+  // 最もよく使うタスク（構造依頼など）を取得、またはカスタムテンプレートを表示
+  const quickModal = document.createElement('div');
+  quickModal.id = 'quickEmailModal';
+  quickModal.className = 'modal-overlay';
+  quickModal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 10000;';
+
+  // タスクリストを取得
+  const tasks = getTasksForAssignee(project.assigned_to);
+  const tasksWithVendors = tasks.filter(t => taskVendorMappings.some(m => m.task_id === t.id));
+
+  const taskOptions = tasksWithVendors.map(t =>
+    `<button class="quick-email-btn" onclick="openEmailFromTask('${projectId}', '${t.task_key}'); document.getElementById('quickEmailModal').remove();" style="display: flex; align-items: center; gap: 12px; padding: 16px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; width: 100%; text-align: left; transition: all 0.2s;" onmouseover="this.style.background='var(--primary-light)'; this.style.borderColor='var(--primary-color)'" onmouseout="this.style.background='var(--bg-secondary)'; this.style.borderColor='var(--border-color)'">
+      <span style="font-size: 20px;">📧</span>
+      <span style="font-weight: 500;">${escapeHtml(t.task_name)}</span>
+    </button>`
+  ).join('');
+
+  quickModal.innerHTML = `
+    <div class="modal-content" style="background: var(--bg-primary); border-radius: 12px; max-width: 500px; width: 90%;">
+      <div class="modal-header" style="padding: 20px; border-bottom: 1px solid var(--border-color);">
+        <h3 style="font-size: 18px; font-weight: 600; margin: 0;">📧 クイックメール - ${escapeHtml(project.customer)}</h3>
+      </div>
+      <div class="modal-body" style="padding: 20px; max-height: 60vh; overflow-y: auto;">
+        <p style="margin-bottom: 16px; color: var(--text-secondary);">メールを送信するタスクを選択してください</p>
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          ${taskOptions || '<p style="color: var(--text-muted);">メール送信可能なタスクがありません</p>'}
+        </div>
+      </div>
+      <div class="modal-footer" style="padding: 16px 20px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end;">
+        <button class="btn btn-ghost" onclick="document.getElementById('quickEmailModal').remove()">閉じる</button>
+      </div>
+    </div>
+  `;
+  quickModal.addEventListener('click', (e) => {
+    if (e.target === quickModal) quickModal.remove();
+  });
+  document.body.appendChild(quickModal);
 }
 
 function showEmailModal(project, taskDef, vendors, initialSubject, initialBody) {
