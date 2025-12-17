@@ -3789,6 +3789,13 @@ textarea:focus-visible {
               <option value="archived">完了済みのみ</option>
               <option value="favorites">★ お気に入り</option>
             </select>
+            <select class="select" id="icProgressFilter" onchange="renderProjects()" style="margin-left: 12px;">
+              <option value="">IC進捗: すべて</option>
+              <option value="not_started">IC未着手 (0%)</option>
+              <option value="in_progress">IC進行中 (1-99%)</option>
+              <option value="completed">IC完了 (100%)</option>
+              <option value="no_ic">IC担当なし</option>
+            </select>
           </div>
           <div class="toolbar-right">
             <div style="position: relative; display: inline-block;">
@@ -6052,6 +6059,9 @@ async function init() {
     // 業者データとカテゴリデータをマージ（両方の読み込みが完了した後に実行）
     mergeVendorCategories();
 
+    // ICタスク自動マイグレーション（21項目未満の場合）
+    await autoMigrateICTasks();
+
     log('🎨 画面描画開始...');
     renderSidebar();
     renderProjects();
@@ -6717,6 +6727,92 @@ async function runICTasksMigration() {
   } catch (error) {
     logError('ICタスクマイグレーションエラー:', error);
     showToast('❌ ICタスク更新に失敗しました: ' + error.message, 'error');
+  }
+}
+
+// ICタスク自動マイグレーション（起動時に21項目未満なら自動実行）
+async function autoMigrateICTasks() {
+  const icTasks = tasksV2.filter(t => t.category === 'IC');
+
+  // 既に21項目以上ある場合はスキップ
+  if (icTasks.length >= 21) {
+    log('✅ ICタスクは既に21項目以上あります:', icTasks.length);
+    return;
+  }
+
+  log('🔄 ICタスク自動マイグレーション開始... (現在:', icTasks.length, '項目)');
+
+  try {
+    // 既存ICタスクを削除
+    const { error: deleteError } = await supabase
+      .from('tasks')
+      .delete()
+      .eq('category', 'IC');
+
+    if (deleteError) {
+      throw new Error('既存ICタスク削除エラー: ' + deleteError.message);
+    }
+
+    // 業者カテゴリを追加
+    const newCategories = [
+      { name: 'キッチン', display_order: 10 },
+      { name: 'お風呂', display_order: 11 },
+      { name: '洗面', display_order: 12 },
+      { name: 'トイレ', display_order: 13 },
+      { name: '照明', display_order: 14 },
+      { name: '建具', display_order: 15 },
+      { name: 'カーテン', display_order: 16 },
+      { name: '造作', display_order: 17 },
+      { name: '家具', display_order: 18 }
+    ];
+
+    for (const cat of newCategories) {
+      await supabase.from('vendor_categories').upsert(cat, { onConflict: 'name' });
+    }
+
+    // 21項目のICタスクを挿入
+    const newICTasks = [
+      { task_key: 'ic_funding_check', task_name: '資金計画・引継書確認', category: 'IC', display_order: 1, has_state: true, state_options: '["-", "確認済"]', has_email_button: false },
+      { task_key: 'ic_kitchen', task_name: 'キッチン・カップボード', category: 'IC', display_order: 2, has_state: true, state_options: '["-", "GRAFTECT", "オリジナル", "Lixil", "Panasonic", "Takarastandard"]', has_email_button: true },
+      { task_key: 'ic_bath', task_name: 'お風呂', category: 'IC', display_order: 3, has_state: true, state_options: '["-", "Lixil", "Panasonic", "Takarastandard"]', has_email_button: true },
+      { task_key: 'ic_washroom', task_name: '洗面', category: 'IC', display_order: 4, has_state: true, state_options: '["-", "TOTO", "AICA", "Lixil", "Panasonic", "Takarastandard"]', has_email_button: true },
+      { task_key: 'ic_toilet', task_name: 'トイレ', category: 'IC', display_order: 5, has_state: true, state_options: '["-", "TOTO", "Lixil", "Panasonic"]', has_email_button: true },
+      { task_key: 'ic_lighting', task_name: '照明プラン', category: 'IC', display_order: 6, has_state: true, state_options: '["-", "ODELIC", "DAIKO", "KOIZUMI", "Panasonic"]', has_email_button: true },
+      { task_key: 'ic_spec_doc', task_name: '仕様書作成', category: 'IC', display_order: 7, has_state: true, state_options: '["-", "作成済"]', has_email_button: false },
+      { task_key: 'ic_longterm_doc', task_name: '長期資料送付', category: 'IC', display_order: 8, has_state: true, state_options: '["-", "送付済"]', has_email_button: false },
+      { task_key: 'ic_execution_drawing', task_name: '実施図', category: 'IC', display_order: 9, has_state: true, state_options: '["-", "修正依頼済", "図面チェック済"]', has_email_button: false },
+      { task_key: 'ic_exterior_pres', task_name: '外装プレゼン作成', category: 'IC', display_order: 10, has_state: true, state_options: '["-", "作成済"]', has_email_button: false },
+      { task_key: 'ic_interior_pres', task_name: '内装プレゼン作成', category: 'IC', display_order: 11, has_state: true, state_options: '["-", "作成済"]', has_email_button: false },
+      { task_key: 'ic_tategu', task_name: '建具プレゼン依頼', category: 'IC', display_order: 12, has_state: true, state_options: '["-", "依頼済", "保存済"]', has_email_button: true },
+      { task_key: 'ic_tile_pres', task_name: 'タイルプレゼン作成', category: 'IC', display_order: 13, has_state: true, state_options: '["-", "作成済"]', has_email_button: false },
+      { task_key: 'ic_exterior_meeting', task_name: '外構への打合せ依頼', category: 'IC', display_order: 14, has_state: true, state_options: '["-", "依頼済"]', has_email_button: false },
+      { task_key: 'ic_curtain', task_name: 'カーテン紹介', category: 'IC', display_order: 15, has_state: true, state_options: '["-", "依頼済"]', has_email_button: true },
+      { task_key: 'ic_zousaku', task_name: '造作業者紹介', category: 'IC', display_order: 16, has_state: true, state_options: '["-", "無し", "依頼済"]', has_email_button: true },
+      { task_key: 'ic_furniture', task_name: '家具見積依頼', category: 'IC', display_order: 17, has_state: true, state_options: '["-", "無し", "依頼済"]', has_email_button: true },
+      { task_key: 'ic_final_checklist', task_name: '確定図チェックリスト', category: 'IC', display_order: 18, has_state: true, state_options: '["-", "実施済"]', has_email_button: false },
+      { task_key: 'ic_op_check', task_name: 'OP見積チェック', category: 'IC', display_order: 19, has_state: true, state_options: '["-", "依頼済", "保存済"]', has_email_button: false },
+      { task_key: 'ic_meeting_followup', task_name: '会議後確認事項送付', category: 'IC', display_order: 20, has_state: true, state_options: '["-", "送付済"]', has_email_button: false },
+      { task_key: 'ic_final_approval', task_name: '確定図承認', category: 'IC', display_order: 21, has_state: true, state_options: '["-", "依頼中", "ダンドリワーク保存済"]', has_email_button: false }
+    ];
+
+    const { error: insertError } = await supabase
+      .from('tasks')
+      .upsert(newICTasks, { onConflict: 'task_key' });
+
+    if (insertError) {
+      throw new Error('ICタスク挿入エラー: ' + insertError.message);
+    }
+
+    // タスクデータを再読み込み
+    await loadTasksV2();
+    await loadVendorCategories();
+
+    log('✅ ICタスク自動マイグレーション完了 (21項目)');
+    showToast('✅ ICタスクを21項目に自動更新しました', 'success');
+
+  } catch (error) {
+    logError('ICタスク自動マイグレーションエラー:', error);
+    // エラーでも続行（既存機能に影響させない）
   }
 }
 
@@ -8460,6 +8556,18 @@ function renderProjects() {
 
     const specFilter = document.getElementById('specFilter').value;
     if (specFilter && p.specifications !== specFilter) return false;
+
+    // IC進捗フィルター
+    const icProgressFilter = document.getElementById('icProgressFilter')?.value || '';
+    if (icProgressFilter) {
+      const icProgress = calculateICProgress(p);
+      if (icProgressFilter === 'no_ic' && p.ic_assignee) return false;
+      if (icProgressFilter === 'no_ic' && !p.ic_assignee) return true;
+      if (!p.ic_assignee) return false; // IC担当なしは他のフィルターでは除外
+      if (icProgressFilter === 'not_started' && icProgress !== 0) return false;
+      if (icProgressFilter === 'in_progress' && (icProgress === 0 || icProgress === 100)) return false;
+      if (icProgressFilter === 'completed' && icProgress !== 100) return false;
+    }
 
     return true;
   });
@@ -11463,6 +11571,7 @@ const BatchOperations = {
       <span id="batchCount" style="font-weight: 600;">0件選択中</span>
       <button class="btn btn-ghost btn-small" onclick="BatchOperations.archiveSelected()">📦 一括完了</button>
       <button class="btn btn-ghost btn-small" onclick="BatchOperations.showAssignModal()">👤 担当変更</button>
+      <button class="btn btn-ghost btn-small" onclick="BatchOperations.showICTaskModal()">🎨 IC一括更新</button>
       <button class="btn btn-ghost btn-small" onclick="BatchOperations.deselectAll()">✕ 選択解除</button>
     `;
     document.body.appendChild(toolbar);
@@ -11565,6 +11674,117 @@ const BatchOperations = {
     renderSidebar();
     showStatus('保存済み', 'saved');
     showToast(`${count}件の担当者を${assignee}に変更しました`, 'success');
+  },
+
+  showICTaskModal() {
+    if (this.selected.size === 0) return;
+
+    const icTasks = tasksV2.filter(t => t.category === 'IC').sort((a, b) => a.display_order - b.display_order);
+    if (icTasks.length === 0) {
+      showToast('ICタスクが登録されていません', 'error');
+      return;
+    }
+
+    const taskOptions = icTasks.map(t => `<option value="${t.task_key}">${escapeHtml(t.task_name)}</option>`).join('');
+
+    const modal = document.createElement('div');
+    modal.id = 'batchICModal';
+    modal.className = 'modal-overlay';
+    modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 10000;';
+
+    modal.innerHTML = `
+      <div class="modal-content" style="background: var(--bg-primary); border-radius: 12px; max-width: 450px; width: 90%;">
+        <div class="modal-header" style="padding: 20px; border-bottom: 1px solid var(--border-color);">
+          <h3 style="font-size: 18px; font-weight: 600;">🎨 ICタスク一括更新</h3>
+        </div>
+        <div class="modal-body" style="padding: 20px;">
+          <p style="margin-bottom: 16px; color: var(--text-secondary);">${this.selected.size}件の案件のICタスクを一括更新します</p>
+          <div style="margin-bottom: 16px;">
+            <label class="form-label">タスク</label>
+            <select id="batchICTask" class="form-input" style="width: 100%;" onchange="BatchOperations.updateICStateOptions()">
+              <option value="">タスクを選択</option>
+              ${taskOptions}
+            </select>
+          </div>
+          <div style="margin-bottom: 16px;">
+            <label class="form-label">ステータス</label>
+            <select id="batchICState" class="form-input" style="width: 100%;" disabled>
+              <option value="">タスクを先に選択してください</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer" style="padding: 16px 20px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 12px;">
+          <button class="btn btn-ghost" onclick="document.getElementById('batchICModal').remove()">キャンセル</button>
+          <button class="btn btn-primary" onclick="BatchOperations.applyICTask()">一括更新</button>
+        </div>
+      </div>
+    `;
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) modal.remove();
+    });
+    document.body.appendChild(modal);
+  },
+
+  updateICStateOptions() {
+    const taskKey = document.getElementById('batchICTask').value;
+    const stateSelect = document.getElementById('batchICState');
+
+    if (!taskKey) {
+      stateSelect.innerHTML = '<option value="">タスクを先に選択してください</option>';
+      stateSelect.disabled = true;
+      return;
+    }
+
+    const stateOptions = getTaskStateOptions(taskKey);
+    if (stateOptions && Array.isArray(stateOptions)) {
+      stateSelect.innerHTML = stateOptions.map(state => `<option value="${state}">${state || '-'}</option>`).join('');
+      stateSelect.disabled = false;
+    } else {
+      stateSelect.innerHTML = '<option value="">ステータスなし</option>';
+      stateSelect.disabled = true;
+    }
+  },
+
+  async applyICTask() {
+    const taskKey = document.getElementById('batchICTask').value;
+    const state = document.getElementById('batchICState').value;
+
+    if (!taskKey) {
+      showToast('タスクを選択してください', 'error');
+      return;
+    }
+
+    document.getElementById('batchICModal').remove();
+    showStatus('処理中...', 'saving');
+    let count = 0;
+
+    for (const projectId of this.selected) {
+      const project = projects.find(p => p.id === projectId);
+      if (!project) continue;
+
+      const progressData = project.progress || {};
+      if (!progressData[taskKey]) progressData[taskKey] = {};
+      progressData[taskKey].state = state;
+
+      const { error } = await supabase
+        .from('projects')
+        .update({ progress: progressData, updated_at: new Date().toISOString() })
+        .eq('id', projectId);
+
+      if (!error) {
+        project.progress = progressData;
+        project.updated_at = new Date().toISOString();
+        count++;
+      }
+    }
+
+    this.selected.clear();
+    this.updateUI();
+    renderProjects();
+    showStatus('保存済み', 'saved');
+
+    const taskDef = tasksV2.find(t => t.task_key === taskKey);
+    showToast(`${count}件の「${taskDef?.task_name || taskKey}」を「${state || '-'}」に更新しました`, 'success');
   }
 };
 
