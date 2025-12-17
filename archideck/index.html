@@ -1351,6 +1351,163 @@ input:checked + .toggle-slider:before {
   cursor: grabbing;
 }
 
+/* フローティングアクションボタン */
+.fab-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 1000;
+}
+
+.fab-button {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  box-shadow: var(--shadow-lg);
+  cursor: pointer;
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-normal);
+}
+
+.fab-button:hover {
+  background: var(--primary-hover);
+  transform: scale(1.1);
+  box-shadow: var(--shadow-xl);
+}
+
+.fab-button.active {
+  transform: rotate(45deg);
+}
+
+.fab-menu {
+  position: absolute;
+  bottom: 70px;
+  right: 0;
+  display: none;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fab-menu.show {
+  display: flex;
+}
+
+.fab-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
+  white-space: nowrap;
+  font-size: 14px;
+  color: var(--text-primary);
+  transition: all var(--transition-fast);
+  animation: fabItemIn 0.2s ease-out forwards;
+  opacity: 0;
+  transform: translateX(20px);
+}
+
+.fab-menu-item:nth-child(1) { animation-delay: 0ms; }
+.fab-menu-item:nth-child(2) { animation-delay: 50ms; }
+.fab-menu-item:nth-child(3) { animation-delay: 100ms; }
+.fab-menu-item:nth-child(4) { animation-delay: 150ms; }
+.fab-menu-item:nth-child(5) { animation-delay: 200ms; }
+
+@keyframes fabItemIn {
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.fab-menu-item:hover {
+  background: var(--bg-secondary);
+  transform: translateX(-4px);
+}
+
+.fab-menu-item span.icon {
+  font-size: 18px;
+}
+
+/* 強化ツールチップ */
+[data-tooltip] {
+  position: relative;
+}
+
+[data-tooltip]::before,
+[data-tooltip]::after {
+  position: absolute;
+  visibility: hidden;
+  opacity: 0;
+  transition: all 0.2s ease;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+[data-tooltip]::before {
+  content: attr(data-tooltip);
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  padding: 8px 12px;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  font-size: 12px;
+  white-space: nowrap;
+  max-width: 250px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+[data-tooltip]::after {
+  content: '';
+  bottom: calc(100% + 2px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: var(--bg-tertiary);
+}
+
+[data-tooltip]:hover::before,
+[data-tooltip]:hover::after {
+  visibility: visible;
+  opacity: 1;
+}
+
+[data-tooltip]:hover::before {
+  transform: translateX(-50%) translateY(0);
+}
+
+/* 下向きツールチップ */
+[data-tooltip-pos="bottom"]::before {
+  bottom: auto;
+  top: calc(100% + 8px);
+  transform: translateX(-50%) translateY(-4px);
+}
+
+[data-tooltip-pos="bottom"]::after {
+  bottom: auto;
+  top: calc(100% + 2px);
+  border-top-color: transparent;
+  border-bottom-color: var(--bg-tertiary);
+}
+
+[data-tooltip-pos="bottom"]:hover::before {
+  transform: translateX(-50%) translateY(0);
+}
+
 /* カテゴリフィルター */
 .category-filter-btn {
   padding: 8px 16px;
@@ -16224,6 +16381,92 @@ window.addEventListener('DOMContentLoaded', () => {
     }, 3000);
   }
 });
+
+// フローティングアクションボタン
+const FAB = {
+  container: null,
+  button: null,
+  menu: null,
+  isOpen: false,
+
+  init() {
+    this.container = document.getElementById('fabContainer');
+    this.button = document.getElementById('fabButton');
+    this.menu = document.getElementById('fabMenu');
+
+    // 外部クリックで閉じる
+    document.addEventListener('click', (e) => {
+      if (this.isOpen && !this.container?.contains(e.target)) {
+        this.close();
+      }
+    });
+  },
+
+  toggle() {
+    this.isOpen = !this.isOpen;
+    this.button?.classList.toggle('active', this.isOpen);
+    this.menu?.classList.toggle('show', this.isOpen);
+  },
+
+  close() {
+    this.isOpen = false;
+    this.button?.classList.remove('active');
+    this.menu?.classList.remove('show');
+  },
+
+  action(type) {
+    this.close();
+    switch (type) {
+      case 'new':
+        createNewProject();
+        break;
+      case 'refresh':
+        forceReloadData();
+        break;
+      case 'export':
+        exportToCSV();
+        break;
+      case 'print':
+        BatchReportGenerator.generateAndPrint('設計');
+        break;
+      case 'help':
+        showShortcutHelp();
+        break;
+    }
+  }
+};
+
+// FAB初期化
+document.addEventListener('DOMContentLoaded', () => FAB.init());
 </script>
+
+<!-- フローティングアクションボタン -->
+<div class="fab-container" id="fabContainer">
+  <div class="fab-menu" id="fabMenu">
+    <div class="fab-menu-item" onclick="FAB.action('new')">
+      <span class="icon">➕</span>
+      <span>新規案件作成</span>
+    </div>
+    <div class="fab-menu-item" onclick="FAB.action('refresh')">
+      <span class="icon">🔄</span>
+      <span>データ再読み込み</span>
+    </div>
+    <div class="fab-menu-item" onclick="FAB.action('export')">
+      <span class="icon">📊</span>
+      <span>CSV出力</span>
+    </div>
+    <div class="fab-menu-item" onclick="FAB.action('print')">
+      <span class="icon">🖨️</span>
+      <span>レポート印刷</span>
+    </div>
+    <div class="fab-menu-item" onclick="FAB.action('help')">
+      <span class="icon">⌨️</span>
+      <span>ショートカット</span>
+    </div>
+  </div>
+  <button class="fab-button" id="fabButton" onclick="FAB.toggle()" title="クイックアクション">
+    ➕
+  </button>
+</div>
 </body>
 </html>
