@@ -98,6 +98,52 @@
   --space-2xl: 48px;
 }
 
+/* ダークモード */
+[data-theme="dark"] {
+  --primary-color: #60A5FA;
+  --primary-hover: #3B82F6;
+  --primary-light: #1E3A5F;
+  --primary-dark: #93C5FD;
+
+  --secondary-color: #34D399;
+  --secondary-hover: #10B981;
+  --secondary-light: #064E3B;
+
+  --accent-color: #A78BFA;
+  --accent-light: #2E1065;
+
+  --danger-color: #F87171;
+  --danger-light: #450A0A;
+  --warning-color: #FBBF24;
+  --warning-light: #451A03;
+  --success-color: #4ADE80;
+  --success-light: #052E16;
+  --success-bg: #052E16;
+  --info-color: #22D3EE;
+  --info-light: #083344;
+
+  --text-primary: #F1F5F9;
+  --text-secondary: #CBD5E1;
+  --text-muted: #64748B;
+  --text-light: #475569;
+
+  --bg-primary: #0F172A;
+  --bg-secondary: #1E293B;
+  --bg-tertiary: #334155;
+  --bg-hover: #475569;
+
+  --border-color: #334155;
+  --border-light: #1E293B;
+  --border-focus: #60A5FA;
+
+  --shadow-xs: 0 1px 2px rgba(0,0,0,0.3);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.4), 0 2px 4px -2px rgba(0,0,0,0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.4), 0 4px 6px -4px rgba(0,0,0,0.2);
+  --shadow-xl: 0 20px 25px -5px rgba(0,0,0,0.4), 0 8px 10px -6px rgba(0,0,0,0.2);
+  --shadow-glow: 0 0 20px rgba(96, 165, 250, 0.2);
+}
+
 
 /* data-table スタイル（分析画面用） */
 .data-table {
@@ -1282,6 +1328,27 @@ input:checked + .toggle-slider:before {
 @keyframes overdueGlow {
   0%, 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
   50% { box-shadow: 0 0 8px 2px rgba(220, 38, 38, 0.3); }
+}
+
+/* ドラッグ&ドロップスタイル */
+.project-card.dragging {
+  opacity: 0.5;
+  transform: scale(1.02);
+  box-shadow: var(--shadow-xl);
+  cursor: grabbing;
+}
+
+.project-card.drag-over {
+  border: 2px dashed var(--primary-color);
+  background: var(--primary-light);
+}
+
+.project-card[draggable="true"] {
+  cursor: grab;
+}
+
+.project-card[draggable="true"]:active {
+  cursor: grabbing;
 }
 
 /* カテゴリフィルター */
@@ -3839,6 +3906,7 @@ textarea:focus-visible {
       <button class="btn btn-ghost btn-small" onclick="forceReloadData()" title="データを再読み込み">🔄</button>
       <button class="btn btn-ghost btn-small" onclick="AppTour.showWelcome()" title="使い方ガイド">❓</button>
       <button class="btn btn-ghost btn-small" onclick="showDebugInfo()" title="デバッグ情報">🔍</button>
+      <button class="btn btn-ghost btn-small" onclick="toggleDarkMode()" title="ダークモード切り替え (Ctrl+Shift+D)" id="darkModeBtn">🌙</button>
       <button class="btn btn-ghost btn-small" onclick="signOut()">ログアウト</button>
     </div>
   </header>
@@ -3899,6 +3967,7 @@ textarea:focus-visible {
               <option value="">不動産担当: すべて</option>
             </select>
             <select class="select" id="sortOrder" onchange="renderProjects()" style="margin-left: 12px;">
+              <option value="custom">カスタム順（ドラッグ可）</option>
               <option value="updated_desc">更新日↓ 新しい順</option>
               <option value="updated_asc">更新日↑ 古い順</option>
               <option value="progress_desc">進捗率↓ 高い順</option>
@@ -3919,6 +3988,7 @@ textarea:focus-visible {
                 <div id="presetDropdown" style="max-height: 300px; overflow-y: auto;"></div>
               </div>
             </div>
+            <button class="btn btn-ghost btn-small" onclick="resetAllFilters()" title="フィルターリセット (R)">🔄 リセット</button>
             <button class="btn btn-ghost btn-small" onclick="BatchOperations.selectAll()" title="全て選択">☑ 全選択</button>
             <button class="btn btn-ghost" onclick="DataImporter.showModal()" title="CSV/JSONインポート">📥 取込</button>
             <button class="btn btn-ghost" onclick="exportCSV()" title="CSV/JSON/印刷出力">📤 出力</button>
@@ -6076,6 +6146,13 @@ function handleKeyboardShortcut(e) {
           BatchOperations.selectAll();
         }
         break;
+      case 'd':
+        // Ctrl+Shift+D = ダークモード切り替え
+        if (e.shiftKey) {
+          e.preventDefault();
+          toggleDarkMode();
+        }
+        break;
     }
   }
 
@@ -6155,6 +6232,36 @@ function toggleFavoriteFilter() {
   }
 }
 
+// ダークモード切り替え
+function toggleDarkMode() {
+  const html = document.documentElement;
+  const currentTheme = html.dataset.theme;
+  const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+  html.dataset.theme = newTheme;
+  localStorage.setItem('archideck_theme', newTheme);
+
+  // ボタンアイコン更新
+  const darkModeBtn = document.getElementById('darkModeBtn');
+  if (darkModeBtn) {
+    darkModeBtn.textContent = newTheme === 'dark' ? '☀️' : '🌙';
+  }
+
+  showToast(newTheme === 'dark' ? 'ダークモードを有効化しました' : 'ライトモードに戻しました', 'info');
+}
+
+// ダークモード初期化
+function initDarkMode() {
+  const savedTheme = localStorage.getItem('archideck_theme');
+  if (savedTheme === 'dark') {
+    document.documentElement.dataset.theme = 'dark';
+    const darkModeBtn = document.getElementById('darkModeBtn');
+    if (darkModeBtn) {
+      darkModeBtn.textContent = '☀️';
+    }
+  }
+}
+
 function isLoginScreen() {
   const loginContainer = document.getElementById('loginContainer');
   return loginContainer && loginContainer.style.display !== 'none';
@@ -6210,6 +6317,9 @@ function showShortcutHelp() {
         </div>
         <div style="display: flex; justify-content: space-between; padding: 8px; background: var(--bg-tertiary); border-radius: 6px;">
           <span>Ctrl/Cmd + E</span><span>CSV出力</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 8px; background: var(--bg-tertiary); border-radius: 6px;">
+          <span>Ctrl/Cmd + Shift + D</span><span>ダークモード切り替え</span>
         </div>
         <div style="display: flex; justify-content: space-between; padding: 8px; background: var(--bg-tertiary); border-radius: 6px;">
           <span>Shift + ?</span><span>このヘルプを表示</span>
@@ -8858,6 +8968,18 @@ function renderProjects() {
 
     // 次に選択されたソート順
     switch (sortOrder) {
+      case 'custom':
+        // カスタム順序（ドラッグ&ドロップで保存した順序）
+        const customOrder = getCustomCardOrder();
+        const aIdx = customOrder.indexOf(a.id);
+        const bIdx = customOrder.indexOf(b.id);
+        // 両方がカスタム順序にある場合
+        if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
+        // 片方だけカスタム順序にある場合、カスタム順を優先
+        if (aIdx !== -1) return -1;
+        if (bIdx !== -1) return 1;
+        // どちらもカスタム順序にない場合は更新日順
+        return new Date(b.updated_at || 0) - new Date(a.updated_at || 0);
       case 'updated_desc':
         return new Date(b.updated_at || 0) - new Date(a.updated_at || 0);
       case 'updated_asc':
@@ -8886,6 +9008,9 @@ function renderProjects() {
   container.style.display = 'grid';
   emptyState.style.display = 'none';
   container.innerHTML = filtered.map(project => renderProjectCard(project)).join('');
+
+  // カード展開状態を復元
+  filtered.forEach(project => restoreCardStates(project.id));
 
   // カード描画後にタスクと議事録を読み込む（バッチ処理でN+1問題を回避）
   setTimeout(async () => {
@@ -9140,7 +9265,7 @@ function renderProjectCard(project) {
   const isOverdue = deadline && new Date(deadline) < today && !project.is_archived;
   const isDueSoon = deadline && !isOverdue && (new Date(deadline) - today) <= 3 * 24 * 60 * 60 * 1000 && !project.is_archived;
 
-  return `<div class="project-card ${isFavorite ? 'favorite' : ''} ${isSelected ? 'selected' : ''} ${isOverdue ? 'overdue' : ''} ${isDueSoon ? 'due-soon' : ''}" data-project-id="${project.id}">
+  return `<div class="project-card ${isFavorite ? 'favorite' : ''} ${isSelected ? 'selected' : ''} ${isOverdue ? 'overdue' : ''} ${isDueSoon ? 'due-soon' : ''}" data-project-id="${project.id}" draggable="true" ondragstart="handleDragStart(event)" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" ondragend="handleDragEnd(event)">
     <div class="card-header">
       <div style="display: flex; align-items: flex-start; gap: 8px;">
         <input type="checkbox" class="batch-checkbox" data-project-id="${project.id}" ${isSelected ? 'checked' : ''} onclick="event.stopPropagation(); BatchOperations.toggle('${project.id}')" title="選択">
@@ -13856,6 +13981,113 @@ async function executeApplicationGo() {
 function toggleCardSection(element) {
   const section = element.closest('.card-section');
   section.classList.toggle('collapsed');
+
+  // セクション識別子を取得（例：projectId_sectionName）
+  const card = section.closest('.project-card');
+  if (card) {
+    const projectId = card.dataset.projectId;
+    const sectionTitle = section.querySelector('.card-section-header h4')?.textContent;
+    if (projectId && sectionTitle) {
+      const key = `archideck_card_${projectId}_${sectionTitle}`;
+      const isCollapsed = section.classList.contains('collapsed');
+      localStorage.setItem(key, isCollapsed ? 'collapsed' : 'expanded');
+    }
+  }
+}
+
+// カード展開状態を復元
+function restoreCardStates(projectId) {
+  const card = document.querySelector(`.project-card[data-project-id="${projectId}"]`);
+  if (!card) return;
+
+  const sections = card.querySelectorAll('.card-section');
+  sections.forEach(section => {
+    const sectionTitle = section.querySelector('.card-section-header h4')?.textContent;
+    if (sectionTitle) {
+      const key = `archideck_card_${projectId}_${sectionTitle}`;
+      const savedState = localStorage.getItem(key);
+      if (savedState === 'collapsed') {
+        section.classList.add('collapsed');
+      } else if (savedState === 'expanded') {
+        section.classList.remove('collapsed');
+      }
+    }
+  });
+}
+
+// ドラッグ&ドロップ並べ替え
+let draggedCard = null;
+let customCardOrder = safeJsonParse(localStorage.getItem('archideck_card_order'), []);
+
+function handleDragStart(event) {
+  draggedCard = event.target.closest('.project-card');
+  if (!draggedCard) return;
+  draggedCard.classList.add('dragging');
+  event.dataTransfer.effectAllowed = 'move';
+  event.dataTransfer.setData('text/plain', draggedCard.dataset.projectId);
+}
+
+function handleDragOver(event) {
+  event.preventDefault();
+  event.dataTransfer.dropEffect = 'move';
+
+  const targetCard = event.target.closest('.project-card');
+  if (!targetCard || targetCard === draggedCard) return;
+
+  const container = document.getElementById('projectsContainer');
+  const cards = [...container.querySelectorAll('.project-card:not(.dragging)')];
+  const targetIndex = cards.indexOf(targetCard);
+  const draggedIndex = cards.indexOf(draggedCard);
+
+  // 視覚的フィードバック
+  targetCard.classList.add('drag-over');
+}
+
+function handleDrop(event) {
+  event.preventDefault();
+  const targetCard = event.target.closest('.project-card');
+  if (!targetCard || targetCard === draggedCard) return;
+
+  const container = document.getElementById('projectsContainer');
+  const rect = targetCard.getBoundingClientRect();
+  const insertBefore = event.clientY < rect.top + rect.height / 2;
+
+  if (insertBefore) {
+    container.insertBefore(draggedCard, targetCard);
+  } else {
+    container.insertBefore(draggedCard, targetCard.nextSibling);
+  }
+
+  // カスタム順序を保存
+  saveCardOrder();
+  showToast('並び順を保存しました', 'info');
+}
+
+function handleDragEnd(event) {
+  if (draggedCard) {
+    draggedCard.classList.remove('dragging');
+  }
+  // 全てのdrag-overクラスを削除
+  document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+  draggedCard = null;
+}
+
+function saveCardOrder() {
+  const container = document.getElementById('projectsContainer');
+  const cards = container.querySelectorAll('.project-card');
+  customCardOrder = [...cards].map(card => card.dataset.projectId);
+  localStorage.setItem('archideck_card_order', JSON.stringify(customCardOrder));
+}
+
+function getCustomCardOrder() {
+  return safeJsonParse(localStorage.getItem('archideck_card_order'), []);
+}
+
+function clearCustomCardOrder() {
+  localStorage.removeItem('archideck_card_order');
+  customCardOrder = [];
+  renderProjects();
+  showToast('並び順をリセットしました', 'info');
 }
 
 // モバイルサイドバー開閉
@@ -15944,6 +16176,7 @@ saveProject = async function() {
 // ページ読み込み時
 // ============================================
 window.addEventListener('DOMContentLoaded', () => {
+  initDarkMode(); // ダークモード初期化
   checkAuth();
   // URL直接アクセスの処理はcheckAuth() → init()完了後に自動実行される
 
