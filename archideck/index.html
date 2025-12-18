@@ -3485,6 +3485,53 @@ input:checked + .toggle-slider:before {
   display: none;
 }
 
+/* 横並び3カラムレイアウト（タスク・メモ・議事録） */
+.card-sections-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.card-sections-row .card-section {
+  margin-bottom: 0;
+}
+
+/* セクションタイトル内のバッジ */
+.section-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 600;
+  margin-left: 8px;
+}
+
+.section-badge.badge-primary {
+  background: var(--primary-color);
+  color: white;
+}
+
+.section-badge.badge-warning {
+  background: var(--warning-color);
+  color: white;
+}
+
+.section-badge.badge-muted {
+  background: var(--bg-tertiary);
+  color: var(--text-muted);
+}
+
+@media (max-width: 768px) {
+  .card-sections-row {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* タスク機能 */
 .project-task-list {
   margin-top: 12px;
@@ -9787,11 +9834,11 @@ function renderProjectCard(project) {
       }
     })()}
 
-    <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">✅ タスク</span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><div id="projectTasksList_${project.id}" class="project-task-list"></div><div class="add-task-form"><input type="text" id="newTaskName_${project.id}" placeholder="タスク名" inputmode="text"><input type="date" id="newTaskDue_${project.id}"><button class="btn btn-small btn-primary" onclick="addProjectTask('${project.id}', document.getElementById('newTaskName_${project.id}').value, document.getElementById('newTaskDue_${project.id}').value)">追加</button></div></div></div>
-
-    <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">📝 メモ欄</span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><textarea class="shared-memo-area" id="sharedMemo_${project.id}" placeholder="メモを入力...">${escapeHtml(project.shared_memo || '')}</textarea><button class="btn btn-small btn-ghost" style="margin-top:8px" onclick="saveSharedMemo('${project.id}')">メモを保存</button></div></div>
-
-    <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">📄 議事録</span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><div id="minutesList_${project.id}" class="minutes-list"></div><div style="margin-bottom:12px;padding:12px;background:var(--bg-tertiary);border-radius:8px;"><label style="font-size:12px;color:var(--text-secondary);display:block;margin-bottom:6px;">打合せ日</label><input type="date" id="meetingDate_${project.id}" style="width:100%;padding:8px 12px;border:1px solid var(--border-color);border-radius:6px;font-size:14px;"></div><div class="minutes-upload-area" id="minutesDropArea_${project.id}" ondragover="handleMinutesDragOver(event)" ondragleave="handleMinutesDragLeave(event)" ondrop="handleDropWithDate(event, '${project.id}')" onclick="triggerMinutesUpload('${project.id}')"><input type="file" id="minutesUpload_${project.id}" style="display:none" accept=".pdf,.doc,.docx,.xls,.xlsx" onchange="uploadMinutesWithDate('${project.id}', this.files[0])"><span>📁 クリックまたはドラッグ&ドロップ</span><div style="font-size:12px;color:var(--text-muted);margin-top:4px">PDF, Word, Excel対応</div></div></div></div>
+    <div class="card-sections-row">
+      <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">✅ タスク<span class="section-badge badge-warning" id="taskBadge_${project.id}" style="display:none">0</span></span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><div id="projectTasksList_${project.id}" class="project-task-list"></div><div class="add-task-form"><input type="text" id="newTaskName_${project.id}" placeholder="タスク名" inputmode="text"><input type="date" id="newTaskDue_${project.id}"><button class="btn btn-small btn-primary" onclick="addProjectTask('${project.id}', document.getElementById('newTaskName_${project.id}').value, document.getElementById('newTaskDue_${project.id}').value)">追加</button></div></div></div>
+      <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">📝 メモ${project.shared_memo ? '<span class="section-badge badge-primary">1</span>' : ''}</span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><textarea class="shared-memo-area" id="sharedMemo_${project.id}" placeholder="メモを入力...">${escapeHtml(project.shared_memo || '')}</textarea><button class="btn btn-small btn-ghost" style="margin-top:8px" onclick="saveSharedMemo('${project.id}')">メモを保存</button></div></div>
+      <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">📄 議事録<span class="section-badge badge-primary" id="minutesBadge_${project.id}" style="display:none">0</span></span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><div id="minutesList_${project.id}" class="minutes-list"></div><div style="margin-bottom:12px;padding:12px;background:var(--bg-tertiary);border-radius:8px;"><label style="font-size:12px;color:var(--text-secondary);display:block;margin-bottom:6px;">打合せ日</label><input type="date" id="meetingDate_${project.id}" style="width:100%;padding:8px 12px;border:1px solid var(--border-color);border-radius:6px;font-size:14px;"></div><div class="minutes-upload-area" id="minutesDropArea_${project.id}" ondragover="handleMinutesDragOver(event)" ondragleave="handleMinutesDragLeave(event)" ondrop="handleDropWithDate(event, '${project.id}')" onclick="triggerMinutesUpload('${project.id}')"><input type="file" id="minutesUpload_${project.id}" style="display:none" accept=".pdf,.doc,.docx,.xls,.xlsx" onchange="uploadMinutesWithDate('${project.id}', this.files[0])"><span>📁 ドラッグ&ドロップ</span><div style="font-size:12px;color:var(--text-muted);margin-top:4px">PDF, Word, Excel</div></div></div></div>
+    </div>
 
     <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">📋 引継書</span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><textarea class="handover-content" id="handover_${project.id}" placeholder="引継書の内容を入力..."></textarea><button class="btn btn-small btn-ghost" style="margin-top:8px" onclick="saveHandover('${project.id}')">引継書を保存</button></div></div>
 
@@ -10114,6 +10161,12 @@ function getStateColorClass(state, lastOption, taskKey = '') {
   // 空、-、null → 色なし（白）
   if (!state || state === '-' || state === '') {
     return '';
+  }
+
+  // ICメーカータスク: メーカーを選択したら青色
+  if (IC_MAKER_TASKS.includes(taskKey)) {
+    // メーカーを選択している（'-'でも空でもない）→ 青
+    return 'state-blue';
   }
 
   // ICタスク特別処理: 造作業者紹介・家具見積依頼は「無し」も青色
@@ -14304,8 +14357,13 @@ async function loadProjectTasksList(projectId) {
     if (error) {
       logError('Load tasks error:', error);
       container.innerHTML = '<div style="color: var(--text-muted); font-size: 12px;">タスクの読み込みに失敗しました</div>';
+      updateTaskBadge(projectId, 0);
       return;
     }
+
+    // 未解決タスク数を計算してバッジ更新
+    const unresolvedCount = tasks ? tasks.filter(t => !t.is_completed).length : 0;
+    updateTaskBadge(projectId, unresolvedCount);
 
     if (!tasks || tasks.length === 0) {
       container.innerHTML = '<div style="color: var(--text-muted); font-size: 12px;">タスクはありません</div>';
@@ -14325,6 +14383,20 @@ async function loadProjectTasksList(projectId) {
   } catch (error) {
     logError('Load tasks error:', error);
     container.innerHTML = '<div style="color: var(--text-muted); font-size: 12px;">タスクの読み込みに失敗しました</div>';
+    updateTaskBadge(projectId, 0);
+  }
+}
+
+// タスクバッジを更新
+function updateTaskBadge(projectId, count) {
+  const badge = document.getElementById(`taskBadge_${projectId}`);
+  if (badge) {
+    if (count > 0) {
+      badge.textContent = count;
+      badge.style.display = 'inline-flex';
+    } else {
+      badge.style.display = 'none';
+    }
   }
 }
 
@@ -14835,21 +14907,31 @@ async function uploadMinutesWithDate(projectId, file) {
       .getPublicUrl(storagePath);
 
     // DBに登録（タイトルを自動生成したものに）
-    const { error: dbError } = await supabase
+    const insertData = {
+      project_id: projectId,
+      file_name: autoTitle,
+      file_url: urlData.publicUrl || '',
+      file_size: file.size || 0,
+      uploaded_by: currentUser?.email || 'anonymous@archideck.jp'
+    };
+
+    console.log('Inserting minutes:', insertData); // デバッグ用
+
+    const { data: insertedData, error: dbError } = await supabase
       .from('project_minutes')
-      .insert({
-        project_id: projectId,
-        file_name: autoTitle,
-        file_url: urlData.publicUrl,
-        file_size: file.size,
-        uploaded_by: currentUser?.email || 'demo@archideck.jp'
-      });
+      .insert(insertData)
+      .select();
 
     if (dbError) {
       logError('DB insert error:', dbError);
-      showToast('議事録登録に失敗しました: ' + (dbError.message || 'Unknown error'), 'error');
+      console.error('DB insert error details:', JSON.stringify(dbError));
+      // ストレージにアップロード済みのファイルを削除
+      await supabase.storage.from('minutes').remove([storagePath]).catch(() => {});
+      showToast('議事録登録に失敗しました: ' + (dbError.message || dbError.code || 'Unknown error'), 'error');
       return;
     }
+
+    console.log('Minutes inserted:', insertedData); // デバッグ用
 
     // 通知を送信
     const notifyEmails = [];
@@ -14985,21 +15067,31 @@ async function uploadMinutes(projectId, file) {
       .getPublicUrl(safeStoragePath);
 
     // DBに登録
-    const { error: dbError } = await supabase
+    const insertData = {
+      project_id: projectId,
+      file_name: file.name,
+      file_url: urlData.publicUrl || '',
+      file_size: file.size || 0,
+      uploaded_by: currentUser?.email || 'anonymous@archideck.jp'
+    };
+
+    console.log('Inserting minutes:', insertData); // デバッグ用
+
+    const { data: insertedData, error: dbError } = await supabase
       .from('project_minutes')
-      .insert({
-        project_id: projectId,
-        file_name: file.name,
-        file_url: urlData.publicUrl,
-        file_size: file.size,
-        uploaded_by: currentUser?.email || 'demo@archideck.jp'
-      });
+      .insert(insertData)
+      .select();
 
     if (dbError) {
       logError('DB insert error:', dbError);
-      showToast('議事録登録に失敗しました: ' + (dbError.message || 'Unknown error'), 'error');
+      console.error('DB insert error details:', JSON.stringify(dbError));
+      // ストレージにアップロード済みのファイルを削除
+      await supabase.storage.from('minutes').remove([safeStoragePath]).catch(() => {});
+      showToast('議事録登録に失敗しました: ' + (dbError.message || dbError.code || 'Unknown error'), 'error');
       return;
     }
+
+    console.log('Minutes inserted:', insertedData); // デバッグ用
 
     // 通知を送信
     const project = projects.find(p => p.id === projectId);
@@ -15052,8 +15144,13 @@ async function loadMinutesList(projectId) {
     if (error) {
       logError('Load minutes error:', error);
       container.innerHTML = '<div style="color: var(--text-muted); font-size: 12px;">議事録の読み込みに失敗しました</div>';
+      updateMinutesBadge(projectId, 0);
       return;
     }
+
+    // 議事録数をバッジに表示
+    const minutesCount = minutes ? minutes.length : 0;
+    updateMinutesBadge(projectId, minutesCount);
 
     if (!minutes || minutes.length === 0) {
       container.innerHTML = '<div style="color: var(--text-muted); font-size: 12px;">アップロードされた議事録はありません</div>';
@@ -15076,6 +15173,20 @@ async function loadMinutesList(projectId) {
   } catch (error) {
     logError('Load minutes error:', error);
     container.innerHTML = '<div style="color: var(--text-muted); font-size: 12px;">議事録の読み込みに失敗しました</div>';
+    updateMinutesBadge(projectId, 0);
+  }
+}
+
+// 議事録バッジを更新
+function updateMinutesBadge(projectId, count) {
+  const badge = document.getElementById(`minutesBadge_${projectId}`);
+  if (badge) {
+    if (count > 0) {
+      badge.textContent = count;
+      badge.style.display = 'inline-flex';
+    } else {
+      badge.style.display = 'none';
+    }
   }
 }
 
