@@ -590,6 +590,56 @@ body {
   gap: 12px;
 }
 
+/* コンパクトツールバー */
+.compact-toolbar {
+  padding: 12px 20px;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.toolbar-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.toolbar-spacer {
+  flex: 1;
+}
+
+.select-compact {
+  padding: 6px 10px;
+  font-size: 12px;
+  min-width: auto;
+}
+
+.filter-panel {
+  width: 100%;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-light);
+}
+
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+@media (max-width: 768px) {
+  .toolbar-main {
+    flex-wrap: wrap;
+  }
+  .filter-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .filter-row .select-compact {
+    width: 100%;
+  }
+}
+
 /* デザイナータブ */
 .designer-tabs {
   display: flex;
@@ -3530,6 +3580,109 @@ input:checked + .toggle-slider:before {
   .card-sections-row {
     grid-template-columns: 1fr;
   }
+  .card-quick-actions {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* クイックアクションボタン（4カラム横並び） */
+.card-quick-actions {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.quick-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 8px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.quick-action-btn:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.quick-action-btn .section-badge {
+  font-size: 10px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+}
+
+/* カードモーダル */
+.card-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 20px;
+}
+
+.card-modal {
+  background: var(--bg-primary);
+  border-radius: var(--radius-xl);
+  width: 100%;
+  max-width: 600px;
+  max-height: 80vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-2xl);
+}
+
+.card-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-light);
+  background: var(--bg-secondary);
+}
+
+.card-modal-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.card-modal-close {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+}
+
+.card-modal-close:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.card-modal-body {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
 }
 
 /* タスク機能 */
@@ -4231,70 +4384,73 @@ textarea:focus-visible {
 
       <!-- 案件管理タブ -->
       <div id="projectsTab" class="tab-panel active">
-        <div class="toolbar">
-          <div class="toolbar-left">
-            <input type="text" class="input" id="searchQuery" placeholder="検索... (Ctrl+K)" oninput="debouncedRenderProjects()" onfocus="updateSearchSuggestions()" list="searchSuggestions" aria-label="案件を検索" autocomplete="off">
+        <div class="toolbar compact-toolbar">
+          <div class="toolbar-main">
+            <input type="text" class="input" id="searchQuery" placeholder="検索... (Ctrl+K)" oninput="debouncedRenderProjects()" onfocus="updateSearchSuggestions()" list="searchSuggestions" aria-label="案件を検索" autocomplete="off" style="flex:1;max-width:280px;">
             <datalist id="searchSuggestions"></datalist>
-            <select class="select" id="specFilter" onchange="renderProjects()">
-              <option value="">すべての商品</option>
-              <option>LIFE</option>
-              <option>LIFE+</option>
-              <option>HOURS</option>
-              <option>LACIE</option>
-              <option>LIFE Limited</option>
-              <option>LIFE+ Limited</option>
+            <select class="select select-compact" id="archiveFilter" onchange="renderProjects()">
+              <option value="active">アクティブ</option>
+              <option value="all">すべて</option>
+              <option value="archived">完了済</option>
+              <option value="favorites">★</option>
             </select>
-            <select class="select" id="archiveFilter" onchange="renderProjects()" style="margin-left: 12px;">
-              <option value="active">アクティブのみ</option>
-              <option value="all">すべて表示</option>
-              <option value="archived">完了済みのみ</option>
-              <option value="favorites">★ お気に入り</option>
-            </select>
-            <select class="select" id="icProgressFilter" onchange="renderProjects()" style="margin-left: 12px;">
-              <option value="">IC進捗: すべて</option>
-              <option value="not_started">IC未着手 (0%)</option>
-              <option value="in_progress">IC進行中 (1-99%)</option>
-              <option value="completed">IC完了 (100%)</option>
-              <option value="no_ic">IC担当なし</option>
-            </select>
-            <select class="select" id="icAssigneeFilter" onchange="renderProjects()" style="margin-left: 12px;">
-              <option value="">IC担当: すべて</option>
-            </select>
-            <select class="select" id="exteriorAssigneeFilter" onchange="renderProjects()" style="margin-left: 12px;">
-              <option value="">外構担当: すべて</option>
-            </select>
-            <select class="select" id="realestateAssigneeFilter" onchange="renderProjects()" style="margin-left: 12px;">
-              <option value="">不動産担当: すべて</option>
-            </select>
-            <select class="select" id="sortOrder" onchange="renderProjects()" style="margin-left: 12px;">
-              <option value="custom">カスタム順（ドラッグ可）</option>
-              <option value="updated_desc">更新日↓ 新しい順</option>
-              <option value="updated_asc">更新日↑ 古い順</option>
-              <option value="progress_desc">進捗率↓ 高い順</option>
-              <option value="progress_asc">進捗率↑ 低い順</option>
-              <option value="customer_asc">顧客名 A-Z</option>
-              <option value="customer_desc">顧客名 Z-A</option>
-              <option value="created_desc">作成日↓ 新しい順</option>
-            </select>
+            <button class="btn btn-ghost btn-small" onclick="toggleFilterPanel()" id="filterToggleBtn" title="フィルター展開">🔽 絞込</button>
+            <button class="btn btn-ghost btn-small" onclick="resetAllFilters()" title="リセット">🔄</button>
+            <div class="toolbar-spacer"></div>
+            <button class="btn btn-ghost btn-small" onclick="DataImporter.showModal()" title="取込">📥</button>
+            <button class="btn btn-ghost btn-small" onclick="exportCSV()" title="出力">📤</button>
+            <button class="btn btn-primary btn-small" onclick="openProjectModal()">+ 追加</button>
           </div>
-          <div class="toolbar-right">
-            <div style="position: relative; display: inline-block;">
-              <button id="presetBtn" class="btn btn-ghost btn-small" onclick="FilterPresets.toggleMenu()" title="保存済みフィルター">📋 プリセット ▼</button>
-              <div id="presetMenu" style="display: none; position: absolute; top: 100%; right: 0; margin-top: 4px; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); min-width: 280px; z-index: 100;">
-                <div style="padding: 12px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
-                  <span style="font-weight: 600; font-size: 14px;">フィルタープリセット</span>
-                  <button class="btn btn-primary btn-small" onclick="FilterPresets.showSaveModal(); document.getElementById('presetMenu').style.display='none';">+ 保存</button>
+          <div class="filter-panel" id="filterPanel" style="display:none;">
+            <div class="filter-row">
+              <select class="select select-compact" id="specFilter" onchange="renderProjects()">
+                <option value="">商品: すべて</option>
+                <option>LIFE</option>
+                <option>LIFE+</option>
+                <option>HOURS</option>
+                <option>LACIE</option>
+                <option>LIFE Limited</option>
+                <option>LIFE+ Limited</option>
+              </select>
+              <select class="select select-compact" id="icProgressFilter" onchange="renderProjects()">
+                <option value="">IC進捗: すべて</option>
+                <option value="not_started">IC未着手</option>
+                <option value="in_progress">IC進行中</option>
+                <option value="completed">IC完了</option>
+                <option value="no_ic">IC担当なし</option>
+              </select>
+              <select class="select select-compact" id="icAssigneeFilter" onchange="renderProjects()">
+                <option value="">IC担当: すべて</option>
+              </select>
+              <select class="select select-compact" id="exteriorAssigneeFilter" onchange="renderProjects()">
+                <option value="">外構: すべて</option>
+              </select>
+              <select class="select select-compact" id="realestateAssigneeFilter" onchange="renderProjects()">
+                <option value="">不動産: すべて</option>
+              </select>
+              <select class="select select-compact" id="sortOrder" onchange="renderProjects()">
+                <option value="custom">カスタム順</option>
+                <option value="updated_desc">更新日↓</option>
+                <option value="updated_asc">更新日↑</option>
+                <option value="progress_desc">進捗↓</option>
+                <option value="progress_asc">進捗↑</option>
+                <option value="customer_asc">顧客名A-Z</option>
+                <option value="created_desc">作成日↓</option>
+              </select>
+              <div style="position: relative;">
+                <button class="btn btn-ghost btn-small" onclick="FilterPresets.toggleMenu()" title="プリセット">📋</button>
+                <div id="presetMenu" style="display: none; position: absolute; top: 100%; right: 0; margin-top: 4px; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); min-width: 280px; z-index: 100;">
+                  <div style="padding: 12px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-weight: 600; font-size: 14px;">フィルタープリセット</span>
+                    <button class="btn btn-primary btn-small" onclick="FilterPresets.showSaveModal(); document.getElementById('presetMenu').style.display='none';">+ 保存</button>
+                  </div>
+                  <div id="presetDropdown" style="max-height: 300px; overflow-y: auto;"></div>
                 </div>
-                <div id="presetDropdown" style="max-height: 300px; overflow-y: auto;"></div>
               </div>
+              <button class="btn btn-ghost btn-small" onclick="BatchOperations.selectAll()" title="全選択">☑</button>
             </div>
-            <button class="btn btn-ghost btn-small" onclick="resetAllFilters()" title="フィルターリセット (R)">🔄 リセット</button>
-            <button class="btn btn-ghost btn-small" onclick="BatchOperations.selectAll()" title="全て選択">☑ 全選択</button>
-            <button class="btn btn-ghost" onclick="DataImporter.showModal()" title="CSV/JSONインポート">📥 取込</button>
-            <button class="btn btn-ghost" onclick="exportCSV()" title="CSV/JSON/印刷出力">📤 出力</button>
-            <button class="btn btn-primary" onclick="openProjectModal()">+ 案件追加</button>
-      </div>
-    </div>
+          </div>
+        </div>
     <!-- 統計ダッシュボード -->
     <div id="statsDashboard" class="stats-dashboard" style="display: none;">
       <div class="stats-grid">
@@ -6576,6 +6732,19 @@ const CardNavigation = {
     this.getCards().forEach(card => card.classList.remove('keyboard-focused'));
   }
 };
+
+// フィルターパネル表示切り替え
+function toggleFilterPanel() {
+  const panel = document.getElementById('filterPanel');
+  const btn = document.getElementById('filterToggleBtn');
+  if (panel.style.display === 'none') {
+    panel.style.display = 'block';
+    btn.innerHTML = '🔼 絞込';
+  } else {
+    panel.style.display = 'none';
+    btn.innerHTML = '🔽 絞込';
+  }
+}
 
 // フィルターリセット
 function resetAllFilters() {
@@ -9834,41 +10003,36 @@ function renderProjectCard(project) {
       }
     })()}
 
-    <div class="card-sections-row">
-      <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">✅ タスク<span class="section-badge badge-warning" id="taskBadge_${project.id}" style="display:none">0</span></span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><div id="projectTasksList_${project.id}" class="project-task-list"></div><div class="add-task-form"><input type="text" id="newTaskName_${project.id}" placeholder="タスク名" inputmode="text"><input type="date" id="newTaskDue_${project.id}"><button class="btn btn-small btn-primary" onclick="addProjectTask('${project.id}', document.getElementById('newTaskName_${project.id}').value, document.getElementById('newTaskDue_${project.id}').value)">追加</button></div></div></div>
-      <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">📝 メモ${project.shared_memo ? '<span class="section-badge badge-primary">1</span>' : ''}</span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><textarea class="shared-memo-area" id="sharedMemo_${project.id}" placeholder="メモを入力...">${escapeHtml(project.shared_memo || '')}</textarea><button class="btn btn-small btn-ghost" style="margin-top:8px" onclick="saveSharedMemo('${project.id}')">メモを保存</button></div></div>
-      <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">📄 議事録<span class="section-badge badge-primary" id="minutesBadge_${project.id}" style="display:none">0</span></span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><div id="minutesList_${project.id}" class="minutes-list"></div><div style="margin-bottom:12px;padding:12px;background:var(--bg-tertiary);border-radius:8px;"><label style="font-size:12px;color:var(--text-secondary);display:block;margin-bottom:6px;">打合せ日</label><input type="date" id="meetingDate_${project.id}" style="width:100%;padding:8px 12px;border:1px solid var(--border-color);border-radius:6px;font-size:14px;"></div><div class="minutes-upload-area" id="minutesDropArea_${project.id}" ondragover="handleMinutesDragOver(event)" ondragleave="handleMinutesDragLeave(event)" ondrop="handleDropWithDate(event, '${project.id}')" onclick="triggerMinutesUpload('${project.id}')"><input type="file" id="minutesUpload_${project.id}" style="display:none" accept=".pdf,.doc,.docx,.xls,.xlsx" onchange="uploadMinutesWithDate('${project.id}', this.files[0])"><span>📁 ドラッグ&ドロップ</span><div style="font-size:12px;color:var(--text-muted);margin-top:4px">PDF, Word, Excel</div></div></div></div>
+    <div class="card-quick-actions">
+      <button class="quick-action-btn" onclick="openCardModal('${project.id}', 'tasks')">✅ タスク<span class="section-badge badge-warning" id="taskBadge_${project.id}" style="display:none">0</span></button>
+      <button class="quick-action-btn" onclick="openCardModal('${project.id}', 'memo')">📝 メモ${project.shared_memo ? '<span class="section-badge badge-primary">1</span>' : ''}</button>
+      <button class="quick-action-btn" onclick="openCardModal('${project.id}', 'minutes')">📄 議事録<span class="section-badge badge-primary" id="minutesBadge_${project.id}" style="display:none">0</span></button>
+      <button class="quick-action-btn" onclick="openCardModal('${project.id}', 'handover')">📋 引継書</button>
     </div>
 
-    <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">📋 引継書</span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><textarea class="handover-content" id="handover_${project.id}" placeholder="引継書の内容を入力..."></textarea><button class="btn btn-small btn-ghost" style="margin-top:8px" onclick="saveHandover('${project.id}')">引継書を保存</button></div></div>
-
     ${(() => {
-      // 部署別業務内容表示
+      // 部署別業務内容表示（1つだけ表示）
+      const getBizContent = (title, icon, content) => `<div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">${icon} ${title}</span><span class="card-section-toggle">▼</span></div><div class="card-section-content">${content}</div></div>`;
+
       if (currentUserCategory === 'admin' || !currentUserCategory) {
         // 管理者: すべての業務内容を表示
         return `
-    <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">📐 設計業務内容</span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><div class="tasks-grid">${tasksHtml}</div></div></div>
-    <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">🎨 IC業務内容</span><span class="card-section-toggle">▼</span></div><div class="card-section-content">${icTasks.length > 0 ? `<div class="tasks-grid">${icTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">ICタスクが登録されていません</p>'}</div></div>
-    <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">🏡 外構業務内容</span><span class="card-section-toggle">▼</span></div><div class="card-section-content">${exteriorTasks.length > 0 ? `<div class="tasks-grid">${exteriorTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">外構タスクが登録されていません</p>'}</div></div>
-    <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">🏢 不動産業務内容</span><span class="card-section-toggle">▼</span></div><div class="card-section-content">${realestateTasks.length > 0 ? `<div class="tasks-grid">${realestateTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">不動産タスクが登録されていません</p>'}</div></div>
-    <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">🔨 工事業務内容</span><span class="card-section-toggle">▼</span></div><div class="card-section-content">${constructionTasks.length > 0 ? `<div class="tasks-grid">${constructionTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">工事タスクが登録されていません</p>'}</div></div>`;
+    ${getBizContent('設計業務内容', '📐', `<div class="tasks-grid">${tasksHtml}</div>`)}
+    ${getBizContent('IC業務内容', '🎨', icTasks.length > 0 ? `<div class="tasks-grid">${icTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">ICタスクが登録されていません</p>')}
+    ${getBizContent('外構業務内容', '🏡', exteriorTasks.length > 0 ? `<div class="tasks-grid">${exteriorTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">外構タスクが登録されていません</p>')}
+    ${getBizContent('不動産業務内容', '🏢', realestateTasks.length > 0 ? `<div class="tasks-grid">${realestateTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">不動産タスクが登録されていません</p>')}
+    ${getBizContent('工事業務内容', '🔨', constructionTasks.length > 0 ? `<div class="tasks-grid">${constructionTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">工事タスクが登録されていません</p>')}`;
       } else if (currentUserCategory === '設計') {
-        // 設計担当: 設計業務内容のみ
-        return `<div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">📐 設計業務内容</span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><div class="tasks-grid">${tasksHtml}</div></div></div>`;
+        return getBizContent('設計業務内容', '📐', `<div class="tasks-grid">${tasksHtml}</div>`);
       } else if (currentUserCategory === 'IC') {
-        // IC担当: IC業務内容のみ
-        return `<div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">🎨 IC業務内容</span><span class="card-section-toggle">▼</span></div><div class="card-section-content">${icTasks.length > 0 ? `<div class="tasks-grid">${icTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">ICタスクが登録されていません。設定 > ICタスク管理で「21項目に更新」ボタンをクリックしてください。</p>'}</div></div>`;
+        return getBizContent('IC業務内容', '🎨', icTasks.length > 0 ? `<div class="tasks-grid">${icTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">ICタスクが登録されていません</p>');
       } else if (currentUserCategory === '外構') {
-        // 外構担当: 外構業務内容
-        return `<div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">🏡 外構業務内容</span><span class="card-section-toggle">▼</span></div><div class="card-section-content">${exteriorTasks.length > 0 ? `<div class="tasks-grid">${exteriorTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">外構タスクが登録されていません。設定 > タスク管理で外構タスクを追加できます。</p>'}</div></div>`;
+        return getBizContent('外構業務内容', '🏡', exteriorTasks.length > 0 ? `<div class="tasks-grid">${exteriorTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">外構タスクが登録されていません</p>');
       } else if (currentUserCategory === '不動産') {
-        // 不動産担当: 不動産業務内容
-        return `<div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">🏢 不動産業務内容</span><span class="card-section-toggle">▼</span></div><div class="card-section-content">${realestateTasks.length > 0 ? `<div class="tasks-grid">${realestateTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">不動産タスクが登録されていません。設定 > タスク管理で不動産タスクを追加できます。</p>'}</div></div>`;
+        return getBizContent('不動産業務内容', '🏢', realestateTasks.length > 0 ? `<div class="tasks-grid">${realestateTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">不動産タスクが登録されていません</p>');
       } else if (currentUserCategory === '工事') {
-        // 工事担当: 工事業務内容
-        return `<div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">🔨 工事業務内容</span><span class="card-section-toggle">▼</span></div><div class="card-section-content">${constructionTasks.length > 0 ? `<div class="tasks-grid">${constructionTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">工事タスクが登録されていません。設定 > タスク管理で工事タスクを追加できます。</p>'}</div></div>`;
+        return getBizContent('工事業務内容', '🔨', constructionTasks.length > 0 ? `<div class="tasks-grid">${constructionTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">工事タスクが登録されていません</p>');
       } else {
-        // その他: 何も表示しない
         return '';
       }
     })()}
@@ -14663,6 +14827,253 @@ async function executeApplicationGo() {
     showStatus('保存済み', 'saved');
     showToast(`${project.customer} を完了済みに移動しました`, 'success');
   });
+}
+
+// カードモーダル機能
+function openCardModal(projectId, type) {
+  const project = projects.find(p => p.id === projectId);
+  if (!project) return;
+
+  let title = '';
+  let content = '';
+
+  switch(type) {
+    case 'tasks':
+      title = `✅ タスク - ${project.customer}`;
+      content = `
+        <div id="modalTasksList_${projectId}" class="project-task-list"></div>
+        <div class="add-task-form" style="margin-top:16px;display:flex;gap:8px;">
+          <input type="text" id="modalNewTaskName_${projectId}" placeholder="タスク名" style="flex:1;padding:10px;border:1px solid var(--border-color);border-radius:6px;">
+          <input type="date" id="modalNewTaskDue_${projectId}" style="padding:10px;border:1px solid var(--border-color);border-radius:6px;">
+          <button class="btn btn-primary" onclick="addProjectTaskFromModal('${projectId}')">追加</button>
+        </div>
+      `;
+      break;
+    case 'memo':
+      title = `📝 メモ - ${project.customer}`;
+      content = `
+        <textarea class="shared-memo-area" id="modalSharedMemo_${projectId}" placeholder="メモを入力..." style="width:100%;min-height:200px;padding:12px;border:1px solid var(--border-color);border-radius:8px;resize:vertical;">${escapeHtml(project.shared_memo || '')}</textarea>
+        <button class="btn btn-primary" style="margin-top:12px;" onclick="saveSharedMemoFromModal('${projectId}')">メモを保存</button>
+      `;
+      break;
+    case 'minutes':
+      title = `📄 議事録 - ${project.customer}`;
+      content = `
+        <div id="modalMinutesList_${projectId}" class="minutes-list" style="margin-bottom:16px;"></div>
+        <div style="padding:12px;background:var(--bg-tertiary);border-radius:8px;margin-bottom:12px;">
+          <label style="font-size:12px;color:var(--text-secondary);display:block;margin-bottom:6px;">打合せ日</label>
+          <input type="date" id="modalMeetingDate_${projectId}" style="width:100%;padding:10px;border:1px solid var(--border-color);border-radius:6px;">
+        </div>
+        <div class="minutes-upload-area" style="padding:24px;border:2px dashed var(--border-color);border-radius:8px;text-align:center;cursor:pointer;" ondragover="handleMinutesDragOver(event)" ondragleave="handleMinutesDragLeave(event)" ondrop="handleDropWithDateModal(event, '${projectId}')" onclick="document.getElementById('modalMinutesUpload_${projectId}').click()">
+          <input type="file" id="modalMinutesUpload_${projectId}" style="display:none" accept=".pdf,.doc,.docx,.xls,.xlsx" onchange="uploadMinutesWithDateModal('${projectId}', this.files[0])">
+          <span style="font-size:24px;">📁</span>
+          <div style="margin-top:8px;">クリックまたはドラッグ&ドロップ</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">PDF, Word, Excel対応</div>
+        </div>
+      `;
+      break;
+    case 'handover':
+      title = `📋 引継書 - ${project.customer}`;
+      content = `
+        <textarea class="handover-content" id="modalHandover_${projectId}" placeholder="引継書の内容を入力..." style="width:100%;min-height:250px;padding:12px;border:1px solid var(--border-color);border-radius:8px;resize:vertical;"></textarea>
+        <button class="btn btn-primary" style="margin-top:12px;" onclick="saveHandoverFromModal('${projectId}')">引継書を保存</button>
+      `;
+      break;
+  }
+
+  // モーダルHTML作成
+  const modalHtml = `
+    <div class="card-modal-overlay" onclick="closeCardModal(event)">
+      <div class="card-modal" onclick="event.stopPropagation()">
+        <div class="card-modal-header">
+          <span class="card-modal-title">${title}</span>
+          <button class="card-modal-close" onclick="closeCardModal()">&times;</button>
+        </div>
+        <div class="card-modal-body">${content}</div>
+      </div>
+    </div>
+  `;
+
+  // 既存モーダルを削除
+  const existing = document.querySelector('.card-modal-overlay');
+  if (existing) existing.remove();
+
+  // モーダルを追加
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+  // データ読み込み
+  if (type === 'tasks') {
+    loadModalTasksList(projectId);
+  } else if (type === 'minutes') {
+    loadModalMinutesList(projectId);
+  } else if (type === 'handover') {
+    loadHandoverContent(projectId);
+  }
+}
+
+function closeCardModal(event) {
+  if (event && event.target !== event.currentTarget) return;
+  const modal = document.querySelector('.card-modal-overlay');
+  if (modal) modal.remove();
+}
+
+// モーダル用タスク読み込み
+async function loadModalTasksList(projectId) {
+  const container = document.getElementById(`modalTasksList_${projectId}`);
+  if (!container) return;
+
+  try {
+    const { data: tasks, error } = await supabase
+      .from('project_tasks')
+      .select('*')
+      .eq('project_id', projectId)
+      .order('due_date', { ascending: true, nullsFirst: false });
+
+    if (error || !tasks || tasks.length === 0) {
+      container.innerHTML = '<div style="color: var(--text-muted); font-size: 13px; padding: 20px; text-align: center;">タスクはありません</div>';
+      return;
+    }
+
+    container.innerHTML = tasks.map(t => `
+      <div class="task-item" style="display: flex; align-items: center; gap: 10px; padding: 12px; background: ${t.is_completed ? 'var(--success-light)' : 'var(--bg-secondary)'}; border-radius: 8px; margin-bottom: 8px; border-left: 3px solid ${t.is_completed ? 'var(--success-color)' : 'var(--primary-color)'};">
+        <input type="checkbox" ${t.is_completed ? 'checked' : ''} onchange="toggleProjectTaskModal('${t.id}', '${projectId}', this.checked)" style="width: 18px; height: 18px; cursor: pointer;">
+        <div style="flex: 1;">
+          <div style="font-size: 14px; font-weight: 500; ${t.is_completed ? 'text-decoration: line-through; color: var(--text-muted);' : ''}">${escapeHtml(t.task_name)}</div>
+          ${t.due_date ? `<div style="font-size: 12px; color: ${isOverdue(t.due_date) && !t.is_completed ? 'var(--danger-color)' : 'var(--text-muted)'}; margin-top: 4px;">期限: ${formatDate(t.due_date)}</div>` : ''}
+        </div>
+        <button class="btn btn-small btn-ghost" onclick="deleteProjectTaskModal('${t.id}', '${projectId}')" style="color: var(--danger-color);">削除</button>
+      </div>
+    `).join('');
+  } catch (error) {
+    container.innerHTML = '<div style="color: var(--text-muted);">読み込みに失敗しました</div>';
+  }
+}
+
+async function addProjectTaskFromModal(projectId) {
+  const taskName = document.getElementById(`modalNewTaskName_${projectId}`).value.trim();
+  const dueDate = document.getElementById(`modalNewTaskDue_${projectId}`).value;
+  if (!taskName) { showToast('タスク名を入力してください', 'error'); return; }
+  await addProjectTask(projectId, taskName, dueDate);
+  document.getElementById(`modalNewTaskName_${projectId}`).value = '';
+  document.getElementById(`modalNewTaskDue_${projectId}`).value = '';
+  loadModalTasksList(projectId);
+}
+
+async function toggleProjectTaskModal(taskId, projectId, isCompleted) {
+  await toggleProjectTask(taskId, projectId, isCompleted);
+  loadModalTasksList(projectId);
+}
+
+async function deleteProjectTaskModal(taskId, projectId) {
+  if (!confirm('このタスクを削除しますか？')) return;
+  await supabase.from('project_tasks').delete().eq('id', taskId);
+  showToast('タスクを削除しました', 'success');
+  loadModalTasksList(projectId);
+  loadProjectTasksList(projectId);
+}
+
+// モーダル用メモ保存
+async function saveSharedMemoFromModal(projectId) {
+  const memo = document.getElementById(`modalSharedMemo_${projectId}`).value;
+  const { error } = await supabase.from('projects').update({ shared_memo: memo, updated_at: new Date().toISOString() }).eq('id', projectId);
+  if (error) { showToast('メモ保存に失敗しました', 'error'); return; }
+  const project = projects.find(p => p.id === projectId);
+  if (project) project.shared_memo = memo;
+  showToast('メモを保存しました', 'success');
+  closeCardModal();
+  renderProjects();
+}
+
+// モーダル用議事録読み込み
+async function loadModalMinutesList(projectId) {
+  const container = document.getElementById(`modalMinutesList_${projectId}`);
+  if (!container) return;
+
+  try {
+    const { data: minutes, error } = await supabase
+      .from('project_minutes')
+      .select('*')
+      .eq('project_id', projectId)
+      .order('created_at', { ascending: false });
+
+    if (error || !minutes || minutes.length === 0) {
+      container.innerHTML = '<div style="color: var(--text-muted); font-size: 13px; padding: 16px; text-align: center;">アップロードされた議事録はありません</div>';
+      return;
+    }
+
+    container.innerHTML = minutes.map(m => `
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: var(--bg-secondary); border-radius: 8px; margin-bottom: 8px;">
+        <a href="${m.file_url}" target="_blank" style="color: var(--primary-color); text-decoration: none; font-size: 13px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">📄 ${escapeHtml(m.file_name)}</a>
+        <span style="font-size: 11px; color: var(--text-muted); margin: 0 12px;">${formatDate(m.created_at)}</span>
+        <button class="btn btn-small btn-ghost" onclick="deleteMinuteModal('${m.id}', '${projectId}')" style="color: var(--danger-color);">削除</button>
+      </div>
+    `).join('');
+  } catch (error) {
+    container.innerHTML = '<div style="color: var(--text-muted);">読み込みに失敗しました</div>';
+  }
+}
+
+async function uploadMinutesWithDateModal(projectId, file) {
+  const meetingDateInput = document.getElementById(`modalMeetingDate_${projectId}`);
+  const meetingDate = meetingDateInput?.value;
+  if (!meetingDate) { showToast('打合せ日を選択してください', 'error'); return; }
+  await uploadMinutesWithDate(projectId, file);
+  meetingDateInput.value = '';
+  loadModalMinutesList(projectId);
+}
+
+function handleDropWithDateModal(event, projectId) {
+  event.preventDefault();
+  event.stopPropagation();
+  const file = event.dataTransfer.files[0];
+  if (file) uploadMinutesWithDateModal(projectId, file);
+}
+
+async function deleteMinuteModal(minuteId, projectId) {
+  if (!confirm('この議事録を削除しますか？')) return;
+  await supabase.from('project_minutes').delete().eq('id', minuteId);
+  showToast('議事録を削除しました', 'success');
+  loadModalMinutesList(projectId);
+  loadMinutesList(projectId);
+}
+
+// モーダル用引継書読み込み
+async function loadHandoverContent(projectId) {
+  const textarea = document.getElementById(`modalHandover_${projectId}`);
+  if (!textarea) return;
+
+  try {
+    const { data, error } = await supabase
+      .from('project_handovers')
+      .select('content')
+      .eq('project_id', projectId)
+      .single();
+
+    if (data && data.content) {
+      textarea.value = data.content;
+    }
+  } catch (e) {}
+}
+
+async function saveHandoverFromModal(projectId) {
+  const content = document.getElementById(`modalHandover_${projectId}`).value;
+
+  const { data: existing } = await supabase
+    .from('project_handovers')
+    .select('id')
+    .eq('project_id', projectId)
+    .single();
+
+  let error;
+  if (existing) {
+    ({ error } = await supabase.from('project_handovers').update({ content, updated_at: new Date().toISOString() }).eq('id', existing.id));
+  } else {
+    ({ error } = await supabase.from('project_handovers').insert({ project_id: projectId, content }));
+  }
+
+  if (error) { showToast('引継書保存に失敗しました', 'error'); return; }
+  showToast('引継書を保存しました', 'success');
+  closeCardModal();
 }
 
 // 折りたたみ機能
