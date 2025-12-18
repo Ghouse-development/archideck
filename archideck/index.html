@@ -9602,16 +9602,12 @@ function renderProjects() {
   filtered.forEach(project => restoreCardStates(project.id));
 
   // カード描画後にタスクと議事録を読み込む（バッチ処理でN+1問題を回避）
+  // バッジカウント読み込み（タスク数・議事録数）
   setTimeout(async () => {
     const BATCH_SIZE = 5; // 同時に5件まで
     for (let i = 0; i < filtered.length; i += BATCH_SIZE) {
       const batch = filtered.slice(i, i + BATCH_SIZE);
-      await Promise.all(
-        batch.flatMap(project => [
-          loadProjectTasksList(project.id),
-          loadMinutesList(project.id)
-        ])
-      );
+      await Promise.all(batch.map(project => loadBadgeCounts(project.id)));
     }
   }, 100);
 
@@ -9728,10 +9724,8 @@ function updateSingleProjectCard(projectId) {
 
   cardElement.replaceWith(newCardElement);
 
-  // 議事録・タスクの再ロード
-  loadMinutesList(projectId);
-  loadProjectTasksList(projectId);
-  loadHandover(projectId);
+  // バッジカウント再ロード
+  loadBadgeCounts(projectId);
 }
 
 function renderProjectCard(project) {
@@ -10011,17 +10005,17 @@ function renderProjectCard(project) {
     </div>
 
     ${(() => {
-      // 部署別業務内容表示（1つだけ表示）
-      const getBizContent = (title, icon, content) => `<div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">${icon} ${title}</span><span class="card-section-toggle">▼</span></div><div class="card-section-content">${content}</div></div>`;
+      // 部署別業務内容表示（排他的アコーディオン：1つ開くと他が閉じる）
+      const getBizContent = (title, icon, content) => `<div class="card-section biz-section collapsed"><div class="card-section-header" onclick="toggleBizSection(this, '${project.id}')"><span class="card-section-title">${icon} ${title}</span><span class="card-section-toggle">▼</span></div><div class="card-section-content">${content}</div></div>`;
 
       if (currentUserCategory === 'admin' || !currentUserCategory) {
-        // 管理者: すべての業務内容を表示
-        return `
+        // 管理者: すべての業務内容を表示（排他的アコーディオン）
+        return `<div class="biz-sections-group">
     ${getBizContent('設計業務内容', '📐', `<div class="tasks-grid">${tasksHtml}</div>`)}
     ${getBizContent('IC業務内容', '🎨', icTasks.length > 0 ? `<div class="tasks-grid">${icTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">ICタスクが登録されていません</p>')}
     ${getBizContent('外構業務内容', '🏡', exteriorTasks.length > 0 ? `<div class="tasks-grid">${exteriorTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">外構タスクが登録されていません</p>')}
     ${getBizContent('不動産業務内容', '🏢', realestateTasks.length > 0 ? `<div class="tasks-grid">${realestateTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">不動産タスクが登録されていません</p>')}
-    ${getBizContent('工事業務内容', '🔨', constructionTasks.length > 0 ? `<div class="tasks-grid">${constructionTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">工事タスクが登録されていません</p>')}`;
+    ${getBizContent('工事業務内容', '🔨', constructionTasks.length > 0 ? `<div class="tasks-grid">${constructionTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">工事タスクが登録されていません</p>')}</div>`;
       } else if (currentUserCategory === '設計') {
         return getBizContent('設計業務内容', '📐', `<div class="tasks-grid">${tasksHtml}</div>`);
       } else if (currentUserCategory === 'IC') {
@@ -14564,6 +14558,34 @@ function updateTaskBadge(projectId, count) {
   }
 }
 
+// バッジのみ更新（カード用）
+async function loadBadgeCounts(projectId) {
+  try {
+    // タスク数を取得
+    const { data: tasks, error: taskError } = await supabase
+      .from('project_tasks')
+      .select('id, is_completed')
+      .eq('project_id', projectId);
+
+    if (!taskError && tasks) {
+      const unresolvedCount = tasks.filter(t => !t.is_completed).length;
+      updateTaskBadge(projectId, unresolvedCount);
+    }
+
+    // 議事録数を取得
+    const { data: minutes, error: minError } = await supabase
+      .from('project_minutes')
+      .select('id')
+      .eq('project_id', projectId);
+
+    if (!minError && minutes) {
+      updateMinutesBadge(projectId, minutes.length);
+    }
+  } catch (e) {
+    console.error('Badge load error:', e);
+  }
+}
+
 // 期限切れチェック
 function isOverdue(dateStr) {
   if (!dateStr) return false;
@@ -15091,6 +15113,27 @@ function toggleCardSection(element) {
       const isCollapsed = section.classList.contains('collapsed');
       localStorage.setItem(key, isCollapsed ? 'collapsed' : 'expanded');
     }
+  }
+}
+
+// 業務内容セクション用の排他的アコーディオン（1つ開くと他が閉じる）
+function toggleBizSection(element, projectId) {
+  const clickedSection = element.closest('.card-section.biz-section');
+  const card = document.querySelector(`.project-card[data-project-id="${projectId}"]`);
+  if (!card || !clickedSection) return;
+
+  // 同じカード内の全業務内容セクションを取得
+  const allBizSections = card.querySelectorAll('.card-section.biz-section');
+
+  // クリックしたセクションが閉じている場合は開く（他は閉じる）
+  if (clickedSection.classList.contains('collapsed')) {
+    // 全て閉じる
+    allBizSections.forEach(sec => sec.classList.add('collapsed'));
+    // クリックしたものだけ開く
+    clickedSection.classList.remove('collapsed');
+  } else {
+    // 既に開いている場合は閉じる
+    clickedSection.classList.add('collapsed');
   }
 }
 
