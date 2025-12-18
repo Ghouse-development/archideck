@@ -9523,6 +9523,7 @@ function renderProjectCard(project) {
   const icProgress = calculateICProgress(project);
   const exteriorProgress = calculateExteriorProgress(project);
   const realestateProgress = calculateRealestateProgress(project);
+  const constructionProgress = calculateConstructionProgress(project);
   const progressData = project.progress || {};
   const staleDays = getProjectStaleDays(project);
   const tasks = getTasksForAssignee(project.assigned_to);
@@ -9678,6 +9679,30 @@ function renderProjectCard(project) {
       <span class="task-label">${taskDef.task_name}</span>${stateSelect}${emailBtn}</div>`;
   }).join('');
 
+  // 工事業務内容を生成
+  const constructionTasks = tasksV2.filter(t => t.category === '工事').sort((a, b) => a.display_order - b.display_order);
+  const constructionTasksHtml = constructionTasks.map(taskDef => {
+    const key = taskDef.task_key;
+    const task = progressData[key] || { completed: false, date: '', state: '', due_date: '' };
+
+    const hasVendor = taskVendorMappings.some(m => m.task_id === taskDef.id);
+    const isInternalStatus = INTERNAL_STATUSES.includes(task.state);
+    const showEmailButton = taskDef.has_email_button !== false && hasVendor && !isInternalStatus;
+    const emailBtn = showEmailButton ?
+      `<button class="task-email-btn" onclick="openEmailFromTask('${project.id}', '${key}')" title="メール作成">📧</button>` : '';
+
+    let stateSelect = '';
+    const stateOptions = getTaskStateOptions(key);
+    if (stateOptions && Array.isArray(stateOptions)) {
+      const lastOption = stateOptions[stateOptions.length - 1];
+      let stateClass = getStateColorClass(task.state, lastOption, key);
+      stateSelect = `<select class="task-state-select ${stateClass}" data-last-option="${lastOption}" onchange="updateTaskStateWithColor(this, '${project.id}', '${key}')">${stateOptions.map(state => `<option value="${state}" ${task.state === state ? 'selected' : ''}>${state || '-'}</option>`).join('')}</select>`;
+    }
+
+    return `<div class="task-item">
+      <span class="task-label">${taskDef.task_name}</span>${stateSelect}${emailBtn}</div>`;
+  }).join('');
+
   const isFavorite = FavoritesManager.isFavorite(project.id);
   const isSelected = BatchOperations.isSelected(project.id);
 
@@ -9695,7 +9720,7 @@ function renderProjectCard(project) {
         <button class="favorite-btn ${isFavorite ? 'active' : ''}" onclick="event.stopPropagation(); FavoritesManager.toggle('${project.id}')" title="${isFavorite ? 'お気に入り解除' : 'お気に入り登録'}">${isFavorite ? '★' : '☆'}</button>
         <div>
           <div class="card-title"><span class="customer-name">${escapeHtml(project.customer)}</span><span class="badge badge-primary">${escapeHtml(project.specifications || 'LIFE')}</span>${project.is_archived ? '<span class="badge badge-success">完了済み</span>' : ''}${!project.is_archived && staleDays >= 7 ? `<span class="badge badge-warning" title="${staleDays}日間未更新">⚠️ ${staleDays}日</span>` : ''}</div>
-          <div class="card-subtitle"><span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this)" style="cursor: pointer; text-decoration: underline dotted;" title="クリックで担当者変更">設計：${escapeHtml(project.assigned_to || '未割当')}</span>${project.ic_assignee ? `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'ic_assignee')" style="cursor: pointer; text-decoration: underline dotted;" title="クリックでIC担当者変更"> | IC：${escapeHtml(project.ic_assignee)}</span>` : `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'ic_assignee')" style="cursor: pointer; color: var(--text-muted); font-size: 11px;" title="IC担当者を追加"> | +IC</span>`}${project.exterior_assignee ? `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'exterior_assignee')" style="cursor: pointer; text-decoration: underline dotted;" title="クリックで外構担当者変更"> | 外構：${escapeHtml(project.exterior_assignee)}</span>` : `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'exterior_assignee')" style="cursor: pointer; color: var(--text-muted); font-size: 11px;" title="外構担当者を追加"> | +外構</span>`}${project.realestate_assignee ? `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'realestate_assignee')" style="cursor: pointer; text-decoration: underline dotted;" title="クリックで不動産担当者変更"> | 不動産：${escapeHtml(project.realestate_assignee)}</span>` : `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'realestate_assignee')" style="cursor: pointer; color: var(--text-muted); font-size: 11px;" title="不動産担当者を追加"> | +不動産</span>`}${(() => { const ds = DeadlineManager.getStatus(project.id); return ds ? ` <span style="background: ${ds.color}; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-left: 8px;" onclick="event.stopPropagation(); DeadlineManager.showModal('${project.id}')" title="期限を変更">📅 ${ds.label}</span>` : ` <span style="color: var(--text-muted); font-size: 11px; cursor: pointer;" onclick="event.stopPropagation(); DeadlineManager.showModal('${project.id}')" title="期限を設定">📅 期限設定</span>`; })()}</div>
+          <div class="card-subtitle"><span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this)" style="cursor: pointer; text-decoration: underline dotted;" title="クリックで担当者変更">設計：${escapeHtml(project.assigned_to || '未割当')}</span>${project.ic_assignee ? `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'ic_assignee')" style="cursor: pointer; text-decoration: underline dotted;" title="クリックでIC担当者変更"> | IC：${escapeHtml(project.ic_assignee)}</span>` : `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'ic_assignee')" style="cursor: pointer; color: var(--text-muted); font-size: 11px;" title="IC担当者を追加"> | +IC</span>`}${project.exterior_assignee ? `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'exterior_assignee')" style="cursor: pointer; text-decoration: underline dotted;" title="クリックで外構担当者変更"> | 外構：${escapeHtml(project.exterior_assignee)}</span>` : `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'exterior_assignee')" style="cursor: pointer; color: var(--text-muted); font-size: 11px;" title="外構担当者を追加"> | +外構</span>`}${project.realestate_assignee ? `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'realestate_assignee')" style="cursor: pointer; text-decoration: underline dotted;" title="クリックで不動産担当者変更"> | 不動産：${escapeHtml(project.realestate_assignee)}</span>` : `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'realestate_assignee')" style="cursor: pointer; color: var(--text-muted); font-size: 11px;" title="不動産担当者を追加"> | +不動産</span>`}${project.construction_assignee ? `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'construction_assignee')" style="cursor: pointer; text-decoration: underline dotted;" title="クリックで工事担当者変更"> | 工事：${escapeHtml(project.construction_assignee)}</span>` : `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'construction_assignee')" style="cursor: pointer; color: var(--text-muted); font-size: 11px;" title="工事担当者を追加"> | +工事</span>`}${(() => { const ds = DeadlineManager.getStatus(project.id); return ds ? ` <span style="background: ${ds.color}; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-left: 8px;" onclick="event.stopPropagation(); DeadlineManager.showModal('${project.id}')" title="期限を変更">📅 ${ds.label}</span>` : ` <span style="color: var(--text-muted); font-size: 11px; cursor: pointer;" onclick="event.stopPropagation(); DeadlineManager.showModal('${project.id}')" title="期限を設定">📅 期限設定</span>`; })()}</div>
         </div>
       </div>
       <div style="display: flex; gap: 8px; align-items: center;">
@@ -9721,6 +9746,7 @@ function renderProjectCard(project) {
       const icColor = icProgress !== null ? getProgressColor(icProgress) : 'var(--info-color)';
       const extColor = exteriorProgress !== null ? getProgressColor(exteriorProgress) : 'var(--info-color)';
       const reColor = realestateProgress !== null ? getProgressColor(realestateProgress) : 'var(--info-color)';
+      const conColor = constructionProgress !== null ? getProgressColor(constructionProgress) : 'var(--info-color)';
 
       // 部署別進捗表示
       if (currentUserCategory === 'admin' || !currentUserCategory) {
@@ -9734,6 +9760,9 @@ function renderProjectCard(project) {
         }
         if (realestateProgress !== null) {
           html += `<div class="progress-header" style="margin-top:8px"><span class="progress-label">不動産進捗</span><span class="progress-value" style="color: ${reColor}">${realestateProgress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width: ${realestateProgress}%; background: ${reColor}"></div></div>`;
+        }
+        if (constructionProgress !== null) {
+          html += `<div class="progress-header" style="margin-top:8px"><span class="progress-label">工事進捗</span><span class="progress-value" style="color: ${conColor}">${constructionProgress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width: ${constructionProgress}%; background: ${conColor}"></div></div>`;
         }
         html += '</div>';
         return html;
@@ -9749,6 +9778,9 @@ function renderProjectCard(project) {
       } else if (currentUserCategory === '不動産') {
         // 不動産担当: 不動産進捗のみ
         return realestateProgress !== null ? `<div class="progress-section"><div class="progress-header"><span class="progress-label">不動産進捗</span><span class="progress-value" style="color: ${reColor}">${realestateProgress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width: ${realestateProgress}%; background: ${reColor}"></div></div></div>` : '<div class="progress-section"><p style="color: var(--text-muted); font-size: 13px;">不動産タスクが登録されていません</p></div>';
+      } else if (currentUserCategory === '工事') {
+        // 工事担当: 工事進捗のみ
+        return constructionProgress !== null ? `<div class="progress-section"><div class="progress-header"><span class="progress-label">工事進捗</span><span class="progress-value" style="color: ${conColor}">${constructionProgress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width: ${constructionProgress}%; background: ${conColor}"></div></div></div>` : '<div class="progress-section"><p style="color: var(--text-muted); font-size: 13px;">工事タスクが登録されていません</p></div>';
       } else {
         // その他: 進捗なし
         return '<div class="progress-section"><p style="color: var(--text-muted); font-size: 13px;">進捗管理は現在設定されていません</p></div>';
@@ -9771,7 +9803,8 @@ function renderProjectCard(project) {
     <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">📐 設計業務内容</span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><div class="tasks-grid">${tasksHtml}</div></div></div>
     <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">🎨 IC業務内容</span><span class="card-section-toggle">▼</span></div><div class="card-section-content">${icTasks.length > 0 ? `<div class="tasks-grid">${icTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">ICタスクが登録されていません</p>'}</div></div>
     <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">🏡 外構業務内容</span><span class="card-section-toggle">▼</span></div><div class="card-section-content">${exteriorTasks.length > 0 ? `<div class="tasks-grid">${exteriorTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">外構タスクが登録されていません</p>'}</div></div>
-    <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">🏢 不動産業務内容</span><span class="card-section-toggle">▼</span></div><div class="card-section-content">${realestateTasks.length > 0 ? `<div class="tasks-grid">${realestateTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">不動産タスクが登録されていません</p>'}</div></div>`;
+    <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">🏢 不動産業務内容</span><span class="card-section-toggle">▼</span></div><div class="card-section-content">${realestateTasks.length > 0 ? `<div class="tasks-grid">${realestateTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">不動産タスクが登録されていません</p>'}</div></div>
+    <div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">🔨 工事業務内容</span><span class="card-section-toggle">▼</span></div><div class="card-section-content">${constructionTasks.length > 0 ? `<div class="tasks-grid">${constructionTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">工事タスクが登録されていません</p>'}</div></div>`;
       } else if (currentUserCategory === '設計') {
         // 設計担当: 設計業務内容のみ
         return `<div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">📐 設計業務内容</span><span class="card-section-toggle">▼</span></div><div class="card-section-content"><div class="tasks-grid">${tasksHtml}</div></div></div>`;
@@ -9784,6 +9817,9 @@ function renderProjectCard(project) {
       } else if (currentUserCategory === '不動産') {
         // 不動産担当: 不動産業務内容
         return `<div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">🏢 不動産業務内容</span><span class="card-section-toggle">▼</span></div><div class="card-section-content">${realestateTasks.length > 0 ? `<div class="tasks-grid">${realestateTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">不動産タスクが登録されていません。設定 > タスク管理で不動産タスクを追加できます。</p>'}</div></div>`;
+      } else if (currentUserCategory === '工事') {
+        // 工事担当: 工事業務内容
+        return `<div class="card-section collapsed"><div class="card-section-header" onclick="toggleCardSection(this)"><span class="card-section-title">🔨 工事業務内容</span><span class="card-section-toggle">▼</span></div><div class="card-section-content">${constructionTasks.length > 0 ? `<div class="tasks-grid">${constructionTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">工事タスクが登録されていません。設定 > タスク管理で工事タスクを追加できます。</p>'}</div></div>`;
       } else {
         // その他: 何も表示しない
         return '';
@@ -9842,6 +9878,107 @@ function calculateRealestateProgress(project) {
   if (realestateTasks.length === 0) return null;
   const completed = realestateTasks.filter(taskDef => progressData[taskDef.task_key]?.completed).length;
   return Math.round((completed / realestateTasks.length) * 100);
+}
+
+// 工事担当者用の進捗率計算（工事タスクベース）
+function calculateConstructionProgress(project) {
+  if (!project.construction_assignee) return null;
+  const progressData = project.progress || {};
+  // 工事カテゴリのタスクを取得
+  const constructionTasks = tasksV2.filter(t => t.category === '工事').sort((a, b) => a.display_order - b.display_order);
+  if (constructionTasks.length === 0) return null;
+  const completed = constructionTasks.filter(taskDef => progressData[taskDef.task_key]?.completed).length;
+  return Math.round((completed / constructionTasks.length) * 100);
+}
+
+// 全タスク完了チェックと自動アーカイブ
+async function checkAndAutoArchive(project) {
+  if (project.is_archived) return; // 既にアーカイブ済みならスキップ
+
+  const progressData = project.progress || {};
+  let allCompleted = true;
+  let hasAnyAssignee = false;
+
+  // 設計担当のタスクチェック
+  if (project.assigned_to) {
+    hasAnyAssignee = true;
+    const designTasks = tasksV2.filter(t => t.category === '設計');
+    if (designTasks.length > 0) {
+      const designCompleted = designTasks.every(t => progressData[t.task_key]?.completed);
+      if (!designCompleted) allCompleted = false;
+    }
+  }
+
+  // IC担当のタスクチェック
+  if (project.ic_assignee) {
+    hasAnyAssignee = true;
+    const icTasks = tasksV2.filter(t => t.category === 'IC');
+    if (icTasks.length > 0) {
+      const icCompleted = icTasks.every(t => progressData[t.task_key]?.completed);
+      if (!icCompleted) allCompleted = false;
+    }
+  }
+
+  // 外構担当のタスクチェック
+  if (project.exterior_assignee) {
+    hasAnyAssignee = true;
+    const extTasks = tasksV2.filter(t => t.category === '外構');
+    if (extTasks.length > 0) {
+      const extCompleted = extTasks.every(t => progressData[t.task_key]?.completed);
+      if (!extCompleted) allCompleted = false;
+    }
+  }
+
+  // 不動産担当のタスクチェック
+  if (project.realestate_assignee) {
+    hasAnyAssignee = true;
+    const reTasks = tasksV2.filter(t => t.category === '不動産');
+    if (reTasks.length > 0) {
+      const reCompleted = reTasks.every(t => progressData[t.task_key]?.completed);
+      if (!reCompleted) allCompleted = false;
+    }
+  }
+
+  // 工事担当のタスクチェック
+  if (project.construction_assignee) {
+    hasAnyAssignee = true;
+    const conTasks = tasksV2.filter(t => t.category === '工事');
+    if (conTasks.length > 0) {
+      const conCompleted = conTasks.every(t => progressData[t.task_key]?.completed);
+      if (!conCompleted) allCompleted = false;
+    }
+  }
+
+  // 担当者が設定されていて全タスク完了なら自動アーカイブ
+  if (hasAnyAssignee && allCompleted) {
+    // 確認ダイアログを表示
+    const confirmed = await showConfirmDialog(
+      '全タスク完了',
+      `「${project.customer}」の全タスクが完了しました。\n案件を完了済みに移動しますか？`
+    );
+
+    if (confirmed) {
+      const { error } = await supabase
+        .from('projects')
+        .update({ is_archived: true, updated_at: new Date().toISOString() })
+        .eq('id', project.id);
+
+      if (!error) {
+        project.is_archived = true;
+        showToast(`「${project.customer}」を完了済みに移動しました`, 'success');
+        renderProjects();
+        renderSidebar();
+      }
+    }
+  }
+}
+
+// 確認ダイアログ（Promise版）
+function showConfirmDialog(title, message) {
+  return new Promise((resolve) => {
+    const result = confirm(`${title}\n\n${message}`);
+    resolve(result);
+  });
 }
 
 function formatDateTime(dateStr) {
@@ -10041,6 +10178,20 @@ async function updateTaskState(projectId, taskKey, state) {
   if (!progressData[taskKey]) progressData[taskKey] = {};
   progressData[taskKey].state = state;
 
+  // ステータスが最終状態になったらcompletedをtrueにする
+  const taskDef = tasksV2.find(t => t.task_key === taskKey);
+  if (taskDef && taskDef.state_options) {
+    try {
+      const options = typeof taskDef.state_options === 'string'
+        ? JSON.parse(taskDef.state_options)
+        : taskDef.state_options;
+      const lastOption = options[options.length - 1];
+      progressData[taskKey].completed = (state === lastOption);
+    } catch (e) {
+      console.warn('ステータスオプションのパースに失敗:', e);
+    }
+  }
+
   // 申請Goが完了済みの場合、条件を再チェック
   let applicationGoCleared = false;
   if (progressData['application']?.completed) {
@@ -10088,6 +10239,9 @@ async function updateTaskState(projectId, taskKey, state) {
 
   project.progress = progressData;
   project.updated_at = new Date().toISOString();
+
+  // 全タスク完了チェック（設定されている担当者のタスクがすべて完了したら自動アーカイブ）
+  checkAndAutoArchive(project);
 
   // 申請GOの状態が変わる可能性があるため、常にUIを更新
   // 該当の案件カードのみを更新（パフォーマンス最適化）
@@ -13862,9 +14016,52 @@ function getExteriorDesigners() {
 function getRealestateDesigners() {
   return getDesignersByCategory('不動産');
 }
+function getConstructionDesigners() {
+  return getDesignersByCategory('工事');
+}
 
-// サイドバーに外構担当・不動産担当セクションを追加（renderSidebar関数の拡張）
+// サイドバーに部署別折りたたみ機能を追加（全職種対応）
 const originalRenderSidebar = renderSidebar;
+
+// サイドバー折りたたみ状態管理
+function getSidebarCollapseState() {
+  const saved = localStorage.getItem('archideck_sidebar_collapse');
+  return saved ? JSON.parse(saved) : {};
+}
+
+function setSidebarCollapseState(category, collapsed) {
+  const state = getSidebarCollapseState();
+  state[category] = collapsed;
+  localStorage.setItem('archideck_sidebar_collapse', JSON.stringify(state));
+}
+
+function toggleSidebarSection(category) {
+  const state = getSidebarCollapseState();
+  const newState = !state[category];
+  setSidebarCollapseState(category, newState);
+  renderSidebar();
+}
+
+// 初期表示でログインユーザーの職種を開く
+function getInitialExpandedCategories() {
+  const state = getSidebarCollapseState();
+  // 既にlocalStorageに状態がある場合はそれを使用
+  if (Object.keys(state).length > 0) return state;
+
+  // 初回: ログインユーザーの職種を開く
+  const defaultState = { '設計': true, 'IC': true, '外構': true, '不動産': true, '工事': true };
+  if (currentUserCategory && currentUserCategory !== 'admin') {
+    // 自分の職種以外は閉じる
+    Object.keys(defaultState).forEach(cat => {
+      defaultState[cat] = (cat !== currentUserCategory);
+    });
+  } else {
+    // 管理者は全て開く
+    Object.keys(defaultState).forEach(cat => defaultState[cat] = false);
+  }
+  return defaultState;
+}
+
 renderSidebar = function() {
   const container = document.getElementById('sidebarContent');
   if (!container) return;
@@ -13873,8 +14070,18 @@ renderSidebar = function() {
   const icDesigners = getIcDesigners();
   const exteriorDesigners = getExteriorDesigners();
   const realestateDesigners = getRealestateDesigners();
+  const constructionDesigners = getConstructionDesigners();
   const allCount = projects.filter(p => p.status !== 'completed' && !p.is_archived).length;
   const archivedCount = projects.filter(p => p.is_archived).length;
+
+  const collapseState = getSidebarCollapseState();
+  const initialState = getInitialExpandedCategories();
+
+  // 折りたたみ状態を決定（localStorageに無ければ初期状態を使用）
+  const isCollapsed = (cat) => {
+    if (collapseState[cat] !== undefined) return collapseState[cat];
+    return initialState[cat] || false;
+  };
 
   let html = `
     <div class="sidebar-section">
@@ -13889,58 +14096,22 @@ renderSidebar = function() {
     </div>
   `;
 
-  // 設計担当セクション（申請GO数の色分け付き）
-  if (sekkeiDesigners.length > 0) {
-    html += '<div class="sidebar-section"><div class="sidebar-section-title">📐 設計担当</div>';
-    sekkeiDesigners.forEach(designer => {
-      const designerProjects = projects.filter(p => {
-        const assigned = (p.assigned_to || '').trim();
-        const designerName = designer.name.trim();
-        return assigned === designerName && p.status !== 'completed' && !p.is_archived;
-      });
-      const count = designerProjects.length;
+  // セクション生成ヘルパー
+  function renderSection(category, icon, designers, getProjectCount) {
+    if (designers.length === 0) return '';
 
-      // 申請GO未完了数をカウント
-      const applicationNotDone = designerProjects.filter(p => {
-        const progressData = p.progress || {};
-        return !progressData['application']?.completed;
-      }).length;
+    const collapsed = isCollapsed(category);
+    let sectionHtml = `<div class="sidebar-section sidebar-collapsible ${collapsed ? 'collapsed' : ''}">
+      <div class="sidebar-section-title" onclick="toggleSidebarSection('${category}')" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+        <span>${icon} ${category}担当</span>
+        <span class="sidebar-collapse-icon" style="font-size: 10px; transition: transform 0.2s;">${collapsed ? '▶' : '▼'}</span>
+      </div>
+      <div class="sidebar-section-items" style="${collapsed ? 'display: none;' : ''}">`;
+
+    designers.forEach(designer => {
+      const count = getProjectCount(designer);
 
       // 色分けロジック
-      let countClass = '';
-      let nameClass = '';
-      if (applicationNotDone >= 7) {
-        nameClass = 'name-red';
-        countClass = 'count-yellow';
-      } else if (applicationNotDone >= 5) {
-        countClass = 'count-yellow';
-      } else if (applicationNotDone <= 4) {
-        countClass = 'count-blue';
-      }
-
-      html += `
-        <div class="sidebar-item ${currentDesignerTab === designer.name ? 'active' : ''}" onclick="selectDesigner('${designer.name}')">
-          <span class="sidebar-item-label ${nameClass}">${designer.name}</span>
-          <button class="sidebar-task-btn" onclick="event.stopPropagation(); openStaffTasksModal('${designer.name}')" title="タスク一覧">📋</button>
-          <span class="sidebar-item-count ${countClass}">${count}</span>
-        </div>
-      `;
-    });
-    html += '</div>';
-  }
-
-  // IC担当セクション（色分け付き）
-  if (icDesigners.length > 0) {
-    html += '<div class="sidebar-section"><div class="sidebar-section-title">🎨 IC担当</div>';
-    icDesigners.forEach(designer => {
-      const count = projects.filter(p => {
-        const assigned = (p.assigned_to || '').trim();
-        const icAssigned = (p.ic_assignee || '').trim();
-        const designerName = designer.name.trim();
-        return (assigned === designerName || icAssigned === designerName) && p.status !== 'completed' && !p.is_archived;
-      }).length;
-
-      // 色分けロジック（IC用）
       let countClass = 'count-blue';
       let nameClass = '';
       if (count >= 7) {
@@ -13950,7 +14121,7 @@ renderSidebar = function() {
         countClass = 'count-yellow';
       }
 
-      html += `
+      sectionHtml += `
         <div class="sidebar-item ${currentDesignerTab === designer.name ? 'active' : ''}" onclick="selectDesigner('${designer.name}')">
           <span class="sidebar-item-label ${nameClass}">${designer.name}</span>
           <button class="sidebar-task-btn" onclick="event.stopPropagation(); openStaffTasksModal('${designer.name}')" title="タスク一覧">📋</button>
@@ -13958,70 +14129,50 @@ renderSidebar = function() {
         </div>
       `;
     });
-    html += '</div>';
+
+    sectionHtml += '</div></div>';
+    return sectionHtml;
   }
 
-  // 外構担当セクション（色分け付き）
-  if (exteriorDesigners.length > 0) {
-    html += '<div class="sidebar-section"><div class="sidebar-section-title">🌳 外構担当</div>';
-    exteriorDesigners.forEach(designer => {
-      const count = projects.filter(p => {
-        const exteriorAssigned = (p.exterior_assignee || '').trim();
-        const designerName = designer.name.trim();
-        return exteriorAssigned === designerName && p.status !== 'completed' && !p.is_archived;
-      }).length;
+  // 設計担当セクション
+  html += renderSection('設計', '📐', sekkeiDesigners, (designer) => {
+    return projects.filter(p => {
+      const assigned = (p.assigned_to || '').trim();
+      return assigned === designer.name.trim() && p.status !== 'completed' && !p.is_archived;
+    }).length;
+  });
 
-      // 色分けロジック（外構用）
-      let countClass = 'count-blue';
-      let nameClass = '';
-      if (count >= 7) {
-        nameClass = 'name-red';
-        countClass = 'count-yellow';
-      } else if (count >= 5) {
-        countClass = 'count-yellow';
-      }
+  // IC担当セクション
+  html += renderSection('IC', '🎨', icDesigners, (designer) => {
+    return projects.filter(p => {
+      const icAssigned = (p.ic_assignee || '').trim();
+      return icAssigned === designer.name.trim() && p.status !== 'completed' && !p.is_archived;
+    }).length;
+  });
 
-      html += `
-        <div class="sidebar-item ${currentDesignerTab === designer.name ? 'active' : ''}" onclick="selectDesigner('${designer.name}')">
-          <span class="sidebar-item-label ${nameClass}">${designer.name}</span>
-          <button class="sidebar-task-btn" onclick="event.stopPropagation(); openStaffTasksModal('${designer.name}')" title="タスク一覧">📋</button>
-          <span class="sidebar-item-count ${countClass}">${count}</span>
-        </div>
-      `;
-    });
-    html += '</div>';
-  }
+  // 外構担当セクション
+  html += renderSection('外構', '🌳', exteriorDesigners, (designer) => {
+    return projects.filter(p => {
+      const exteriorAssigned = (p.exterior_assignee || '').trim();
+      return exteriorAssigned === designer.name.trim() && p.status !== 'completed' && !p.is_archived;
+    }).length;
+  });
 
-  // 不動産担当セクション（色分け付き）
-  if (realestateDesigners.length > 0) {
-    html += '<div class="sidebar-section"><div class="sidebar-section-title">🏠 不動産担当</div>';
-    realestateDesigners.forEach(designer => {
-      const count = projects.filter(p => {
-        const realestateAssigned = (p.realestate_assignee || '').trim();
-        const designerName = designer.name.trim();
-        return realestateAssigned === designerName && p.status !== 'completed' && !p.is_archived;
-      }).length;
+  // 不動産担当セクション
+  html += renderSection('不動産', '🏠', realestateDesigners, (designer) => {
+    return projects.filter(p => {
+      const realestateAssigned = (p.realestate_assignee || '').trim();
+      return realestateAssigned === designer.name.trim() && p.status !== 'completed' && !p.is_archived;
+    }).length;
+  });
 
-      // 色分けロジック（不動産用）
-      let countClass = 'count-blue';
-      let nameClass = '';
-      if (count >= 7) {
-        nameClass = 'name-red';
-        countClass = 'count-yellow';
-      } else if (count >= 5) {
-        countClass = 'count-yellow';
-      }
-
-      html += `
-        <div class="sidebar-item ${currentDesignerTab === designer.name ? 'active' : ''}" onclick="selectDesigner('${designer.name}')">
-          <span class="sidebar-item-label ${nameClass}">${designer.name}</span>
-          <button class="sidebar-task-btn" onclick="event.stopPropagation(); openStaffTasksModal('${designer.name}')" title="タスク一覧">📋</button>
-          <span class="sidebar-item-count ${countClass}">${count}</span>
-        </div>
-      `;
-    });
-    html += '</div>';
-  }
+  // 工事担当セクション
+  html += renderSection('工事', '🔨', constructionDesigners, (designer) => {
+    return projects.filter(p => {
+      const constructionAssigned = (p.construction_assignee || '').trim();
+      return constructionAssigned === designer.name.trim() && p.status !== 'completed' && !p.is_archived;
+    }).length;
+  });
 
   container.innerHTML = html;
 };
