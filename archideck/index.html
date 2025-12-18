@@ -10228,7 +10228,6 @@ async function updateTaskState(projectId, taskKey, state) {
   }
 
   // Undo記録
-  const taskDef = tasksV2.find(t => t.task_key === taskKey);
   UndoManager.record({
     type: 'UPDATE_PROJECT',
     projectId: projectId,
