@@ -14673,20 +14673,33 @@ renderSidebar = function() {
     </div>
   `;
 
-  // セクション生成ヘルパー
-  function renderSection(category, icon, designers, getProjectCount) {
-    if (designers.length === 0) return '';
+  // セクション生成ヘルパー（案件数とタスク数を表示）
+  function renderSection(category, icon, designersList, getProjectCount, getTaskCount) {
+    if (designersList.length === 0) return '';
 
     const collapsed = isCollapsed(category);
+
+    // セクション全体のタスク数を計算
+    let totalTasks = 0;
+    let completedTasks = 0;
+    designersList.forEach(designer => {
+      const taskInfo = getTaskCount ? getTaskCount(designer) : { total: 0, completed: 0 };
+      totalTasks += taskInfo.total;
+      completedTasks += taskInfo.completed;
+    });
+    const sectionTaskBadge = totalTasks > 0 ? `<span style="font-size:11px;color:${totalTasks - completedTasks > 0 ? 'var(--warning-color)' : 'var(--success-color)'};margin-left:6px;">${totalTasks - completedTasks}/${totalTasks}</span>` : '';
+
     let sectionHtml = `<div class="sidebar-section sidebar-collapsible ${collapsed ? 'collapsed' : ''}">
       <div class="sidebar-section-title" onclick="toggleSidebarSection('${category}')" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
-        <span>${icon} ${category}担当</span>
+        <span>${icon} ${category}担当${sectionTaskBadge}</span>
         <span class="sidebar-collapse-icon" style="font-size: 10px; transition: transform 0.2s;">${collapsed ? '▶' : '▼'}</span>
       </div>
       <div class="sidebar-section-items" style="${collapsed ? 'display: none;' : ''}">`;
 
-    designers.forEach(designer => {
+    designersList.forEach(designer => {
       const count = getProjectCount(designer);
+      const taskInfo = getTaskCount ? getTaskCount(designer) : { total: 0, completed: 0 };
+      const incompleteTasks = taskInfo.total - taskInfo.completed;
 
       // 色分けロジック
       let countClass = 'count-blue';
@@ -14698,9 +14711,13 @@ renderSidebar = function() {
         countClass = 'count-yellow';
       }
 
+      // タスク数バッジ
+      const taskBadge = taskInfo.total > 0 ? `<span style="font-size:10px;padding:2px 4px;border-radius:4px;background:${incompleteTasks > 0 ? 'var(--warning-bg)' : 'var(--success-bg)'};color:${incompleteTasks > 0 ? 'var(--warning-color)' : 'var(--success-color)'};">${incompleteTasks}/${taskInfo.total}</span>` : '';
+
       sectionHtml += `
         <div class="sidebar-item ${currentDesignerTab === designer.name ? 'active' : ''}" onclick="selectDesigner('${designer.name}')">
           <span class="sidebar-item-label ${nameClass}">${designer.name}</span>
+          ${taskBadge}
           <button class="sidebar-task-btn" onclick="event.stopPropagation(); openStaffTasksModal('${designer.name}')" title="タスク一覧">📋</button>
           <span class="sidebar-item-count ${countClass}">${count}</span>
         </div>
@@ -14711,13 +14728,56 @@ renderSidebar = function() {
     return sectionHtml;
   }
 
+  // タスク数計算ヘルパー（担当者の全案件のタスク完了状況）
+  function calculateTaskCount(designerName, category) {
+    let total = 0;
+    let completed = 0;
+
+    projects.filter(p => !p.is_archived && p.status !== 'completed').forEach(p => {
+      let isAssigned = false;
+      let taskList = [];
+
+      if (category === '設計' && (p.assigned_to || '').trim() === designerName) {
+        isAssigned = true;
+        taskList = tasksV2.filter(t => t.category === '設計');
+      } else if (category === 'IC' && (p.ic_assignee || '').trim() === designerName) {
+        isAssigned = true;
+        taskList = tasksV2.filter(t => t.category === 'IC');
+      } else if (category === '外構' && (p.exterior_assignee || '').trim() === designerName) {
+        isAssigned = true;
+        taskList = tasksV2.filter(t => t.category === '外構');
+      } else if (category === '不動産' && (p.realestate_assignee || '').trim() === designerName) {
+        isAssigned = true;
+        taskList = tasksV2.filter(t => t.category === '不動産');
+      } else if (category === '工事' && (p.construction_assignee || '').trim() === designerName) {
+        isAssigned = true;
+        taskList = tasksV2.filter(t => t.category === '工事');
+      }
+
+      if (isAssigned && taskList.length > 0) {
+        const progressData = p.progress || {};
+        taskList.forEach(taskDef => {
+          total++;
+          const task = progressData[taskDef.task_key] || {};
+          const stateOptions = getTaskStateOptions(taskDef.task_key);
+          const lastOption = stateOptions && stateOptions.length > 0 ? stateOptions[stateOptions.length - 1] : null;
+          if (task.state === lastOption) {
+            completed++;
+          }
+        });
+      }
+    });
+
+    return { total, completed };
+  }
+
   // 設計担当セクション
   html += renderSection('設計', '📐', sekkeiDesigners, (designer) => {
     return projects.filter(p => {
       const assigned = (p.assigned_to || '').trim();
       return assigned === designer.name.trim() && p.status !== 'completed' && !p.is_archived;
     }).length;
-  });
+  }, (designer) => calculateTaskCount(designer.name.trim(), '設計'));
 
   // IC担当セクション
   html += renderSection('IC', '🎨', icDesigners, (designer) => {
@@ -14725,7 +14785,7 @@ renderSidebar = function() {
       const icAssigned = (p.ic_assignee || '').trim();
       return icAssigned === designer.name.trim() && p.status !== 'completed' && !p.is_archived;
     }).length;
-  });
+  }, (designer) => calculateTaskCount(designer.name.trim(), 'IC'));
 
   // 外構担当セクション
   html += renderSection('外構', '🌳', exteriorDesigners, (designer) => {
@@ -14733,7 +14793,7 @@ renderSidebar = function() {
       const exteriorAssigned = (p.exterior_assignee || '').trim();
       return exteriorAssigned === designer.name.trim() && p.status !== 'completed' && !p.is_archived;
     }).length;
-  });
+  }, (designer) => calculateTaskCount(designer.name.trim(), '外構'));
 
   // 不動産担当セクション
   html += renderSection('不動産', '🏠', realestateDesigners, (designer) => {
@@ -14741,7 +14801,7 @@ renderSidebar = function() {
       const realestateAssigned = (p.realestate_assignee || '').trim();
       return realestateAssigned === designer.name.trim() && p.status !== 'completed' && !p.is_archived;
     }).length;
-  });
+  }, (designer) => calculateTaskCount(designer.name.trim(), '不動産'));
 
   // 工事担当セクション
   html += renderSection('工事', '🔨', constructionDesigners, (designer) => {
@@ -14749,7 +14809,7 @@ renderSidebar = function() {
       const constructionAssigned = (p.construction_assignee || '').trim();
       return constructionAssigned === designer.name.trim() && p.status !== 'completed' && !p.is_archived;
     }).length;
-  });
+  }, (designer) => calculateTaskCount(designer.name.trim(), '工事'));
 
   container.innerHTML = html;
 };
