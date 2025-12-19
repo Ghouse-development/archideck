@@ -4574,6 +4574,8 @@ textarea:focus-visible {
           <button class="sub-tab-btn" onclick="switchSubTab('tasks', this)">📐 設計業務管理</button>
           <button class="sub-tab-btn" onclick="switchSubTab('icTasks', this)">🎨 IC業務管理</button>
           <button class="sub-tab-btn" onclick="switchSubTab('exteriorTasks', this)">🌳 外構業務管理</button>
+          <button class="sub-tab-btn" onclick="switchSubTab('realestateTasks', this)">🏢 不動産業務管理</button>
+          <button class="sub-tab-btn" onclick="switchSubTab('constructionTasks', this)">🔨 工事業務管理</button>
           <button class="sub-tab-btn" onclick="switchSubTab('products', this)">📦 商品管理</button>
           <button class="sub-tab-btn" onclick="switchSubTab('customize', this)">🎨 カスタマイズ</button>
           <button class="sub-tab-btn" onclick="switchSubTab('kintone', this)">🔗 kintone連携</button>
@@ -4594,6 +4596,7 @@ textarea:focus-visible {
                   <option value="IC">IC担当</option>
                   <option value="外構">外構担当</option>
                   <option value="不動産">不動産担当</option>
+                  <option value="工事">工事担当</option>
                 </select>
                 <button class="btn btn-primary" onclick="addDesignerInline()">追加</button>
               </div>
@@ -4682,6 +4685,34 @@ textarea:focus-visible {
           </div>
           <p style="margin-bottom: 24px; color: var(--text-secondary);">外構設計の業務フローを管理します。</p>
           <div id="exteriorTasksGrid"></div>
+        </div>
+
+        <!-- 不動産業務管理 -->
+        <div id="realestateTasksPanel" class="sub-tab-panel">
+          <div class="toolbar" style="padding-bottom: 16px; border-bottom: 1px solid var(--border-color); margin-bottom: 24px;">
+            <div class="toolbar-left">
+              <h3 style="margin: 0; font-size: 18px;">🏢 不動産業務タスク管理</h3>
+            </div>
+            <div class="toolbar-right">
+              <button class="btn btn-primary" onclick="openRealestateTaskModal()">+ 不動産タスク追加</button>
+            </div>
+          </div>
+          <p style="margin-bottom: 24px; color: var(--text-secondary);">不動産関連の業務フローを管理します。</p>
+          <div id="realestateTasksGrid"></div>
+        </div>
+
+        <!-- 工事業務管理 -->
+        <div id="constructionTasksPanel" class="sub-tab-panel">
+          <div class="toolbar" style="padding-bottom: 16px; border-bottom: 1px solid var(--border-color); margin-bottom: 24px;">
+            <div class="toolbar-left">
+              <h3 style="margin: 0; font-size: 18px;">🔨 工事業務タスク管理</h3>
+            </div>
+            <div class="toolbar-right">
+              <button class="btn btn-primary" onclick="openConstructionTaskModal()">+ 工事タスク追加</button>
+            </div>
+          </div>
+          <p style="margin-bottom: 24px; color: var(--text-secondary);">工事関連の業務フローを管理します。</p>
+          <div id="constructionTasksGrid"></div>
         </div>
 
         <!-- 商品管理 -->
@@ -8715,6 +8746,182 @@ function deleteExteriorTask(taskId) {
   showToast('タスクを削除しました', 'success');
 }
 
+// 不動産業務管理
+function renderRealestateTasksManagement() {
+  const container = document.getElementById('realestateTasksGrid');
+  if (!container) return;
+
+  container.innerHTML = `
+    <div class="data-table">
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 40px;">順序</th>
+            <th>タスク名</th>
+            <th>ステータスオプション</th>
+            <th style="width: 150px;">操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${realestateTasks.map((task, index) => `
+            <tr>
+              <td>${index + 1}</td>
+              <td><strong>${task.name}</strong></td>
+              <td>
+                <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+                  ${task.states.map(s => `<span class="badge badge-secondary">${s}</span>`).join('')}
+                </div>
+              </td>
+              <td>
+                <button class="btn btn-secondary btn-small" onclick="editRealestateTask('${task.id}')">編集</button>
+                <button class="btn btn-danger btn-small" onclick="deleteRealestateTask('${task.id}')">削除</button>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+    <div style="margin-top: 16px; padding: 16px; background: var(--bg-secondary); border-radius: var(--radius-md);">
+      <p style="margin: 0; color: var(--text-secondary); font-size: 14px;">
+        💡 不動産業務タスクは案件カードの「不動産業務内容」セクションで使用されます。
+      </p>
+    </div>
+  `;
+}
+
+function openRealestateTaskModal(taskId = null) {
+  const name = taskId ? realestateTasks.find(t => t.id === taskId)?.name : '';
+  const states = taskId ? realestateTasks.find(t => t.id === taskId)?.states.join(', ') : '未着手, 完了';
+
+  const newName = prompt('タスク名を入力:', name);
+  if (!newName) return;
+
+  const newStates = prompt('ステータスオプション（カンマ区切り）:', states);
+  if (!newStates) return;
+
+  const statesArray = newStates.split(',').map(s => s.trim()).filter(s => s);
+
+  if (taskId) {
+    const task = realestateTasks.find(t => t.id === taskId);
+    if (task) {
+      task.name = newName;
+      task.states = statesArray;
+    }
+  } else {
+    realestateTasks.push({
+      id: 're_' + Date.now(),
+      name: newName,
+      order: realestateTasks.length + 1,
+      states: statesArray
+    });
+  }
+
+  localStorage.setItem('realestateTasks', JSON.stringify(realestateTasks));
+  renderRealestateTasksManagement();
+  showToast('不動産タスクを保存しました', 'success');
+}
+
+function editRealestateTask(taskId) {
+  openRealestateTaskModal(taskId);
+}
+
+function deleteRealestateTask(taskId) {
+  if (!confirm('このタスクを削除しますか？')) return;
+
+  realestateTasks = realestateTasks.filter(t => t.id !== taskId);
+  localStorage.setItem('realestateTasks', JSON.stringify(realestateTasks));
+  renderRealestateTasksManagement();
+  showToast('タスクを削除しました', 'success');
+}
+
+// 工事業務管理
+function renderConstructionTasksManagement() {
+  const container = document.getElementById('constructionTasksGrid');
+  if (!container) return;
+
+  container.innerHTML = `
+    <div class="data-table">
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 40px;">順序</th>
+            <th>タスク名</th>
+            <th>ステータスオプション</th>
+            <th style="width: 150px;">操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${constructionTasks.map((task, index) => `
+            <tr>
+              <td>${index + 1}</td>
+              <td><strong>${task.name}</strong></td>
+              <td>
+                <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+                  ${task.states.map(s => `<span class="badge badge-secondary">${s}</span>`).join('')}
+                </div>
+              </td>
+              <td>
+                <button class="btn btn-secondary btn-small" onclick="editConstructionTask('${task.id}')">編集</button>
+                <button class="btn btn-danger btn-small" onclick="deleteConstructionTask('${task.id}')">削除</button>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+    <div style="margin-top: 16px; padding: 16px; background: var(--bg-secondary); border-radius: var(--radius-md);">
+      <p style="margin: 0; color: var(--text-secondary); font-size: 14px;">
+        💡 工事業務タスクは案件カードの「工事業務内容」セクションで使用されます。
+      </p>
+    </div>
+  `;
+}
+
+function openConstructionTaskModal(taskId = null) {
+  const name = taskId ? constructionTasks.find(t => t.id === taskId)?.name : '';
+  const states = taskId ? constructionTasks.find(t => t.id === taskId)?.states.join(', ') : '未着手, 完了';
+
+  const newName = prompt('タスク名を入力:', name);
+  if (!newName) return;
+
+  const newStates = prompt('ステータスオプション（カンマ区切り）:', states);
+  if (!newStates) return;
+
+  const statesArray = newStates.split(',').map(s => s.trim()).filter(s => s);
+
+  if (taskId) {
+    const task = constructionTasks.find(t => t.id === taskId);
+    if (task) {
+      task.name = newName;
+      task.states = statesArray;
+    }
+  } else {
+    constructionTasks.push({
+      id: 'con_' + Date.now(),
+      name: newName,
+      order: constructionTasks.length + 1,
+      states: statesArray
+    });
+  }
+
+  localStorage.setItem('constructionTasks', JSON.stringify(constructionTasks));
+  renderConstructionTasksManagement();
+  showToast('工事タスクを保存しました', 'success');
+}
+
+function editConstructionTask(taskId) {
+  openConstructionTaskModal(taskId);
+}
+
+function deleteConstructionTask(taskId) {
+  if (!confirm('このタスクを削除しますか？')) return;
+
+  constructionTasks = constructionTasks.filter(t => t.id !== taskId);
+  localStorage.setItem('constructionTasks', JSON.stringify(constructionTasks));
+  renderConstructionTasksManagement();
+  showToast('タスクを削除しました', 'success');
+}
+
 function openTaskModal(taskIdOrCategory = null) {
   const modal = document.getElementById('taskModal');
   const title = document.getElementById('taskModalTitle');
@@ -9106,6 +9313,72 @@ function renderSidebar() {
     html += '</div>';
   }
 
+  // 外構担当
+  const exteriorDesigners = getExteriorDesigners();
+  if (exteriorDesigners.length > 0) {
+    html += '<div class="sidebar-section"><div class="sidebar-section-title">🏡 外構担当</div>';
+    exteriorDesigners.forEach(designer => {
+      const count = projects.filter(p => {
+        const exteriorAssigned = (p.exterior_assignee || '').trim();
+        const designerName = designer.name.trim();
+        return exteriorAssigned === designerName && p.status !== 'completed' && !p.is_archived;
+      }).length;
+      const nameStyle = getCountStyle(count);
+      const badgeClass = getCountBadgeClass(count);
+      html += `
+        <div class="sidebar-item ${currentDesignerTab === designer.name ? 'active' : ''}" onclick="selectDesigner('${designer.name}')">
+          <span class="sidebar-item-label" style="${nameStyle}">${designer.name}</span>
+          <span class="sidebar-item-count ${badgeClass}">${count}</span>
+        </div>
+      `;
+    });
+    html += '</div>';
+  }
+
+  // 不動産担当
+  const realestateDesigners = getRealestateDesigners();
+  if (realestateDesigners.length > 0) {
+    html += '<div class="sidebar-section"><div class="sidebar-section-title">🏢 不動産担当</div>';
+    realestateDesigners.forEach(designer => {
+      const count = projects.filter(p => {
+        const realestateAssigned = (p.realestate_assignee || '').trim();
+        const designerName = designer.name.trim();
+        return realestateAssigned === designerName && p.status !== 'completed' && !p.is_archived;
+      }).length;
+      const nameStyle = getCountStyle(count);
+      const badgeClass = getCountBadgeClass(count);
+      html += `
+        <div class="sidebar-item ${currentDesignerTab === designer.name ? 'active' : ''}" onclick="selectDesigner('${designer.name}')">
+          <span class="sidebar-item-label" style="${nameStyle}">${designer.name}</span>
+          <span class="sidebar-item-count ${badgeClass}">${count}</span>
+        </div>
+      `;
+    });
+    html += '</div>';
+  }
+
+  // 工事担当
+  const constructionDesigners = getConstructionDesigners();
+  if (constructionDesigners.length > 0) {
+    html += '<div class="sidebar-section"><div class="sidebar-section-title">🔨 工事担当</div>';
+    constructionDesigners.forEach(designer => {
+      const count = projects.filter(p => {
+        const constructionAssigned = (p.construction_assignee || '').trim();
+        const designerName = designer.name.trim();
+        return constructionAssigned === designerName && p.status !== 'completed' && !p.is_archived;
+      }).length;
+      const nameStyle = getCountStyle(count);
+      const badgeClass = getCountBadgeClass(count);
+      html += `
+        <div class="sidebar-item ${currentDesignerTab === designer.name ? 'active' : ''}" onclick="selectDesigner('${designer.name}')">
+          <span class="sidebar-item-label" style="${nameStyle}">${designer.name}</span>
+          <span class="sidebar-item-count ${badgeClass}">${count}</span>
+        </div>
+      `;
+    });
+    html += '</div>';
+  }
+
   container.innerHTML = html;
 }
 
@@ -9187,6 +9460,12 @@ function switchSubTab(panelName, element) {
       break;
     case 'exteriorTasks':
       renderExteriorTasksManagement();
+      break;
+    case 'realestateTasks':
+      renderRealestateTasksManagement();
+      break;
+    case 'constructionTasks':
+      renderConstructionTasksManagement();
       break;
     case 'products':
       renderProductsList();
