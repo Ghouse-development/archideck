@@ -10333,34 +10333,61 @@ function renderProjectCard(project) {
       // 部署別業務内容表示
       // 管理者: 排他的アコーディオン（1つ開くと他が閉じる）
       // 非管理者: 自分の部署のみ、アコーディオンなしで直接表示
-      const getBizContent = (title, icon, content) => `<div class="card-section biz-section collapsed"><div class="card-section-header" onclick="toggleBizSection(this, '${project.id}')"><span class="card-section-title">${icon} ${title}</span><span class="card-section-toggle">▼</span></div><div class="card-section-content">${content}</div></div>`;
 
-      // 非管理者向け: シンプルなセクション（アコーディオンなし）
-      const getSimpleBizContent = (title, icon, content) => `<div class="card-section"><div class="card-section-header" style="cursor:default;"><span class="card-section-title">${icon} ${title}</span></div><div class="card-section-content" style="display:block;">${content}</div></div>`;
+      // 各カテゴリの完了・未完了タスク数を計算
+      const countTasks = (taskList) => {
+        const total = taskList.length;
+        const completed = taskList.filter(t => {
+          const task = progressData[t.task_key] || {};
+          const stateOptions = getTaskStateOptions(t.task_key);
+          const lastOption = stateOptions && stateOptions.length > 0 ? stateOptions[stateOptions.length - 1] : null;
+          return task.state === lastOption;
+        }).length;
+        return { completed, total, incomplete: total - completed };
+      };
+
+      const designTaskList = tasksV2.filter(t => t.category === '設計').sort((a, b) => a.display_order - b.display_order);
+      const designCount = countTasks(designTaskList);
+      const icCount = countTasks(icTasks);
+      const exteriorCount = countTasks(exteriorTasks);
+      const realestateCount = countTasks(realestateTasks);
+      const constructionCount = countTasks(constructionTasks);
+
+      // 管理者向け: アコーディオン（初期状態は閉じる、未完了/全タスク数を表示）
+      const getBizContent = (title, icon, content, count) => {
+        const countBadge = count.total > 0 ? `<span class="biz-task-count" style="margin-left:8px;font-size:12px;color:${count.incomplete > 0 ? 'var(--warning-color)' : 'var(--success-color)'};">${count.incomplete}/${count.total}</span>` : '';
+        return `<div class="card-section biz-section collapsed"><div class="card-section-header" onclick="toggleBizSection(this, '${project.id}')"><span class="card-section-title">${icon} ${title}${countBadge}</span><span class="card-section-toggle">▼</span></div><div class="card-section-content">${content}</div></div>`;
+      };
+
+      // 非管理者向け: シンプルなセクション（アコーディオンなし、未完了/全タスク数を表示）
+      const getSimpleBizContent = (title, icon, content, count) => {
+        const countBadge = count.total > 0 ? `<span class="biz-task-count" style="margin-left:8px;font-size:12px;color:${count.incomplete > 0 ? 'var(--warning-color)' : 'var(--success-color)'};">${count.incomplete}/${count.total}</span>` : '';
+        return `<div class="card-section"><div class="card-section-header" style="cursor:default;"><span class="card-section-title">${icon} ${title}${countBadge}</span></div><div class="card-section-content" style="display:block;">${content}</div></div>`;
+      };
 
       if (currentUserCategory === 'admin' || !currentUserCategory) {
         // 管理者: すべての業務内容を表示（排他的アコーディオン）順序: 不動産→設計→IC→工事→外構
         return `<div class="biz-sections-group">
-    ${getBizContent('不動産業務内容', '🏢', realestateTasks.length > 0 ? `<div class="tasks-grid">${realestateTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">不動産タスクが登録されていません</p>')}
-    ${getBizContent('設計業務内容', '📐', `<div class="tasks-grid">${tasksHtml}</div>`)}
-    ${getBizContent('IC業務内容', '🎨', icTasks.length > 0 ? `<div class="tasks-grid">${icTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">ICタスクが登録されていません</p>')}
-    ${getBizContent('工事業務内容', '🔨', constructionTasks.length > 0 ? `<div class="tasks-grid">${constructionTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">工事タスクが登録されていません</p>')}
-    ${getBizContent('外構業務内容', '🏡', exteriorTasks.length > 0 ? `<div class="tasks-grid">${exteriorTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">外構タスクが登録されていません</p>')}</div>`;
+    ${getBizContent('不動産業務内容', '🏢', realestateTasks.length > 0 ? `<div class="tasks-grid">${realestateTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">不動産タスクが登録されていません</p>', realestateCount)}
+    ${getBizContent('設計業務内容', '📐', `<div class="tasks-grid">${tasksHtml}</div>`, designCount)}
+    ${getBizContent('IC業務内容', '🎨', icTasks.length > 0 ? `<div class="tasks-grid">${icTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">ICタスクが登録されていません</p>', icCount)}
+    ${getBizContent('工事業務内容', '🔨', constructionTasks.length > 0 ? `<div class="tasks-grid">${constructionTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">工事タスクが登録されていません</p>', constructionCount)}
+    ${getBizContent('外構業務内容', '🏡', exteriorTasks.length > 0 ? `<div class="tasks-grid">${exteriorTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">外構タスクが登録されていません</p>', exteriorCount)}</div>`;
       } else if (currentUserCategory === '設計') {
         // 設計担当: 設計業務内容のみ、アコーディオンなし
-        return getSimpleBizContent('設計業務内容', '📐', `<div class="tasks-grid">${tasksHtml}</div>`);
+        return getSimpleBizContent('設計業務内容', '📐', `<div class="tasks-grid">${tasksHtml}</div>`, designCount);
       } else if (currentUserCategory === 'IC') {
         // IC担当: IC業務内容のみ、アコーディオンなし
-        return getSimpleBizContent('IC業務内容', '🎨', icTasks.length > 0 ? `<div class="tasks-grid">${icTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">ICタスクが登録されていません</p>');
+        return getSimpleBizContent('IC業務内容', '🎨', icTasks.length > 0 ? `<div class="tasks-grid">${icTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">ICタスクが登録されていません</p>', icCount);
       } else if (currentUserCategory === '外構') {
         // 外構担当: 外構業務内容のみ、アコーディオンなし
-        return getSimpleBizContent('外構業務内容', '🏡', exteriorTasks.length > 0 ? `<div class="tasks-grid">${exteriorTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">外構タスクが登録されていません</p>');
+        return getSimpleBizContent('外構業務内容', '🏡', exteriorTasks.length > 0 ? `<div class="tasks-grid">${exteriorTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">外構タスクが登録されていません</p>', exteriorCount);
       } else if (currentUserCategory === '不動産') {
         // 不動産担当: 不動産業務内容のみ、アコーディオンなし
-        return getSimpleBizContent('不動産業務内容', '🏢', realestateTasks.length > 0 ? `<div class="tasks-grid">${realestateTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">不動産タスクが登録されていません</p>');
+        return getSimpleBizContent('不動産業務内容', '🏢', realestateTasks.length > 0 ? `<div class="tasks-grid">${realestateTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">不動産タスクが登録されていません</p>', realestateCount);
       } else if (currentUserCategory === '工事') {
         // 工事担当: 工事業務内容のみ、アコーディオンなし
-        return getSimpleBizContent('工事業務内容', '🔨', constructionTasks.length > 0 ? `<div class="tasks-grid">${constructionTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">工事タスクが登録されていません</p>');
+        return getSimpleBizContent('工事業務内容', '🔨', constructionTasks.length > 0 ? `<div class="tasks-grid">${constructionTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">工事タスクが登録されていません</p>', constructionCount);
       } else {
         return '';
       }
