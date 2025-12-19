@@ -10060,13 +10060,13 @@ function renderProjectCard(project) {
       const getSimpleBizContent = (title, icon, content) => `<div class="card-section"><div class="card-section-header" style="cursor:default;"><span class="card-section-title">${icon} ${title}</span></div><div class="card-section-content" style="display:block;">${content}</div></div>`;
 
       if (currentUserCategory === 'admin' || !currentUserCategory) {
-        // 管理者: すべての業務内容を表示（排他的アコーディオン）
+        // 管理者: すべての業務内容を表示（排他的アコーディオン）順序: 不動産→設計→IC→工事→外構
         return `<div class="biz-sections-group">
+    ${getBizContent('不動産業務内容', '🏢', realestateTasks.length > 0 ? `<div class="tasks-grid">${realestateTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">不動産タスクが登録されていません</p>')}
     ${getBizContent('設計業務内容', '📐', `<div class="tasks-grid">${tasksHtml}</div>`)}
     ${getBizContent('IC業務内容', '🎨', icTasks.length > 0 ? `<div class="tasks-grid">${icTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">ICタスクが登録されていません</p>')}
-    ${getBizContent('外構業務内容', '🏡', exteriorTasks.length > 0 ? `<div class="tasks-grid">${exteriorTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">外構タスクが登録されていません</p>')}
-    ${getBizContent('不動産業務内容', '🏢', realestateTasks.length > 0 ? `<div class="tasks-grid">${realestateTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">不動産タスクが登録されていません</p>')}
-    ${getBizContent('工事業務内容', '🔨', constructionTasks.length > 0 ? `<div class="tasks-grid">${constructionTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">工事タスクが登録されていません</p>')}</div>`;
+    ${getBizContent('工事業務内容', '🔨', constructionTasks.length > 0 ? `<div class="tasks-grid">${constructionTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">工事タスクが登録されていません</p>')}
+    ${getBizContent('外構業務内容', '🏡', exteriorTasks.length > 0 ? `<div class="tasks-grid">${exteriorTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">外構タスクが登録されていません</p>')}</div>`;
       } else if (currentUserCategory === '設計') {
         // 設計担当: 設計業務内容のみ、アコーディオンなし
         return getSimpleBizContent('設計業務内容', '📐', `<div class="tasks-grid">${tasksHtml}</div>`);
