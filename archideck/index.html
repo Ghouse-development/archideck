@@ -420,6 +420,37 @@ body {
   background-clip: text;
 }
 
+/* ヘッダー内ナビゲーション */
+.header-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 16px;
+}
+
+.header-nav-btn {
+  padding: 8px 14px;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.header-nav-btn:hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.header-nav-btn.active {
+  background: var(--primary-color);
+  color: white;
+}
+
 .header-right {
   display: flex;
   align-items: center;
@@ -2401,11 +2432,26 @@ input:checked + .toggle-slider:before {
   }
 
   .header-left {
-    gap: 12px;
+    gap: 8px;
+    flex-wrap: wrap;
   }
 
   .logo {
-    font-size: 20px;
+    font-size: 18px;
+  }
+
+  .header-nav {
+    gap: 2px;
+    margin-left: 0;
+    order: 3;
+    width: 100%;
+    justify-content: center;
+    margin-top: 4px;
+  }
+
+  .header-nav-btn {
+    padding: 6px 10px;
+    font-size: 12px;
   }
 
   .tabs-nav {
@@ -4332,6 +4378,12 @@ textarea:focus-visible {
     <div class="header-left">
       <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
       <div class="logo">ArchiDeck</div>
+      <!-- ヘッダー内ナビゲーション -->
+      <nav class="header-nav">
+        <button class="header-nav-btn active" onclick="switchMainTab('projects', this)">📋 案件管理</button>
+        <button class="header-nav-btn" onclick="switchMainTab('analytics', this)">📊 分析</button>
+        <button class="header-nav-btn" onclick="switchMainTab('settings', this)">⚙️ 設定</button>
+      </nav>
     </div>
     <div class="header-right">
       <div class="status-indicator status-saved" id="statusIndicator">
@@ -4375,13 +4427,6 @@ textarea:focus-visible {
 
     <!-- メインコンテンツ -->
     <main class="main-content" id="mainContent" role="main" aria-label="メインコンテンツ">
-      <!-- タブナビゲーション -->
-      <nav class="tabs-nav">
-        <button class="tab-nav-btn active" onclick="switchMainTab('projects', this)">📋 案件管理</button>
-        <button class="tab-nav-btn" onclick="switchMainTab('analytics', this)">📊 分析</button>
-        <button class="tab-nav-btn" onclick="switchMainTab('settings', this)">⚙️ 設定</button>
-      </nav>
-
       <!-- 案件管理タブ -->
       <div id="projectsTab" class="tab-panel active">
         <div class="toolbar compact-toolbar">
@@ -9083,7 +9128,8 @@ function switchMainTab(tabName, element) {
     timestamp: new Date().toISOString()
   });
 
-  document.querySelectorAll('.tab-nav-btn').forEach(btn => btn.classList.remove('active'));
+  // ヘッダーナビゲーションボタンを更新
+  document.querySelectorAll('.header-nav-btn').forEach(btn => btn.classList.remove('active'));
   if (element) element.classList.add('active');
 
   document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
@@ -9153,14 +9199,14 @@ function switchSubTab(panelName, element) {
 
 // 旧switchTab関数（互換性のため残す）
 function switchTab(tabName, element) {
-  document.querySelectorAll('.tab-nav-btn').forEach(btn => btn.classList.remove('active'));
+  document.querySelectorAll('.header-nav-btn').forEach(btn => btn.classList.remove('active'));
   if (element) {
     element.classList.add('active');
   } else {
     // フォールバック：tabNameに基づいてアクティブなボタンを見つける
-    const buttons = document.querySelectorAll('.tab-nav-btn');
+    const buttons = document.querySelectorAll('.header-nav-btn');
     buttons.forEach((btn, index) => {
-      const tabs = ['projects', 'vendors', 'categories', 'tasks', 'settings'];
+      const tabs = ['projects', 'analytics', 'settings'];
       if (tabs[index] === tabName) {
         btn.classList.add('active');
       }
@@ -10005,8 +10051,13 @@ function renderProjectCard(project) {
     </div>
 
     ${(() => {
-      // 部署別業務内容表示（排他的アコーディオン：1つ開くと他が閉じる）
+      // 部署別業務内容表示
+      // 管理者: 排他的アコーディオン（1つ開くと他が閉じる）
+      // 非管理者: 自分の部署のみ、アコーディオンなしで直接表示
       const getBizContent = (title, icon, content) => `<div class="card-section biz-section collapsed"><div class="card-section-header" onclick="toggleBizSection(this, '${project.id}')"><span class="card-section-title">${icon} ${title}</span><span class="card-section-toggle">▼</span></div><div class="card-section-content">${content}</div></div>`;
+
+      // 非管理者向け: シンプルなセクション（アコーディオンなし）
+      const getSimpleBizContent = (title, icon, content) => `<div class="card-section"><div class="card-section-header" style="cursor:default;"><span class="card-section-title">${icon} ${title}</span></div><div class="card-section-content" style="display:block;">${content}</div></div>`;
 
       if (currentUserCategory === 'admin' || !currentUserCategory) {
         // 管理者: すべての業務内容を表示（排他的アコーディオン）
@@ -10017,15 +10068,20 @@ function renderProjectCard(project) {
     ${getBizContent('不動産業務内容', '🏢', realestateTasks.length > 0 ? `<div class="tasks-grid">${realestateTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">不動産タスクが登録されていません</p>')}
     ${getBizContent('工事業務内容', '🔨', constructionTasks.length > 0 ? `<div class="tasks-grid">${constructionTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">工事タスクが登録されていません</p>')}</div>`;
       } else if (currentUserCategory === '設計') {
-        return getBizContent('設計業務内容', '📐', `<div class="tasks-grid">${tasksHtml}</div>`);
+        // 設計担当: 設計業務内容のみ、アコーディオンなし
+        return getSimpleBizContent('設計業務内容', '📐', `<div class="tasks-grid">${tasksHtml}</div>`);
       } else if (currentUserCategory === 'IC') {
-        return getBizContent('IC業務内容', '🎨', icTasks.length > 0 ? `<div class="tasks-grid">${icTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">ICタスクが登録されていません</p>');
+        // IC担当: IC業務内容のみ、アコーディオンなし
+        return getSimpleBizContent('IC業務内容', '🎨', icTasks.length > 0 ? `<div class="tasks-grid">${icTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">ICタスクが登録されていません</p>');
       } else if (currentUserCategory === '外構') {
-        return getBizContent('外構業務内容', '🏡', exteriorTasks.length > 0 ? `<div class="tasks-grid">${exteriorTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">外構タスクが登録されていません</p>');
+        // 外構担当: 外構業務内容のみ、アコーディオンなし
+        return getSimpleBizContent('外構業務内容', '🏡', exteriorTasks.length > 0 ? `<div class="tasks-grid">${exteriorTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">外構タスクが登録されていません</p>');
       } else if (currentUserCategory === '不動産') {
-        return getBizContent('不動産業務内容', '🏢', realestateTasks.length > 0 ? `<div class="tasks-grid">${realestateTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">不動産タスクが登録されていません</p>');
+        // 不動産担当: 不動産業務内容のみ、アコーディオンなし
+        return getSimpleBizContent('不動産業務内容', '🏢', realestateTasks.length > 0 ? `<div class="tasks-grid">${realestateTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">不動産タスクが登録されていません</p>');
       } else if (currentUserCategory === '工事') {
-        return getBizContent('工事業務内容', '🔨', constructionTasks.length > 0 ? `<div class="tasks-grid">${constructionTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">工事タスクが登録されていません</p>');
+        // 工事担当: 工事業務内容のみ、アコーディオンなし
+        return getSimpleBizContent('工事業務内容', '🔨', constructionTasks.length > 0 ? `<div class="tasks-grid">${constructionTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">工事タスクが登録されていません</p>');
       } else {
         return '';
       }
@@ -14157,10 +14213,15 @@ function handleHashChange() {
 
   // メインタブの切り替え
   if (mainTab === 'projects') {
-    const btn = document.querySelector('.tab-nav-btn');
+    const btn = document.querySelector('.header-nav-btn');
     if (btn) switchMainTab('projects', btn);
+  } else if (mainTab === 'analytics') {
+    const btn = document.querySelectorAll('.header-nav-btn')[1];
+    if (btn) switchMainTab('analytics', btn);
+    isHandlingHashChange = false;
+    return;
   } else if (mainTab === 'settings') {
-    const btn = document.querySelectorAll('.tab-nav-btn')[1];
+    const btn = document.querySelectorAll('.header-nav-btn')[2];
     if (btn) switchMainTab('settings', btn);
 
     // サブタブの切り替え
@@ -15301,8 +15362,11 @@ async function uploadMinutesWithDate(projectId, file) {
     return;
   }
 
-  // 打合せ日を取得
-  const meetingDateInput = document.getElementById(`meetingDate_${projectId}`);
+  // 打合せ日を取得（通常版またはモーダル版）
+  let meetingDateInput = document.getElementById(`meetingDate_${projectId}`);
+  if (!meetingDateInput) {
+    meetingDateInput = document.getElementById(`modalMeetingDate_${projectId}`);
+  }
   const meetingDate = meetingDateInput?.value;
 
   if (!meetingDate) {
