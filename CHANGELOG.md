@@ -1,5 +1,42 @@
 # ArchiDeck 開発履歴
 
+## v4.53.0 (2025-12-20)
+
+### 完全版リリース - 5部署フル対応 + FC本番対応
+
+#### 工事担当機能の完全実装
+- **案件モーダル**: 工事担当者の選択フィールドを追加
+- **ドロップダウン生成**: `populateConstructionAssigneeDropdown()` 関数追加
+- **保存処理**: `construction_assignee` をプロジェクトデータに含める
+- **レイアウト改善**: 5部署対応のレスポンシブグリッド (`repeat(auto-fit, minmax(150px, 1fr))`)
+
+#### 不動産・工事デフォルトタスク追加
+- **不動産タスク (8項目)**: ヒアリング、物件検索、物件内見、提案、交渉、契約、ローン手続き、決済・引渡
+- **工事タスク (10項目)**: ヒアリング、現地調査、見積作成、工事契約、届出・許可、資材発注、着工、施工、完了検査、引渡し
+- **localStorage**: 初回起動時からデフォルトタスクが利用可能
+- **統合関数**: `getTasksForCategory()` でSupabase/localStorage両方からタスク取得
+
+#### FC URL本番対応
+- **vercel.json作成**: `/fc/{slug}/` 形式のURLを `?fc={slug}` にリライト
+- **セキュリティヘッダー**: X-Content-Type-Options, X-Frame-Options, X-XSS-Protection
+
+#### RLS修正
+- **project_minutes**: 議事録保存エラー (42501) を解決
+- **project_handovers**: 引継書保存エラーを解決
+- **SQL追加**: `fix_project_minutes_rls.sql`
+
+#### 修正・改善
+- **変数参照統一**: プロジェクトカードでのタスクリスト変数名を `xxxTasksList` に統一
+- **進捗計算**: 全5部署の進捗率を正確に計算
+- **自動アーカイブ**: 全5部署のタスク完了を判定
+
+### 変更ファイル
+- `archideck/index.html`: 工事担当フィールド、デフォルトタスク、統合関数
+- `archideck/vercel.json`: 新規作成 (FC URLリライト)
+- `archideck/sql/production/fix_project_minutes_rls.sql`: 新規作成
+
+---
+
 ## 技術仕様
 
 ### アーキテクチャ

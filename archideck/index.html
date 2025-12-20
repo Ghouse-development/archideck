@@ -4969,7 +4969,7 @@ textarea:focus-visible {
         <label class="form-label">お客様名 *</label>
         <input type="text" class="form-input" id="projectCustomer" placeholder="例：田中太郎様">
       </div>
-      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px;">
         <div class="form-group">
           <label class="form-label">担当（設計） *</label>
           <select class="form-select" id="projectAssignedTo"></select>
@@ -4989,6 +4989,12 @@ textarea:focus-visible {
         <div class="form-group">
           <label class="form-label">担当（不動産）</label>
           <select class="form-select" id="projectRealestateAssignee">
+            <option value="">未定</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">担当（工事）</label>
+          <select class="form-select" id="projectConstructionAssignee">
             <option value="">未定</option>
           </select>
         </div>
@@ -6129,11 +6135,62 @@ function getTasksForAssignee(assigneeName) {
   return tasksV2.filter(t => t.category === category).sort((a, b) => a.display_order - b.display_order);
 }
 
+// カテゴリ別のタスク定義を取得（Supabase + localStorage統合）
+function getTasksForCategory(category) {
+  // まずtasksV2（Supabase）から取得
+  const supabaseTasks = tasksV2.filter(t => t.category === category).sort((a, b) => a.display_order - b.display_order);
+  if (supabaseTasks.length > 0) {
+    return supabaseTasks;
+  }
+
+  // Supabaseにデータがない場合、localStorageから取得（外構・不動産・工事）
+  let localTasks = [];
+  if (category === '外構' && typeof exteriorTasks !== 'undefined' && Array.isArray(exteriorTasks)) {
+    localTasks = exteriorTasks;
+  } else if (category === '不動産' && typeof realestateTasks !== 'undefined' && Array.isArray(realestateTasks)) {
+    localTasks = realestateTasks;
+  } else if (category === '工事' && typeof constructionTasks !== 'undefined' && Array.isArray(constructionTasks)) {
+    localTasks = constructionTasks;
+  }
+
+  // localStorageのタスクをtasksV2互換の形式に変換
+  return localTasks.map((t, index) => ({
+    id: t.id,
+    task_key: t.id,
+    task_name: t.name,
+    category: category,
+    display_order: t.order || index + 1,
+    has_state: true,
+    state_options: t.states,
+    has_email_button: false
+  }));
+}
+
 // タスクの状態オプションを取得（新システム）
 function getTaskStateOptions(taskKey) {
+  // まずtasksV2（Supabase）から探す
   const task = tasksV2.find(t => t.task_key === taskKey);
-  if (!task || !task.has_state || !task.state_options) return null;
-  return task.state_options;
+  if (task && task.has_state && task.state_options) {
+    return task.state_options;
+  }
+
+  // localStorageベースのタスク（外構・不動産・工事）からも探す
+  if (typeof exteriorTasks !== 'undefined' && Array.isArray(exteriorTasks)) {
+    const exteriorTask = exteriorTasks.find(t => t.id === taskKey);
+    if (exteriorTask && exteriorTask.states) return exteriorTask.states;
+  }
+
+  if (typeof realestateTasks !== 'undefined' && Array.isArray(realestateTasks)) {
+    const realestateTask = realestateTasks.find(t => t.id === taskKey);
+    if (realestateTask && realestateTask.states) return realestateTask.states;
+  }
+
+  if (typeof constructionTasks !== 'undefined' && Array.isArray(constructionTasks)) {
+    const constructionTask = constructionTasks.find(t => t.id === taskKey);
+    if (constructionTask && constructionTask.states) return constructionTask.states;
+  }
+
+  return null;
 }
 
 // ============================================
@@ -8746,6 +8803,38 @@ function deleteExteriorTask(taskId) {
   showToast('タスクを削除しました', 'success');
 }
 
+// 不動産デフォルトタスク定義
+const defaultRealestateTasks = [
+  { id: 'real_hearing', name: 'ヒアリング', order: 1, states: ['未着手', '実施中', '完了'] },
+  { id: 'real_search', name: '物件検索', order: 2, states: ['未着手', '検索中', '候補あり', '完了'] },
+  { id: 'real_inspection', name: '物件内見', order: 3, states: ['未着手', '日程調整中', '内見済', '完了'] },
+  { id: 'real_proposal', name: '提案', order: 4, states: ['未着手', '資料作成中', '提案済', '承認'] },
+  { id: 'real_negotiation', name: '交渉', order: 5, states: ['未着手', '交渉中', '合意', '完了'] },
+  { id: 'real_contract', name: '契約', order: 6, states: ['未着手', '書類準備', '契約済', '完了'] },
+  { id: 'real_loan', name: 'ローン手続き', order: 7, states: ['未着手', '申込中', '審査中', '承認', '完了'] },
+  { id: 'real_settlement', name: '決済・引渡', order: 8, states: ['未着手', '準備中', '決済完了', '引渡完了'] }
+];
+
+// 不動産タスクをローカルストレージから読み込み
+let realestateTasks = safeJsonParse(localStorage.getItem('realestateTasks'), defaultRealestateTasks);
+
+// 工事デフォルトタスク定義
+const defaultConstructionTasks = [
+  { id: 'const_hearing', name: 'ヒアリング', order: 1, states: ['未着手', '実施中', '完了'] },
+  { id: 'const_survey', name: '現地調査', order: 2, states: ['未着手', '調査済', '報告済'] },
+  { id: 'const_estimate', name: '見積作成', order: 3, states: ['未着手', '作成中', '提出済', '承認'] },
+  { id: 'const_contract', name: '工事契約', order: 4, states: ['未着手', '調整中', '契約済'] },
+  { id: 'const_permit', name: '届出・許可', order: 5, states: ['未着手', '申請中', '許可済'] },
+  { id: 'const_order', name: '資材発注', order: 6, states: ['未着手', '発注済', '納品済'] },
+  { id: 'const_start', name: '着工', order: 7, states: ['未着手', '準備中', '着工済'] },
+  { id: 'const_progress', name: '施工', order: 8, states: ['未着手', '基礎工事', '躯体工事', '仕上工事', '完了'] },
+  { id: 'const_inspection', name: '完了検査', order: 9, states: ['未着手', '検査予約', '検査済', '是正完了'] },
+  { id: 'const_handover', name: '引渡し', order: 10, states: ['未着手', '最終確認', '引渡完了'] }
+];
+
+// 工事タスクをローカルストレージから読み込み
+let constructionTasks = safeJsonParse(localStorage.getItem('constructionTasks'), defaultConstructionTasks);
+
 // 不動産業務管理
 function renderRealestateTasksManagement() {
   const container = document.getElementById('realestateTasksGrid');
@@ -10167,8 +10256,8 @@ function renderProjectCard(project) {
   }).join('');
 
   // 外構業務内容を生成
-  const exteriorTasks = tasksV2.filter(t => t.category === '外構').sort((a, b) => a.display_order - b.display_order);
-  const exteriorTasksHtml = exteriorTasks.map(taskDef => {
+  const exteriorTasksList = getTasksForCategory('外構');
+  const exteriorTasksHtml = exteriorTasksList.map(taskDef => {
     const key = taskDef.task_key;
     const task = progressData[key] || { completed: false, date: '', state: '', due_date: '' };
 
@@ -10191,8 +10280,8 @@ function renderProjectCard(project) {
   }).join('');
 
   // 不動産業務内容を生成
-  const realestateTasks = tasksV2.filter(t => t.category === '不動産').sort((a, b) => a.display_order - b.display_order);
-  const realestateTasksHtml = realestateTasks.map(taskDef => {
+  const realestateTasksList = getTasksForCategory('不動産');
+  const realestateTasksHtml = realestateTasksList.map(taskDef => {
     const key = taskDef.task_key;
     const task = progressData[key] || { completed: false, date: '', state: '', due_date: '' };
 
@@ -10215,8 +10304,8 @@ function renderProjectCard(project) {
   }).join('');
 
   // 工事業務内容を生成
-  const constructionTasks = tasksV2.filter(t => t.category === '工事').sort((a, b) => a.display_order - b.display_order);
-  const constructionTasksHtml = constructionTasks.map(taskDef => {
+  const constructionTasksList = getTasksForCategory('工事');
+  const constructionTasksHtml = constructionTasksList.map(taskDef => {
     const key = taskDef.task_key;
     const task = progressData[key] || { completed: false, date: '', state: '', due_date: '' };
 
@@ -10349,9 +10438,9 @@ function renderProjectCard(project) {
       const designTaskList = tasksV2.filter(t => t.category === '設計').sort((a, b) => a.display_order - b.display_order);
       const designCount = countTasks(designTaskList);
       const icCount = countTasks(icTasks);
-      const exteriorCount = countTasks(exteriorTasks);
-      const realestateCount = countTasks(realestateTasks);
-      const constructionCount = countTasks(constructionTasks);
+      const exteriorCount = countTasks(exteriorTasksList);
+      const realestateCount = countTasks(realestateTasksList);
+      const constructionCount = countTasks(constructionTasksList);
 
       // 管理者向け: アコーディオン（初期状態は閉じる、未完了/全タスク数を表示）
       const getBizContent = (title, icon, content, count) => {
@@ -10368,11 +10457,11 @@ function renderProjectCard(project) {
       if (currentUserCategory === 'admin' || !currentUserCategory) {
         // 管理者: すべての業務内容を表示（排他的アコーディオン）順序: 不動産→設計→IC→工事→外構
         return `<div class="biz-sections-group">
-    ${getBizContent('不動産業務内容', '🏢', realestateTasks.length > 0 ? `<div class="tasks-grid">${realestateTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">不動産タスクが登録されていません</p>', realestateCount)}
+    ${getBizContent('不動産業務内容', '🏢', realestateTasksList.length > 0 ? `<div class="tasks-grid">${realestateTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">不動産タスクが登録されていません</p>', realestateCount)}
     ${getBizContent('設計業務内容', '📐', `<div class="tasks-grid">${tasksHtml}</div>`, designCount)}
     ${getBizContent('IC業務内容', '🎨', icTasks.length > 0 ? `<div class="tasks-grid">${icTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">ICタスクが登録されていません</p>', icCount)}
-    ${getBizContent('工事業務内容', '🔨', constructionTasks.length > 0 ? `<div class="tasks-grid">${constructionTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">工事タスクが登録されていません</p>', constructionCount)}
-    ${getBizContent('外構業務内容', '🏡', exteriorTasks.length > 0 ? `<div class="tasks-grid">${exteriorTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">外構タスクが登録されていません</p>', exteriorCount)}</div>`;
+    ${getBizContent('工事業務内容', '🔨', constructionTasksList.length > 0 ? `<div class="tasks-grid">${constructionTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">工事タスクが登録されていません</p>', constructionCount)}
+    ${getBizContent('外構業務内容', '🏡', exteriorTasksList.length > 0 ? `<div class="tasks-grid">${exteriorTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">外構タスクが登録されていません</p>', exteriorCount)}</div>`;
       } else if (currentUserCategory === '設計') {
         // 設計担当: 設計業務内容のみ、アコーディオンなし
         return getSimpleBizContent('設計業務内容', '📐', `<div class="tasks-grid">${tasksHtml}</div>`, designCount);
@@ -10381,13 +10470,13 @@ function renderProjectCard(project) {
         return getSimpleBizContent('IC業務内容', '🎨', icTasks.length > 0 ? `<div class="tasks-grid">${icTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">ICタスクが登録されていません</p>', icCount);
       } else if (currentUserCategory === '外構') {
         // 外構担当: 外構業務内容のみ、アコーディオンなし
-        return getSimpleBizContent('外構業務内容', '🏡', exteriorTasks.length > 0 ? `<div class="tasks-grid">${exteriorTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">外構タスクが登録されていません</p>', exteriorCount);
+        return getSimpleBizContent('外構業務内容', '🏡', exteriorTasksList.length > 0 ? `<div class="tasks-grid">${exteriorTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">外構タスクが登録されていません</p>', exteriorCount);
       } else if (currentUserCategory === '不動産') {
         // 不動産担当: 不動産業務内容のみ、アコーディオンなし
-        return getSimpleBizContent('不動産業務内容', '🏢', realestateTasks.length > 0 ? `<div class="tasks-grid">${realestateTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">不動産タスクが登録されていません</p>', realestateCount);
+        return getSimpleBizContent('不動産業務内容', '🏢', realestateTasksList.length > 0 ? `<div class="tasks-grid">${realestateTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">不動産タスクが登録されていません</p>', realestateCount);
       } else if (currentUserCategory === '工事') {
         // 工事担当: 工事業務内容のみ、アコーディオンなし
-        return getSimpleBizContent('工事業務内容', '🔨', constructionTasks.length > 0 ? `<div class="tasks-grid">${constructionTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">工事タスクが登録されていません</p>', constructionCount);
+        return getSimpleBizContent('工事業務内容', '🔨', constructionTasksList.length > 0 ? `<div class="tasks-grid">${constructionTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">工事タスクが登録されていません</p>', constructionCount);
       } else {
         return '';
       }
@@ -10429,33 +10518,33 @@ function calculateICProgress(project) {
 function calculateExteriorProgress(project) {
   if (!project.exterior_assignee) return null;
   const progressData = project.progress || {};
-  // 外構カテゴリのタスクを取得
-  const exteriorTasks = tasksV2.filter(t => t.category === '外構').sort((a, b) => a.display_order - b.display_order);
-  if (exteriorTasks.length === 0) return null;
-  const completed = exteriorTasks.filter(taskDef => progressData[taskDef.task_key]?.completed).length;
-  return Math.round((completed / exteriorTasks.length) * 100);
+  // 外構カテゴリのタスクを取得（Supabase + localStorage統合）
+  const extTasks = getTasksForCategory('外構');
+  if (extTasks.length === 0) return null;
+  const completed = extTasks.filter(taskDef => progressData[taskDef.task_key]?.completed).length;
+  return Math.round((completed / extTasks.length) * 100);
 }
 
 // 不動産担当者用の進捗率計算（不動産タスクベース）
 function calculateRealestateProgress(project) {
   if (!project.realestate_assignee) return null;
   const progressData = project.progress || {};
-  // 不動産カテゴリのタスクを取得
-  const realestateTasks = tasksV2.filter(t => t.category === '不動産').sort((a, b) => a.display_order - b.display_order);
-  if (realestateTasks.length === 0) return null;
-  const completed = realestateTasks.filter(taskDef => progressData[taskDef.task_key]?.completed).length;
-  return Math.round((completed / realestateTasks.length) * 100);
+  // 不動産カテゴリのタスクを取得（Supabase + localStorage統合）
+  const realTasks = getTasksForCategory('不動産');
+  if (realTasks.length === 0) return null;
+  const completed = realTasks.filter(taskDef => progressData[taskDef.task_key]?.completed).length;
+  return Math.round((completed / realTasks.length) * 100);
 }
 
 // 工事担当者用の進捗率計算（工事タスクベース）
 function calculateConstructionProgress(project) {
   if (!project.construction_assignee) return null;
   const progressData = project.progress || {};
-  // 工事カテゴリのタスクを取得
-  const constructionTasks = tasksV2.filter(t => t.category === '工事').sort((a, b) => a.display_order - b.display_order);
-  if (constructionTasks.length === 0) return null;
-  const completed = constructionTasks.filter(taskDef => progressData[taskDef.task_key]?.completed).length;
-  return Math.round((completed / constructionTasks.length) * 100);
+  // 工事カテゴリのタスクを取得（Supabase + localStorage統合）
+  const constTasks = getTasksForCategory('工事');
+  if (constTasks.length === 0) return null;
+  const completed = constTasks.filter(taskDef => progressData[taskDef.task_key]?.completed).length;
+  return Math.round((completed / constTasks.length) * 100);
 }
 
 // 全タスク完了チェックと自動アーカイブ
@@ -10489,7 +10578,7 @@ async function checkAndAutoArchive(project) {
   // 外構担当のタスクチェック
   if (project.exterior_assignee) {
     hasAnyAssignee = true;
-    const extTasks = tasksV2.filter(t => t.category === '外構');
+    const extTasks = getTasksForCategory('外構');
     if (extTasks.length > 0) {
       const extCompleted = extTasks.every(t => progressData[t.task_key]?.completed);
       if (!extCompleted) allCompleted = false;
@@ -10499,7 +10588,7 @@ async function checkAndAutoArchive(project) {
   // 不動産担当のタスクチェック
   if (project.realestate_assignee) {
     hasAnyAssignee = true;
-    const reTasks = tasksV2.filter(t => t.category === '不動産');
+    const reTasks = getTasksForCategory('不動産');
     if (reTasks.length > 0) {
       const reCompleted = reTasks.every(t => progressData[t.task_key]?.completed);
       if (!reCompleted) allCompleted = false;
@@ -10509,7 +10598,7 @@ async function checkAndAutoArchive(project) {
   // 工事担当のタスクチェック
   if (project.construction_assignee) {
     hasAnyAssignee = true;
-    const conTasks = tasksV2.filter(t => t.category === '工事');
+    const conTasks = getTasksForCategory('工事');
     if (conTasks.length > 0) {
       const conCompleted = conTasks.every(t => progressData[t.task_key]?.completed);
       if (!conCompleted) allCompleted = false;
@@ -14745,13 +14834,13 @@ renderSidebar = function() {
         taskList = tasksV2.filter(t => t.category === 'IC');
       } else if (category === '外構' && (p.exterior_assignee || '').trim() === designerName) {
         isAssigned = true;
-        taskList = tasksV2.filter(t => t.category === '外構');
+        taskList = getTasksForCategory('外構');
       } else if (category === '不動産' && (p.realestate_assignee || '').trim() === designerName) {
         isAssigned = true;
-        taskList = tasksV2.filter(t => t.category === '不動産');
+        taskList = getTasksForCategory('不動産');
       } else if (category === '工事' && (p.construction_assignee || '').trim() === designerName) {
         isAssigned = true;
-        taskList = tasksV2.filter(t => t.category === '工事');
+        taskList = getTasksForCategory('工事');
       }
 
       if (isAssigned && taskList.length > 0) {
@@ -17698,6 +17787,21 @@ function populateRealestateAssigneeDropdown(projectId = null, project = null) {
   }
 }
 
+// 工事担当ドロップダウンを設定
+function populateConstructionAssigneeDropdown(projectId = null, project = null) {
+  const constructionDesigners = designers.filter(d => d.category === '工事');
+  const constructionAssigneeSelect = document.getElementById('projectConstructionAssignee');
+
+  if (constructionAssigneeSelect) {
+    constructionAssigneeSelect.innerHTML = '<option value="">未定</option>' +
+      constructionDesigners.map(d => `<option value="${escapeHtml(d.name)}">${escapeHtml(d.name)}</option>`).join('');
+
+    if (projectId && project) {
+      constructionAssigneeSelect.value = project.construction_assignee || '';
+    }
+  }
+}
+
 // openProjectModalを拡張
 const originalOpenProjectModal = openProjectModal;
 openProjectModal = function(projectId = null) {
@@ -17706,6 +17810,7 @@ openProjectModal = function(projectId = null) {
   const project = projectId ? projects.find(p => p.id === projectId) : null;
   populateExteriorAssigneeDropdown(projectId, project);
   populateRealestateAssigneeDropdown(projectId, project);
+  populateConstructionAssigneeDropdown(projectId, project);
 };
 
 // saveProjectを拡張
@@ -17721,6 +17826,7 @@ saveProject = async function() {
   }
   const exteriorAssignee = document.getElementById('projectExteriorAssignee')?.value.trim() || '';
   const realestateAssignee = document.getElementById('projectRealestateAssignee')?.value.trim() || '';
+  const constructionAssignee = document.getElementById('projectConstructionAssignee')?.value.trim() || '';
   const specifications = document.getElementById('projectSpecifications').value;
   const memo = document.getElementById('projectMemo').value.trim();
 
@@ -17737,6 +17843,7 @@ saveProject = async function() {
     ic_assignee: icAssignee || null,
     exterior_assignee: exteriorAssignee || null,
     realestate_assignee: realestateAssignee || null,
+    construction_assignee: constructionAssignee || null,
     specifications,
     memo,
     updated_at: new Date().toISOString()

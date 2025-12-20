@@ -1,0 +1,17 @@
+{
+  "rewrites": [
+    { "source": "/fc/:slug", "destination": "/index.html?fc=:slug" },
+    { "source": "/fc/:slug/", "destination": "/index.html?fc=:slug" },
+    { "source": "/sekkei/:path*", "destination": "/sekkei/:path*" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "X-XSS-Protection", "value": "1; mode=block" }
+      ]
+    }
+  ]
+}
