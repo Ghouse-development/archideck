@@ -39,8 +39,10 @@
   /* Status Colors */
   --danger-color: #DC2626;
   --danger-light: #FEE2E2;
+  --danger-bg: #FEE2E2;
   --warning-color: #D97706;
   --warning-light: #FEF3C7;
+  --warning-bg: #FEF3C7;
   --success-color: #16A34A;
   --success-light: #DCFCE7;
   --success-bg: #DCFCE7;
@@ -114,8 +116,10 @@
 
   --danger-color: #F87171;
   --danger-light: #450A0A;
+  --danger-bg: #450A0A;
   --warning-color: #FBBF24;
   --warning-light: #451A03;
+  --warning-bg: #451A03;
   --success-color: #4ADE80;
   --success-light: #052E16;
   --success-bg: #052E16;
@@ -1872,6 +1876,42 @@ input:checked + .toggle-slider:before {
   flex-shrink: 0;
 }
 
+/* クラウドURL入力（太陽光・地盤調査用） */
+.task-item.has-cloud-url {
+  flex-wrap: wrap;
+}
+
+.cloud-url-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--border-light);
+}
+
+.cloud-url-input {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  color: var(--text-primary);
+}
+
+.cloud-url-input:focus {
+  border-color: var(--primary-color);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
+.cloud-url-link {
+  font-size: 16px;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
 .task-checkbox {
   width: 18px;
   height: 18px;
@@ -1944,6 +1984,17 @@ input:checked + .toggle-slider:before {
   background: var(--primary-hover);
   transform: translateY(-1px);
   box-shadow: 0 2px 8px rgba(74, 144, 226, 0.3);
+}
+
+/* 依頼日バッジ */
+.request-date-badge {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: var(--radius-full);
+  background: #e3f2fd;
+  color: #1976d2;
+  white-space: nowrap;
+  cursor: help;
 }
 
 /* 申請Goコンテナ（フルワイド） */
@@ -2251,6 +2302,40 @@ input:checked + .toggle-slider:before {
   display: flex;
   align-items: center;
   gap: 4px;
+}
+
+.state-options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.state-option-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.state-option-item input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.state-option-item .btn-remove {
+  padding: 4px 8px;
+  background: var(--danger);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.state-option-item .btn-remove:hover {
+  opacity: 0.8;
 }
 
 .form-row {
@@ -2909,6 +2994,39 @@ input:checked + .toggle-slider:before {
   color: var(--danger-color);
 }
 
+.sidebar-counts {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sidebar-archived-count {
+  font-size: 10px;
+  font-weight: 500;
+  padding: 2px 6px;
+  border-radius: var(--radius-full);
+  background: var(--success-bg);
+  color: var(--success-color);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.sidebar-archived-count:hover {
+  background: var(--success-color);
+  color: white;
+  transform: scale(1.05);
+}
+
+.sidebar-item.active .sidebar-archived-count {
+  background: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.sidebar-item.active .sidebar-archived-count:hover {
+  background: rgba(255, 255, 255, 0.3);
+  color: white;
+}
+
 .main-content {
   flex: 1;
   display: flex;
@@ -3037,6 +3155,135 @@ input:checked + .toggle-slider:before {
   display: flex;
   gap: 8px;
   justify-content: flex-end;
+}
+
+/* ===== カレンダー ===== */
+.calendar-container {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.calendar-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.calendar-legend {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.legend-design { background: #4A90E2; }
+.legend-ic { background: #9C27B0; }
+.legend-exterior { background: #4CAF50; }
+.legend-construction { background: #FF9800; }
+.legend-task { background: #F44336; }
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+  background: var(--border-color);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.calendar-day-header {
+  background: var(--bg-tertiary);
+  padding: 10px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.calendar-day {
+  background: var(--bg-primary);
+  min-height: 100px;
+  padding: 8px;
+  position: relative;
+}
+
+.calendar-day.other-month {
+  background: var(--bg-secondary);
+  opacity: 0.5;
+}
+
+.calendar-day.today {
+  background: #E3F2FD;
+}
+
+.calendar-day-number {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.calendar-day.today .calendar-day-number {
+  background: var(--primary-color);
+  color: white;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.calendar-events {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 70px;
+  overflow-y: auto;
+}
+
+.calendar-event {
+  font-size: 10px;
+  padding: 2px 4px;
+  border-radius: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+.calendar-event.design { background: #BBDEFB; color: #1565C0; }
+.calendar-event.ic { background: #E1BEE7; color: #7B1FA2; }
+.calendar-event.exterior { background: #C8E6C9; color: #388E3C; }
+.calendar-event.construction { background: #FFE0B2; color: #E65100; }
+.calendar-event.task { background: #FFCDD2; color: #C62828; }
+
+.calendar-event:hover {
+  opacity: 0.8;
 }
 
 /* ===== 分析ダッシュボード ===== */
@@ -3856,6 +4103,44 @@ input:checked + .toggle-slider:before {
   font-family: inherit;
 }
 
+/* 引継書 部署別入力ボックス */
+.handover-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.handover-section {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.handover-label {
+  display: block;
+  padding: 8px 12px;
+  background: var(--bg-tertiary);
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.handover-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  font-size: 13px;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 60px;
+}
+
+.handover-textarea:focus {
+  outline: none;
+  background: var(--bg-secondary);
+}
+
 /* サイドバー担当者色分け */
 .sidebar-item-count.count-blue {
   background: #e3f2fd;
@@ -4381,6 +4666,7 @@ textarea:focus-visible {
       <!-- ヘッダー内ナビゲーション -->
       <nav class="header-nav">
         <button class="header-nav-btn active" onclick="switchMainTab('projects', this)">📋 案件管理</button>
+        <button class="header-nav-btn" onclick="switchMainTab('calendar', this)">📅 カレンダー</button>
         <button class="header-nav-btn" onclick="switchMainTab('analytics', this)">📊 分析</button>
         <button class="header-nav-btn" onclick="switchMainTab('settings', this)">⚙️ 設定</button>
       </nav>
@@ -4547,6 +4833,25 @@ textarea:focus-visible {
       </div>
     </div>
   </div>
+
+      <!-- カレンダータブ -->
+      <div id="calendarTab" class="tab-panel">
+        <div class="calendar-container">
+          <div class="calendar-header">
+            <button class="btn btn-ghost" onclick="navigateCalendar(-1)">◀ 前月</button>
+            <h2 id="calendarTitle" class="calendar-title"></h2>
+            <button class="btn btn-ghost" onclick="navigateCalendar(1)">次月 ▶</button>
+          </div>
+          <div class="calendar-legend">
+            <span class="legend-item"><span class="legend-dot legend-design"></span>設計</span>
+            <span class="legend-item"><span class="legend-dot legend-ic"></span>IC</span>
+            <span class="legend-item"><span class="legend-dot legend-exterior"></span>外構</span>
+            <span class="legend-item"><span class="legend-dot legend-construction"></span>工事</span>
+            <span class="legend-item"><span class="legend-dot legend-task"></span>タスク</span>
+          </div>
+          <div class="calendar-grid" id="calendarGrid"></div>
+        </div>
+      </div>
 
       <!-- 分析タブ -->
       <div id="analyticsTab" class="tab-panel">
@@ -4998,14 +5303,16 @@ textarea:focus-visible {
             <option value="">未定</option>
           </select>
         </div>
+        <div class="form-group">
+          <label class="form-label">担当（営業）</label>
+          <select class="form-select" id="projectSalesAssignee">
+            <option value="">未定</option>
+          </select>
+        </div>
       </div>
       <div class="form-group">
         <label class="form-label">商品</label>
         <select class="form-select" id="projectSpecifications"></select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">メモ</label>
-        <textarea class="form-textarea" id="projectMemo" placeholder="要望・注意点など"></textarea>
       </div>
     </div>
     <div class="modal-footer" style="display: flex; justify-content: space-between;">
@@ -5266,9 +5573,13 @@ textarea:focus-visible {
 
         <div id="stateOptionsGroup" style="display: none;">
           <div class="form-group">
-            <label class="form-label">状態オプション（JSON配列）</label>
-            <input type="text" class="form-input" id="taskStateOptions" placeholder='例：["", "依頼済", "保存済"]'>
-            <div class="form-hint">JSON配列形式で入力してください。最初の要素は空文字列("")を推奨</div>
+            <label class="form-label">状態オプション</label>
+            <div id="stateOptionsList" class="state-options-list">
+              <!-- 動的に追加される -->
+            </div>
+            <button type="button" class="btn btn-ghost btn-small" onclick="addStateOption()" style="margin-top: 8px;">+ オプション追加</button>
+            <div class="form-hint">各オプションを入力してください。空欄（-）は自動で先頭に追加されます</div>
+            <input type="hidden" id="taskStateOptions">
           </div>
         </div>
 
@@ -6171,7 +6482,16 @@ function getTaskStateOptions(taskKey) {
   // まずtasksV2（Supabase）から探す
   const task = tasksV2.find(t => t.task_key === taskKey);
   if (task && task.has_state && task.state_options) {
-    return task.state_options;
+    // JSON文字列の場合はパース
+    let options = task.state_options;
+    if (typeof options === 'string') {
+      try {
+        options = JSON.parse(options);
+      } catch (e) {
+        return null;
+      }
+    }
+    return options;
   }
 
   // localStorageベースのタスク（外構・不動産・工事）からも探す
@@ -7724,24 +8044,27 @@ async function runICTasksMigration() {
       { task_key: 'ic_funding_check', task_name: '資金計画・引継書確認', category: 'IC', display_order: 1, has_state: true, state_options: '["-", "確認済"]', has_email_button: false },
       { task_key: 'ic_kitchen', task_name: 'キッチン・カップボード', category: 'IC', display_order: 2, has_state: true, state_options: '["-", "GRAFTECT", "オリジナル", "Lixil", "Panasonic", "Takarastandard"]', has_email_button: true },
       { task_key: 'ic_bath', task_name: 'お風呂', category: 'IC', display_order: 3, has_state: true, state_options: '["-", "Lixil", "Panasonic", "Takarastandard"]', has_email_button: true },
-      { task_key: 'ic_washroom', task_name: '洗面', category: 'IC', display_order: 4, has_state: true, state_options: '["-", "TOTO", "AICA", "Lixil", "Panasonic", "Takarastandard"]', has_email_button: true },
-      { task_key: 'ic_toilet', task_name: 'トイレ', category: 'IC', display_order: 5, has_state: true, state_options: '["-", "TOTO", "Lixil", "Panasonic"]', has_email_button: true },
-      { task_key: 'ic_lighting', task_name: '照明プラン', category: 'IC', display_order: 6, has_state: true, state_options: '["-", "ODELIC", "DAIKO", "KOIZUMI", "Panasonic"]', has_email_button: true },
-      { task_key: 'ic_spec_doc', task_name: '仕様書作成', category: 'IC', display_order: 7, has_state: true, state_options: '["-", "作成済"]', has_email_button: false },
-      { task_key: 'ic_longterm_doc', task_name: '長期資料送付', category: 'IC', display_order: 8, has_state: true, state_options: '["-", "送付済"]', has_email_button: false },
-      { task_key: 'ic_execution_drawing', task_name: '実施図', category: 'IC', display_order: 9, has_state: true, state_options: '["-", "修正依頼済", "図面チェック済"]', has_email_button: false },
-      { task_key: 'ic_exterior_pres', task_name: '外装プレゼン作成', category: 'IC', display_order: 10, has_state: true, state_options: '["-", "作成済"]', has_email_button: false },
-      { task_key: 'ic_interior_pres', task_name: '内装プレゼン作成', category: 'IC', display_order: 11, has_state: true, state_options: '["-", "作成済"]', has_email_button: false },
-      { task_key: 'ic_tategu', task_name: '建具プレゼン依頼', category: 'IC', display_order: 12, has_state: true, state_options: '["-", "依頼済", "保存済"]', has_email_button: true },
-      { task_key: 'ic_tile_pres', task_name: 'タイルプレゼン作成', category: 'IC', display_order: 13, has_state: true, state_options: '["-", "作成済"]', has_email_button: false },
-      { task_key: 'ic_exterior_meeting', task_name: '外構への打合せ依頼', category: 'IC', display_order: 14, has_state: true, state_options: '["-", "依頼済"]', has_email_button: false },
-      { task_key: 'ic_curtain', task_name: 'カーテン紹介', category: 'IC', display_order: 15, has_state: true, state_options: '["-", "依頼済"]', has_email_button: true },
-      { task_key: 'ic_zousaku', task_name: '造作業者紹介', category: 'IC', display_order: 16, has_state: true, state_options: '["-", "無し", "依頼済"]', has_email_button: true },
-      { task_key: 'ic_furniture', task_name: '家具見積依頼', category: 'IC', display_order: 17, has_state: true, state_options: '["-", "無し", "依頼済"]', has_email_button: true },
-      { task_key: 'ic_final_checklist', task_name: '確定図チェックリスト', category: 'IC', display_order: 18, has_state: true, state_options: '["-", "実施済"]', has_email_button: false },
-      { task_key: 'ic_op_check', task_name: 'OP見積チェック', category: 'IC', display_order: 19, has_state: true, state_options: '["-", "依頼済", "保存済"]', has_email_button: false },
-      { task_key: 'ic_meeting_followup', task_name: '会議後確認事項送付', category: 'IC', display_order: 20, has_state: true, state_options: '["-", "送付済"]', has_email_button: false },
-      { task_key: 'ic_final_approval', task_name: '確定図承認', category: 'IC', display_order: 21, has_state: true, state_options: '["-", "依頼中", "ダンドリワーク保存済"]', has_email_button: false }
+      { task_key: 'ic_washroom_1f', task_name: '洗面1階', category: 'IC', display_order: 4, has_state: true, state_options: '["-", "無し", "TOTO", "AICA", "Lixil", "Panasonic", "Takarastandard"]', has_email_button: true },
+      { task_key: 'ic_washroom_2f', task_name: '洗面2階', category: 'IC', display_order: 5, has_state: true, state_options: '["-", "無し", "TOTO", "AICA", "Lixil", "Panasonic", "Takarastandard"]', has_email_button: true },
+      { task_key: 'ic_toilet_1f', task_name: 'トイレ1階', category: 'IC', display_order: 6, has_state: true, state_options: '["-", "無し", "TOTO", "Lixil", "Panasonic"]', has_email_button: true },
+      { task_key: 'ic_toilet_2f', task_name: 'トイレ2階', category: 'IC', display_order: 7, has_state: true, state_options: '["-", "無し", "TOTO", "Lixil", "Panasonic"]', has_email_button: true },
+      { task_key: 'ic_lighting', task_name: '照明プラン', category: 'IC', display_order: 8, has_state: true, state_options: '["-", "ODELIC", "DAIKO", "KOIZUMI", "Panasonic"]', has_email_button: true },
+      { task_key: 'ic_spec_doc', task_name: '仕様書作成', category: 'IC', display_order: 9, has_state: true, state_options: '["-", "作成済"]', has_email_button: false },
+      { task_key: 'ic_longterm_doc', task_name: '長期資料送付', category: 'IC', display_order: 10, has_state: true, state_options: '["-", "送付済"]', has_email_button: false },
+      { task_key: 'ic_execution_drawing', task_name: '実施図', category: 'IC', display_order: 11, has_state: true, state_options: '["-", "修正依頼済", "図面チェック済"]', has_email_button: false },
+      { task_key: 'ic_exterior_pres', task_name: '外装プレゼン作成', category: 'IC', display_order: 12, has_state: true, state_options: '["-", "作成済"]', has_email_button: false },
+      { task_key: 'ic_interior_pres', task_name: '内装プレゼン作成', category: 'IC', display_order: 13, has_state: true, state_options: '["-", "作成済"]', has_email_button: false },
+      { task_key: 'ic_tategu', task_name: '建具プレゼン依頼', category: 'IC', display_order: 14, has_state: true, state_options: '["-", "依頼済", "保存済"]', has_email_button: true },
+      { task_key: 'ic_tile_pres', task_name: 'タイルプレゼン作成', category: 'IC', display_order: 15, has_state: true, state_options: '["-", "無", "作成済"]', has_email_button: false },
+      { task_key: 'ic_exterior_meeting', task_name: '外構への打合せ依頼', category: 'IC', display_order: 16, has_state: true, state_options: '["-", "依頼済"]', has_email_button: false },
+      { task_key: 'ic_curtain', task_name: 'カーテン紹介', category: 'IC', display_order: 17, has_state: true, state_options: '["-", "無し", "依頼済"]', has_email_button: true },
+      { task_key: 'ic_zousaku', task_name: '造作業者紹介', category: 'IC', display_order: 18, has_state: true, state_options: '["-", "無し", "依頼済"]', has_email_button: true },
+      { task_key: 'ic_furniture', task_name: '家具見積依頼', category: 'IC', display_order: 19, has_state: true, state_options: '["-", "無し", "依頼済"]', has_email_button: true },
+      { task_key: 'ic_iron', task_name: 'アイアン', category: 'IC', display_order: 20, has_state: true, state_options: '["-", "無し", "依頼済"]', has_email_button: true },
+      { task_key: 'ic_final_checklist', task_name: '確定図チェックリスト', category: 'IC', display_order: 21, has_state: true, state_options: '["-", "実施済"]', has_email_button: false },
+      { task_key: 'ic_op_check', task_name: 'OP見積チェック', category: 'IC', display_order: 22, has_state: true, state_options: '["-", "依頼済", "保存済"]', has_email_button: false },
+      { task_key: 'ic_meeting_followup', task_name: '会議後確認事項送付', category: 'IC', display_order: 23, has_state: true, state_options: '["-", "送付済"]', has_email_button: false },
+      { task_key: 'ic_final_approval', task_name: '確定図承認', category: 'IC', display_order: 24, has_state: true, state_options: '["-", "依頼中", "ダンドリワーク保存済"]', has_email_button: false }
     ];
 
     const { error: insertError } = await supabase
@@ -7815,24 +8138,27 @@ async function autoMigrateICTasks() {
       { task_key: 'ic_funding_check', task_name: '資金計画・引継書確認', category: 'IC', display_order: 1, has_state: true, state_options: '["-", "確認済"]', has_email_button: false },
       { task_key: 'ic_kitchen', task_name: 'キッチン・カップボード', category: 'IC', display_order: 2, has_state: true, state_options: '["-", "GRAFTECT", "オリジナル", "Lixil", "Panasonic", "Takarastandard"]', has_email_button: true },
       { task_key: 'ic_bath', task_name: 'お風呂', category: 'IC', display_order: 3, has_state: true, state_options: '["-", "Lixil", "Panasonic", "Takarastandard"]', has_email_button: true },
-      { task_key: 'ic_washroom', task_name: '洗面', category: 'IC', display_order: 4, has_state: true, state_options: '["-", "TOTO", "AICA", "Lixil", "Panasonic", "Takarastandard"]', has_email_button: true },
-      { task_key: 'ic_toilet', task_name: 'トイレ', category: 'IC', display_order: 5, has_state: true, state_options: '["-", "TOTO", "Lixil", "Panasonic"]', has_email_button: true },
-      { task_key: 'ic_lighting', task_name: '照明プラン', category: 'IC', display_order: 6, has_state: true, state_options: '["-", "ODELIC", "DAIKO", "KOIZUMI", "Panasonic"]', has_email_button: true },
-      { task_key: 'ic_spec_doc', task_name: '仕様書作成', category: 'IC', display_order: 7, has_state: true, state_options: '["-", "作成済"]', has_email_button: false },
-      { task_key: 'ic_longterm_doc', task_name: '長期資料送付', category: 'IC', display_order: 8, has_state: true, state_options: '["-", "送付済"]', has_email_button: false },
-      { task_key: 'ic_execution_drawing', task_name: '実施図', category: 'IC', display_order: 9, has_state: true, state_options: '["-", "修正依頼済", "図面チェック済"]', has_email_button: false },
-      { task_key: 'ic_exterior_pres', task_name: '外装プレゼン作成', category: 'IC', display_order: 10, has_state: true, state_options: '["-", "作成済"]', has_email_button: false },
-      { task_key: 'ic_interior_pres', task_name: '内装プレゼン作成', category: 'IC', display_order: 11, has_state: true, state_options: '["-", "作成済"]', has_email_button: false },
-      { task_key: 'ic_tategu', task_name: '建具プレゼン依頼', category: 'IC', display_order: 12, has_state: true, state_options: '["-", "依頼済", "保存済"]', has_email_button: true },
-      { task_key: 'ic_tile_pres', task_name: 'タイルプレゼン作成', category: 'IC', display_order: 13, has_state: true, state_options: '["-", "作成済"]', has_email_button: false },
-      { task_key: 'ic_exterior_meeting', task_name: '外構への打合せ依頼', category: 'IC', display_order: 14, has_state: true, state_options: '["-", "依頼済"]', has_email_button: false },
-      { task_key: 'ic_curtain', task_name: 'カーテン紹介', category: 'IC', display_order: 15, has_state: true, state_options: '["-", "依頼済"]', has_email_button: true },
-      { task_key: 'ic_zousaku', task_name: '造作業者紹介', category: 'IC', display_order: 16, has_state: true, state_options: '["-", "無し", "依頼済"]', has_email_button: true },
-      { task_key: 'ic_furniture', task_name: '家具見積依頼', category: 'IC', display_order: 17, has_state: true, state_options: '["-", "無し", "依頼済"]', has_email_button: true },
-      { task_key: 'ic_final_checklist', task_name: '確定図チェックリスト', category: 'IC', display_order: 18, has_state: true, state_options: '["-", "実施済"]', has_email_button: false },
-      { task_key: 'ic_op_check', task_name: 'OP見積チェック', category: 'IC', display_order: 19, has_state: true, state_options: '["-", "依頼済", "保存済"]', has_email_button: false },
-      { task_key: 'ic_meeting_followup', task_name: '会議後確認事項送付', category: 'IC', display_order: 20, has_state: true, state_options: '["-", "送付済"]', has_email_button: false },
-      { task_key: 'ic_final_approval', task_name: '確定図承認', category: 'IC', display_order: 21, has_state: true, state_options: '["-", "依頼中", "ダンドリワーク保存済"]', has_email_button: false }
+      { task_key: 'ic_washroom_1f', task_name: '洗面1階', category: 'IC', display_order: 4, has_state: true, state_options: '["-", "無し", "TOTO", "AICA", "Lixil", "Panasonic", "Takarastandard"]', has_email_button: true },
+      { task_key: 'ic_washroom_2f', task_name: '洗面2階', category: 'IC', display_order: 5, has_state: true, state_options: '["-", "無し", "TOTO", "AICA", "Lixil", "Panasonic", "Takarastandard"]', has_email_button: true },
+      { task_key: 'ic_toilet_1f', task_name: 'トイレ1階', category: 'IC', display_order: 6, has_state: true, state_options: '["-", "無し", "TOTO", "Lixil", "Panasonic"]', has_email_button: true },
+      { task_key: 'ic_toilet_2f', task_name: 'トイレ2階', category: 'IC', display_order: 7, has_state: true, state_options: '["-", "無し", "TOTO", "Lixil", "Panasonic"]', has_email_button: true },
+      { task_key: 'ic_lighting', task_name: '照明プラン', category: 'IC', display_order: 8, has_state: true, state_options: '["-", "ODELIC", "DAIKO", "KOIZUMI", "Panasonic"]', has_email_button: true },
+      { task_key: 'ic_spec_doc', task_name: '仕様書作成', category: 'IC', display_order: 9, has_state: true, state_options: '["-", "作成済"]', has_email_button: false },
+      { task_key: 'ic_longterm_doc', task_name: '長期資料送付', category: 'IC', display_order: 10, has_state: true, state_options: '["-", "送付済"]', has_email_button: false },
+      { task_key: 'ic_execution_drawing', task_name: '実施図', category: 'IC', display_order: 11, has_state: true, state_options: '["-", "修正依頼済", "図面チェック済"]', has_email_button: false },
+      { task_key: 'ic_exterior_pres', task_name: '外装プレゼン作成', category: 'IC', display_order: 12, has_state: true, state_options: '["-", "作成済"]', has_email_button: false },
+      { task_key: 'ic_interior_pres', task_name: '内装プレゼン作成', category: 'IC', display_order: 13, has_state: true, state_options: '["-", "作成済"]', has_email_button: false },
+      { task_key: 'ic_tategu', task_name: '建具プレゼン依頼', category: 'IC', display_order: 14, has_state: true, state_options: '["-", "依頼済", "保存済"]', has_email_button: true },
+      { task_key: 'ic_tile_pres', task_name: 'タイルプレゼン作成', category: 'IC', display_order: 15, has_state: true, state_options: '["-", "無", "作成済"]', has_email_button: false },
+      { task_key: 'ic_exterior_meeting', task_name: '外構への打合せ依頼', category: 'IC', display_order: 16, has_state: true, state_options: '["-", "依頼済"]', has_email_button: false },
+      { task_key: 'ic_curtain', task_name: 'カーテン紹介', category: 'IC', display_order: 17, has_state: true, state_options: '["-", "無し", "依頼済"]', has_email_button: true },
+      { task_key: 'ic_zousaku', task_name: '造作業者紹介', category: 'IC', display_order: 18, has_state: true, state_options: '["-", "無し", "依頼済"]', has_email_button: true },
+      { task_key: 'ic_furniture', task_name: '家具見積依頼', category: 'IC', display_order: 19, has_state: true, state_options: '["-", "無し", "依頼済"]', has_email_button: true },
+      { task_key: 'ic_iron', task_name: 'アイアン', category: 'IC', display_order: 20, has_state: true, state_options: '["-", "無し", "依頼済"]', has_email_button: true },
+      { task_key: 'ic_final_checklist', task_name: '確定図チェックリスト', category: 'IC', display_order: 21, has_state: true, state_options: '["-", "実施済"]', has_email_button: false },
+      { task_key: 'ic_op_check', task_name: 'OP見積チェック', category: 'IC', display_order: 22, has_state: true, state_options: '["-", "依頼済", "保存済"]', has_email_button: false },
+      { task_key: 'ic_meeting_followup', task_name: '会議後確認事項送付', category: 'IC', display_order: 23, has_state: true, state_options: '["-", "送付済"]', has_email_button: false },
+      { task_key: 'ic_final_approval', task_name: '確定図承認', category: 'IC', display_order: 24, has_state: true, state_options: '["-", "依頼中", "ダンドリワーク保存済"]', has_email_button: false }
     ];
 
     const { error: insertError } = await supabase
@@ -8074,6 +8400,11 @@ async function saveVendorV2() {
     return;
   }
 
+  if (!categoryId) {
+    showToast('カテゴリを選択してください', 'error');
+    return;
+  }
+
   await SaveGuard.run('saveVendorV2', async () => {
     showStatus('保存中...', 'saving');
 
@@ -8111,6 +8442,7 @@ async function saveVendorV2() {
     showToast(id ? '業者を更新しました' : '業者を追加しました', 'success');
     closeVendorModalV2();
     await loadVendorsV2();
+    mergeVendorCategories(); // カテゴリ情報をマージ
     renderVendorsV2();
   });
 }
@@ -9030,7 +9362,7 @@ function openTaskModal(taskIdOrCategory = null) {
     document.getElementById('taskCategory').value = task.category;
     document.getElementById('taskOrder').value = task.display_order;
     document.getElementById('taskHasState').checked = task.has_state;
-    document.getElementById('taskStateOptions').value = task.state_options ? JSON.stringify(task.state_options) : '';
+    renderStateOptions(task.state_options || []);
     document.getElementById('taskHasEmailButton').checked = task.has_email_button !== false;
     toggleTaskState();
     populateTaskVendorSelection(taskIdOrCategory);
@@ -9044,6 +9376,7 @@ function openTaskModal(taskIdOrCategory = null) {
     document.getElementById('taskOrder').value = tasksV2.filter(t => t.category === category).length + 1;
     document.getElementById('taskHasState').checked = false;
     document.getElementById('taskHasEmailButton').checked = true;
+    renderStateOptions([]);
     toggleTaskState();
     populateTaskVendorSelection(null);
   }
@@ -9091,6 +9424,67 @@ function toggleTaskState() {
   stateGroup.style.display = hasState ? 'block' : 'none';
 }
 
+function renderStateOptions(options = []) {
+  const container = document.getElementById('stateOptionsList');
+  if (!container) return;
+
+  // 空の「-」は除外して表示
+  const filteredOptions = options.filter(opt => opt && opt !== '-' && opt !== '');
+
+  if (filteredOptions.length === 0) {
+    // デフォルトで1つ空の入力欄を表示
+    filteredOptions.push('');
+  }
+
+  container.innerHTML = filteredOptions.map((opt, index) => `
+    <div class="state-option-item">
+      <input type="text" class="state-option-input" value="${escapeHtml(opt)}" placeholder="例：依頼済">
+      <button type="button" class="btn-remove" onclick="removeStateOption(${index})">削除</button>
+    </div>
+  `).join('');
+}
+
+function addStateOption() {
+  const container = document.getElementById('stateOptionsList');
+  if (!container) return;
+
+  const newItem = document.createElement('div');
+  newItem.className = 'state-option-item';
+  newItem.innerHTML = `
+    <input type="text" class="state-option-input" value="" placeholder="例：依頼済">
+    <button type="button" class="btn-remove" onclick="this.parentElement.remove()">削除</button>
+  `;
+  container.appendChild(newItem);
+  newItem.querySelector('input').focus();
+}
+
+function removeStateOption(index) {
+  const container = document.getElementById('stateOptionsList');
+  if (!container) return;
+
+  const items = container.querySelectorAll('.state-option-item');
+  if (items[index]) {
+    items[index].remove();
+  }
+}
+
+function collectStateOptions() {
+  const container = document.getElementById('stateOptionsList');
+  if (!container) return [];
+
+  const inputs = container.querySelectorAll('.state-option-input');
+  const options = ['-']; // 先頭に空の選択肢を追加
+
+  inputs.forEach(input => {
+    const value = input.value.trim();
+    if (value && value !== '-') {
+      options.push(value);
+    }
+  });
+
+  return options;
+}
+
 async function saveTask() {
   if (SaveGuard.isLocked('saveTask')) return;
 
@@ -9099,7 +9493,6 @@ async function saveTask() {
   const category = document.getElementById('taskCategory').value;
   const order = parseInt(document.getElementById('taskOrder').value) || 0;
   const hasState = document.getElementById('taskHasState').checked;
-  const stateOptionsStr = document.getElementById('taskStateOptions').value.trim();
   const hasEmailButton = document.getElementById('taskHasEmailButton').checked;
 
   if (!taskName) {
@@ -9116,14 +9509,10 @@ async function saveTask() {
     taskKey = taskKey.replace(/[^a-z0-9_]/g, '_');
   }
 
+  // 状態オプションを動的リストから収集
   let stateOptions = null;
-  if (hasState && stateOptionsStr) {
-    try {
-      stateOptions = JSON.parse(stateOptionsStr);
-    } catch (e) {
-      showToast('状態オプションのJSON形式が正しくありません', 'error');
-      return;
-    }
+  if (hasState) {
+    stateOptions = collectStateOptions();
   }
 
   await SaveGuard.run('saveTask', async () => {
@@ -9364,17 +9753,24 @@ function renderSidebar() {
   if (sekkeiDesigners.length > 0) {
     html += '<div class="sidebar-section"><div class="sidebar-section-title">📐 設計担当</div>';
     sekkeiDesigners.forEach(designer => {
+      const designerName = designer.name.trim();
       const count = projects.filter(p => {
         const assigned = (p.assigned_to || '').trim();
-        const designerName = designer.name.trim();
         return assigned === designerName && p.status !== 'completed' && !p.is_archived;
+      }).length;
+      const archivedCountForDesigner = projects.filter(p => {
+        const assigned = (p.assigned_to || '').trim();
+        return assigned === designerName && p.is_archived;
       }).length;
       const nameStyle = getCountStyle(count);
       const badgeClass = getCountBadgeClass(count);
       html += `
         <div class="sidebar-item ${currentDesignerTab === designer.name ? 'active' : ''}" onclick="selectDesigner('${designer.name}')">
           <span class="sidebar-item-label" style="${nameStyle}">${designer.name}</span>
-          <span class="sidebar-item-count ${badgeClass}">${count}</span>
+          <span class="sidebar-counts">
+            <span class="sidebar-item-count ${badgeClass}">${count}</span>
+            ${archivedCountForDesigner > 0 ? `<span class="sidebar-archived-count" onclick="event.stopPropagation(); selectDesignerArchived('${designer.name}')" title="完了済を表示">✓${archivedCountForDesigner}</span>` : ''}
+          </span>
         </div>
       `;
     });
@@ -9384,18 +9780,40 @@ function renderSidebar() {
   if (icDesigners.length > 0) {
     html += '<div class="sidebar-section"><div class="sidebar-section-title">🎨 IC担当</div>';
     icDesigners.forEach(designer => {
+      const designerName = designer.name.trim();
+      // IC担当者の場合、申請GO済み（is_archived）でもIC進捗100%未満はアクティブとして扱う
       const count = projects.filter(p => {
         const assigned = (p.assigned_to || '').trim();
         const icAssigned = (p.ic_assignee || '').trim();
-        const designerName = designer.name.trim();
-        return (assigned === designerName || icAssigned === designerName) && p.status !== 'completed' && !p.is_archived;
+        const isMyProject = assigned === designerName || icAssigned === designerName;
+        if (!isMyProject) return false;
+        if (p.status === 'completed') return false;
+        // 申請GO済みの場合、IC進捗100%なら完了扱い、未満ならアクティブ扱い
+        if (p.is_archived) {
+          const icProgress = calculateICProgress(p);
+          return icProgress !== null && icProgress < 100;
+        }
+        return true;
+      }).length;
+      // IC担当者の完了案件: 申請GO済みかつIC進捗100%
+      const archivedCountForDesigner = projects.filter(p => {
+        const assigned = (p.assigned_to || '').trim();
+        const icAssigned = (p.ic_assignee || '').trim();
+        const isMyProject = assigned === designerName || icAssigned === designerName;
+        if (!isMyProject) return false;
+        if (!p.is_archived) return false;
+        const icProgress = calculateICProgress(p);
+        return icProgress === null || icProgress === 100; // IC担当なし、またはIC進捗100%
       }).length;
       const nameStyle = getCountStyle(count);
       const badgeClass = getCountBadgeClass(count);
       html += `
         <div class="sidebar-item ${currentDesignerTab === designer.name ? 'active' : ''}" onclick="selectDesigner('${designer.name}')">
           <span class="sidebar-item-label" style="${nameStyle}">${designer.name}</span>
-          <span class="sidebar-item-count ${badgeClass}">${count}</span>
+          <span class="sidebar-counts">
+            <span class="sidebar-item-count ${badgeClass}">${count}</span>
+            ${archivedCountForDesigner > 0 ? `<span class="sidebar-archived-count" onclick="event.stopPropagation(); selectDesignerArchived('${designer.name}')" title="完了済を表示">✓${archivedCountForDesigner}</span>` : ''}
+          </span>
         </div>
       `;
     });
@@ -9407,17 +9825,24 @@ function renderSidebar() {
   if (exteriorDesigners.length > 0) {
     html += '<div class="sidebar-section"><div class="sidebar-section-title">🏡 外構担当</div>';
     exteriorDesigners.forEach(designer => {
+      const designerName = designer.name.trim();
       const count = projects.filter(p => {
         const exteriorAssigned = (p.exterior_assignee || '').trim();
-        const designerName = designer.name.trim();
         return exteriorAssigned === designerName && p.status !== 'completed' && !p.is_archived;
+      }).length;
+      const archivedCountForDesigner = projects.filter(p => {
+        const exteriorAssigned = (p.exterior_assignee || '').trim();
+        return exteriorAssigned === designerName && p.is_archived;
       }).length;
       const nameStyle = getCountStyle(count);
       const badgeClass = getCountBadgeClass(count);
       html += `
         <div class="sidebar-item ${currentDesignerTab === designer.name ? 'active' : ''}" onclick="selectDesigner('${designer.name}')">
           <span class="sidebar-item-label" style="${nameStyle}">${designer.name}</span>
-          <span class="sidebar-item-count ${badgeClass}">${count}</span>
+          <span class="sidebar-counts">
+            <span class="sidebar-item-count ${badgeClass}">${count}</span>
+            ${archivedCountForDesigner > 0 ? `<span class="sidebar-archived-count" onclick="event.stopPropagation(); selectDesignerArchived('${designer.name}')" title="完了済を表示">✓${archivedCountForDesigner}</span>` : ''}
+          </span>
         </div>
       `;
     });
@@ -9429,17 +9854,24 @@ function renderSidebar() {
   if (realestateDesigners.length > 0) {
     html += '<div class="sidebar-section"><div class="sidebar-section-title">🏢 不動産担当</div>';
     realestateDesigners.forEach(designer => {
+      const designerName = designer.name.trim();
       const count = projects.filter(p => {
         const realestateAssigned = (p.realestate_assignee || '').trim();
-        const designerName = designer.name.trim();
         return realestateAssigned === designerName && p.status !== 'completed' && !p.is_archived;
+      }).length;
+      const archivedCountForDesigner = projects.filter(p => {
+        const realestateAssigned = (p.realestate_assignee || '').trim();
+        return realestateAssigned === designerName && p.is_archived;
       }).length;
       const nameStyle = getCountStyle(count);
       const badgeClass = getCountBadgeClass(count);
       html += `
         <div class="sidebar-item ${currentDesignerTab === designer.name ? 'active' : ''}" onclick="selectDesigner('${designer.name}')">
           <span class="sidebar-item-label" style="${nameStyle}">${designer.name}</span>
-          <span class="sidebar-item-count ${badgeClass}">${count}</span>
+          <span class="sidebar-counts">
+            <span class="sidebar-item-count ${badgeClass}">${count}</span>
+            ${archivedCountForDesigner > 0 ? `<span class="sidebar-archived-count" onclick="event.stopPropagation(); selectDesignerArchived('${designer.name}')" title="完了済を表示">✓${archivedCountForDesigner}</span>` : ''}
+          </span>
         </div>
       `;
     });
@@ -9451,17 +9883,24 @@ function renderSidebar() {
   if (constructionDesigners.length > 0) {
     html += '<div class="sidebar-section"><div class="sidebar-section-title">🔨 工事担当</div>';
     constructionDesigners.forEach(designer => {
+      const designerName = designer.name.trim();
       const count = projects.filter(p => {
         const constructionAssigned = (p.construction_assignee || '').trim();
-        const designerName = designer.name.trim();
         return constructionAssigned === designerName && p.status !== 'completed' && !p.is_archived;
+      }).length;
+      const archivedCountForDesigner = projects.filter(p => {
+        const constructionAssigned = (p.construction_assignee || '').trim();
+        return constructionAssigned === designerName && p.is_archived;
       }).length;
       const nameStyle = getCountStyle(count);
       const badgeClass = getCountBadgeClass(count);
       html += `
         <div class="sidebar-item ${currentDesignerTab === designer.name ? 'active' : ''}" onclick="selectDesigner('${designer.name}')">
           <span class="sidebar-item-label" style="${nameStyle}">${designer.name}</span>
-          <span class="sidebar-item-count ${badgeClass}">${count}</span>
+          <span class="sidebar-counts">
+            <span class="sidebar-item-count ${badgeClass}">${count}</span>
+            ${archivedCountForDesigner > 0 ? `<span class="sidebar-archived-count" onclick="event.stopPropagation(); selectDesignerArchived('${designer.name}')" title="完了済を表示">✓${archivedCountForDesigner}</span>` : ''}
+          </span>
         </div>
       `;
     });
@@ -9473,6 +9912,23 @@ function renderSidebar() {
 
 function selectDesigner(name) {
   currentDesignerTab = name;
+
+  // URLを更新
+  updateURLWithDesigner(name);
+
+  renderSidebar();
+  renderProjects();
+}
+
+// 担当者の完了済案件を表示
+function selectDesignerArchived(name) {
+  currentDesignerTab = name;
+
+  // アーカイブフィルターを完了済に設定
+  const archiveFilter = document.getElementById('archiveFilter');
+  if (archiveFilter) {
+    archiveFilter.value = 'archived';
+  }
 
   // URLを更新
   updateURLWithDesigner(name);
@@ -9504,6 +9960,159 @@ function switchMainTab(tabName, element) {
   } else {
     log('⏸️ switchMainTab: URL更新をスキップ (isHandlingHashChange=' + isHandlingHashChange + ')');
   }
+
+  // カレンダータブの場合は描画
+  if (tabName === 'calendar') {
+    renderCalendar();
+  }
+}
+
+// ===== カレンダー機能 =====
+let calendarCurrentDate = new Date();
+
+function navigateCalendar(direction) {
+  calendarCurrentDate.setMonth(calendarCurrentDate.getMonth() + direction);
+  renderCalendar();
+}
+
+function renderCalendar() {
+  const grid = document.getElementById('calendarGrid');
+  const title = document.getElementById('calendarTitle');
+  if (!grid || !title) return;
+
+  const year = calendarCurrentDate.getFullYear();
+  const month = calendarCurrentDate.getMonth();
+
+  // タイトル更新
+  title.textContent = `${year}年${month + 1}月`;
+
+  // 月の最初と最後の日
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  const startDayOfWeek = firstDay.getDay();
+
+  // 期限付きタスクを収集
+  const events = collectCalendarEvents();
+
+  // カレンダーグリッド生成
+  let html = '';
+
+  // 曜日ヘッダー
+  const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
+  dayNames.forEach(name => {
+    html += `<div class="calendar-day-header">${name}</div>`;
+  });
+
+  // 今日の日付
+  const today = new Date();
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+  // 前月の日を埋める
+  const prevMonthLastDay = new Date(year, month, 0).getDate();
+  for (let i = startDayOfWeek - 1; i >= 0; i--) {
+    const day = prevMonthLastDay - i;
+    const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    html += `<div class="calendar-day other-month">
+      <div class="calendar-day-number">${day}</div>
+    </div>`;
+  }
+
+  // 当月の日
+  for (let day = 1; day <= lastDay.getDate(); day++) {
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const isToday = dateStr === todayStr;
+    const dayEvents = events.filter(e => e.date === dateStr);
+
+    html += `<div class="calendar-day ${isToday ? 'today' : ''}">
+      <div class="calendar-day-number">${day}</div>
+      <div class="calendar-events">
+        ${dayEvents.slice(0, 3).map(e => `<div class="calendar-event ${e.category}" title="${escapeHtml(e.customer)}: ${escapeHtml(e.taskName)}">${escapeHtml(e.customer.slice(0, 4))}</div>`).join('')}
+        ${dayEvents.length > 3 ? `<div class="calendar-event" style="background:#ddd;color:#666;">+${dayEvents.length - 3}件</div>` : ''}
+      </div>
+    </div>`;
+  }
+
+  // 翌月の日を埋める（6週分になるまで）
+  const totalCells = startDayOfWeek + lastDay.getDate();
+  const remainingCells = (7 - (totalCells % 7)) % 7;
+  for (let day = 1; day <= remainingCells; day++) {
+    html += `<div class="calendar-day other-month">
+      <div class="calendar-day-number">${day}</div>
+    </div>`;
+  }
+
+  grid.innerHTML = html;
+}
+
+function collectCalendarEvents() {
+  const events = [];
+
+  projects.forEach(project => {
+    if (project.is_archived) return;
+
+    const progressData = project.progress || {};
+
+    // 設計タスクの期限
+    tasksV2.filter(t => t.category === '設計').forEach(task => {
+      const taskData = progressData[task.task_key];
+      if (taskData?.due_date) {
+        events.push({
+          date: taskData.due_date,
+          customer: project.customer,
+          taskName: task.task_name,
+          category: 'design',
+          projectId: project.id
+        });
+      }
+    });
+
+    // ICタスクの期限
+    tasksV2.filter(t => t.category === 'IC').forEach(task => {
+      const taskData = progressData[task.task_key];
+      if (taskData?.due_date) {
+        events.push({
+          date: taskData.due_date,
+          customer: project.customer,
+          taskName: task.task_name,
+          category: 'ic',
+          projectId: project.id
+        });
+      }
+    });
+
+    // 主要な日程
+    if (project.layout_confirmed_date) {
+      events.push({
+        date: project.layout_confirmed_date,
+        customer: project.customer,
+        taskName: '間取確定',
+        category: 'design',
+        projectId: project.id
+      });
+    }
+
+    if (project.construction_permit_date) {
+      events.push({
+        date: project.construction_permit_date,
+        customer: project.customer,
+        taskName: '建築確認',
+        category: 'construction',
+        projectId: project.id
+      });
+    }
+
+    if (project.pre_contract_meeting_date) {
+      events.push({
+        date: project.pre_contract_meeting_date,
+        customer: project.customer,
+        taskName: '変更契約前会議',
+        category: 'design',
+        projectId: project.id
+      });
+    }
+  });
+
+  return events;
 }
 
 // サブタブ切り替え
@@ -9921,8 +10530,24 @@ function renderProjects() {
     // アーカイブフィルター（通常時は完了済を除外）
     const archiveFilter = document.getElementById('archiveFilter').value;
     const isArchived = p.is_archived || false;
-    if (archiveFilter === 'active' && isArchived) return false;
-    if (archiveFilter === 'archived' && !isArchived) return false;
+
+    // IC担当者として選択されている場合、申請GO済みでもIC進捗100%未満はアクティブ扱い
+    const isICDesigner = designers.some(d => d.category === 'IC' && d.name.trim() === currentDesignerTab.trim());
+    if (isICDesigner) {
+      const icProgress = calculateICProgress(p);
+      const isICComplete = icProgress === null || icProgress === 100;
+      if (archiveFilter === 'active') {
+        // アクティブ表示: 未アーカイブ、またはアーカイブ済みだがIC未完了
+        if (isArchived && isICComplete) return false;
+      } else if (archiveFilter === 'archived') {
+        // 完了済表示: アーカイブ済みかつIC完了
+        if (!isArchived || !isICComplete) return false;
+      }
+    } else {
+      // 通常の担当者: 従来のロジック
+      if (archiveFilter === 'active' && isArchived) return false;
+      if (archiveFilter === 'archived' && !isArchived) return false;
+    }
     if (archiveFilter === 'favorites' && !FavoritesManager.isFavorite(p.id)) return false;
 
     const query = document.getElementById('searchQuery').value.toLowerCase();
@@ -10152,6 +10777,13 @@ function renderProjectCard(project) {
   const staleDays = getProjectStaleDays(project);
   const tasks = getTasksForAssignee(project.assigned_to);
 
+  // サイドバーで選択中の担当者のカテゴリを取得（IC選択時はIC業務のみ表示等）
+  const selectedDesignerCategory = currentDesignerTab && currentDesignerTab !== 'ALL' && currentDesignerTab !== 'ARCHIVED'
+    ? designers.find(d => d.name.trim() === currentDesignerTab.trim())?.category || null
+    : null;
+  // 表示カテゴリ（サイドバー選択優先、なければログインユーザーのカテゴリ）
+  const viewCategory = selectedDesignerCategory || currentUserCategory;
+
   // 全タスク完了チェック
   const canArchive = tasks.every(taskDef => {
     const task = progressData[taskDef.task_key] || { completed: false, state: '' };
@@ -10221,8 +10853,21 @@ function renderProjectCard(project) {
       stateSelect = `<select class="task-state-select ${stateClass}" data-last-option="${lastOption}"${tooltip} onchange="updateTaskStateWithColor(this, '${project.id}', '${key}')">${stateOptions.map(state => `<option value="${state}" ${task.state === state ? 'selected' : ''}>${state || '-'}</option>`).join('')}</select>`;
     }
 
-    return `<div class="task-item">
-      <span class="task-label">${taskDef.task_name}</span>${stateSelect}${emailBtn}</div>`;
+    // 依頼日バッジ
+    const requestDateBadge = task.request_date
+      ? `<span class="request-date-badge" title="依頼日: ${task.request_date}">${formatDateShort(task.request_date)}</span>`
+      : '';
+
+    // 太陽光・地盤調査にクラウドURL入力を追加
+    const cloudUrlInput = (key === 'solar' || key === 'ground_survey')
+      ? `<div class="cloud-url-row">
+          <input type="url" class="cloud-url-input" placeholder="クラウドURL" value="${escapeHtml(task.cloud_url || '')}" onchange="updateTaskCloudUrl('${project.id}', '${key}', this.value)">
+          ${task.cloud_url ? `<a href="${escapeHtml(task.cloud_url)}" target="_blank" class="cloud-url-link" title="URLを開く">🔗</a>` : ''}
+        </div>`
+      : '';
+
+    return `<div class="task-item ${cloudUrlInput ? 'has-cloud-url' : ''}">
+      <span class="task-label">${taskDef.task_name}</span>${stateSelect}${requestDateBadge}${emailBtn}${cloudUrlInput}</div>`;
   }).join('');
 
   // IC業務内容を生成（IC担当者が設定されている場合のみ）
@@ -10251,8 +10896,18 @@ function renderProjectCard(project) {
       stateSelect = `<select class="task-state-select ${stateClass}" data-last-option="${lastOption}"${tooltip} onchange="updateTaskStateWithColor(this, '${project.id}', '${key}')">${stateOptions.map(state => `<option value="${state}" ${task.state === state ? 'selected' : ''}>${state || '-'}</option>`).join('')}</select>`;
     }
 
+    // 依頼日バッジ
+    const requestDateBadge = task.request_date
+      ? `<span class="request-date-badge" title="依頼日: ${task.request_date}">${formatDateShort(task.request_date)}</span>`
+      : '';
+
+    // 確定図チェックリストに期限入力を追加
+    const dueDateInput = key === 'ic_final_checklist'
+      ? `<input type="date" class="task-due-input" value="${task.due_date || ''}" onchange="updateTaskDueDate('${project.id}', '${key}', this.value)" title="期限を設定">`
+      : '';
+
     return `<div class="task-item">
-      <span class="task-label">${taskDef.task_name}</span>${stateSelect}${emailBtn}</div>`;
+      <span class="task-label">${taskDef.task_name}</span>${stateSelect}${dueDateInput}${requestDateBadge}${emailBtn}</div>`;
   }).join('');
 
   // 外構業務内容を生成
@@ -10275,8 +10930,13 @@ function renderProjectCard(project) {
       stateSelect = `<select class="task-state-select ${stateClass}" data-last-option="${lastOption}" onchange="updateTaskStateWithColor(this, '${project.id}', '${key}')">${stateOptions.map(state => `<option value="${state}" ${task.state === state ? 'selected' : ''}>${state || '-'}</option>`).join('')}</select>`;
     }
 
+    // 依頼日バッジ
+    const requestDateBadge = task.request_date
+      ? `<span class="request-date-badge" title="依頼日: ${task.request_date}">${formatDateShort(task.request_date)}</span>`
+      : '';
+
     return `<div class="task-item">
-      <span class="task-label">${taskDef.task_name}</span>${stateSelect}${emailBtn}</div>`;
+      <span class="task-label">${taskDef.task_name}</span>${stateSelect}${requestDateBadge}${emailBtn}</div>`;
   }).join('');
 
   // 不動産業務内容を生成
@@ -10299,8 +10959,13 @@ function renderProjectCard(project) {
       stateSelect = `<select class="task-state-select ${stateClass}" data-last-option="${lastOption}" onchange="updateTaskStateWithColor(this, '${project.id}', '${key}')">${stateOptions.map(state => `<option value="${state}" ${task.state === state ? 'selected' : ''}>${state || '-'}</option>`).join('')}</select>`;
     }
 
+    // 依頼日バッジ
+    const requestDateBadge = task.request_date
+      ? `<span class="request-date-badge" title="依頼日: ${task.request_date}">${formatDateShort(task.request_date)}</span>`
+      : '';
+
     return `<div class="task-item">
-      <span class="task-label">${taskDef.task_name}</span>${stateSelect}${emailBtn}</div>`;
+      <span class="task-label">${taskDef.task_name}</span>${stateSelect}${requestDateBadge}${emailBtn}</div>`;
   }).join('');
 
   // 工事業務内容を生成
@@ -10323,8 +10988,13 @@ function renderProjectCard(project) {
       stateSelect = `<select class="task-state-select ${stateClass}" data-last-option="${lastOption}" onchange="updateTaskStateWithColor(this, '${project.id}', '${key}')">${stateOptions.map(state => `<option value="${state}" ${task.state === state ? 'selected' : ''}>${state || '-'}</option>`).join('')}</select>`;
     }
 
+    // 依頼日バッジ
+    const requestDateBadge = task.request_date
+      ? `<span class="request-date-badge" title="依頼日: ${task.request_date}">${formatDateShort(task.request_date)}</span>`
+      : '';
+
     return `<div class="task-item">
-      <span class="task-label">${taskDef.task_name}</span>${stateSelect}${emailBtn}</div>`;
+      <span class="task-label">${taskDef.task_name}</span>${stateSelect}${requestDateBadge}${emailBtn}</div>`;
   }).join('');
 
   const isFavorite = FavoritesManager.isFavorite(project.id);
@@ -10373,7 +11043,7 @@ function renderProjectCard(project) {
       const conColor = constructionProgress !== null ? getProgressColor(constructionProgress) : 'var(--info-color)';
 
       // 部署別進捗表示
-      if (currentUserCategory === 'admin' || !currentUserCategory) {
+      if (viewCategory === 'admin' || !viewCategory) {
         // 管理者: すべての進捗を表示（担当者が設定されているもののみ）
         let html = `<div class="progress-section"><div class="progress-header"><span class="progress-label">設計進捗</span><span class="progress-value" style="color: ${designColor}">${progress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width: ${progress}%; background: ${designColor}"></div></div>`;
         if (icProgress !== null) {
@@ -10390,19 +11060,19 @@ function renderProjectCard(project) {
         }
         html += '</div>';
         return html;
-      } else if (currentUserCategory === '設計') {
+      } else if (viewCategory === '設計') {
         // 設計担当: 設計進捗のみ
         return `<div class="progress-section"><div class="progress-header"><span class="progress-label">設計進捗</span><span class="progress-value" style="color: ${designColor}">${progress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width: ${progress}%; background: ${designColor}"></div></div></div>`;
-      } else if (currentUserCategory === 'IC') {
+      } else if (viewCategory === 'IC') {
         // IC担当: IC進捗のみ
         return icProgress !== null ? `<div class="progress-section"><div class="progress-header"><span class="progress-label">IC進捗</span><span class="progress-value" style="color: ${icColor}">${icProgress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width: ${icProgress}%; background: ${icColor}"></div></div></div>` : '<div class="progress-section"><p style="color: var(--text-muted); font-size: 13px;">IC担当者が設定されていません</p></div>';
-      } else if (currentUserCategory === '外構') {
+      } else if (viewCategory === '外構') {
         // 外構担当: 外構進捗のみ
         return exteriorProgress !== null ? `<div class="progress-section"><div class="progress-header"><span class="progress-label">外構進捗</span><span class="progress-value" style="color: ${extColor}">${exteriorProgress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width: ${exteriorProgress}%; background: ${extColor}"></div></div></div>` : '<div class="progress-section"><p style="color: var(--text-muted); font-size: 13px;">外構タスクが登録されていません</p></div>';
-      } else if (currentUserCategory === '不動産') {
+      } else if (viewCategory === '不動産') {
         // 不動産担当: 不動産進捗のみ
         return realestateProgress !== null ? `<div class="progress-section"><div class="progress-header"><span class="progress-label">不動産進捗</span><span class="progress-value" style="color: ${reColor}">${realestateProgress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width: ${realestateProgress}%; background: ${reColor}"></div></div></div>` : '<div class="progress-section"><p style="color: var(--text-muted); font-size: 13px;">不動産タスクが登録されていません</p></div>';
-      } else if (currentUserCategory === '工事') {
+      } else if (viewCategory === '工事') {
         // 工事担当: 工事進捗のみ
         return constructionProgress !== null ? `<div class="progress-section"><div class="progress-header"><span class="progress-label">工事進捗</span><span class="progress-value" style="color: ${conColor}">${constructionProgress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width: ${constructionProgress}%; background: ${conColor}"></div></div></div>` : '<div class="progress-section"><p style="color: var(--text-muted); font-size: 13px;">工事タスクが登録されていません</p></div>';
       } else {
@@ -10413,7 +11083,7 @@ function renderProjectCard(project) {
 
     <div class="card-quick-actions">
       <button class="quick-action-btn" onclick="openCardModal('${project.id}', 'tasks')">✅ タスク<span class="section-badge badge-warning" id="taskBadge_${project.id}" style="display:none">0</span></button>
-      <button class="quick-action-btn" onclick="openCardModal('${project.id}', 'memo')">📝 メモ${project.shared_memo ? '<span class="section-badge badge-primary">1</span>' : ''}</button>
+      <button class="quick-action-btn" onclick="openCardModal('${project.id}', 'memo')">📝 メモ</button>
       <button class="quick-action-btn" onclick="openCardModal('${project.id}', 'minutes')">📄 議事録<span class="section-badge badge-primary" id="minutesBadge_${project.id}" style="display:none">0</span></button>
       <button class="quick-action-btn" onclick="openCardModal('${project.id}', 'handover')">📋 引継書</button>
     </div>
@@ -10454,27 +11124,27 @@ function renderProjectCard(project) {
         return `<div class="card-section"><div class="card-section-header" style="cursor:default;"><span class="card-section-title">${icon} ${title}${countBadge}</span></div><div class="card-section-content" style="display:block;">${content}</div></div>`;
       };
 
-      if (currentUserCategory === 'admin' || !currentUserCategory) {
-        // 管理者: すべての業務内容を表示（排他的アコーディオン）順序: 不動産→設計→IC→工事→外構
+      if (viewCategory === 'admin' || !viewCategory) {
+        // 管理者/ALL: すべての業務内容を表示（排他的アコーディオン）順序: 不動産→設計→IC→工事→外構
         return `<div class="biz-sections-group">
     ${getBizContent('不動産業務内容', '🏢', realestateTasksList.length > 0 ? `<div class="tasks-grid">${realestateTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">不動産タスクが登録されていません</p>', realestateCount)}
     ${getBizContent('設計業務内容', '📐', `<div class="tasks-grid">${tasksHtml}</div>`, designCount)}
     ${getBizContent('IC業務内容', '🎨', icTasks.length > 0 ? `<div class="tasks-grid">${icTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">ICタスクが登録されていません</p>', icCount)}
     ${getBizContent('工事業務内容', '🔨', constructionTasksList.length > 0 ? `<div class="tasks-grid">${constructionTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">工事タスクが登録されていません</p>', constructionCount)}
     ${getBizContent('外構業務内容', '🏡', exteriorTasksList.length > 0 ? `<div class="tasks-grid">${exteriorTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">外構タスクが登録されていません</p>', exteriorCount)}</div>`;
-      } else if (currentUserCategory === '設計') {
+      } else if (viewCategory === '設計') {
         // 設計担当: 設計業務内容のみ、アコーディオンなし
         return getSimpleBizContent('設計業務内容', '📐', `<div class="tasks-grid">${tasksHtml}</div>`, designCount);
-      } else if (currentUserCategory === 'IC') {
+      } else if (viewCategory === 'IC') {
         // IC担当: IC業務内容のみ、アコーディオンなし
         return getSimpleBizContent('IC業務内容', '🎨', icTasks.length > 0 ? `<div class="tasks-grid">${icTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">ICタスクが登録されていません</p>', icCount);
-      } else if (currentUserCategory === '外構') {
+      } else if (viewCategory === '外構') {
         // 外構担当: 外構業務内容のみ、アコーディオンなし
         return getSimpleBizContent('外構業務内容', '🏡', exteriorTasksList.length > 0 ? `<div class="tasks-grid">${exteriorTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">外構タスクが登録されていません</p>', exteriorCount);
-      } else if (currentUserCategory === '不動産') {
+      } else if (viewCategory === '不動産') {
         // 不動産担当: 不動産業務内容のみ、アコーディオンなし
         return getSimpleBizContent('不動産業務内容', '🏢', realestateTasksList.length > 0 ? `<div class="tasks-grid">${realestateTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">不動産タスクが登録されていません</p>', realestateCount);
-      } else if (currentUserCategory === '工事') {
+      } else if (viewCategory === '工事') {
         // 工事担当: 工事業務内容のみ、アコーディオンなし
         return getSimpleBizContent('工事業務内容', '🔨', constructionTasksList.length > 0 ? `<div class="tasks-grid">${constructionTasksHtml}</div>` : '<p style="color: var(--text-muted); font-size: 13px;">工事タスクが登録されていません</p>', constructionCount);
       } else {
@@ -10729,8 +11399,12 @@ async function updateTaskDueDate(projectId, taskKey, dueDate) {
   const oldProgress = JSON.parse(JSON.stringify(project.progress || {}));
   const oldDueDate = oldProgress[taskKey]?.due_date || '';
 
-  const progressData = project.progress || {};
-  if (!progressData[taskKey]) progressData[taskKey] = { completed: false, date: '', state: '' };
+  // 既存のprogressデータを完全にコピーして新しいオブジェクトを作成
+  const progressData = JSON.parse(JSON.stringify(project.progress || {}));
+  // 既存のタスクデータを保持しながらdue_dateのみ更新
+  if (!progressData[taskKey]) {
+    progressData[taskKey] = { completed: false, date: '', state: '', due_date: '' };
+  }
   progressData[taskKey].due_date = dueDate;
 
   showStatus('保存中...', 'saving');
@@ -10764,6 +11438,42 @@ async function updateTaskDueDate(projectId, taskKey, dueDate) {
   }
 }
 
+// タスクのクラウドURL更新（太陽光・地盤調査用）
+async function updateTaskCloudUrl(projectId, taskKey, cloudUrl) {
+  const project = projects.find(p => p.id === projectId);
+  if (!project) return;
+
+  // URLバリデーション（空の場合はスキップ）
+  if (cloudUrl && !cloudUrl.match(/^https?:\/\/.+/)) {
+    showToast('有効なURLを入力してください（http:// または https:// で始まる）', 'error');
+    return;
+  }
+
+  const progressData = JSON.parse(JSON.stringify(project.progress || {}));
+  if (!progressData[taskKey]) {
+    progressData[taskKey] = { completed: false, date: '', state: '', cloud_url: '' };
+  }
+  progressData[taskKey].cloud_url = cloudUrl;
+
+  showStatus('保存中...', 'saving');
+  const { error } = await supabase
+    .from('projects')
+    .update({ progress: progressData, updated_at: new Date().toISOString() })
+    .eq('id', projectId);
+
+  if (error) {
+    showStatus('エラー', 'error');
+    ErrorHandler.handle(error, 'クラウドURL保存');
+    return;
+  }
+
+  project.progress = progressData;
+  project.updated_at = new Date().toISOString();
+  renderProjects();
+  showStatus('保存済み', 'saved');
+  showToast(cloudUrl ? 'クラウドURLを保存しました' : 'クラウドURLを削除しました', 'success');
+}
+
 // ステータス色分けのクラスを取得
 // taskKey: オプション。ICタスクの特別な色分けに使用
 function getStateColorClass(state, lastOption, taskKey = '') {
@@ -10778,9 +11488,9 @@ function getStateColorClass(state, lastOption, taskKey = '') {
     return 'state-blue';
   }
 
-  // ICタスク特別処理: 造作業者紹介・家具見積依頼は「無し」も青色
-  if (taskKey === 'ic_zousaku' || taskKey === 'ic_furniture') {
-    if (state === '無し' || state === '依頼済') {
+  // ICタスク特別処理: 造作業者紹介・家具見積依頼・タイルプレゼンは「無」「無し」も青色
+  if (taskKey === 'ic_zousaku' || taskKey === 'ic_furniture' || taskKey === 'ic_tile_pres') {
+    if (state === '無' || state === '無し' || state === '依頼済' || state === '作成済') {
       return 'state-blue';
     }
   }
@@ -10839,6 +11549,15 @@ async function updateTaskState(projectId, taskKey, state) {
   const progressData = project.progress || {};
   if (!progressData[taskKey]) progressData[taskKey] = {};
   progressData[taskKey].state = state;
+
+  // 依頼日の記録（「依頼」を含むステータスに変更された時点で記録）
+  if (state && state.includes('依頼') && !progressData[taskKey].request_date) {
+    progressData[taskKey].request_date = new Date().toISOString().split('T')[0];
+  }
+  // ステータスが「-」に戻されたら依頼日をクリア
+  if (state === '-' || state === '') {
+    progressData[taskKey].request_date = null;
+  }
 
   // ステータスが最終状態になったらcompletedをtrueにする
   const taskDef = tasksV2.find(t => t.task_key === taskKey);
@@ -10972,12 +11691,10 @@ function openProjectModal(projectId = null) {
     title.textContent = '案件編集';
     document.getElementById('projectCustomer').value = project.customer;
     document.getElementById('projectSpecifications').value = project.specifications || 'LIFE';
-    document.getElementById('projectMemo').value = project.memo || '';
   } else {
     title.textContent = '案件追加';
     document.getElementById('projectCustomer').value = '';
     document.getElementById('projectSpecifications').value = 'LIFE';
-    document.getElementById('projectMemo').value = '';
   }
 
   // 設計担当者（設計カテゴリのみ）を埋める
@@ -11056,7 +11773,6 @@ async function saveProject() {
   const assignedTo = document.getElementById('projectAssignedTo').value.trim(); // trim()追加
   const icAssignee = document.getElementById('projectIcAssignee').value.trim(); // trim()追加
   const specifications = document.getElementById('projectSpecifications').value;
-  const memo = document.getElementById('projectMemo').value.trim();
 
   log('💾 saveProject開始:', { customer, assignedTo, icAssignee, specifications });
 
@@ -11092,7 +11808,6 @@ async function saveProject() {
           ic_assignee: icAssignee || null,
           ic_designer_id: icDesignerId,
           specifications,
-          memo,
           updated_at: new Date().toISOString()
         })
         .eq('id', editingProjectId);
@@ -11489,6 +12204,8 @@ function openEditDesignerModal(designerId) {
             <option value="IC" ${designer.category === 'IC' ? 'selected' : ''}>IC担当</option>
             <option value="外構" ${designer.category === '外構' ? 'selected' : ''}>外構担当</option>
             <option value="不動産" ${designer.category === '不動産' ? 'selected' : ''}>不動産担当</option>
+            <option value="工事" ${designer.category === '工事' ? 'selected' : ''}>工事担当</option>
+            <option value="営業" ${designer.category === '営業' ? 'selected' : ''}>営業担当</option>
           </select>
         </div>
       </div>
@@ -13442,11 +14159,9 @@ const BatchOperations = {
     `;
     toolbar.innerHTML = `
       <span id="batchCount" style="font-weight: 600;">0件選択中</span>
-      <button class="btn btn-ghost btn-small" onclick="BatchOperations.archiveSelected()">📦 一括完了</button>
       <button class="btn btn-ghost btn-small" onclick="BatchOperations.showAssignModal()">👤 担当変更</button>
       <button class="btn btn-ghost btn-small" onclick="BatchOperations.showICTaskModal()">🎨 IC一括更新</button>
       <button class="btn btn-ghost btn-small" onclick="BatchOperations.showDeadlineModal()">📅 期限設定</button>
-      <button class="btn btn-danger btn-small" onclick="BatchOperations.deleteSelected()">🗑️ 一括削除</button>
       <button class="btn btn-ghost btn-small" onclick="BatchOperations.deselectAll()">✕ 選択解除</button>
     `;
     document.body.appendChild(toolbar);
@@ -13539,21 +14254,41 @@ const BatchOperations = {
   async archiveSelected() {
     if (this.selected.size === 0) return;
 
-    const confirmed = confirm(`${this.selected.size}件の案件を完了済みにしますか？`);
+    // 申請GO条件をチェック
+    const projectsToArchive = [];
+    const failedProjects = [];
+    for (const projectId of this.selected) {
+      const project = projects.find(p => p.id === projectId);
+      if (project && canPressApplicationGo(project)) {
+        projectsToArchive.push(project);
+      } else if (project) {
+        failedProjects.push(project.customer);
+      }
+    }
+
+    if (failedProjects.length > 0) {
+      showToast(`以下の案件は申請GO条件を満たしていません: ${failedProjects.join(', ')}`, 'warning');
+    }
+
+    if (projectsToArchive.length === 0) {
+      showToast('完了可能な案件がありません', 'error');
+      return;
+    }
+
+    const confirmed = confirm(`${projectsToArchive.length}件の案件を完了済みにしますか？${failedProjects.length > 0 ? `\n（${failedProjects.length}件は条件未達のためスキップ）` : ''}`);
     if (!confirmed) return;
 
     showStatus('処理中...', 'saving');
     let count = 0;
 
-    for (const projectId of this.selected) {
+    for (const project of projectsToArchive) {
       const { error } = await supabase
         .from('projects')
         .update({ is_archived: true, updated_at: new Date().toISOString() })
-        .eq('id', projectId);
+        .eq('id', project.id);
 
       if (!error) {
-        const project = projects.find(p => p.id === projectId);
-        if (project) project.is_archived = true;
+        project.is_archived = true;
         count++;
       }
     }
@@ -14610,13 +15345,18 @@ function handleHashChange() {
   if (mainTab === 'projects') {
     const btn = document.querySelector('.header-nav-btn');
     if (btn) switchMainTab('projects', btn);
-  } else if (mainTab === 'analytics') {
+  } else if (mainTab === 'calendar') {
     const btn = document.querySelectorAll('.header-nav-btn')[1];
+    if (btn) switchMainTab('calendar', btn);
+    isHandlingHashChange = false;
+    return;
+  } else if (mainTab === 'analytics') {
+    const btn = document.querySelectorAll('.header-nav-btn')[2];
     if (btn) switchMainTab('analytics', btn);
     isHandlingHashChange = false;
     return;
   } else if (mainTab === 'settings') {
-    const btn = document.querySelectorAll('.header-nav-btn')[2];
+    const btn = document.querySelectorAll('.header-nav-btn')[3];
     if (btn) switchMainTab('settings', btn);
 
     // サブタブの切り替え
@@ -14685,6 +15425,9 @@ function getRealestateDesigners() {
 function getConstructionDesigners() {
   return getDesignersByCategory('工事');
 }
+function getSalesDesigners() {
+  return getDesignersByCategory('営業');
+}
 
 // サイドバーに部署別折りたたみ機能を追加（全職種対応）
 const originalRenderSidebar = renderSidebar;
@@ -14715,7 +15458,7 @@ function getInitialExpandedCategories() {
   if (Object.keys(state).length > 0) return state;
 
   // 初回: ログインユーザーの職種を開く
-  const defaultState = { '設計': true, 'IC': true, '外構': true, '不動産': true, '工事': true };
+  const defaultState = { '設計': true, 'IC': true, '外構': true, '不動産': true, '工事': true, '営業': true };
   if (currentUserCategory && currentUserCategory !== 'admin') {
     // 自分の職種以外は閉じる
     Object.keys(defaultState).forEach(cat => {
@@ -14737,6 +15480,7 @@ renderSidebar = function() {
   const exteriorDesigners = getExteriorDesigners();
   const realestateDesigners = getRealestateDesigners();
   const constructionDesigners = getConstructionDesigners();
+  const salesDesigners = getSalesDesigners();
   const allCount = projects.filter(p => p.status !== 'completed' && !p.is_archived).length;
   const archivedCount = projects.filter(p => p.is_archived).length;
 
@@ -14899,6 +15643,14 @@ renderSidebar = function() {
       return constructionAssigned === designer.name.trim() && p.status !== 'completed' && !p.is_archived;
     }).length;
   }, (designer) => calculateTaskCount(designer.name.trim(), '工事'));
+
+  // 営業担当セクション
+  html += renderSection('営業', '💼', salesDesigners, (designer) => {
+    return projects.filter(p => {
+      const salesAssigned = (p.sales_assignee || '').trim();
+      return salesAssigned === designer.name.trim() && p.status !== 'completed' && !p.is_archived;
+    }).length;
+  }, null); // 営業にはタスク一覧なし
 
   container.innerHTML = html;
 };
@@ -15125,6 +15877,8 @@ async function toggleProjectTask(taskId, projectId, isCompleted) {
 
   // 案件カード内のタスクリストを更新
   await loadProjectTasksList(projectId);
+  // バッジカウントを更新
+  await loadBadgeCounts(projectId);
   // スタッフ別タスク一覧も更新
   renderStaffTasksList();
 }
@@ -15145,6 +15899,8 @@ async function deleteProjectTask(taskId, projectId) {
 
   showToast('タスクを削除しました', 'success');
   await loadProjectTasksList(projectId);
+  // バッジカウントを更新
+  await loadBadgeCounts(projectId);
 }
 
 // 案件にタスクを追加
@@ -15186,6 +15942,8 @@ async function addProjectTask(projectId, taskName, dueDate) {
 
     showToast('タスクを追加しました', 'success');
     await loadProjectTasksList(projectId);
+    // バッジカウントを更新
+    await loadBadgeCounts(projectId);
   } catch (err) {
     logError('タスク追加例外:', err);
     showToast('タスク追加中にエラーが発生しました', 'error');
@@ -15228,9 +15986,18 @@ function getApplicationGoRequiredTasks() {
   keywords.forEach(keyword => {
     const task = tasksV2.find(t => t.task_name && t.task_name.includes(keyword) && t.has_state);
     if (task) {
+      // state_optionsをパース（文字列の場合）
+      let options = task.state_options;
+      if (typeof options === 'string') {
+        try {
+          options = JSON.parse(options);
+        } catch (e) {
+          options = [];
+        }
+      }
       // 最終状態（state_optionsの最後の値）を取得
-      const finalState = Array.isArray(task.state_options) && task.state_options.length > 0
-        ? task.state_options[task.state_options.length - 1]
+      const finalState = Array.isArray(options) && options.length > 0
+        ? options[options.length - 1]
         : '保存済';
       requiredTasks.push({
         task_key: task.task_key,
@@ -15413,7 +16180,28 @@ function openCardModal(projectId, type) {
     case 'handover':
       title = `📋 引継書 - ${project.customer}`;
       content = `
-        <textarea class="handover-content" id="modalHandover_${projectId}" placeholder="引継書の内容を入力..." style="width:100%;min-height:250px;padding:12px;border:1px solid var(--border-color);border-radius:8px;resize:vertical;"></textarea>
+        <div class="handover-sections">
+          <div class="handover-section">
+            <label class="handover-label">🏠 設計</label>
+            <textarea class="handover-textarea" id="modalHandover_design_${projectId}" placeholder="設計からの引継事項..." rows="3"></textarea>
+          </div>
+          <div class="handover-section">
+            <label class="handover-label">🎨 IC</label>
+            <textarea class="handover-textarea" id="modalHandover_ic_${projectId}" placeholder="ICからの引継事項..." rows="3"></textarea>
+          </div>
+          <div class="handover-section">
+            <label class="handover-label">🌳 外構</label>
+            <textarea class="handover-textarea" id="modalHandover_exterior_${projectId}" placeholder="外構からの引継事項..." rows="3"></textarea>
+          </div>
+          <div class="handover-section">
+            <label class="handover-label">🏢 不動産</label>
+            <textarea class="handover-textarea" id="modalHandover_realestate_${projectId}" placeholder="不動産からの引継事項..." rows="3"></textarea>
+          </div>
+          <div class="handover-section">
+            <label class="handover-label">🔧 工事</label>
+            <textarea class="handover-textarea" id="modalHandover_construction_${projectId}" placeholder="工事からの引継事項..." rows="3"></textarea>
+          </div>
+        </div>
         <button class="btn btn-primary" style="margin-top:12px;" onclick="saveHandoverFromModal('${projectId}')">引継書を保存</button>
       `;
       break;
@@ -15500,6 +16288,7 @@ async function addProjectTaskFromModal(projectId) {
 async function toggleProjectTaskModal(taskId, projectId, isCompleted) {
   await toggleProjectTask(taskId, projectId, isCompleted);
   loadModalTasksList(projectId);
+  await loadBadgeCounts(projectId);
 }
 
 async function deleteProjectTaskModal(taskId, projectId) {
@@ -15508,6 +16297,7 @@ async function deleteProjectTaskModal(taskId, projectId) {
   showToast('タスクを削除しました', 'success');
   loadModalTasksList(projectId);
   loadProjectTasksList(projectId);
+  await loadBadgeCounts(projectId);
 }
 
 // モーダル用メモ保存
@@ -15539,13 +16329,42 @@ async function loadModalMinutesList(projectId) {
       return;
     }
 
-    container.innerHTML = minutes.map(m => `
-      <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: var(--bg-secondary); border-radius: 8px; margin-bottom: 8px;">
-        <a href="${m.file_url}" target="_blank" style="color: var(--primary-color); text-decoration: none; font-size: 13px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">📄 ${escapeHtml(m.file_name)}</a>
-        <span style="font-size: 11px; color: var(--text-muted); margin: 0 12px;">${formatDate(m.created_at)}</span>
-        <button class="btn btn-small btn-ghost" onclick="deleteMinuteModal('${m.id}', '${projectId}')" style="color: var(--danger-color);">削除</button>
-      </div>
-    `).join('');
+    // 議事録を回数ごとにグループ化（日付でグループ化し、古い順に回数を割り当て）
+    const sortedByDate = [...minutes].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+    const dateGroups = {};
+    sortedByDate.forEach(m => {
+      const dateKey = m.created_at.split('T')[0]; // YYYY-MM-DD形式
+      if (!dateGroups[dateKey]) {
+        dateGroups[dateKey] = [];
+      }
+      dateGroups[dateKey].push(m);
+    });
+
+    // グループに回数を割り当て（古い日付から1回目、2回目...）
+    const groupKeys = Object.keys(dateGroups).sort();
+    const groupedHtml = groupKeys.map((dateKey, index) => {
+      const meetingNumber = index + 1;
+      const groupMinutes = dateGroups[dateKey];
+      const formattedDate = new Date(dateKey).toLocaleDateString('ja-JP', { month: 'long', day: 'numeric' });
+
+      return `
+        <div class="minutes-group" style="margin-bottom: 16px; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;">
+          <div style="background: var(--bg-tertiary); padding: 10px 14px; font-weight: 600; font-size: 13px; color: var(--text-primary); border-bottom: 1px solid var(--border-color);">
+            📋 第${meetingNumber}回打合せ（${formattedDate}）
+          </div>
+          <div style="padding: 8px;">
+            ${groupMinutes.map(m => `
+              <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; background: var(--bg-secondary); border-radius: 6px; margin-bottom: 6px;">
+                <a href="${m.file_url}" target="_blank" style="color: var(--primary-color); text-decoration: none; font-size: 13px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">📄 ${escapeHtml(m.file_name)}</a>
+                <button class="btn btn-small btn-ghost" onclick="deleteMinuteModal('${m.id}', '${projectId}')" style="color: var(--danger-color); padding: 4px 8px;">削除</button>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }).reverse().join(''); // 新しい回から表示
+
+    container.innerHTML = groupedHtml;
   } catch (error) {
     container.innerHTML = '<div style="color: var(--text-muted);">読み込みに失敗しました</div>';
   }
@@ -15577,8 +16396,7 @@ async function deleteMinuteModal(minuteId, projectId) {
 
 // モーダル用引継書読み込み
 async function loadHandoverContent(projectId) {
-  const textarea = document.getElementById(`modalHandover_${projectId}`);
-  if (!textarea) return;
+  const departments = ['design', 'ic', 'exterior', 'realestate', 'construction'];
 
   try {
     const { data, error } = await supabase
@@ -15588,13 +16406,39 @@ async function loadHandoverContent(projectId) {
       .single();
 
     if (data && data.content) {
-      textarea.value = data.content;
+      // JSON形式かどうかを判定
+      let handoverData;
+      try {
+        handoverData = JSON.parse(data.content);
+      } catch (e) {
+        // 旧形式（プレーンテキスト）の場合は設計に入れる
+        handoverData = { design: data.content };
+      }
+
+      // 各部署のテキストエリアに値を設定
+      departments.forEach(dept => {
+        const textarea = document.getElementById(`modalHandover_${dept}_${projectId}`);
+        if (textarea && handoverData[dept]) {
+          textarea.value = handoverData[dept];
+        }
+      });
     }
   } catch (e) {}
 }
 
 async function saveHandoverFromModal(projectId) {
-  const content = document.getElementById(`modalHandover_${projectId}`).value;
+  const departments = ['design', 'ic', 'exterior', 'realestate', 'construction'];
+
+  // 各部署の内容を収集
+  const handoverData = {};
+  departments.forEach(dept => {
+    const textarea = document.getElementById(`modalHandover_${dept}_${projectId}`);
+    if (textarea && textarea.value.trim()) {
+      handoverData[dept] = textarea.value.trim();
+    }
+  });
+
+  const content = JSON.stringify(handoverData);
 
   const { data: existing } = await supabase
     .from('project_handovers')
@@ -15843,14 +16687,12 @@ async function uploadMinutesWithDate(projectId, file) {
     return;
   }
 
-  // タイトル自動生成: 打合せ日_案件名_担当者
-  const formattedDate = meetingDate.replace(/-/g, '');
-  const customerName = project.customer || '不明';
-  const assignee = project.assigned_to || '担当未定';
+  // 元のファイル名を維持（表示用）
+  const originalFileName = file.name;
   const ext = file.name.split('.').pop();
-  const autoTitle = `${formattedDate}_${customerName}_${assignee}.${ext}`;
+  const formattedDate = meetingDate.replace(/-/g, '');
 
-  // ストレージ用のファイル名（ASCII文字のみ、スペースはアンダースコアに置換）
+  // ストレージ用のファイル名（ASCII文字のみ - Supabase Storageの制限対応）
   const safeFileName = `${Date.now()}_${formattedDate}.${ext}`;
 
   showToast('アップロード中...', 'info');
@@ -15879,10 +16721,10 @@ async function uploadMinutesWithDate(projectId, file) {
       .from('minutes')
       .getPublicUrl(storagePath);
 
-    // DBに登録（タイトルを自動生成したものに）
+    // DBに登録（元のファイル名を維持）
     const insertData = {
       project_id: projectId,
-      file_name: autoTitle,
+      file_name: originalFileName,
       file_url: urlData.publicUrl || '',
       file_size: file.size || 0,
       uploaded_by: currentUser?.email || 'anonymous@archideck.jp'
@@ -16196,6 +17038,14 @@ function formatDate(dateStr) {
   if (!dateStr) return '';
   const d = new Date(dateStr);
   return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`;
+}
+
+// 依頼日用の短いフォーマット（M/D形式）
+function formatDateShort(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return '';
+  return `${d.getMonth() + 1}/${d.getDate()}`;
 }
 
 // HTMLエスケープ
@@ -17802,6 +18652,21 @@ function populateConstructionAssigneeDropdown(projectId = null, project = null) 
   }
 }
 
+// 営業担当ドロップダウンを設定
+function populateSalesAssigneeDropdown(projectId = null, project = null) {
+  const salesDesigners = designers.filter(d => d.category === '営業');
+  const salesAssigneeSelect = document.getElementById('projectSalesAssignee');
+
+  if (salesAssigneeSelect) {
+    salesAssigneeSelect.innerHTML = '<option value="">未定</option>' +
+      salesDesigners.map(d => `<option value="${escapeHtml(d.name)}">${escapeHtml(d.name)}</option>`).join('');
+
+    if (projectId && project) {
+      salesAssigneeSelect.value = project.sales_assignee || '';
+    }
+  }
+}
+
 // openProjectModalを拡張
 const originalOpenProjectModal = openProjectModal;
 openProjectModal = function(projectId = null) {
@@ -17811,6 +18676,7 @@ openProjectModal = function(projectId = null) {
   populateExteriorAssigneeDropdown(projectId, project);
   populateRealestateAssigneeDropdown(projectId, project);
   populateConstructionAssigneeDropdown(projectId, project);
+  populateSalesAssigneeDropdown(projectId, project);
 };
 
 // saveProjectを拡張
@@ -17827,8 +18693,8 @@ saveProject = async function() {
   const exteriorAssignee = document.getElementById('projectExteriorAssignee')?.value.trim() || '';
   const realestateAssignee = document.getElementById('projectRealestateAssignee')?.value.trim() || '';
   const constructionAssignee = document.getElementById('projectConstructionAssignee')?.value.trim() || '';
+  const salesAssignee = document.getElementById('projectSalesAssignee')?.value.trim() || '';
   const specifications = document.getElementById('projectSpecifications').value;
-  const memo = document.getElementById('projectMemo').value.trim();
 
   if (!customer || !assignedTo) {
     showToast('お客様名と担当（設計）は必須です', 'error');
@@ -17844,8 +18710,8 @@ saveProject = async function() {
     exterior_assignee: exteriorAssignee || null,
     realestate_assignee: realestateAssignee || null,
     construction_assignee: constructionAssignee || null,
+    sales_assignee: salesAssignee || null,
     specifications,
-    memo,
     updated_at: new Date().toISOString()
   };
 
