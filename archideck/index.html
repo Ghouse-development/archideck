@@ -4653,9 +4653,7 @@ textarea:focus-visible {
       <button class="btn btn-ghost btn-small" onclick="UndoManager.undo()" title="元に戻す (Ctrl+Z)" id="undoBtn" disabled>↩️</button>
       <button class="btn btn-ghost btn-small" onclick="UndoManager.redo()" title="やり直す (Ctrl+Y)" id="redoBtn" disabled>↪️</button>
       <button class="btn btn-ghost btn-small" onclick="forceReloadData()" title="データを再読み込み">🔄</button>
-      <button class="btn btn-ghost btn-small" onclick="AppTour.showWelcome()" title="使い方ガイド">❓</button>
       <button class="btn btn-ghost btn-small" onclick="showDebugInfo()" title="デバッグ情報">🔍</button>
-      <button class="btn btn-ghost btn-small" onclick="toggleDarkMode()" title="ダークモード切り替え (Ctrl+Shift+D)" id="darkModeBtn">🌙</button>
       <button class="btn btn-ghost btn-small" onclick="signOut()">ログアウト</button>
     </div>
   </header>
@@ -11874,9 +11872,21 @@ async function deleteProject(projectId) {
 let archiveConfirmProjectId = null;
 
 // 完了済み確認モーダルを開く
-function openArchiveConfirmModal(projectId) {
+async function openArchiveConfirmModal(projectId) {
   const project = projects.find(p => p.id === projectId);
   if (!project) return;
+
+  // 未完了タスクがあるか確認
+  const { data: incompleteTasks } = await supabase
+    .from('project_tasks')
+    .select('id')
+    .eq('project_id', projectId)
+    .eq('is_completed', false);
+
+  if (incompleteTasks && incompleteTasks.length > 0) {
+    showToast(`未完了のタスクが${incompleteTasks.length}件あります。タスクを完了してから完了済みにしてください。`, 'warning');
+    return;
+  }
 
   archiveConfirmProjectId = projectId;
   document.getElementById('archiveConfirmProjectName').textContent = project.customer;
