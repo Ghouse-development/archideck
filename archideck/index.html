@@ -952,42 +952,10 @@ body {
   opacity: 1;
 }
 
-/* お気に入りカード */
-.project-card.favorite {
-  border-color: var(--warning-color);
-  background: linear-gradient(to bottom, var(--warning-light) 0%, white 100px);
-}
-
-.project-card.favorite::before {
-  background: var(--warning-color);
-  opacity: 1;
-}
-
 /* 選択中カード */
 .project-card.selected {
   border-color: var(--primary-color);
   box-shadow: 0 0 0 2px var(--primary-light);
-}
-
-/* お気に入りボタン */
-.favorite-btn {
-  background: none;
-  border: none;
-  font-size: 18px;
-  cursor: pointer;
-  color: var(--text-muted);
-  padding: 4px;
-  line-height: 1;
-  transition: all var(--transition-fast);
-}
-
-.favorite-btn:hover {
-  color: var(--warning-color);
-  transform: scale(1.2);
-}
-
-.favorite-btn.active {
-  color: var(--warning-color);
 }
 
 /* バッチ選択チェックボックス */
@@ -4687,7 +4655,6 @@ textarea:focus-visible {
               <option value="active">アクティブ</option>
               <option value="all">すべて</option>
               <option value="archived">完了済</option>
-              <option value="favorites">★</option>
             </select>
             <button class="btn btn-ghost btn-small" onclick="toggleFilterPanel()" id="filterToggleBtn" title="フィルター展開">🔽 絞込</button>
             <button class="btn btn-ghost btn-small" onclick="resetAllFilters()" title="リセット">🔄</button>
@@ -5703,7 +5670,6 @@ textarea:focus-visible {
 <div id="toast" class="toast"></div>
 <div id="contextMenu" class="context-menu">
   <div class="context-menu-item" onclick="ContextMenu.edit()">✏️ 編集</div>
-  <div class="context-menu-item" onclick="ContextMenu.toggleFavorite()">⭐ お気に入り</div>
   <div class="context-menu-item" onclick="ContextMenu.toggleSelect()">☑️ 選択</div>
   <div class="context-menu-divider"></div>
   <div class="context-menu-item" onclick="ContextMenu.archive()">📦 完了済みに移動</div>
@@ -5937,11 +5903,6 @@ const ContextMenu = {
 
   edit() {
     if (this.currentProjectId) openProjectModal(this.currentProjectId);
-    this.hide();
-  },
-
-  toggleFavorite() {
-    if (this.currentProjectId) FavoritesManager.toggle(this.currentProjectId);
     this.hide();
   },
 
@@ -7062,11 +7023,6 @@ function handleKeyboardShortcut(e) {
           e.preventDefault();
           toggleStatsDashboard();
           break;
-        case 'f':
-          // お気に入りフィルター切り替え
-          e.preventDefault();
-          toggleFavoriteFilter();
-          break;
         case 'j':
           // 次のカードへ移動
           e.preventDefault();
@@ -7187,15 +7143,6 @@ function resetAllFilters() {
   showToast('フィルターをリセットしました', 'info');
 }
 
-// お気に入りフィルター切り替え
-function toggleFavoriteFilter() {
-  const archiveFilter = document.getElementById('archiveFilter');
-  if (archiveFilter) {
-    archiveFilter.value = archiveFilter.value === 'favorites' ? 'active' : 'favorites';
-    renderProjects();
-  }
-}
-
 // ダークモード切り替え
 function toggleDarkMode() {
   const html = document.documentElement;
@@ -7265,9 +7212,6 @@ function showShortcutHelp() {
         </div>
         <div style="display: flex; justify-content: space-between; padding: 8px; background: var(--bg-tertiary); border-radius: 6px;">
           <span>D</span><span>統計ダッシュボード切り替え</span>
-        </div>
-        <div style="display: flex; justify-content: space-between; padding: 8px; background: var(--bg-tertiary); border-radius: 6px;">
-          <span>F</span><span>お気に入りフィルター切り替え</span>
         </div>
         <div style="font-weight: 600; color: var(--primary-color); margin-top: 8px;">編集・選択</div>
         <div style="display: flex; justify-content: space-between; padding: 8px; background: var(--bg-tertiary); border-radius: 6px;">
@@ -10558,8 +10502,6 @@ function renderProjects() {
       if (archiveFilter === 'active' && isArchived) return false;
       if (archiveFilter === 'archived' && !isArchived) return false;
     }
-    if (archiveFilter === 'favorites' && !FavoritesManager.isFavorite(p.id)) return false;
-
     const query = document.getElementById('searchQuery').value.toLowerCase();
     if (query && !p.customer.toLowerCase().includes(query) && !(p.memo || '').toLowerCase().includes(query)) return false;
 
@@ -10599,12 +10541,6 @@ function renderProjects() {
   // ソート処理
   const sortOrder = document.getElementById('sortOrder')?.value || 'updated_desc';
   filtered.sort((a, b) => {
-    // まずお気に入りを優先
-    const aFav = FavoritesManager.isFavorite(a.id) ? 1 : 0;
-    const bFav = FavoritesManager.isFavorite(b.id) ? 1 : 0;
-    if (aFav !== bFav) return bFav - aFav;
-
-    // 次に選択されたソート順
     switch (sortOrder) {
       case 'custom':
         // カスタム順序（ドラッグ&ドロップで保存した順序）
@@ -11005,7 +10941,6 @@ function renderProjectCard(project) {
       <span class="task-label">${taskDef.task_name}</span>${stateSelect}${requestDateBadge}${emailBtn}</div>`;
   }).join('');
 
-  const isFavorite = FavoritesManager.isFavorite(project.id);
   const isSelected = BatchOperations.isSelected(project.id);
 
   // 期限超過チェック
@@ -11015,11 +10950,10 @@ function renderProjectCard(project) {
   const isOverdue = deadline && new Date(deadline) < today && !project.is_archived;
   const isDueSoon = deadline && !isOverdue && (new Date(deadline) - today) <= 3 * 24 * 60 * 60 * 1000 && !project.is_archived;
 
-  return `<div class="project-card ${isFavorite ? 'favorite' : ''} ${isSelected ? 'selected' : ''} ${isOverdue ? 'overdue' : ''} ${isDueSoon ? 'due-soon' : ''}" data-project-id="${project.id}" draggable="true" ondragstart="handleDragStart(event)" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" ondragend="handleDragEnd(event)">
+  return `<div class="project-card ${isSelected ? 'selected' : ''} ${isOverdue ? 'overdue' : ''} ${isDueSoon ? 'due-soon' : ''}" data-project-id="${project.id}" draggable="true" ondragstart="handleDragStart(event)" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" ondragend="handleDragEnd(event)">
     <div class="card-header">
       <div style="display: flex; align-items: flex-start; gap: 8px;">
         <input type="checkbox" class="batch-checkbox" data-project-id="${project.id}" ${isSelected ? 'checked' : ''} onclick="event.stopPropagation(); BatchOperations.toggle('${project.id}')" title="選択">
-        <button class="favorite-btn ${isFavorite ? 'active' : ''}" onclick="event.stopPropagation(); FavoritesManager.toggle('${project.id}')" title="${isFavorite ? 'お気に入り解除' : 'お気に入り登録'}">${isFavorite ? '★' : '☆'}</button>
         <div>
           <div class="card-title"><span class="customer-name">${escapeHtml(project.customer)}</span><span class="badge badge-primary">${escapeHtml(project.specifications || 'LIFE')}</span>${project.is_archived ? '<span class="badge badge-success">完了済み</span>' : ''}${!project.is_archived && staleDays >= 7 ? `<span class="badge badge-warning" title="${staleDays}日間未更新">⚠️ ${staleDays}日</span>` : ''}</div>
           <div class="card-subtitle"><span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this)" style="cursor: pointer; text-decoration: underline dotted;" title="クリックで担当者変更">設計：${escapeHtml(project.assigned_to || '未割当')}</span>${project.ic_assignee ? `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'ic_assignee')" style="cursor: pointer; text-decoration: underline dotted;" title="クリックでIC担当者変更"> | IC：${escapeHtml(project.ic_assignee)}</span>` : `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'ic_assignee')" style="cursor: pointer; color: var(--text-muted); font-size: 11px;" title="IC担当者を追加"> | +IC</span>`}${project.exterior_assignee ? `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'exterior_assignee')" style="cursor: pointer; text-decoration: underline dotted;" title="クリックで外構担当者変更"> | 外構：${escapeHtml(project.exterior_assignee)}</span>` : `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'exterior_assignee')" style="cursor: pointer; color: var(--text-muted); font-size: 11px;" title="外構担当者を追加"> | +外構</span>`}${project.realestate_assignee ? `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'realestate_assignee')" style="cursor: pointer; text-decoration: underline dotted;" title="クリックで不動産担当者変更"> | 不動産：${escapeHtml(project.realestate_assignee)}</span>` : `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'realestate_assignee')" style="cursor: pointer; color: var(--text-muted); font-size: 11px;" title="不動産担当者を追加"> | +不動産</span>`}${project.construction_assignee ? `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'construction_assignee')" style="cursor: pointer; text-decoration: underline dotted;" title="クリックで工事担当者変更"> | 工事：${escapeHtml(project.construction_assignee)}</span>` : `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'construction_assignee')" style="cursor: pointer; color: var(--text-muted); font-size: 11px;" title="工事担当者を追加"> | +工事</span>`}${(() => { const ds = DeadlineManager.getStatus(project.id); return ds ? ` <span style="background: ${ds.color}; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-left: 8px;" onclick="event.stopPropagation(); DeadlineManager.showModal('${project.id}')" title="期限を変更">📅 ${ds.label}</span>` : ` <span style="color: var(--text-muted); font-size: 11px; cursor: pointer;" onclick="event.stopPropagation(); DeadlineManager.showModal('${project.id}')" title="期限を設定">📅 期限設定</span>`; })()}</div>
@@ -14037,37 +13971,6 @@ const DataImporter = {
 };
 
 // ============================================
-// お気に入り管理
-// ============================================
-const FavoritesManager = {
-  favorites: new Set(safeJsonParse(localStorage.getItem('favorites'), [])),
-
-  toggle(projectId) {
-    if (this.favorites.has(projectId)) {
-      this.favorites.delete(projectId);
-      showToast('お気に入りから削除しました', 'info');
-    } else {
-      this.favorites.add(projectId);
-      showToast('お気に入りに追加しました', 'success');
-    }
-    this.save();
-    renderProjects();
-  },
-
-  isFavorite(projectId) {
-    return this.favorites.has(projectId);
-  },
-
-  save() {
-    localStorage.setItem('favorites', JSON.stringify([...this.favorites]));
-  },
-
-  getCount() {
-    return this.favorites.size;
-  }
-};
-
-// ============================================
 // バッチ操作
 // ============================================
 const BatchOperations = {
@@ -14579,7 +14482,7 @@ const FilterPresets = {
       parts.push(`担当: ${filter.designer}`);
     }
     if (filter.archive && filter.archive !== 'active') {
-      const labels = { all: '全て', archived: '完了済み', favorites: 'お気に入り' };
+      const labels = { all: '全て', archived: '完了済み' };
       parts.push(labels[filter.archive] || filter.archive);
     }
     if (filter.search) {
@@ -15050,10 +14953,7 @@ const MobileGestures = {
     this.currentCard.style.transition = 'transform 0.2s ease';
     this.currentCard.style.background = '';
 
-    if (diffX > 80 && projectId) {
-      // 右スワイプ: お気に入り切り替え
-      FavoritesManager.toggle(projectId);
-    } else if (diffX < -80 && projectId) {
+    if (diffX < -80 && projectId) {
       // 左スワイプ: 完了切り替え
       const project = projects.find(p => p.id === projectId);
       if (project && calculateProgress(project) >= 100) {
