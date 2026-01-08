@@ -8669,7 +8669,7 @@ async function runICTasksMigration() {
       { task_key: 'ic_exterior_pres', task_name: '外装プレゼン作成', category: 'IC', display_order: 12, has_state: true, state_options: '["-", "作成済"]', has_email_button: false },
       { task_key: 'ic_interior_pres', task_name: '内装プレゼン作成', category: 'IC', display_order: 13, has_state: true, state_options: '["-", "作成済"]', has_email_button: false },
       { task_key: 'ic_tategu', task_name: '建具プレゼン依頼', category: 'IC', display_order: 14, has_state: true, state_options: '["-", "依頼済", "保存済"]', has_email_button: true },
-      { task_key: 'ic_tile_pres', task_name: 'タイルプレゼン作成', category: 'IC', display_order: 15, has_state: true, state_options: '["-", "無", "作成済"]', has_email_button: false },
+      { task_key: 'ic_tile_pres', task_name: 'タイルプレゼン作成', category: 'IC', display_order: 15, has_state: true, state_options: '["-", "無し", "作成済"]', has_email_button: false },
       { task_key: 'ic_exterior_meeting', task_name: '外構への打合せ依頼', category: 'IC', display_order: 16, has_state: true, state_options: '["-", "依頼済"]', has_email_button: false },
       { task_key: 'ic_curtain', task_name: 'カーテン紹介', category: 'IC', display_order: 17, has_state: true, state_options: '["-", "無し", "依頼済"]', has_email_button: true },
       { task_key: 'ic_zousaku', task_name: '造作業者紹介', category: 'IC', display_order: 18, has_state: true, state_options: '["-", "無し", "依頼済"]', has_email_button: true },
@@ -8764,7 +8764,7 @@ async function autoMigrateICTasks() {
       { task_key: 'ic_exterior_pres', task_name: '外装プレゼン作成', category: 'IC', display_order: 12, has_state: true, state_options: '["-", "作成済"]', has_email_button: false },
       { task_key: 'ic_interior_pres', task_name: '内装プレゼン作成', category: 'IC', display_order: 13, has_state: true, state_options: '["-", "作成済"]', has_email_button: false },
       { task_key: 'ic_tategu', task_name: '建具プレゼン依頼', category: 'IC', display_order: 14, has_state: true, state_options: '["-", "依頼済", "保存済"]', has_email_button: true },
-      { task_key: 'ic_tile_pres', task_name: 'タイルプレゼン作成', category: 'IC', display_order: 15, has_state: true, state_options: '["-", "無", "作成済"]', has_email_button: false },
+      { task_key: 'ic_tile_pres', task_name: 'タイルプレゼン作成', category: 'IC', display_order: 15, has_state: true, state_options: '["-", "無し", "作成済"]', has_email_button: false },
       { task_key: 'ic_exterior_meeting', task_name: '外構への打合せ依頼', category: 'IC', display_order: 16, has_state: true, state_options: '["-", "依頼済"]', has_email_button: false },
       { task_key: 'ic_curtain', task_name: 'カーテン紹介', category: 'IC', display_order: 17, has_state: true, state_options: '["-", "無し", "依頼済"]', has_email_button: true },
       { task_key: 'ic_zousaku', task_name: '造作業者紹介', category: 'IC', display_order: 18, has_state: true, state_options: '["-", "無し", "依頼済"]', has_email_button: true },
@@ -10398,8 +10398,11 @@ function renderSidebar() {
     html += '<div class="sidebar-section"><div class="sidebar-section-title">🎨 IC担当</div>';
     icDesigners.forEach(designer => {
       const designerName = designer.name.trim();
-      // IC担当者の場合、申請GO済み（is_archived）でもIC進捗100%未満はアクティブとして扱う
+      // IC担当者の場合、間取確定が完了している案件のみ表示
+      // 申請GO済み（is_archived）でもIC進捗100%未満はアクティブとして扱う
       const count = projects.filter(p => {
+        // 間取確定日がない案件はICに表示しない
+        if (!p.layout_confirmed_date) return false;
         const assigned = (p.assigned_to || '').trim();
         const icAssigned = (p.ic_assignee || '').trim();
         const isMyProject = assigned === designerName || icAssigned === designerName;
@@ -10412,8 +10415,10 @@ function renderSidebar() {
         }
         return true;
       }).length;
-      // IC担当者の完了案件: 申請GO済みかつIC進捗100%
+      // IC担当者の完了案件: 申請GO済みかつIC進捗100%（間取確定済みのみ）
       const archivedCountForDesigner = projects.filter(p => {
+        // 間取確定日がない案件はICに表示しない
+        if (!p.layout_confirmed_date) return false;
         const assigned = (p.assigned_to || '').trim();
         const icAssigned = (p.ic_assignee || '').trim();
         const isMyProject = assigned === designerName || icAssigned === designerName;
@@ -11200,7 +11205,7 @@ function renderDesignerTabs() {
     warn('⚠️ 設計担当が0名です');
   }
 
-  // IC担当
+  // IC担当（間取確定済みのみ）
   const icDesigners = designers.filter(d => d.category === 'IC');
   log('🎨 IC担当:', icDesigners.map(d => d.name));
   if (icDesigners.length > 0) {
@@ -11210,7 +11215,10 @@ function renderDesignerTabs() {
         const assigned = (p.assigned_to || '').trim();
         const icAssigned = (p.ic_assignee || '').trim();
         const designerName = designer.name.trim();
-        return (assigned === designerName || icAssigned === designerName) && p.status !== 'completed' && !p.is_archived;
+        // IC担当は間取確定済みの案件のみ表示
+        const isICAssigned = icAssigned === designerName && p.layout_confirmed_date;
+        const isDesignAssigned = assigned === designerName;
+        return (isDesignAssigned || isICAssigned) && p.status !== 'completed' && !p.is_archived;
       });
       const count = designerProjects.length;
 
@@ -11261,7 +11269,10 @@ function renderProjects() {
       const realestateAssigned = (p.realestate_assignee || '').trim();
       const currentTab = currentDesignerTab.trim();
 
-      if (assigned !== currentTab && icAssigned !== currentTab && exteriorAssigned !== currentTab && realestateAssigned !== currentTab) {
+      // IC担当としてマッチするには間取確定が必要
+      const icMatches = icAssigned === currentTab && p.layout_confirmed_date;
+
+      if (assigned !== currentTab && !icMatches && exteriorAssigned !== currentTab && realestateAssigned !== currentTab) {
         log(`❌ フィルタで除外: ${p.customer} (assigned_to: "${assigned}", ic: "${icAssigned}", 外構: "${exteriorAssigned}", 不動産: "${realestateAssigned}", currentTab: "${currentTab}")`);
         return false;
       }
@@ -16546,7 +16557,8 @@ renderSidebar = function() {
       if (category === '設計' && (p.assigned_to || '').trim() === designerName) {
         isAssigned = true;
         taskList = tasksV2.filter(t => t.category === '設計');
-      } else if (category === 'IC' && (p.ic_assignee || '').trim() === designerName) {
+      } else if (category === 'IC' && (p.ic_assignee || '').trim() === designerName && p.layout_confirmed_date) {
+        // IC担当は間取確定済みの案件のみ
         isAssigned = true;
         taskList = tasksV2.filter(t => t.category === 'IC');
       } else if (category === '外構' && (p.exterior_assignee || '').trim() === designerName) {
@@ -16585,11 +16597,12 @@ renderSidebar = function() {
     }).length;
   }, (designer) => calculateTaskCount(designer.name.trim(), '設計'));
 
-  // IC担当セクション
+  // IC担当セクション（間取確定済みのみ）
   html += renderSection('IC', '🎨', icDesigners, (designer) => {
     return projects.filter(p => {
       const icAssigned = (p.ic_assignee || '').trim();
-      return icAssigned === designer.name.trim() && p.status !== 'completed' && !p.is_archived;
+      // 間取確定済みの案件のみ表示
+      return icAssigned === designer.name.trim() && p.status !== 'completed' && !p.is_archived && p.layout_confirmed_date;
     }).length;
   }, (designer) => calculateTaskCount(designer.name.trim(), 'IC'));
 
@@ -16656,12 +16669,14 @@ async function renderStaffTasksList() {
   const container = document.getElementById('staffTasksList');
   if (!container || !currentStaffForTasks) return;
 
-  // 担当者の案件を取得
+  // 担当者の案件を取得（IC担当は間取確定済みのみ）
   const staffProjects = projects.filter(p => {
     const assigned = (p.assigned_to || '').trim();
     const icAssigned = (p.ic_assignee || '').trim();
     const exteriorAssigned = (p.exterior_assignee || '').trim();
-    return (assigned === currentStaffForTasks || icAssigned === currentStaffForTasks || exteriorAssigned === currentStaffForTasks) &&
+    // IC担当としてマッチするには間取確定が必要
+    const icMatches = icAssigned === currentStaffForTasks && p.layout_confirmed_date;
+    return (assigned === currentStaffForTasks || icMatches || exteriorAssigned === currentStaffForTasks) &&
            p.status !== 'completed' && !p.is_archived;
   });
 
@@ -18386,10 +18401,10 @@ function generateWeeklyReport() {
     designerProjects[d.name] = activeProjects.filter(p => p.assigned_to === d.name);
   });
 
-  // IC担当者別にグループ化
+  // IC担当者別にグループ化（間取確定済みのみ）
   const icProjects = {};
   designers.filter(d => d.category === 'IC').forEach(d => {
-    icProjects[d.name] = activeProjects.filter(p => p.ic_assignee === d.name);
+    icProjects[d.name] = activeProjects.filter(p => p.ic_assignee === d.name && p.layout_confirmed_date);
   });
 
   // 外構担当者別にグループ化
@@ -18537,10 +18552,10 @@ function generateMonthlyReport() {
     designerProjects[d.name] = activeProjects.filter(p => p.assigned_to === d.name);
   });
 
-  // IC担当者別にグループ化
+  // IC担当者別にグループ化（間取確定済みのみ）
   const icProjects = {};
   designers.filter(d => d.category === 'IC').forEach(d => {
-    icProjects[d.name] = activeProjects.filter(p => p.ic_assignee === d.name);
+    icProjects[d.name] = activeProjects.filter(p => p.ic_assignee === d.name && p.layout_confirmed_date);
   });
 
   // 外構担当者別にグループ化
