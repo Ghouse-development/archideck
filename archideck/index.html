@@ -18668,7 +18668,7 @@ async function saveKintoneSettings() {
   }
 }
 
-// kintone接続テスト
+// kintone接続テスト（Edge Function経由）
 async function testKintoneConnection() {
   const domain = document.getElementById('kintoneDomain').value;
   const appId = document.getElementById('kintoneAppId').value;
@@ -18679,17 +18679,60 @@ async function testKintoneConnection() {
     return;
   }
 
+  // まず設定を保存
+  await saveKintoneSettings();
+
   document.getElementById('kintoneStatus').innerHTML = '<span style="color: var(--text-muted);">接続テスト中...</span>';
 
   try {
-    // CORS制限のため、実際の接続テストはサーバーサイドで行う必要がある
-    // ここではUIのみ実装
-    setTimeout(() => {
-      document.getElementById('kintoneStatus').innerHTML = '<span style="color: var(--success-color);">✅ 接続設定は保存されました。実際の同期はバックグラウンドで行われます。</span>';
-    }, 1000);
+    const result = await callKintoneProxy('test');
+
+    if (result.success) {
+      document.getElementById('kintoneStatus').innerHTML =
+        `<span style="color: var(--success-color);">✅ 接続成功！アプリ「${result.data?.name || appId}」に接続しました</span>`;
+      showToast('kintone接続に成功しました', 'success');
+    } else {
+      document.getElementById('kintoneStatus').innerHTML =
+        `<span style="color: var(--danger-color);">❌ ${result.error || '接続に失敗しました'}</span>`;
+      showToast('kintone接続に失敗しました', 'error');
+    }
   } catch (e) {
-    document.getElementById('kintoneStatus').innerHTML = '<span style="color: var(--danger-color);">❌ 接続に失敗しました</span>';
+    document.getElementById('kintoneStatus').innerHTML =
+      `<span style="color: var(--danger-color);">❌ エラー: ${e.message}</span>`;
+    showToast('接続テスト中にエラーが発生しました', 'error');
   }
+}
+
+// kintone Proxy呼び出し（Edge Function経由）
+async function callKintoneProxy(action, data = {}) {
+  try {
+    const response = await supabase.functions.invoke('kintone-proxy', {
+      body: { action, data }
+    });
+
+    if (response.error) {
+      return { success: false, error: response.error.message };
+    }
+
+    return response.data;
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+// kintoneからレコード取得
+async function fetchKintoneRecords(query = '', fields = []) {
+  return await callKintoneProxy('getRecords', { query, fields });
+}
+
+// kintoneへレコード追加
+async function addKintoneRecord(record) {
+  return await callKintoneProxy('addRecord', { record });
+}
+
+// kintoneレコード更新
+async function updateKintoneRecord(recordId, record) {
+  return await callKintoneProxy('updateRecord', { recordId, record });
 }
 
 // kintone設定読み込み

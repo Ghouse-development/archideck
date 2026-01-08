@@ -1,5 +1,24 @@
 # ArchiDeck 開発履歴
 
+## v4.67.0 (2026-01-08)
+
+### kintone API連携（Edge Function）
+
+#### 1. Supabase Edge Function追加
+- `kintone-proxy`: kintone APIへのプロキシ関数
+- CORS制限を回避してブラウザから直接kintone連携可能
+
+#### 2. 対応機能
+- 接続テスト（実際にkintone APIを呼び出して確認）
+- レコード取得（getRecords, getRecord）
+- レコード追加/更新（addRecord, updateRecord）
+
+#### 3. フロントエンド更新
+- `callKintoneProxy()`: Edge Function呼び出し
+- `fetchKintoneRecords()`: レコード一覧取得
+- `addKintoneRecord()`: レコード追加
+- `updateKintoneRecord()`: レコード更新
+
 ## v4.66.0 (2026-01-08)
 
 ### kintone連携強化・マルチテナント対応
