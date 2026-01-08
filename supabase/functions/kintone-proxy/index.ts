@@ -131,6 +131,53 @@ serve(async (req) => {
         break
       }
 
+      case 'getAllRecords': {
+        // 500件制限を回避してすべてのレコードを取得
+        const allRecords: any[] = []
+        let offset = 0
+        const limit = 500
+        let hasMore = true
+
+        while (hasMore) {
+          const query = data?.query ? `${data.query} limit ${limit} offset ${offset}` : `limit ${limit} offset ${offset}`
+          const params = new URLSearchParams()
+          params.append('app', appId.toString())
+          params.append('query', query)
+
+          const res = await fetch(`${kintoneBaseUrl}/records.json?${params.toString()}`, {
+            method: 'GET',
+            headers: kintoneHeaders,
+          })
+
+          if (!res.ok) {
+            const errorText = await res.text()
+            return new Response(
+              JSON.stringify({
+                success: false,
+                error: `kintone API エラー (${res.status})`,
+                details: errorText
+              }),
+              { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            )
+          }
+
+          const result = await res.json()
+          const records = result.records || []
+          allRecords.push(...records)
+
+          if (records.length < limit) {
+            hasMore = false
+          } else {
+            offset += limit
+          }
+        }
+
+        return new Response(
+          JSON.stringify({ success: true, data: { records: allRecords, totalCount: allRecords.length } }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
       case 'getRecord': {
         const params = new URLSearchParams()
         params.append('app', appId.toString())

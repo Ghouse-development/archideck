@@ -4705,6 +4705,11 @@ textarea:focus-visible {
                 <option value="completed">IC完了</option>
                 <option value="no_ic">IC担当なし</option>
               </select>
+              <select class="select select-compact" id="sourceFilter" onchange="renderProjects()">
+                <option value="">ソース: すべて</option>
+                <option value="kintone">kintone連携</option>
+                <option value="demo">手動追加/デモ</option>
+              </select>
               <select class="select select-compact" id="icAssigneeFilter" onchange="renderProjects()">
                 <option value="">IC担当: すべて</option>
               </select>
@@ -7241,6 +7246,7 @@ function resetAllFilters() {
   const icAssigneeFilter = document.getElementById('icAssigneeFilter');
   const exteriorAssigneeFilter = document.getElementById('exteriorAssigneeFilter');
   const realestateAssigneeFilter = document.getElementById('realestateAssigneeFilter');
+  const sourceFilter = document.getElementById('sourceFilter');
   const sortOrder = document.getElementById('sortOrder');
   const searchQuery = document.getElementById('searchQuery');
 
@@ -7250,6 +7256,7 @@ function resetAllFilters() {
   if (icAssigneeFilter) icAssigneeFilter.value = '';
   if (exteriorAssigneeFilter) exteriorAssigneeFilter.value = '';
   if (realestateAssigneeFilter) realestateAssigneeFilter.value = '';
+  if (sourceFilter) sourceFilter.value = '';
   if (sortOrder) sortOrder.value = 'updated_desc';
   if (searchQuery) searchQuery.value = '';
 
@@ -10600,13 +10607,15 @@ function renderProjects() {
 
     // アーカイブフィルター（通常時は完了済を除外）
     const archiveFilter = document.getElementById('archiveFilter').value;
-    const isArchived = p.is_archived || false;
+    const isArchived = p.is_archived || p.status === 'completed';
 
     // IC担当者として選択されている場合、申請GO済みでもIC進捗100%未満はアクティブ扱い
     const isICDesigner = designers.some(d => d.category === 'IC' && d.name.trim() === currentDesignerTab.trim());
     if (isICDesigner) {
       const icProgress = calculateICProgress(p);
-      const isICComplete = icProgress === null || icProgress === 100;
+      // IC担当者がいてIC進捗100%なら完了、IC担当者がいない場合は通常のアーカイブ判定に従う
+      const hasICAssignee = !!p.ic_assignee;
+      const isICComplete = hasICAssignee ? icProgress === 100 : true;
       if (archiveFilter === 'active') {
         // アクティブ表示: 未アーカイブ、またはアーカイブ済みだがIC未完了
         if (isArchived && isICComplete) return false;
@@ -10648,6 +10657,11 @@ function renderProjects() {
     // 不動産担当者フィルター
     const realestateAssigneeFilter = document.getElementById('realestateAssigneeFilter')?.value || '';
     if (realestateAssigneeFilter && (p.realestate_assignee || '') !== realestateAssigneeFilter) return false;
+
+    // ソースフィルター（kintone連携 / 手動追加・デモ）
+    const sourceFilter = document.getElementById('sourceFilter')?.value || '';
+    if (sourceFilter === 'kintone' && !p.kintone_record_id) return false;
+    if (sourceFilter === 'demo' && p.kintone_record_id) return false;
 
     return true;
   });
@@ -18829,8 +18843,8 @@ async function importFromKintoneDirect() {
 
     console.log('Field mappings:', { customerField, salesField, designField, icField, constructionField, layoutField, permitField, meetingField });
 
-    // 3. kintoneからレコード取得
-    const result = await fetchKintoneRecords();
+    // 3. kintoneからレコード取得（全件取得 - 500件制限回避）
+    const result = await callKintoneProxy('getAllRecords');
     console.log('Kintone result:', result);
 
     if (!result.success) {
