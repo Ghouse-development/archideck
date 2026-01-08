@@ -11454,10 +11454,14 @@ function getStateColorClass(state, lastOption, taskKey = '') {
     return '';
   }
 
-  // ICメーカータスク: メーカーを選択したら青色
+  // ICメーカータスク: 完了状態（最後の選択肢）のみ青色、それ以外は黄色
   if (IC_MAKER_TASKS.includes(taskKey)) {
-    // メーカーを選択している（'-'でも空でもない）→ 青
-    return 'state-blue';
+    // 最後の選択肢（保存済など）→ 青
+    if (state === lastOption) {
+      return 'state-blue';
+    }
+    // それ以外（依頼済など）→ 黄
+    return 'state-yellow';
   }
 
   // ICタスク特別処理: 造作業者紹介・家具見積依頼・タイルプレゼンは「無」「無し」も青色
