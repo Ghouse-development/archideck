@@ -11580,7 +11580,7 @@ function renderProjectCard(project) {
         const requiredTasks = getApplicationGoRequiredTasks();
         const tooltip = requiredTasks.length > 0
           ? requiredTasks.map(r => `${r.task_name}:${r.finalState}`).join('、') + ' が必要'
-          : '太陽光:保存済、給排水:保存済、換気:保存済、サッシ:保存済 が必要';
+          : '太陽光:営業共有済、給排水:保存済、換気:保存済、サッシ:保存済 が必要';
         return `<div class="application-go-container application-go-disabled" title="${tooltip}">
           <div class="application-go-icon">🔒</div>
           <div class="application-go-text">${taskDef.task_name}</div>
@@ -11589,11 +11589,11 @@ function renderProjectCard(project) {
       }
     }
 
-    // メールボタン表示条件: タスク設定でメール有効（has_email_button=true）の場合のみ表示
+    // メールボタン表示条件: タスク設定でメール無効（has_email_button=false）でなければ表示
     // 社内対応ステータスの場合は非表示
     // 太陽光依頼は特別な外部リンクボタンを表示
     const isInternalStatus = INTERNAL_STATUSES.includes(task.state);
-    const showEmailButton = taskDef.has_email_button === true && !isInternalStatus;
+    const showEmailButton = taskDef.has_email_button !== false && !isInternalStatus;
     let emailBtn = '';
     if (key === 'solar') {
       // 太陽光依頼は外部サイトへのリンクボタン
@@ -12568,7 +12568,7 @@ async function updateTaskState(projectId, taskKey, state) {
         const requiredTasks = getApplicationGoRequiredTasks();
         const tooltip = requiredTasks.length > 0
           ? requiredTasks.map(r => `${r.task_name}:${r.finalState}`).join('、') + ' が必要'
-          : '太陽光:保存済、給排水:保存済、換気:保存済、サッシ:保存済 が必要';
+          : '太陽光:営業共有済、給排水:保存済、換気:保存済、サッシ:保存済 が必要';
         applicationGoContainer.outerHTML = `<div class="application-go-container application-go-disabled" title="${tooltip}">
           <div class="application-go-icon">🔒</div>
           <div class="application-go-text">${taskDef?.task_name || '申請GO'}</div>
@@ -17036,7 +17036,7 @@ function canPressApplicationGo(project) {
   // 必要なタスクが見つからない場合は旧ロジックにフォールバック
   if (requiredTasks.length === 0) {
     log('⚠️ 申請GO: tasksV2からタスクが見つかりません。旧ロジックを使用');
-    const solarOk = progressData['solar']?.state === '保存済';
+    const solarOk = progressData['solar']?.state === '営業共有済';
     const plumbingOk = progressData['plumbing']?.state === '保存済';
     const ventilationOk = progressData['ventilation']?.state === '保存済';
     const sashOk = progressData['sash']?.state === '保存済';
@@ -17079,7 +17079,7 @@ function confirmApplicationGo(projectId) {
   } else {
     // フォールバック
     conditions = [
-      { label: '太陽光依頼', ok: progressData['solar']?.state === '保存済', value: progressData['solar']?.state || '-', required: '保存済' },
+      { label: '太陽光依頼', ok: progressData['solar']?.state === '営業共有済', value: progressData['solar']?.state || '-', required: '営業共有済' },
       { label: '給排水図依頼', ok: progressData['plumbing']?.state === '保存済', value: progressData['plumbing']?.state || '-', required: '保存済' },
       { label: '換気図依頼', ok: progressData['ventilation']?.state === '保存済', value: progressData['ventilation']?.state || '-', required: '保存済' },
       { label: 'サッシ依頼', ok: progressData['sash']?.state === '保存済', value: progressData['sash']?.state || '-', required: '保存済' }
