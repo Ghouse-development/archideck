@@ -16348,11 +16348,15 @@ async function loadModalMinutesList(projectId) {
       return;
     }
 
-    // 議事録を回数ごとにグループ化（日付でグループ化し、古い順に回数を割り当て）
-    const sortedByDate = [...minutes].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+    // 議事録を回数ごとにグループ化（meeting_date優先、なければcreated_atを使用）
+    const sortedByDate = [...minutes].sort((a, b) => {
+      const dateA = a.meeting_date || a.created_at.split('T')[0];
+      const dateB = b.meeting_date || b.created_at.split('T')[0];
+      return new Date(dateA) - new Date(dateB);
+    });
     const dateGroups = {};
     sortedByDate.forEach(m => {
-      const dateKey = m.created_at.split('T')[0]; // YYYY-MM-DD形式
+      const dateKey = m.meeting_date || m.created_at.split('T')[0]; // meeting_date優先
       if (!dateGroups[dateKey]) {
         dateGroups[dateKey] = [];
       }
@@ -16364,18 +16368,23 @@ async function loadModalMinutesList(projectId) {
     const groupedHtml = groupKeys.map((dateKey, index) => {
       const meetingNumber = index + 1;
       const groupMinutes = dateGroups[dateKey];
-      const formattedDate = new Date(dateKey).toLocaleDateString('ja-JP', { month: 'long', day: 'numeric' });
+      const formattedDate = new Date(dateKey).toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' });
+      const firstMinuteId = groupMinutes[0].id; // グループの代表ID
 
       return `
         <div class="minutes-group" style="margin-bottom: 16px; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;">
-          <div style="background: var(--bg-tertiary); padding: 10px 14px; font-weight: 600; font-size: 13px; color: var(--text-primary); border-bottom: 1px solid var(--border-color);">
-            📋 第${meetingNumber}回打合せ（${formattedDate}）
+          <div style="background: var(--bg-tertiary); padding: 10px 14px; font-weight: 600; font-size: 13px; color: var(--text-primary); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between;">
+            <span>📋 第${meetingNumber}回打合せ（${formattedDate}）</span>
+            <button class="btn btn-small btn-ghost" onclick="editMinuteDate('${firstMinuteId}', '${dateKey}', '${projectId}')" style="padding: 2px 8px; font-size: 11px;">✏️ 編集</button>
           </div>
           <div style="padding: 8px;">
             ${groupMinutes.map(m => `
               <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; background: var(--bg-secondary); border-radius: 6px; margin-bottom: 6px;">
                 <a href="${m.file_url}" target="_blank" style="color: var(--primary-color); text-decoration: none; font-size: 13px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">📄 ${escapeHtml(m.file_name)}</a>
-                <button class="btn btn-small btn-ghost" onclick="deleteMinuteModal('${m.id}', '${projectId}')" style="color: var(--danger-color); padding: 4px 8px;">削除</button>
+                <div style="display: flex; gap: 4px;">
+                  <button class="btn btn-small btn-ghost" onclick="editSingleMinuteDate('${m.id}', '${m.meeting_date || dateKey}', '${projectId}')" style="padding: 4px 8px; font-size: 11px;" title="この議事録の日付を変更">📅</button>
+                  <button class="btn btn-small btn-ghost" onclick="deleteMinuteModal('${m.id}', '${projectId}')" style="color: var(--danger-color); padding: 4px 8px;">削除</button>
+                </div>
               </div>
             `).join('')}
           </div>
@@ -16387,6 +16396,66 @@ async function loadModalMinutesList(projectId) {
   } catch (error) {
     container.innerHTML = '<div style="color: var(--text-muted);">読み込みに失敗しました</div>';
   }
+}
+
+// 議事録グループの日付を編集（グループ内全ての議事録を更新）
+async function editMinuteDate(minuteId, currentDate, projectId) {
+  const newDate = prompt('打合せ日を入力してください（YYYY-MM-DD形式）:', currentDate);
+  if (!newDate || newDate === currentDate) return;
+
+  // 日付形式チェック
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(newDate)) {
+    showToast('日付形式が正しくありません（例: 2026-01-08）', 'error');
+    return;
+  }
+
+  showStatus('更新中...', 'saving');
+
+  // 同じ日付の議事録を全て更新
+  const { error } = await supabase
+    .from('project_minutes')
+    .update({ meeting_date: newDate })
+    .eq('project_id', projectId)
+    .or(`meeting_date.eq.${currentDate},meeting_date.is.null`);
+
+  if (error) {
+    showStatus('エラー', 'error');
+    showToast('更新に失敗しました: ' + error.message, 'error');
+    return;
+  }
+
+  showStatus('保存済み', 'saved');
+  showToast('打合せ日を更新しました', 'success');
+  await loadModalMinutesList(projectId);
+}
+
+// 個別の議事録の日付を編集
+async function editSingleMinuteDate(minuteId, currentDate, projectId) {
+  const newDate = prompt('この議事録の打合せ日を入力してください（YYYY-MM-DD形式）:', currentDate);
+  if (!newDate || newDate === currentDate) return;
+
+  // 日付形式チェック
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(newDate)) {
+    showToast('日付形式が正しくありません（例: 2026-01-08）', 'error');
+    return;
+  }
+
+  showStatus('更新中...', 'saving');
+
+  const { error } = await supabase
+    .from('project_minutes')
+    .update({ meeting_date: newDate })
+    .eq('id', minuteId);
+
+  if (error) {
+    showStatus('エラー', 'error');
+    showToast('更新に失敗しました: ' + error.message, 'error');
+    return;
+  }
+
+  showStatus('保存済み', 'saved');
+  showToast('打合せ日を更新しました', 'success');
+  await loadModalMinutesList(projectId);
 }
 
 async function uploadMinutesWithDateModal(projectId, file) {
@@ -16672,6 +16741,66 @@ function triggerMinutesUpload(projectId) {
   document.getElementById(`minutesUpload_${projectId}`).click();
 }
 
+// ファイル名から打合せ日を予測
+function predictMeetingDateFromFilename(filename) {
+  // 様々な日付パターンを認識
+  const patterns = [
+    // YYYYMMDD形式: 20260108, 2026_01_08, 2026-01-08
+    /(\d{4})[-_]?(\d{2})[-_]?(\d{2})/,
+    // YYMMDD形式: 260108
+    /(?:^|[^\d])(\d{2})(\d{2})(\d{2})(?:[^\d]|$)/,
+    // MM月DD日形式: 1月8日, 01月08日
+    /(\d{1,2})月(\d{1,2})日/,
+    // MM-DD形式: 1-8, 01-08
+    /(?:^|[^\d])(\d{1,2})[-\/](\d{1,2})(?:[^\d]|$)/,
+    // R6.1.8形式 (令和)
+    /R(\d{1,2})[.\-](\d{1,2})[.\-](\d{1,2})/i,
+  ];
+
+  for (const pattern of patterns) {
+    const match = filename.match(pattern);
+    if (match) {
+      let year, month, day;
+
+      if (pattern.source.includes('月')) {
+        // MM月DD日形式
+        year = new Date().getFullYear();
+        month = parseInt(match[1], 10);
+        day = parseInt(match[2], 10);
+      } else if (pattern.source.includes('R')) {
+        // 令和形式
+        year = 2018 + parseInt(match[1], 10); // 令和1年=2019年
+        month = parseInt(match[2], 10);
+        day = parseInt(match[3], 10);
+      } else if (match[1].length === 4) {
+        // YYYYMMDD形式
+        year = parseInt(match[1], 10);
+        month = parseInt(match[2], 10);
+        day = parseInt(match[3], 10);
+      } else if (match[1].length === 2 && match[2].length === 2 && match[3].length === 2) {
+        // YYMMDD形式
+        year = 2000 + parseInt(match[1], 10);
+        month = parseInt(match[2], 10);
+        day = parseInt(match[3], 10);
+      } else {
+        // MM-DD形式
+        year = new Date().getFullYear();
+        month = parseInt(match[1], 10);
+        day = parseInt(match[2], 10);
+      }
+
+      // 日付の妥当性チェック
+      if (month >= 1 && month <= 12 && day >= 1 && day <= 31 && year >= 2020 && year <= 2030) {
+        return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      }
+    }
+  }
+
+  // 予測できなかった場合は今日の日付
+  const today = new Date();
+  return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+}
+
 // 打合せ日・案件名・担当者を含む議事録アップロード
 async function uploadMinutesWithDate(projectId, file) {
   if (!file) {
@@ -16685,9 +16814,8 @@ async function uploadMinutesWithDate(projectId, file) {
     return;
   }
 
-  // 打合せ日は今日の日付を自動設定
-  const today = new Date();
-  const meetingDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  // ファイル名から打合せ日を予測（予測できなければ今日の日付）
+  const meetingDate = predictMeetingDateFromFilename(file.name);
 
   // ファイルサイズチェック（10MB上限）
   const maxSize = 10 * 1024 * 1024;
@@ -16737,13 +16865,14 @@ async function uploadMinutesWithDate(projectId, file) {
       .from('minutes')
       .getPublicUrl(storagePath);
 
-    // DBに登録（元のファイル名を維持）
+    // DBに登録（元のファイル名を維持 + 打合せ日を予測）
     const insertData = {
       project_id: projectId,
       file_name: originalFileName,
       file_url: urlData.publicUrl || '',
       file_size: file.size || 0,
-      uploaded_by: currentUser?.email || 'anonymous@archideck.jp'
+      uploaded_by: currentUser?.email || 'anonymous@archideck.jp',
+      meeting_date: meetingDate // ファイル名から予測した打合せ日
     };
 
     console.log('Inserting minutes:', insertData); // デバッグ用
