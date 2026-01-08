@@ -5061,6 +5061,21 @@ textarea:focus-visible {
                 <li>変更は「プレビュー」で確認してから保存してください</li>
               </ul>
             </div>
+
+            <!-- システム設定 -->
+            <div style="margin-top: 48px; padding-top: 32px; border-top: 1px solid var(--border-color);">
+              <h3 style="margin-bottom: 20px; font-size: 18px; font-weight: 600;">システム設定</h3>
+
+              <div class="form-group">
+                <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                  <input type="checkbox" id="demoModeToggle" onchange="saveDemoModeSetting()" style="width: 20px; height: 20px; cursor: pointer;">
+                  <span style="font-weight: 500;">デモモードを有効にする</span>
+                </label>
+                <div class="form-hint" style="margin-top: 8px; padding-left: 32px;">
+                  有効にすると、パスワードなしでログインできます（テスト・デモ用）
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -6520,6 +6535,29 @@ function updateUserDisplay(displayName) {
 
 // デモモードフラグ
 let isDemoMode = false;
+let demoModeEnabled = true; // デフォルトで有効（追って認証システムを実装予定）
+
+// デモモード設定を保存
+function saveDemoModeSetting() {
+  const toggle = document.getElementById('demoModeToggle');
+  if (toggle) {
+    demoModeEnabled = toggle.checked;
+    localStorage.setItem('demoModeEnabled', demoModeEnabled ? 'true' : 'false');
+    showToast(demoModeEnabled ? 'デモモードを有効にしました' : 'デモモードを無効にしました', 'success');
+  }
+}
+
+// デモモード設定を読み込み
+function loadDemoModeSetting() {
+  const saved = localStorage.getItem('demoModeEnabled');
+  // デフォルトはtrue（未設定またはtrueの場合に有効）
+  demoModeEnabled = saved !== 'false';
+  const toggle = document.getElementById('demoModeToggle');
+  if (toggle) {
+    toggle.checked = demoModeEnabled;
+  }
+  return demoModeEnabled;
+}
 
 // デモモード（パスワード無しでログイン）
 async function enterDemoMode() {
@@ -6582,11 +6620,17 @@ async function signIn() {
 
   log('📧 入力されたメール:', email);
 
-  // パスワードが空の場合はデモモードで入る
+  // パスワードが空の場合
   if (!password && email) {
-    log('🎭 パスワード無し - デモモードで続行');
-    enterDemoMode();
-    return;
+    // デモモードが有効な場合のみ許可
+    if (demoModeEnabled) {
+      log('🎭 パスワード無し - デモモードで続行');
+      enterDemoMode();
+      return;
+    } else {
+      showToast('パスワードを入力してください', 'error');
+      return;
+    }
   }
 
   if (!email) {
@@ -6634,6 +6678,8 @@ async function signOut() {
 
 async function checkAuth() {
   log('🔍 認証状態をチェック中...');
+  // デモモード設定を読み込み
+  loadDemoModeSetting();
   const { data: { session } } = await supabase.auth.getSession();
 
   if (session) {
@@ -10190,6 +10236,9 @@ function switchSubTab(panelName, element) {
     case 'products':
       renderProductsList();
       break;
+    case 'customize':
+      loadDemoModeSetting();
+      break;
     case 'kintone':
       loadKintoneSettings();
       break;
@@ -11025,6 +11074,13 @@ function renderProjectCard(project) {
         <div>
           <div class="card-title"><span class="customer-name">${escapeHtml(project.customer)}</span><span class="badge badge-primary">${escapeHtml(project.specifications || 'LIFE')}</span>${project.is_archived ? '<span class="badge badge-success">完了済み</span>' : ''}${!project.is_archived && staleDays >= 7 ? `<span class="badge badge-warning" title="${staleDays}日間未更新">⚠️ ${staleDays}日</span>` : ''}</div>
           <div class="card-subtitle"><span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this)" style="cursor: pointer; text-decoration: underline dotted;" title="クリックで担当者変更">設計：${escapeHtml(project.assigned_to || '未割当')}</span>${project.ic_assignee ? `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'ic_assignee')" style="cursor: pointer; text-decoration: underline dotted;" title="クリックでIC担当者変更"> | IC：${escapeHtml(project.ic_assignee)}</span>` : `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'ic_assignee')" style="cursor: pointer; color: var(--text-muted); font-size: 11px;" title="IC担当者を追加"> | +IC</span>`}${project.exterior_assignee ? `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'exterior_assignee')" style="cursor: pointer; text-decoration: underline dotted;" title="クリックで外構担当者変更"> | 外構：${escapeHtml(project.exterior_assignee)}</span>` : `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'exterior_assignee')" style="cursor: pointer; color: var(--text-muted); font-size: 11px;" title="外構担当者を追加"> | +外構</span>`}${project.realestate_assignee ? `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'realestate_assignee')" style="cursor: pointer; text-decoration: underline dotted;" title="クリックで不動産担当者変更"> | 不動産：${escapeHtml(project.realestate_assignee)}</span>` : `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'realestate_assignee')" style="cursor: pointer; color: var(--text-muted); font-size: 11px;" title="不動産担当者を追加"> | +不動産</span>`}${project.construction_assignee ? `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'construction_assignee')" style="cursor: pointer; text-decoration: underline dotted;" title="クリックで工事担当者変更"> | 工事：${escapeHtml(project.construction_assignee)}</span>` : `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'construction_assignee')" style="cursor: pointer; color: var(--text-muted); font-size: 11px;" title="工事担当者を追加"> | +工事</span>`}${(() => { const ds = DeadlineManager.getStatus(project.id); return ds ? ` <span style="background: ${ds.color}; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-left: 8px;" onclick="event.stopPropagation(); DeadlineManager.showModal('${project.id}')" title="期限を変更">📅 ${ds.label}</span>` : ` <span style="color: var(--text-muted); font-size: 11px; cursor: pointer;" onclick="event.stopPropagation(); DeadlineManager.showModal('${project.id}')" title="期限を設定">📅 期限設定</span>`; })()}</div>
+          ${(() => {
+            const dates = [];
+            if (project.layout_confirmed_date) dates.push(`間取確定: ${project.layout_confirmed_date}`);
+            if (project.construction_permit_date) dates.push(`着工許可: ${project.construction_permit_date}`);
+            if (project.pre_contract_meeting_date) dates.push(`変更契約前会議: ${project.pre_contract_meeting_date}`);
+            return dates.length > 0 ? `<div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">${dates.join(' | ')}</div>` : '';
+          })()}
         </div>
       </div>
       <div style="display: flex; gap: 8px; align-items: center;">
@@ -18759,21 +18815,19 @@ async function importFromKintoneDirect() {
   statusEl.innerHTML = '<span style="color: var(--text-muted);">📥 kintoneからデータを取得中...</span>';
 
   try {
-    // 1. ログイン確認
-    if (!currentUser?.id) {
-      statusEl.innerHTML = '<span style="color: var(--danger-color);">❌ ログインが必要です</span>';
-      return;
-    }
-
-    // 2. フィールドマッピングを取得
+    // 1. フィールドマッピングを取得
     const fieldMappings = safeJsonParse(localStorage.getItem('kintone_field_mappings'), {});
     const customerField = fieldMappings.customer || '文字_基本情報_お客様名_メイン';
     const salesField = fieldMappings.sales || 'ユーザー選択_基本情報_営業';
     const designField = fieldMappings.design || 'ユーザー選択_基本情報_設計';
     const icField = fieldMappings.ic || 'ユーザー選択_基本情報_IC';
     const constructionField = fieldMappings.construction || 'ユーザー選択_基本情報_工事';
+    // 日付フィールド
+    const layoutField = fieldMappings.layout || '';
+    const permitField = fieldMappings.permit || '';
+    const meetingField = fieldMappings.meeting || '';
 
-    console.log('Field mappings:', { customerField, salesField, designField, icField, constructionField });
+    console.log('Field mappings:', { customerField, salesField, designField, icField, constructionField, layoutField, permitField, meetingField });
 
     // 3. kintoneからレコード取得
     const result = await fetchKintoneRecords();
@@ -18828,19 +18882,39 @@ async function importFromKintoneDirect() {
           p.customer === customer
         );
 
+        // 担当者フィールド値
+        const designVal = getValue(designField);
+        const icVal = getValue(icField);
+        const salesVal = getValue(salesField);
+        const constructionVal = getValue(constructionField);
+
+        // 日付フィールド値（日付形式を安全に取得）
+        const getDateValue = (field) => {
+          if (!field) return null;
+          const val = record[field]?.value;
+          if (!val) return null;
+          // YYYY-MM-DD形式を検証
+          const dateStr = String(val).trim();
+          if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
+          return null;
+        };
+        const layoutDate = getDateValue(layoutField);
+        const permitDate = getDateValue(permitField);
+        const meetingDate = getDateValue(meetingField);
+
         if (existingProject) {
           // 6. 更新
           const updateData = { updated_at: new Date().toISOString() };
-          const designVal = getValue(designField);
-          const icVal = getValue(icField);
-          const salesVal = getValue(salesField);
-          const constructionVal = getValue(constructionField);
 
           if (designVal) updateData.assigned_to = designVal;
           if (icVal) updateData.ic_assignee = icVal;
           if (salesVal) updateData.sales_assignee = salesVal;
           if (constructionVal) updateData.construction_assignee = constructionVal;
           if (kintoneRecordId) updateData.kintone_record_id = kintoneRecordId;
+          // 日付フィールド
+          if (layoutDate) updateData.layout_confirmed_date = layoutDate;
+          if (permitDate) updateData.construction_permit_date = permitDate;
+          if (meetingDate) updateData.pre_contract_meeting_date = meetingDate;
 
           const { error } = await supabase
             .from('projects')
@@ -18858,22 +18932,20 @@ async function importFromKintoneDirect() {
           // 7. 新規作成
           const insertData = {
             customer,
-            uid: currentUser?.id,
             status: 'active',
             progress: {},
             specifications: 'LIFE'
           };
-
-          const designVal = getValue(designField);
-          const icVal = getValue(icField);
-          const salesVal = getValue(salesField);
-          const constructionVal = getValue(constructionField);
 
           if (designVal) insertData.assigned_to = designVal;
           if (icVal) insertData.ic_assignee = icVal;
           if (salesVal) insertData.sales_assignee = salesVal;
           if (constructionVal) insertData.construction_assignee = constructionVal;
           if (kintoneRecordId) insertData.kintone_record_id = kintoneRecordId;
+          // 日付フィールド
+          if (layoutDate) insertData.layout_confirmed_date = layoutDate;
+          if (permitDate) insertData.construction_permit_date = permitDate;
+          if (meetingDate) insertData.pre_contract_meeting_date = meetingDate;
 
           const { data: newProject, error } = await supabase
             .from('projects')
