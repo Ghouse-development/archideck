@@ -18759,13 +18759,7 @@ async function importFromKintoneDirect() {
   statusEl.innerHTML = '<span style="color: var(--text-muted);">📥 kintoneからデータを取得中...</span>';
 
   try {
-    // 1. 組織IDの確認
-    if (!currentOrganization?.id) {
-      statusEl.innerHTML = '<span style="color: var(--danger-color);">❌ 組織が選択されていません</span>';
-      return;
-    }
-
-    // 2. フィールドマッピングを取得
+    // 1. フィールドマッピングを取得
     const fieldMappings = safeJsonParse(localStorage.getItem('kintone_field_mappings'), {});
     const customerField = fieldMappings.customer || '文字_基本情報_お客様名_メイン';
     const salesField = fieldMappings.sales || 'ユーザー選択_基本情報_営業';
@@ -18855,10 +18849,9 @@ async function importFromKintoneDirect() {
             updated++;
           }
         } else {
-          // 7. 新規作成
+          // 7. 新規作成（organization_idは省略可能）
           const insertData = {
             customer,
-            organization_id: currentOrganization.id,
             status: 'active',
             progress: {},
             specifications: 'LIFE'
