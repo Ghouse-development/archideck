@@ -139,8 +139,13 @@ serve(async (req) => {
         const maxOffset = 10000 // kintone APIの制限
         let hasMore = true
         let hitLimit = false
+        let pageCount = 0
+        let lastError: string | null = null
+        let retryCount = 0
+        const maxRetries = 3
 
         while (hasMore) {
+          pageCount++
           // order byを追加して一貫したページネーションを保証
           const baseQuery = data?.query || ''
           const orderClause = 'order by $id asc'
@@ -152,36 +157,80 @@ serve(async (req) => {
           params.append('app', appId.toString())
           params.append('query', query)
 
-          const res = await fetch(`${kintoneBaseUrl}/records.json?${params.toString()}`, {
-            method: 'GET',
-            headers: kintoneHeaders,
-          })
+          try {
+            const res = await fetch(`${kintoneBaseUrl}/records.json?${params.toString()}`, {
+              method: 'GET',
+              headers: kintoneHeaders,
+            })
 
-          if (!res.ok) {
-            const errorText = await res.text()
+            if (!res.ok) {
+              const errorText = await res.text()
+              let errorDetail = errorText
+              try {
+                const errorJson = JSON.parse(errorText)
+                errorDetail = errorJson.message || errorJson.error || errorText
+              } catch {}
+
+              // リトライ可能なエラーの場合
+              if (res.status >= 500 && retryCount < maxRetries) {
+                retryCount++
+                await new Promise(resolve => setTimeout(resolve, 1000 * retryCount))
+                continue
+              }
+
+              return new Response(
+                JSON.stringify({
+                  success: false,
+                  error: `kintone API エラー (${res.status})`,
+                  details: errorDetail,
+                  debug: {
+                    page: pageCount,
+                    offset,
+                    recordsRetrieved: allRecords.length,
+                    query
+                  }
+                }),
+                { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+              )
+            }
+
+            retryCount = 0 // 成功したらリトライカウントをリセット
+            const result = await res.json()
+            const records = result.records || []
+            allRecords.push(...records)
+
+            if (records.length < limit) {
+              hasMore = false
+            } else {
+              offset += limit
+              // 10,000件制限チェック
+              if (offset >= maxOffset) {
+                hasMore = false
+                hitLimit = true
+              }
+            }
+          } catch (fetchError) {
+            // ネットワークエラーなどの場合、リトライ
+            if (retryCount < maxRetries) {
+              retryCount++
+              lastError = fetchError.message
+              await new Promise(resolve => setTimeout(resolve, 1000 * retryCount))
+              continue
+            }
+
             return new Response(
               JSON.stringify({
                 success: false,
-                error: `kintone API エラー (${res.status})`,
-                details: errorText
+                error: `ネットワークエラー: ${fetchError.message}`,
+                details: lastError,
+                debug: {
+                  page: pageCount,
+                  offset,
+                  recordsRetrieved: allRecords.length
+                }
               }),
               { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
             )
-          }
-
-          const result = await res.json()
-          const records = result.records || []
-          allRecords.push(...records)
-
-          if (records.length < limit) {
-            hasMore = false
-          } else {
-            offset += limit
-            // 10,000件制限チェック
-            if (offset >= maxOffset) {
-              hasMore = false
-              hitLimit = true
-            }
           }
         }
 
@@ -191,6 +240,7 @@ serve(async (req) => {
             data: {
               records: allRecords,
               totalCount: allRecords.length,
+              pageCount,
               hitLimit,
               warning: hitLimit ? '10,000件を超えるレコードがあります。一部が取得できていない可能性があります。' : null
             }

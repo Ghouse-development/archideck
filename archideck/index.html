@@ -5169,6 +5169,16 @@ textarea:focus-visible {
                 kintoneから直接データを取得してインポートできます。
               </p>
               <div id="kintoneImportStatus" style="margin-top: 12px;"></div>
+
+              <!-- データ整理 -->
+              <div style="margin-top: 24px; padding: 16px; background: var(--bg-secondary); border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 12px;">データ整理</h4>
+                <div id="dataStatsInfo" style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px;"></div>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                  <button class="btn btn-ghost btn-sm" onclick="showDataStats()">📊 データ状況を確認</button>
+                  <button class="btn btn-ghost btn-sm" onclick="clearDemoDataConfirm()" style="color: var(--warning-color);">🗑️ デモデータを削除</button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -18823,12 +18833,76 @@ async function updateKintoneRecord(recordId, record) {
   return await callKintoneProxy('updateRecord', { recordId, record });
 }
 
-// kintoneから直接インポート - 完全修正版
+// kintoneインポート前のバリデーション
+async function validateKintoneImport() {
+  // 1. kintone設定が保存されているか確認
+  const { data: settings, error: settingsError } = await supabase
+    .from('kintone_settings')
+    .select('*')
+    .eq('is_active', true)
+    .limit(1);
+
+  if (settingsError) {
+    return { valid: false, error: `DB接続エラー: ${settingsError.message}` };
+  }
+
+  if (!settings || settings.length === 0) {
+    return { valid: false, error: 'kintone設定が保存されていません。先に接続設定を保存してください。' };
+  }
+
+  const config = settings[0];
+
+  // 2. 必須フィールドの確認
+  if (!config.domain || !config.app_id || !config.api_token) {
+    return { valid: false, error: 'kintone接続設定が不完全です。ドメイン、アプリID、APIトークンを設定してください。' };
+  }
+
+  // 3. フィールドマッピングの確認
+  const fieldMappings = safeJsonParse(localStorage.getItem('kintone_field_mappings'), {});
+  if (!fieldMappings.customer) {
+    return { valid: false, error: '顧客名フィールドが設定されていません。フィールドマッピングを設定してください。' };
+  }
+
+  // 4. 接続テスト（簡易）
+  const testResult = await callKintoneProxy('test');
+  if (!testResult.success) {
+    return { valid: false, error: `kintone接続に失敗しました: ${testResult.error}` };
+  }
+
+  return { valid: true };
+}
+
+// kintoneから直接インポート - 完全修正版 v2
 async function importFromKintoneDirect() {
   const statusEl = document.getElementById('kintoneImportStatus');
-  statusEl.innerHTML = '<span style="color: var(--text-muted);">📥 kintoneからデータを取得中...</span>';
+  statusEl.innerHTML = '<span style="color: var(--text-muted);">📥 インポート準備中...</span>';
 
   try {
+    // 0. インポート前のバリデーション
+    const validation = await validateKintoneImport();
+    if (!validation.valid) {
+      statusEl.innerHTML = `<span style="color: var(--danger-color);">❌ ${validation.error}</span>`;
+      return;
+    }
+
+    // デモデータが存在する場合の警告
+    const demoProjects = projects.filter(p => !p.kintone_record_id);
+    if (demoProjects.length > 0) {
+      const proceed = confirm(
+        `⚠️ デモデータが${demoProjects.length}件あります\n\n` +
+        `同じ顧客名のkintoneレコードがある場合、既存のデモデータがkintone連携に変換されます。\n\n` +
+        `インポート前にデモデータを削除することをお勧めします。\n` +
+        `（設定 > kintone > データ整理 > デモデータを削除）\n\n` +
+        `このまま続行しますか？`
+      );
+      if (!proceed) {
+        statusEl.innerHTML = '<span style="color: var(--text-muted);">インポートをキャンセルしました</span>';
+        return;
+      }
+    }
+
+    statusEl.innerHTML = '<span style="color: var(--text-muted);">📥 kintoneからデータを取得中...</span>';
+
     // 1. フィールドマッピングを取得
     const fieldMappings = safeJsonParse(localStorage.getItem('kintone_field_mappings'), {});
     const customerField = fieldMappings.customer || '文字_基本情報_お客様名_メイン';
@@ -18843,7 +18917,7 @@ async function importFromKintoneDirect() {
 
     console.log('Field mappings:', { customerField, salesField, designField, icField, constructionField, layoutField, permitField, meetingField });
 
-    // 3. kintoneからレコード取得（全件取得 - 500件制限回避）
+    // 2. kintoneからレコード取得（全件取得 - 500件制限回避）
     const result = await callKintoneProxy('getAllRecords');
     console.log('Kintone result:', result);
 
@@ -18866,22 +18940,65 @@ async function importFromKintoneDirect() {
       console.warn('kintone警告:', warning);
     }
 
-    // デバッグ: フィールド一覧
-    console.log('Available fields:', Object.keys(records[0]));
+    // デバッグ: フィールド一覧（最初の1件のみ）
+    if (records.length > 0) {
+      console.log('Available fields:', Object.keys(records[0]));
+      console.log('Sample record $id:', records[0]['$id']);
+      console.log('Sample record レコード番号:', records[0]['レコード番号']);
+    }
     console.log('Total records from kintone:', records.length, hitLimit ? '(10,000件制限に到達)' : '');
 
     statusEl.innerHTML = `<span style="color: var(--text-muted);">📥 ${records.length}件のレコードを処理中...${hitLimit ? ' (10,000件制限)' : ''}</span>`;
 
+    // 3. 既存プロジェクトをkintone_record_idでインデックス化（高速検索用）
+    const projectsByKintoneId = new Map();
+    const projectsByCustomer = new Map();
+    for (const p of projects) {
+      if (p.kintone_record_id) {
+        projectsByKintoneId.set(String(p.kintone_record_id), p);
+      }
+      // 顧客名でもインデックス（kintone_record_idがない場合のフォールバック用）
+      // ただし、kintoneデータでない既存データのみ（混在防止）
+      if (!p.kintone_record_id && p.customer) {
+        projectsByCustomer.set(p.customer, p);
+      }
+    }
+    console.log('Existing projects indexed:', {
+      byKintoneId: projectsByKintoneId.size,
+      byCustomer: projectsByCustomer.size
+    });
+
     let imported = 0;
     let updated = 0;
     let skipped = 0;
-    let skippedNoCustomer = 0; // 顧客名なしでスキップ
+    let skippedNoCustomer = 0;
+    let skippedNoRecordId = 0;
     const errors = [];
+    const processedKintoneIds = new Set(); // 重複処理防止
 
     for (const record of records) {
       try {
-        // 4. フィールド値を安全に取得
+        // 4. kintone レコードIDを取得（必須）
+        const kintoneRecordId = extractKintoneRecordId(record);
+
+        if (!kintoneRecordId) {
+          console.warn('kintone_record_id not found in record:', record);
+          skipped++;
+          skippedNoRecordId++;
+          continue;
+        }
+
+        // 重複チェック（同じkintone_record_idが複数回処理されないように）
+        if (processedKintoneIds.has(kintoneRecordId)) {
+          console.warn('Duplicate kintone_record_id:', kintoneRecordId);
+          skipped++;
+          continue;
+        }
+        processedKintoneIds.add(kintoneRecordId);
+
+        // 5. フィールド値を安全に取得
         const getValue = (field) => {
+          if (!field) return null;
           const val = record[field]?.value;
           if (val === undefined || val === null) return null;
           if (Array.isArray(val)) {
@@ -18899,13 +19016,19 @@ async function importFromKintoneDirect() {
           continue;
         }
 
-        const kintoneRecordId = String(record['$id']?.value || record['レコード番号']?.value || '');
+        // 6. 既存プロジェクトを確認（kintone_record_idを優先）
+        let existingProject = projectsByKintoneId.get(kintoneRecordId);
 
-        // 5. 既存プロジェクトを確認
-        const existingProject = projects.find(p =>
-          (kintoneRecordId && p.kintone_record_id === kintoneRecordId) ||
-          p.customer === customer
-        );
+        // kintone_record_idでマッチしない場合、顧客名でkintone未連携の既存データを検索
+        // ただし、これは初回インポート時のみ有効（混在防止）
+        if (!existingProject) {
+          const customerMatch = projectsByCustomer.get(customer);
+          if (customerMatch && !customerMatch.kintone_record_id) {
+            existingProject = customerMatch;
+            // このプロジェクトをkintone連携として更新するため、マップから削除
+            projectsByCustomer.delete(customer);
+          }
+        }
 
         // 担当者フィールド値
         const designVal = getValue(designField);
@@ -18913,30 +19036,22 @@ async function importFromKintoneDirect() {
         const salesVal = getValue(salesField);
         const constructionVal = getValue(constructionField);
 
-        // 日付フィールド値（日付形式を安全に取得）
-        const getDateValue = (field) => {
-          if (!field) return null;
-          const val = record[field]?.value;
-          if (!val) return null;
-          // YYYY-MM-DD形式を検証
-          const dateStr = String(val).trim();
-          if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
-          return null;
-        };
-        const layoutDate = getDateValue(layoutField);
-        const permitDate = getDateValue(permitField);
-        const meetingDate = getDateValue(meetingField);
+        // 日付フィールド値（複数形式対応）
+        const layoutDate = parseDateValue(record, layoutField);
+        const permitDate = parseDateValue(record, permitField);
+        const meetingDate = parseDateValue(record, meetingField);
 
         if (existingProject) {
-          // 6. 更新
-          const updateData = { updated_at: new Date().toISOString() };
+          // 7. 更新
+          const updateData = {
+            updated_at: new Date().toISOString(),
+            kintone_record_id: kintoneRecordId // 必ず設定
+          };
 
           if (designVal) updateData.assigned_to = designVal;
           if (icVal) updateData.ic_assignee = icVal;
           if (salesVal) updateData.sales_assignee = salesVal;
           if (constructionVal) updateData.construction_assignee = constructionVal;
-          if (kintoneRecordId) updateData.kintone_record_id = kintoneRecordId;
-          // 日付フィールド
           if (layoutDate) updateData.layout_confirmed_date = layoutDate;
           if (permitDate) updateData.construction_permit_date = permitDate;
           if (meetingDate) updateData.pre_contract_meeting_date = meetingDate;
@@ -18947,27 +19062,28 @@ async function importFromKintoneDirect() {
             .eq('id', existingProject.id);
 
           if (error) {
-            errors.push({ type: 'update', customer, error: error.message });
+            errors.push({ type: 'update', customer, kintoneRecordId, error: error.message, code: error.code });
             skipped++;
           } else {
             Object.assign(existingProject, updateData);
+            // インデックスも更新
+            projectsByKintoneId.set(kintoneRecordId, existingProject);
             updated++;
           }
         } else {
-          // 7. 新規作成
+          // 8. 新規作成
           const insertData = {
             customer,
             status: 'active',
             progress: {},
-            specifications: 'LIFE'
+            specifications: 'LIFE',
+            kintone_record_id: kintoneRecordId // 必ず設定
           };
 
           if (designVal) insertData.assigned_to = designVal;
           if (icVal) insertData.ic_assignee = icVal;
           if (salesVal) insertData.sales_assignee = salesVal;
           if (constructionVal) insertData.construction_assignee = constructionVal;
-          if (kintoneRecordId) insertData.kintone_record_id = kintoneRecordId;
-          // 日付フィールド
           if (layoutDate) insertData.layout_confirmed_date = layoutDate;
           if (permitDate) insertData.construction_permit_date = permitDate;
           if (meetingDate) insertData.pre_contract_meeting_date = meetingDate;
@@ -18979,36 +19095,50 @@ async function importFromKintoneDirect() {
             .single();
 
           if (error) {
-            errors.push({ type: 'insert', customer, error: error.message, code: error.code });
+            errors.push({ type: 'insert', customer, kintoneRecordId, error: error.message, code: error.code });
             console.error('Insert error:', error, insertData);
             skipped++;
           } else if (newProject) {
             projects.push(newProject);
+            projectsByKintoneId.set(kintoneRecordId, newProject);
             imported++;
           }
         }
       } catch (e) {
-        console.error('Record error:', e);
+        console.error('Record processing error:', e, record);
+        errors.push({ type: 'exception', error: e.message });
         skipped++;
       }
     }
 
-    // 8. エラーログ
-    if (errors.length > 0) console.error('Import errors:', errors);
+    // 9. エラーログ
+    if (errors.length > 0) {
+      console.error('Import errors:', errors);
+      console.table(errors);
+    }
 
-    // 9. 完了表示
+    // 10. 完了表示
     renderProjects();
     renderSidebar();
 
     // 詳細なサマリーを作成
     const total = records.length;
-    const processed = imported + updated;
     const skipDetails = [];
     if (skippedNoCustomer > 0) skipDetails.push(`顧客名なし: ${skippedNoCustomer}`);
+    if (skippedNoRecordId > 0) skipDetails.push(`レコードIDなし: ${skippedNoRecordId}`);
     if (errors.length > 0) skipDetails.push(`エラー: ${errors.length}`);
     const skipInfo = skipDetails.length > 0 ? ` (${skipDetails.join(', ')})` : '';
 
-    console.log('Import summary:', { total, imported, updated, skipped, skippedNoCustomer, errors: errors.length, hitLimit });
+    console.log('Import summary:', {
+      total,
+      imported,
+      updated,
+      skipped,
+      skippedNoCustomer,
+      skippedNoRecordId,
+      errors: errors.length,
+      hitLimit
+    });
 
     if (imported + updated > 0) {
       let msg = `✅ 完了: kintone ${total}件中 → ${imported}件新規、${updated}件更新`;
@@ -19025,6 +19155,206 @@ async function importFromKintoneDirect() {
   } catch (e) {
     console.error('Import error:', e);
     statusEl.innerHTML = `<span style="color: var(--danger-color);">❌ エラー: ${e.message}</span>`;
+  }
+}
+
+// kintoneレコードIDを抽出（複数のフィールド名に対応）
+function extractKintoneRecordId(record) {
+  // kintone APIは $id フィールドでレコードIDを返す
+  // レコード番号フィールドも確認
+  const candidates = [
+    record['$id']?.value,
+    record['レコード番号']?.value,
+    record['Record_number']?.value,
+    record['record_id']?.value
+  ];
+
+  for (const val of candidates) {
+    if (val !== undefined && val !== null && val !== '') {
+      const strVal = String(val).trim();
+      if (strVal && strVal !== '0') {
+        return strVal;
+      }
+    }
+  }
+
+  return null;
+}
+
+// 日付値をパース（複数形式対応）
+function parseDateValue(record, field) {
+  if (!field) return null;
+  const val = record[field]?.value;
+  if (!val) return null;
+
+  const dateStr = String(val).trim();
+  if (!dateStr) return null;
+
+  // YYYY-MM-DD形式（推奨）
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    return dateStr;
+  }
+
+  // ISO 8601形式（例: 2026-01-08T00:00:00Z）
+  const isoMatch = dateStr.match(/^(\d{4}-\d{2}-\d{2})T/);
+  if (isoMatch) {
+    return isoMatch[1];
+  }
+
+  // YYYY/MM/DD形式
+  const slashMatch = dateStr.match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);
+  if (slashMatch) {
+    const [, y, m, d] = slashMatch;
+    return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+  }
+
+  // 日本語形式（YYYY年MM月DD日）
+  const jpMatch = dateStr.match(/^(\d{4})年(\d{1,2})月(\d{1,2})日$/);
+  if (jpMatch) {
+    const [, y, m, d] = jpMatch;
+    return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+  }
+
+  console.warn('Unknown date format:', dateStr, 'in field:', field);
+  return null;
+}
+
+// データ状況を表示
+function showDataStats() {
+  const kintoneProjects = projects.filter(p => p.kintone_record_id);
+  const demoProjects = projects.filter(p => !p.kintone_record_id);
+  const archivedProjects = projects.filter(p => p.is_archived);
+
+  const statsEl = document.getElementById('dataStatsInfo');
+  if (statsEl) {
+    statsEl.innerHTML = `
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px;">
+        <div style="padding: 8px; background: var(--bg-color); border-radius: 4px; text-align: center;">
+          <div style="font-size: 20px; font-weight: 700; color: var(--primary-color);">${projects.length}</div>
+          <div style="font-size: 11px; color: var(--text-muted);">総案件数</div>
+        </div>
+        <div style="padding: 8px; background: var(--bg-color); border-radius: 4px; text-align: center;">
+          <div style="font-size: 20px; font-weight: 700; color: var(--success-color);">${kintoneProjects.length}</div>
+          <div style="font-size: 11px; color: var(--text-muted);">kintone連携</div>
+        </div>
+        <div style="padding: 8px; background: var(--bg-color); border-radius: 4px; text-align: center;">
+          <div style="font-size: 20px; font-weight: 700; color: var(--warning-color);">${demoProjects.length}</div>
+          <div style="font-size: 11px; color: var(--text-muted);">手動/デモ</div>
+        </div>
+        <div style="padding: 8px; background: var(--bg-color); border-radius: 4px; text-align: center;">
+          <div style="font-size: 20px; font-weight: 700; color: var(--text-muted);">${archivedProjects.length}</div>
+          <div style="font-size: 11px; color: var(--text-muted);">完了済み</div>
+        </div>
+      </div>
+    `;
+  }
+}
+
+// デモデータ削除確認
+async function clearDemoDataConfirm() {
+  const demoProjects = projects.filter(p => !p.kintone_record_id);
+
+  if (demoProjects.length === 0) {
+    showToast('削除対象のデモデータがありません', 'info');
+    return;
+  }
+
+  const confirmed = confirm(
+    `⚠️ デモデータを削除\n\n` +
+    `${demoProjects.length}件のデモ/手動追加データを削除します。\n` +
+    `kintone連携済みの案件は削除されません。\n\n` +
+    `削除対象:\n${demoProjects.slice(0, 5).map(p => `  - ${p.customer}`).join('\n')}` +
+    (demoProjects.length > 5 ? `\n  ... 他${demoProjects.length - 5}件` : '') +
+    `\n\nこの操作は取り消せません。続行しますか？`
+  );
+
+  if (!confirmed) return;
+
+  // 二重確認
+  const doubleConfirmed = confirm(
+    `本当に${demoProjects.length}件のデモデータを削除しますか？\n\n` +
+    `この操作は取り消せません。`
+  );
+
+  if (!doubleConfirmed) return;
+
+  await clearDemoData();
+}
+
+// デモデータを削除
+async function clearDemoData() {
+  const statusEl = document.getElementById('kintoneImportStatus');
+  if (statusEl) {
+    statusEl.innerHTML = '<span style="color: var(--text-muted);">🗑️ デモデータを削除中...</span>';
+  }
+
+  try {
+    const demoProjects = projects.filter(p => !p.kintone_record_id);
+    const demoIds = demoProjects.map(p => p.id);
+
+    if (demoIds.length === 0) {
+      if (statusEl) {
+        statusEl.innerHTML = '<span style="color: var(--info-color);">削除対象のデモデータがありません</span>';
+      }
+      return;
+    }
+
+    // 関連データも削除（project_tasks, project_minutes, project_handovers）
+    let deletedRelated = 0;
+
+    // project_tasks
+    const { error: taskError, count: taskCount } = await supabase
+      .from('project_tasks')
+      .delete({ count: 'exact' })
+      .in('project_id', demoIds);
+    if (!taskError && taskCount) deletedRelated += taskCount;
+
+    // project_minutes
+    const { error: minuteError, count: minuteCount } = await supabase
+      .from('project_minutes')
+      .delete({ count: 'exact' })
+      .in('project_id', demoIds);
+    if (!minuteError && minuteCount) deletedRelated += minuteCount;
+
+    // project_handovers
+    const { error: handoverError, count: handoverCount } = await supabase
+      .from('project_handovers')
+      .delete({ count: 'exact' })
+      .in('project_id', demoIds);
+    if (!handoverError && handoverCount) deletedRelated += handoverCount;
+
+    // プロジェクト本体を削除
+    const { error, count } = await supabase
+      .from('projects')
+      .delete({ count: 'exact' })
+      .in('id', demoIds);
+
+    if (error) {
+      console.error('Delete error:', error);
+      if (statusEl) {
+        statusEl.innerHTML = `<span style="color: var(--danger-color);">❌ 削除エラー: ${error.message}</span>`;
+      }
+      return;
+    }
+
+    // メモリからも削除
+    projects = projects.filter(p => p.kintone_record_id);
+
+    // 画面を更新
+    renderProjects();
+    renderSidebar();
+    showDataStats();
+
+    if (statusEl) {
+      statusEl.innerHTML = `<span style="color: var(--success-color);">✅ ${count || demoIds.length}件のデモデータを削除しました（関連データ: ${deletedRelated}件）</span>`;
+    }
+    showToast(`${count || demoIds.length}件のデモデータを削除しました`, 'success');
+
+  } catch (e) {
+    console.error('Clear demo data error:', e);
+    if (statusEl) {
+      statusEl.innerHTML = `<span style="color: var(--danger-color);">❌ エラー: ${e.message}</span>`;
+    }
   }
 }
 
