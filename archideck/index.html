@@ -18820,44 +18820,54 @@ async function importFromKintoneDirect() {
           existingProject = projects.find(p => p.customer === customer);
         }
 
+        // プロジェクトデータを作成（既存カラムのみ）
         const projectData = {
           customer,
-          sales_assignee: getValue(salesField),
-          assigned_to: getValue(designField),
-          ic_assignee: getValue(icField),
-          construction_assignee: getValue(constructionField),
-          layout_date: getValue(layoutField) || null,
-          permit_date: getValue(permitField) || null,
-          meeting_date: getValue(meetingField) || null,
-          kintone_record_id: kintoneRecordId,
-          updated_at: new Date().toISOString()
+          assigned_to: getValue(designField) || '',
+          ic_assignee: getValue(icField) || '',
+          sales_assignee: getValue(salesField) || '',
+          construction_assignee: getValue(constructionField) || '',
+          kintone_record_id: kintoneRecordId ? String(kintoneRecordId) : null
         };
 
         if (existingProject) {
           // 更新
           const { error } = await supabase
             .from('projects')
-            .update(projectData)
+            .update({
+              ...projectData,
+              updated_at: new Date().toISOString()
+            })
             .eq('id', existingProject.id);
 
-          if (!error) {
+          if (error) {
+            console.error('Update error:', error);
+            skipped++;
+          } else {
             Object.assign(existingProject, projectData);
             updated++;
           }
         } else {
           // 新規作成
-          projectData.organization_id = currentOrganization?.id;
-          projectData.status = 'active';
-          projectData.progress = {};
-          projectData.created_at = new Date().toISOString();
+          const insertData = {
+            ...projectData,
+            organization_id: currentOrganization?.id,
+            status: 'active',
+            progress: {},
+            specifications: 'LIFE',
+            created_at: new Date().toISOString()
+          };
 
           const { data: newProject, error } = await supabase
             .from('projects')
-            .insert(projectData)
+            .insert(insertData)
             .select()
             .single();
 
-          if (!error && newProject) {
+          if (error) {
+            console.error('Insert error:', error, insertData);
+            skipped++;
+          } else if (newProject) {
             projects.push(newProject);
             imported++;
           }
