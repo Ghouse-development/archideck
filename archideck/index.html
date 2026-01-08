@@ -15822,25 +15822,30 @@ async function loadBadgeCounts(projectId) {
       updateMinutesBadge(projectId, minutes.length);
     }
 
-    // 引継書バッジを取得
-    const { data: handover, error: handoverError } = await supabase
-      .from('project_handovers')
-      .select('content')
-      .eq('project_id', projectId)
-      .single();
+    // 引継書バッジを取得（テーブルが存在しない場合もあるため、エラーは無視）
+    try {
+      const { data: handovers, error: handoverError } = await supabase
+        .from('project_handovers')
+        .select('content')
+        .eq('project_id', projectId);
 
-    if (!handoverError && handover && handover.content) {
-      let hasContent = false;
-      try {
-        const handoverData = JSON.parse(handover.content);
-        hasContent = Object.values(handoverData).some(v => v && v.trim());
-      } catch (e) {
-        hasContent = !!handover.content.trim();
+      // エラーがなく、データがある場合のみ処理
+      if (!handoverError && handovers && handovers.length > 0) {
+        const handover = handovers[0];
+        let hasContent = false;
+        try {
+          const handoverData = JSON.parse(handover.content);
+          hasContent = Object.values(handoverData).some(v => v && v.trim());
+        } catch (e) {
+          hasContent = !!(handover.content && handover.content.trim());
+        }
+        updateHandoverBadge(projectId, hasContent);
       }
-      updateHandoverBadge(projectId, hasContent);
+    } catch (handoverErr) {
+      // 引継書テーブルエラーは無視（テーブル未作成の環境向け）
     }
   } catch (e) {
-    console.error('Badge load error:', e);
+    // エラーは静かに無視
   }
 }
 
@@ -16155,10 +16160,6 @@ function openCardModal(projectId, type) {
       title = `📄 議事録 - ${project.customer}`;
       content = `
         <div id="modalMinutesList_${projectId}" class="minutes-list" style="margin-bottom:16px;"></div>
-        <div style="padding:12px;background:var(--bg-tertiary);border-radius:8px;margin-bottom:12px;">
-          <label style="font-size:12px;color:var(--text-secondary);display:block;margin-bottom:6px;">打合せ日</label>
-          <input type="date" id="modalMeetingDate_${projectId}" style="width:100%;padding:10px;border:1px solid var(--border-color);border-radius:6px;">
-        </div>
         <div class="minutes-upload-area" style="padding:24px;border:2px dashed var(--border-color);border-radius:8px;text-align:center;cursor:pointer;" ondragover="handleMinutesDragOver(event)" ondragleave="handleMinutesDragLeave(event)" ondrop="handleDropWithDateModal(event, '${projectId}')" onclick="document.getElementById('modalMinutesUpload_${projectId}').click()">
           <input type="file" id="modalMinutesUpload_${projectId}" style="display:none" accept=".pdf,.doc,.docx,.xls,.xlsx" onchange="uploadMinutesWithDateModal('${projectId}', this.files[0])">
           <span style="font-size:24px;">📁</span>
@@ -16361,11 +16362,8 @@ async function loadModalMinutesList(projectId) {
 }
 
 async function uploadMinutesWithDateModal(projectId, file) {
-  const meetingDateInput = document.getElementById(`modalMeetingDate_${projectId}`);
-  const meetingDate = meetingDateInput?.value;
-  if (!meetingDate) { showToast('打合せ日を選択してください', 'error'); return; }
+  // 打合せ日は今日の日付を自動設定
   await uploadMinutesWithDate(projectId, file);
-  meetingDateInput.value = '';
   loadModalMinutesList(projectId);
 }
 
@@ -16651,17 +16649,9 @@ async function uploadMinutesWithDate(projectId, file) {
     return;
   }
 
-  // 打合せ日を取得（通常版またはモーダル版）
-  let meetingDateInput = document.getElementById(`meetingDate_${projectId}`);
-  if (!meetingDateInput) {
-    meetingDateInput = document.getElementById(`modalMeetingDate_${projectId}`);
-  }
-  const meetingDate = meetingDateInput?.value;
-
-  if (!meetingDate) {
-    showToast('打合せ日を選択してください', 'error');
-    return;
-  }
+  // 打合せ日は今日の日付を自動設定
+  const today = new Date();
+  const meetingDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
   // ファイルサイズチェック（10MB上限）
   const maxSize = 10 * 1024 * 1024;
@@ -16761,9 +16751,6 @@ async function uploadMinutesWithDate(projectId, file) {
         link: `#projects?id=${projectId}`
       }).catch(() => {});
     }
-
-    // 打合せ日入力をクリア
-    meetingDateInput.value = '';
 
     showToast('議事録をアップロードしました', 'success');
     await loadMinutesList(projectId);
