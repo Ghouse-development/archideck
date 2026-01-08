@@ -16387,12 +16387,15 @@ async function loadHandoverContent(projectId) {
   const departments = ['design', 'ic', 'exterior', 'realestate', 'construction'];
 
   try {
-    const { data, error } = await supabase
+    const { data: handovers, error } = await supabase
       .from('project_handovers')
       .select('content')
-      .eq('project_id', projectId)
-      .single();
+      .eq('project_id', projectId);
 
+    // エラーまたはデータなしの場合は終了
+    if (error || !handovers || handovers.length === 0) return;
+
+    const data = handovers[0];
     if (data && data.content) {
       // JSON形式かどうかを判定
       let handoverData;
@@ -16428,22 +16431,27 @@ async function saveHandoverFromModal(projectId) {
 
   const content = JSON.stringify(handoverData);
 
-  const { data: existing } = await supabase
-    .from('project_handovers')
-    .select('id')
-    .eq('project_id', projectId)
-    .single();
+  try {
+    const { data: existingList } = await supabase
+      .from('project_handovers')
+      .select('id')
+      .eq('project_id', projectId);
 
-  let error;
-  if (existing) {
-    ({ error } = await supabase.from('project_handovers').update({ content, updated_at: new Date().toISOString() }).eq('id', existing.id));
-  } else {
-    ({ error } = await supabase.from('project_handovers').insert({ project_id: projectId, content }));
+    const existing = existingList && existingList.length > 0 ? existingList[0] : null;
+
+    let error;
+    if (existing) {
+      ({ error } = await supabase.from('project_handovers').update({ content, updated_at: new Date().toISOString() }).eq('id', existing.id));
+    } else {
+      ({ error } = await supabase.from('project_handovers').insert({ project_id: projectId, content }));
+    }
+
+    if (error) { showToast('引継書保存に失敗しました', 'error'); return; }
+    showToast('引継書を保存しました', 'success');
+    closeCardModal();
+  } catch (e) {
+    showToast('引継書保存中にエラーが発生しました', 'error');
   }
-
-  if (error) { showToast('引継書保存に失敗しました', 'error'); return; }
-  showToast('引継書を保存しました', 'success');
-  closeCardModal();
 }
 
 // 折りたたみ機能
@@ -16782,31 +16790,36 @@ async function saveSharedMemo(projectId) {
 async function saveHandover(projectId) {
   const content = document.getElementById(`handover_${projectId}`).value;
 
-  // 既存の引継書を確認
-  const { data: existing } = await supabase
-    .from('project_handovers')
-    .select('id')
-    .eq('project_id', projectId)
-    .single();
-
-  let error;
-  if (existing) {
-    ({ error } = await supabase
+  try {
+    // 既存の引継書を確認
+    const { data: existingList } = await supabase
       .from('project_handovers')
-      .update({ content, updated_at: new Date().toISOString() })
-      .eq('id', existing.id));
-  } else {
-    ({ error } = await supabase
-      .from('project_handovers')
-      .insert({ project_id: projectId, content }));
-  }
+      .select('id')
+      .eq('project_id', projectId);
 
-  if (error) {
-    showToast('引継書保存に失敗しました', 'error');
-    return;
-  }
+    const existing = existingList && existingList.length > 0 ? existingList[0] : null;
 
-  showToast('引継書を保存しました', 'success');
+    let error;
+    if (existing) {
+      ({ error } = await supabase
+        .from('project_handovers')
+        .update({ content, updated_at: new Date().toISOString() })
+        .eq('id', existing.id));
+    } else {
+      ({ error } = await supabase
+        .from('project_handovers')
+        .insert({ project_id: projectId, content }));
+    }
+
+    if (error) {
+      showToast('引継書保存に失敗しました', 'error');
+      return;
+    }
+
+    showToast('引継書を保存しました', 'success');
+  } catch (e) {
+    showToast('引継書保存中にエラーが発生しました', 'error');
+  }
 }
 
 // 議事録アップロード
@@ -16993,12 +17006,14 @@ function updateHandoverBadge(projectId, hasContent) {
 // 引継書バッジを読み込み時に更新
 async function loadHandoverBadge(projectId) {
   try {
-    const { data, error } = await supabase
+    const { data: handovers, error } = await supabase
       .from('project_handovers')
       .select('content')
-      .eq('project_id', projectId)
-      .single();
+      .eq('project_id', projectId);
 
+    if (error || !handovers || handovers.length === 0) return;
+
+    const data = handovers[0];
     if (data && data.content) {
       let hasContent = false;
       try {
