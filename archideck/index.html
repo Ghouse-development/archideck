@@ -12907,6 +12907,13 @@ async function markAsCompleted(projectId) {
   const project = projects.find(p => p.id === projectId);
   if (!project) return;
 
+  // 確認ダイアログ
+  if (!confirm(`「${project.customer}」を完了済みに移動しますか？`)) {
+    // キャンセルされた場合、チェックボックスを元に戻す
+    renderProjects();
+    return;
+  }
+
   showStatus('更新中...', 'saving');
 
   const { error } = await supabase
