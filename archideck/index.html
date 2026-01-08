@@ -18853,19 +18853,29 @@ async function importFromKintoneDirect() {
     }
 
     const records = result.data?.records || [];
+    const hitLimit = result.data?.hitLimit || false;
+    const warning = result.data?.warning || null;
+
     if (records.length === 0) {
       statusEl.innerHTML = '<span style="color: var(--warning-color);">⚠️ レコードが見つかりませんでした</span>';
       return;
     }
 
+    // 10,000件制限警告
+    if (warning) {
+      console.warn('kintone警告:', warning);
+    }
+
     // デバッグ: フィールド一覧
     console.log('Available fields:', Object.keys(records[0]));
+    console.log('Total records from kintone:', records.length, hitLimit ? '(10,000件制限に到達)' : '');
 
-    statusEl.innerHTML = `<span style="color: var(--text-muted);">📥 ${records.length}件のレコードを処理中...</span>`;
+    statusEl.innerHTML = `<span style="color: var(--text-muted);">📥 ${records.length}件のレコードを処理中...${hitLimit ? ' (10,000件制限)' : ''}</span>`;
 
     let imported = 0;
     let updated = 0;
     let skipped = 0;
+    let skippedNoCustomer = 0; // 顧客名なしでスキップ
     const errors = [];
 
     for (const record of records) {
@@ -18885,6 +18895,7 @@ async function importFromKintoneDirect() {
         const customer = getValue(customerField);
         if (!customer) {
           skipped++;
+          skippedNoCustomer++;
           continue;
         }
 
@@ -18989,11 +19000,26 @@ async function importFromKintoneDirect() {
     renderProjects();
     renderSidebar();
 
+    // 詳細なサマリーを作成
+    const total = records.length;
+    const processed = imported + updated;
+    const skipDetails = [];
+    if (skippedNoCustomer > 0) skipDetails.push(`顧客名なし: ${skippedNoCustomer}`);
+    if (errors.length > 0) skipDetails.push(`エラー: ${errors.length}`);
+    const skipInfo = skipDetails.length > 0 ? ` (${skipDetails.join(', ')})` : '';
+
+    console.log('Import summary:', { total, imported, updated, skipped, skippedNoCustomer, errors: errors.length, hitLimit });
+
     if (imported + updated > 0) {
-      statusEl.innerHTML = `<span style="color: var(--success-color);">✅ 完了: ${imported}件インポート、${updated}件更新、${skipped}件スキップ</span>`;
+      let msg = `✅ 完了: kintone ${total}件中 → ${imported}件新規、${updated}件更新`;
+      if (skipped > 0) msg += `、${skipped}件スキップ${skipInfo}`;
+      if (hitLimit) msg += ' ⚠️10,000件制限';
+      statusEl.innerHTML = `<span style="color: var(--success-color);">${msg}</span>`;
       showToast(`kintoneから${imported + updated}件をインポートしました`, 'success');
+    } else if (skipped > 0) {
+      statusEl.innerHTML = `<span style="color: var(--warning-color);">⚠️ ${total}件中${skipped}件スキップ${skipInfo}（コンソールでエラー確認）</span>`;
     } else {
-      statusEl.innerHTML = `<span style="color: var(--warning-color);">⚠️ ${skipped}件スキップ（コンソールでエラー確認）</span>`;
+      statusEl.innerHTML = `<span style="color: var(--warning-color);">⚠️ インポート対象がありませんでした</span>`;
     }
 
   } catch (e) {

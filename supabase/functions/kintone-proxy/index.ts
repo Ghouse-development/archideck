@@ -136,10 +136,18 @@ serve(async (req) => {
         const allRecords: any[] = []
         let offset = 0
         const limit = 500
+        const maxOffset = 10000 // kintone APIの制限
         let hasMore = true
+        let hitLimit = false
 
         while (hasMore) {
-          const query = data?.query ? `${data.query} limit ${limit} offset ${offset}` : `limit ${limit} offset ${offset}`
+          // order byを追加して一貫したページネーションを保証
+          const baseQuery = data?.query || ''
+          const orderClause = 'order by $id asc'
+          const query = baseQuery
+            ? `${baseQuery} ${orderClause} limit ${limit} offset ${offset}`
+            : `${orderClause} limit ${limit} offset ${offset}`
+
           const params = new URLSearchParams()
           params.append('app', appId.toString())
           params.append('query', query)
@@ -169,11 +177,24 @@ serve(async (req) => {
             hasMore = false
           } else {
             offset += limit
+            // 10,000件制限チェック
+            if (offset >= maxOffset) {
+              hasMore = false
+              hitLimit = true
+            }
           }
         }
 
         return new Response(
-          JSON.stringify({ success: true, data: { records: allRecords, totalCount: allRecords.length } }),
+          JSON.stringify({
+            success: true,
+            data: {
+              records: allRecords,
+              totalCount: allRecords.length,
+              hitLimit,
+              warning: hitLimit ? '10,000件を超えるレコードがあります。一部が取得できていない可能性があります。' : null
+            }
+          }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
       }
