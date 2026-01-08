@@ -3214,6 +3214,77 @@ input:checked + .toggle-slider:before {
   display: block;
 }
 
+/* 設定カードグリッド */
+.settings-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.settings-card {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.settings-card:hover {
+  border-color: var(--primary-color);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.settings-card-icon {
+  font-size: 32px;
+  width: 56px;
+  height: 56px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.settings-card-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.settings-card-description {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.settings-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  color: var(--text-primary);
+  cursor: pointer;
+  margin-bottom: 20px;
+  transition: all 0.2s;
+}
+
+.settings-back-btn:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--primary-color);
+}
+
 .table-container {
   overflow-y: auto;
   max-height: calc(100vh - 350px);
@@ -5021,27 +5092,80 @@ textarea:focus-visible {
 
       <!-- 設定タブ -->
       <div id="settingsTab" class="tab-panel">
-        <!-- サブタブナビゲーション -->
-        <nav class="sub-tabs-nav">
-          <button class="sub-tab-btn active" onclick="switchSubTab('staff', this)">👥 スタッフ管理</button>
-          <button class="sub-tab-btn" onclick="switchSubTab('vendors', this)">🏢 業者・メール管理</button>
-          <button class="sub-tab-btn" onclick="switchSubTab('categories', this)">🏷️ カテゴリ管理</button>
-          <button class="sub-tab-btn" onclick="switchSubTab('tasks', this)">📐 設計業務管理</button>
-          <button class="sub-tab-btn" onclick="switchSubTab('icTasks', this)">🎨 IC業務管理</button>
-          <button class="sub-tab-btn" onclick="switchSubTab('exteriorTasks', this)">🌳 外構業務管理</button>
-          <button class="sub-tab-btn" onclick="switchSubTab('realestateTasks', this)">🏢 不動産業務管理</button>
-          <button class="sub-tab-btn" onclick="switchSubTab('constructionTasks', this)">🔨 工事業務管理</button>
-          <button class="sub-tab-btn" onclick="switchSubTab('products', this)">📦 商品管理</button>
-          <button class="sub-tab-btn" onclick="switchSubTab('customize', this)">🎨 カスタマイズ</button>
-          <button class="sub-tab-btn" onclick="switchSubTab('kintone', this)">🔗 kintone連携</button>
-          <button class="sub-tab-btn" onclick="switchSubTab('backup', this)">💾 バックアップ</button>
-          <button class="sub-tab-btn" onclick="switchSubTab('fcManagement', this)">🏪 FC管理</button>
-        </nav>
+        <!-- 設定カードグリッド（メイン画面） -->
+        <div id="settingsCardsView" class="settings-cards-grid">
+          <div class="settings-card" onclick="openSettingsPanel('staff')">
+            <div class="settings-card-icon">👥</div>
+            <div class="settings-card-title">スタッフ管理</div>
+            <div class="settings-card-description">設計・IC・外構・不動産・工事の担当者を管理</div>
+          </div>
+          <div class="settings-card" onclick="openSettingsPanel('vendors')">
+            <div class="settings-card-icon">🏢</div>
+            <div class="settings-card-title">業者・メール管理</div>
+            <div class="settings-card-description">業者情報とメールテンプレートを管理</div>
+          </div>
+          <div class="settings-card" onclick="openSettingsPanel('categories')">
+            <div class="settings-card-icon">🏷️</div>
+            <div class="settings-card-title">カテゴリ管理</div>
+            <div class="settings-card-description">業者を分類するカテゴリを管理</div>
+          </div>
+          <div class="settings-card" onclick="openSettingsPanel('tasks')">
+            <div class="settings-card-icon">📐</div>
+            <div class="settings-card-title">設計業務管理</div>
+            <div class="settings-card-description">設計担当者のタスクを管理</div>
+          </div>
+          <div class="settings-card" onclick="openSettingsPanel('icTasks')">
+            <div class="settings-card-icon">🎨</div>
+            <div class="settings-card-title">IC業務管理</div>
+            <div class="settings-card-description">IC担当者のタスクを管理</div>
+          </div>
+          <div class="settings-card" onclick="openSettingsPanel('exteriorTasks')">
+            <div class="settings-card-icon">🌳</div>
+            <div class="settings-card-title">外構業務管理</div>
+            <div class="settings-card-description">外構担当者のタスクを管理</div>
+          </div>
+          <div class="settings-card" onclick="openSettingsPanel('realestateTasks')">
+            <div class="settings-card-icon">🏢</div>
+            <div class="settings-card-title">不動産業務管理</div>
+            <div class="settings-card-description">不動産担当者のタスクを管理</div>
+          </div>
+          <div class="settings-card" onclick="openSettingsPanel('constructionTasks')">
+            <div class="settings-card-icon">🔨</div>
+            <div class="settings-card-title">工事業務管理</div>
+            <div class="settings-card-description">工事担当者のタスクを管理</div>
+          </div>
+          <div class="settings-card" onclick="openSettingsPanel('products')">
+            <div class="settings-card-icon">📦</div>
+            <div class="settings-card-title">商品管理</div>
+            <div class="settings-card-description">案件で選択できる商品を管理</div>
+          </div>
+          <div class="settings-card" onclick="openSettingsPanel('customize')">
+            <div class="settings-card-icon">🎨</div>
+            <div class="settings-card-title">カスタマイズ</div>
+            <div class="settings-card-description">システムの外観をカスタマイズ</div>
+          </div>
+          <div class="settings-card" onclick="openSettingsPanel('kintone')">
+            <div class="settings-card-icon">🔗</div>
+            <div class="settings-card-title">kintone連携</div>
+            <div class="settings-card-description">kintoneとのデータ連携を設定</div>
+          </div>
+          <div class="settings-card" onclick="openSettingsPanel('backup')">
+            <div class="settings-card-icon">💾</div>
+            <div class="settings-card-title">バックアップ</div>
+            <div class="settings-card-description">データのバックアップと復元</div>
+          </div>
+          <div class="settings-card" onclick="openSettingsPanel('fcManagement')">
+            <div class="settings-card-icon">🏪</div>
+            <div class="settings-card-title">FC管理</div>
+            <div class="settings-card-description">フランチャイズ組織を管理</div>
+          </div>
+        </div>
 
         <!-- スタッフ管理 -->
-        <div id="staffPanel" class="sub-tab-panel active">
+        <div id="staffPanel" class="sub-tab-panel">
+          <button class="settings-back-btn" onclick="closeSettingsPanel()">← 設定に戻る</button>
           <div style="max-width: 1000px; margin: 0 auto;">
-            <h2 style="margin-bottom: 20px; font-size: 24px; font-weight: 700;">スタッフ管理</h2>
+            <h2 style="margin-bottom: 20px; font-size: 24px; font-weight: 700;">👥 スタッフ管理</h2>
             <div class="form-group">
               <label class="form-label">新しいスタッフを追加</label>
               <div style="display: grid; grid-template-columns: 1fr auto auto; gap: 12px;">
@@ -5062,6 +5186,7 @@ textarea:focus-visible {
 
         <!-- 業者管理 -->
         <div id="vendorsPanel" class="sub-tab-panel">
+          <button class="settings-back-btn" onclick="closeSettingsPanel()">← 設定に戻る</button>
           <div class="toolbar" style="padding-bottom: 16px; border-bottom: 1px solid var(--border-color); margin-bottom: 24px;">
             <div class="toolbar-left">
               <div id="categoryFilters"></div>
@@ -5075,8 +5200,9 @@ textarea:focus-visible {
 
         <!-- カテゴリ管理 -->
         <div id="categoriesPanel" class="sub-tab-panel">
+          <button class="settings-back-btn" onclick="closeSettingsPanel()">← 設定に戻る</button>
           <div style="max-width: 800px; margin: 0 auto;">
-            <h2 style="margin-bottom: 20px; font-size: 24px; font-weight: 700;">業者カテゴリ管理</h2>
+            <h2 style="margin-bottom: 20px; font-size: 24px; font-weight: 700;">🏷️ 業者カテゴリ管理</h2>
             <p style="margin-bottom: 32px; color: var(--text-secondary);">業者を分類するカテゴリを追加・編集・削除できます。</p>
             <div class="form-group">
               <label class="form-label">新しいカテゴリを追加</label>
@@ -5091,6 +5217,7 @@ textarea:focus-visible {
 
         <!-- 設計業務管理 -->
         <div id="tasksPanel" class="sub-tab-panel">
+          <button class="settings-back-btn" onclick="closeSettingsPanel()">← 設定に戻る</button>
           <div class="toolbar" style="padding-bottom: 16px; border-bottom: 1px solid var(--border-color); margin-bottom: 24px;">
             <div class="toolbar-left">
               <h3 style="margin: 0; font-size: 18px;">📐 設計タスク管理</h3>
@@ -5105,6 +5232,7 @@ textarea:focus-visible {
 
         <!-- IC業務管理 -->
         <div id="icTasksPanel" class="sub-tab-panel">
+          <button class="settings-back-btn" onclick="closeSettingsPanel()">← 設定に戻る</button>
           <div class="toolbar" style="padding-bottom: 16px; border-bottom: 1px solid var(--border-color); margin-bottom: 24px;">
             <div class="toolbar-left">
               <h3 style="margin: 0; font-size: 18px;">🎨 ICタスク管理</h3>
@@ -5130,6 +5258,7 @@ textarea:focus-visible {
 
         <!-- 外構業務管理 -->
         <div id="exteriorTasksPanel" class="sub-tab-panel">
+          <button class="settings-back-btn" onclick="closeSettingsPanel()">← 設定に戻る</button>
           <div class="toolbar" style="padding-bottom: 16px; border-bottom: 1px solid var(--border-color); margin-bottom: 24px;">
             <div class="toolbar-left">
               <h3 style="margin: 0; font-size: 18px;">🌳 外構業務タスク管理</h3>
@@ -5144,6 +5273,7 @@ textarea:focus-visible {
 
         <!-- 不動産業務管理 -->
         <div id="realestateTasksPanel" class="sub-tab-panel">
+          <button class="settings-back-btn" onclick="closeSettingsPanel()">← 設定に戻る</button>
           <div class="toolbar" style="padding-bottom: 16px; border-bottom: 1px solid var(--border-color); margin-bottom: 24px;">
             <div class="toolbar-left">
               <h3 style="margin: 0; font-size: 18px;">🏢 不動産業務タスク管理</h3>
@@ -5158,6 +5288,7 @@ textarea:focus-visible {
 
         <!-- 工事業務管理 -->
         <div id="constructionTasksPanel" class="sub-tab-panel">
+          <button class="settings-back-btn" onclick="closeSettingsPanel()">← 設定に戻る</button>
           <div class="toolbar" style="padding-bottom: 16px; border-bottom: 1px solid var(--border-color); margin-bottom: 24px;">
             <div class="toolbar-left">
               <h3 style="margin: 0; font-size: 18px;">🔨 工事業務タスク管理</h3>
@@ -5172,8 +5303,9 @@ textarea:focus-visible {
 
         <!-- 商品管理 -->
         <div id="productsPanel" class="sub-tab-panel">
+          <button class="settings-back-btn" onclick="closeSettingsPanel()">← 設定に戻る</button>
           <div style="max-width: 800px; margin: 0 auto;">
-            <h2 style="margin-bottom: 20px; font-size: 24px; font-weight: 700;">商品マスタ管理</h2>
+            <h2 style="margin-bottom: 20px; font-size: 24px; font-weight: 700;">📦 商品マスタ管理</h2>
             <p style="margin-bottom: 32px; color: var(--text-secondary);">案件で選択できる商品を管理します。</p>
             <div class="form-group">
               <label class="form-label">新しい商品を追加</label>
@@ -5188,8 +5320,9 @@ textarea:focus-visible {
 
         <!-- カスタマイズ -->
         <div id="customizePanel" class="sub-tab-panel">
+          <button class="settings-back-btn" onclick="closeSettingsPanel()">← 設定に戻る</button>
           <div style="max-width: 800px; margin: 0 auto;">
-            <h2 style="margin-bottom: 20px; font-size: 24px; font-weight: 700;">外観カスタマイズ</h2>
+            <h2 style="margin-bottom: 20px; font-size: 24px; font-weight: 700;">🎨 外観カスタマイズ</h2>
             <p style="margin-bottom: 32px; color: var(--text-secondary);">会社のブランドに合わせてシステムの外観をカスタマイズできます。コーディング不要で簡単に変更できます。</p>
 
             <div style="display: grid; grid-template-columns: 1fr 300px; gap: 32px;">
@@ -5276,8 +5409,9 @@ textarea:focus-visible {
 
         <!-- kintone連携 -->
         <div id="kintonePanel" class="sub-tab-panel">
+          <button class="settings-back-btn" onclick="closeSettingsPanel()">← 設定に戻る</button>
           <div style="max-width: 800px; margin: 0 auto;">
-            <h2 style="margin-bottom: 20px; font-size: 24px; font-weight: 700;">kintone連携設定</h2>
+            <h2 style="margin-bottom: 20px; font-size: 24px; font-weight: 700;">🔗 kintone連携設定</h2>
             <p style="margin-bottom: 32px; color: var(--text-secondary);">kintoneと連携して、邸名・間取確定日・着工許可・変更契約前会議の情報を同期します。</p>
 
             <div class="form-group">
@@ -5375,8 +5509,9 @@ textarea:focus-visible {
 
         <!-- バックアップ -->
         <div id="backupPanel" class="sub-tab-panel">
+          <button class="settings-back-btn" onclick="closeSettingsPanel()">← 設定に戻る</button>
           <div style="max-width: 800px; margin: 0 auto;">
-            <h2 style="margin-bottom: 20px; font-size: 24px; font-weight: 700;">データバックアップ</h2>
+            <h2 style="margin-bottom: 20px; font-size: 24px; font-weight: 700;">💾 データバックアップ</h2>
             <p style="margin-bottom: 32px; color: var(--text-secondary);">システム全体のデータをバックアップ・復元できます。自動バックアップも利用可能です。</p>
 
             <!-- 自動バックアップ設定 -->
@@ -5430,6 +5565,9 @@ textarea:focus-visible {
 
         <!-- FC管理 -->
         <div id="fcManagementPanel" class="sub-tab-panel">
+          <button class="settings-back-btn" onclick="closeSettingsPanel()">
+            ← 設定に戻る
+          </button>
           <div style="max-width: 1200px; margin: 0 auto;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
               <div>
@@ -10698,6 +10836,68 @@ function switchSubTab(panelName, element) {
       loadKintoneSettings();
       break;
   }
+}
+
+// 設定パネルを開く（カード式UI用）
+function openSettingsPanel(panelName) {
+  // カードグリッドを非表示
+  const cardsView = document.getElementById('settingsCardsView');
+  if (cardsView) cardsView.style.display = 'none';
+
+  // 全パネルを非表示
+  document.querySelectorAll('.sub-tab-panel').forEach(panel => panel.classList.remove('active'));
+
+  // 指定パネルを表示
+  const panel = document.getElementById(panelName + 'Panel');
+  if (panel) panel.classList.add('active');
+
+  // パネル固有の初期化処理
+  switch(panelName) {
+    case 'staff':
+      renderDesignerListInline();
+      break;
+    case 'vendors':
+      renderCategoryFilters();
+      renderVendorsV2();
+      break;
+    case 'categories':
+      renderCategoriesList();
+      break;
+    case 'tasks':
+      renderTasksManagement();
+      break;
+    case 'icTasks':
+      renderIcTasksManagement();
+      break;
+    case 'exteriorTasks':
+      renderExteriorTasksManagement();
+      break;
+    case 'realestateTasks':
+      renderRealestateTasksManagement();
+      break;
+    case 'constructionTasks':
+      renderConstructionTasksManagement();
+      break;
+    case 'products':
+      renderProductsList();
+      break;
+    case 'customize':
+      loadDemoModeSetting();
+      break;
+    case 'kintone':
+      loadKintoneSettings();
+      break;
+  }
+}
+
+// 設定カード一覧に戻る
+function closeSettingsPanel() {
+  // 全パネルを非表示
+  document.querySelectorAll('.sub-tab-panel').forEach(panel => panel.classList.remove('active'));
+
+  // カードグリッドを表示
+  const cardsView = document.getElementById('settingsCardsView');
+  if (cardsView) cardsView.style.display = 'grid';
 }
 
 // 旧switchTab関数（互換性のため残す）
@@ -19680,11 +19880,17 @@ async function importFromKintoneDirect() {
           }
         }
 
-        // 担当者フィールド値
-        const designVal = getValue(designField);
-        const icVal = getValue(icField);
-        const salesVal = getValue(salesField);
-        const constructionVal = getValue(constructionField);
+        // 担当者フィールド値（名前マッチング適用）
+        const designValRaw = getValue(designField);
+        const icValRaw = getValue(icField);
+        const salesValRaw = getValue(salesField);
+        const constructionValRaw = getValue(constructionField);
+
+        // 担当者名をシステム内の名前にマッチング
+        const designVal = matchDesignerName(designValRaw, '設計');
+        const icVal = matchDesignerName(icValRaw, 'IC');
+        const salesVal = matchDesignerName(salesValRaw, '営業');
+        const constructionVal = matchDesignerName(constructionValRaw, '工事');
 
         // 日付フィールド値（複数形式対応）
         const layoutDate = parseDateValue(record, layoutField);
@@ -19829,6 +20035,69 @@ function extractKintoneRecordId(record) {
   }
 
   return null;
+}
+
+// 名前を正規化（スペース除去、全半角統一）
+function normalizeName(name) {
+  if (!name) return '';
+  return String(name)
+    .trim()
+    .replace(/[\s　]+/g, '') // 半角・全角スペースを除去
+    .replace(/[Ａ-Ｚａ-ｚ０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0)) // 全角英数字を半角に
+    .toLowerCase();
+}
+
+// kintone名からdesigner名をマッチング
+function matchDesignerName(kintoneNames, category = null) {
+  if (!kintoneNames) return null;
+
+  // kintoneの名前リスト（カンマ区切りの場合を処理）
+  const names = String(kintoneNames).split(',').map(n => n.trim()).filter(Boolean);
+  if (names.length === 0) return null;
+
+  // 対象のdesignersリスト
+  const targetDesigners = category
+    ? designers.filter(d => d.category === category)
+    : designers;
+
+  for (const kName of names) {
+    const normalizedKintone = normalizeName(kName);
+
+    // 1. 完全一致
+    const exactMatch = targetDesigners.find(d => d.name === kName);
+    if (exactMatch) return exactMatch.name;
+
+    // 2. trim後一致
+    const trimMatch = targetDesigners.find(d => d.name.trim() === kName.trim());
+    if (trimMatch) return trimMatch.name;
+
+    // 3. 正規化後一致
+    const normalizedMatch = targetDesigners.find(d => normalizeName(d.name) === normalizedKintone);
+    if (normalizedMatch) return normalizedMatch.name;
+
+    // 4. 部分一致（名前が含まれている）
+    const partialMatch = targetDesigners.find(d => {
+      const normalizedDesigner = normalizeName(d.name);
+      return normalizedDesigner.includes(normalizedKintone) || normalizedKintone.includes(normalizedDesigner);
+    });
+    if (partialMatch) return partialMatch.name;
+
+    // 5. 姓のみマッチ（2文字以上の場合）
+    if (normalizedKintone.length >= 2) {
+      const lastNameMatch = targetDesigners.find(d => {
+        const normalizedDesigner = normalizeName(d.name);
+        // 姓（最初の2-3文字）で比較
+        const kSurname = normalizedKintone.substring(0, Math.min(3, normalizedKintone.length));
+        const dSurname = normalizedDesigner.substring(0, Math.min(3, normalizedDesigner.length));
+        return kSurname === dSurname && normalizedDesigner.length >= 2;
+      });
+      if (lastNameMatch) return lastNameMatch.name;
+    }
+  }
+
+  // マッチなし：元の値をそのまま返す（新規担当者として登録される可能性）
+  console.log(`⚠️ Designer not matched: "${kintoneNames}" (category: ${category || 'any'})`);
+  return names[0]; // 最初の名前をそのまま返す
 }
 
 // 日付値をパース（複数形式対応）
@@ -20168,11 +20437,16 @@ async function autoSyncKintone() {
             }
           }
 
-          // 担当者更新
-          const sales = getValue(salesField);
-          const design = getValue(designField);
-          const ic = getValue(icField);
-          const construction = getValue(constructionField);
+          // 担当者更新（名前マッチング適用）
+          const salesRaw = getValue(salesField);
+          const designRaw = getValue(designField);
+          const icRaw = getValue(icField);
+          const constructionRaw = getValue(constructionField);
+
+          const sales = matchDesignerName(salesRaw, '営業');
+          const design = matchDesignerName(designRaw, '設計');
+          const ic = matchDesignerName(icRaw, 'IC');
+          const construction = matchDesignerName(constructionRaw, '工事');
 
           if (sales && sales !== existingProject.sales_assignee) {
             updates.sales_assignee = sales;
@@ -20203,16 +20477,16 @@ async function autoSyncKintone() {
             }
           }
         } else {
-          // 新規プロジェクト追加
+          // 新規プロジェクト追加（名前マッチング適用）
           const newProject = {
             customer: customer,
             kintone_record_id: kintoneRecordId,
             specifications: 'LIFE',
             status: 'active',
-            assigned_to: getValue(designField),
-            ic_assignee: getValue(icField),
-            sales_assignee: getValue(salesField),
-            construction_assignee: getValue(constructionField),
+            assigned_to: matchDesignerName(getValue(designField), '設計'),
+            ic_assignee: matchDesignerName(getValue(icField), 'IC'),
+            sales_assignee: matchDesignerName(getValue(salesField), '営業'),
+            construction_assignee: matchDesignerName(getValue(constructionField), '工事'),
             layout_date: getValue(layoutField),
             permit_date: getValue(permitField),
             meeting_date: getValue(meetingField),
@@ -20307,10 +20581,16 @@ async function importFromKintone() {
       const customer = cols[customerIdx];
       const address = addressIdx >= 0 ? cols[addressIdx] : '';
       const kintoneRecordId = recordIdIdx >= 0 ? cols[recordIdIdx] : '';
-      const salesAssignee = salesIdx >= 0 ? cols[salesIdx] : '';
-      const designAssignee = designIdx >= 0 ? cols[designIdx] : '';
-      const icAssignee = icIdx >= 0 ? cols[icIdx] : '';
-      const constructionAssignee = constructionIdx >= 0 ? cols[constructionIdx] : '';
+      const salesAssigneeRaw = salesIdx >= 0 ? cols[salesIdx] : '';
+      const designAssigneeRaw = designIdx >= 0 ? cols[designIdx] : '';
+      const icAssigneeRaw = icIdx >= 0 ? cols[icIdx] : '';
+      const constructionAssigneeRaw = constructionIdx >= 0 ? cols[constructionIdx] : '';
+
+      // 名前マッチング適用
+      const salesAssignee = matchDesignerName(salesAssigneeRaw, '営業');
+      const designAssignee = matchDesignerName(designAssigneeRaw, '設計');
+      const icAssignee = matchDesignerName(icAssigneeRaw, 'IC');
+      const constructionAssignee = matchDesignerName(constructionAssigneeRaw, '工事');
 
       // 既存チェック
       const existing = projects.find(p => p.customer === customer);
