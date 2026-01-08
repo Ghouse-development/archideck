@@ -7722,6 +7722,9 @@ async function init() {
     log('✅ 初期化完了');
     showStatus('保存済み', 'saved');
 
+    // リアルタイム同期を開始
+    setupRealtimeSync();
+
     // 初回訪問時はツアーを表示
     AppTour.checkFirstVisit();
   } catch (error) {
@@ -7729,6 +7732,201 @@ async function init() {
     showStatus('エラー', 'error');
     showToast('データの読み込みに失敗しました: ' + error.message, 'error');
   }
+}
+
+// ============================================
+// リアルタイム同期（同時接続対応）
+// ============================================
+let realtimeChannel = null;
+
+function setupRealtimeSync() {
+  try {
+    // 既存のチャンネルがあれば解除
+    if (realtimeChannel) {
+      supabase.removeChannel(realtimeChannel);
+    }
+
+    log('🔄 リアルタイム同期を開始...');
+
+    // プロジェクトテーブルの変更を監視
+    realtimeChannel = supabase
+      .channel('realtime-sync')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'projects'
+      }, (payload) => {
+        handleProjectChange(payload);
+      })
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'designers'
+      }, (payload) => {
+        handleDesignerChange(payload);
+      })
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'project_tasks'
+      }, (payload) => {
+        handleTaskChange(payload);
+      })
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'project_minutes'
+      }, (payload) => {
+        handleMinutesChange(payload);
+      })
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          log('✅ リアルタイム同期: 接続完了');
+        } else if (status === 'CHANNEL_ERROR') {
+          log('❌ リアルタイム同期: 接続エラー');
+        }
+      });
+
+  } catch (e) {
+    logError('❌ リアルタイム同期セットアップエラー:', e);
+  }
+}
+
+// プロジェクト変更ハンドラー
+function handleProjectChange(payload) {
+  const { eventType, new: newRecord, old: oldRecord } = payload;
+  log(`📡 リアルタイム: projects ${eventType}`, payload);
+
+  // 自分自身の変更は無視（二重更新防止）
+  const lastLocalUpdate = localStorage.getItem('lastProjectUpdate');
+  if (lastLocalUpdate && newRecord?.id) {
+    const parsed = safeJsonParse(lastLocalUpdate, {});
+    if (parsed.id === newRecord.id && Date.now() - parsed.time < 2000) {
+      log('⏭️ 自分の変更をスキップ');
+      return;
+    }
+  }
+
+  switch (eventType) {
+    case 'INSERT':
+      // 新規プロジェクトが追加された
+      if (newRecord && !projects.find(p => p.id === newRecord.id)) {
+        projects.push(newRecord);
+        showToast(`新規案件が追加されました: ${newRecord.customer}`, 'info', 3000);
+        renderSidebar();
+        renderProjects();
+      }
+      break;
+
+    case 'UPDATE':
+      // プロジェクトが更新された
+      if (newRecord) {
+        const idx = projects.findIndex(p => p.id === newRecord.id);
+        if (idx !== -1) {
+          const oldData = projects[idx];
+          projects[idx] = { ...oldData, ...newRecord };
+
+          // 重要な変更があった場合のみ通知
+          if (oldData.is_archived !== newRecord.is_archived ||
+              oldData.assigned_to !== newRecord.assigned_to ||
+              oldData.ic_assignee !== newRecord.ic_assignee) {
+            showToast(`案件が更新されました: ${newRecord.customer}`, 'info', 2000);
+          }
+
+          renderSidebar();
+          renderProjects();
+        }
+      }
+      break;
+
+    case 'DELETE':
+      // プロジェクトが削除された
+      if (oldRecord) {
+        const idx = projects.findIndex(p => p.id === oldRecord.id);
+        if (idx !== -1) {
+          projects.splice(idx, 1);
+          showToast(`案件が削除されました: ${oldRecord.customer}`, 'warning', 3000);
+          renderSidebar();
+          renderProjects();
+        }
+      }
+      break;
+  }
+}
+
+// スタッフ変更ハンドラー
+function handleDesignerChange(payload) {
+  const { eventType, new: newRecord, old: oldRecord } = payload;
+  log(`📡 リアルタイム: designers ${eventType}`, payload);
+
+  switch (eventType) {
+    case 'INSERT':
+      if (newRecord && !designers.find(d => d.id === newRecord.id)) {
+        designers.push(newRecord);
+        renderSidebar();
+        populateAssigneeFilters();
+      }
+      break;
+
+    case 'UPDATE':
+      if (newRecord) {
+        const idx = designers.findIndex(d => d.id === newRecord.id);
+        if (idx !== -1) {
+          designers[idx] = { ...designers[idx], ...newRecord };
+          renderSidebar();
+          populateAssigneeFilters();
+        }
+      }
+      break;
+
+    case 'DELETE':
+      if (oldRecord) {
+        const idx = designers.findIndex(d => d.id === oldRecord.id);
+        if (idx !== -1) {
+          designers.splice(idx, 1);
+          renderSidebar();
+          populateAssigneeFilters();
+        }
+      }
+      break;
+  }
+}
+
+// タスク変更ハンドラー
+function handleTaskChange(payload) {
+  const { eventType, new: newRecord } = payload;
+  log(`📡 リアルタイム: project_tasks ${eventType}`, payload);
+
+  // タスクが変更されたプロジェクトを再描画
+  if (newRecord && newRecord.project_id) {
+    const projectCard = document.querySelector(`[data-project-id="${newRecord.project_id}"]`);
+    if (projectCard) {
+      // タスクリストを再読み込み
+      loadProjectTasks(newRecord.project_id);
+    }
+  }
+}
+
+// 議事録変更ハンドラー
+function handleMinutesChange(payload) {
+  const { eventType, new: newRecord } = payload;
+  log(`📡 リアルタイム: project_minutes ${eventType}`, payload);
+
+  // 議事録が変更されたプロジェクトを再描画
+  if (newRecord && newRecord.project_id) {
+    const projectCard = document.querySelector(`[data-project-id="${newRecord.project_id}"]`);
+    if (projectCard) {
+      loadProjectMinutes(newRecord.project_id);
+    }
+  }
+}
+
+// 自分の変更を記録（リアルタイム同期での二重更新防止用）
+function markLocalUpdate(projectId) {
+  localStorage.setItem('lastProjectUpdate', JSON.stringify({
+    id: projectId,
+    time: Date.now()
+  }));
 }
 
 // ============================================
@@ -11571,6 +11769,7 @@ async function updateTaskStatus(projectId, taskKey, completed) {
 
   project.progress = progressData;
   project.updated_at = new Date().toISOString();
+  markLocalUpdate(projectId); // リアルタイム同期の二重更新防止
   renderProjects();
   showStatus('保存済み', 'saved');
 }
@@ -11650,6 +11849,7 @@ async function updateTaskDueDate(projectId, taskKey, dueDate) {
 
   project.progress = progressData;
   project.updated_at = new Date().toISOString();
+  markLocalUpdate(projectId); // リアルタイム同期の二重更新防止
   renderProjects();
   showStatus('保存済み', 'saved');
   if (dueDate) {
@@ -11684,6 +11884,7 @@ async function updateTaskMemo(projectId, taskKey, memo) {
 
   project.progress = progressData;
   project.updated_at = new Date().toISOString();
+  markLocalUpdate(projectId); // リアルタイム同期の二重更新防止
   showStatus('保存済み', 'saved');
 }
 
@@ -11837,6 +12038,7 @@ async function archiveProjectDirect(projectId) {
   // ローカルデータを更新
   project.is_archived = true;
   project.archived_at = updateData.archived_at;
+  markLocalUpdate(projectId); // リアルタイム同期の二重更新防止
 
   renderProjects();
   renderSidebar();
@@ -12472,6 +12674,7 @@ async function toggleArchive(projectId, isArchived) {
   // ローカルデータを更新
   project.is_archived = false;
   project.archived_at = null;
+  markLocalUpdate(projectId); // リアルタイム同期の二重更新防止
 
   renderProjects();
   renderSidebar();
@@ -12511,6 +12714,7 @@ async function restoreFromArchive(projectId) {
   project.is_archived = false;
   project.archived_at = null;
   project.updated_at = new Date().toISOString();
+  markLocalUpdate(projectId); // リアルタイム同期の二重更新防止
 
   // 担当者のタブに切り替え
   if (project.assigned_to) {
@@ -13914,6 +14118,7 @@ async function markTaskAsRequested(projectId, taskKey) {
   }
 
   project.progress = progressData;
+  markLocalUpdate(projectId); // リアルタイム同期の二重更新防止
   renderProjects();
   closeEmailModal();
   showStatus('保存済み', 'saved');
@@ -14984,6 +15189,7 @@ const BatchOperations = {
       if (!error) {
         project.progress = progressData;
         project.updated_at = new Date().toISOString();
+        markLocalUpdate(projectId); // リアルタイム同期の二重更新防止
         count++;
       }
     }
