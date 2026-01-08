@@ -7714,6 +7714,11 @@ async function init() {
       DeadlineManager.checkReminders();
     }, 3000);
 
+    // kintone自動同期（5秒後に実行、設定されている場合のみ）
+    setTimeout(() => {
+      autoSyncKintone();
+    }, 5000);
+
     log('✅ 初期化完了');
     showStatus('保存済み', 'saved');
 
@@ -19852,6 +19857,190 @@ async function loadKintoneSettings() {
     if (constructionEl2 && !constructionEl2.value && fieldMappings.construction) constructionEl2.value = fieldMappings.construction;
   } catch (e) {
     // 例外発生時も静かに終了
+  }
+}
+
+// kintone自動同期（アプリ起動時）
+async function autoSyncKintone() {
+  try {
+    // kintone設定を確認
+    if (!kintoneSettings || !kintoneSettings.domain || !kintoneSettings.app_id || !kintoneSettings.api_token) {
+      log('⏭️ kintone自動同期スキップ: 設定未完了');
+      return;
+    }
+
+    log('🔄 kintone自動同期開始...');
+    showToast('kintoneと同期中...', 'info', 2000);
+
+    // フィールドマッピングを取得
+    const fieldMappings = safeJsonParse(localStorage.getItem('kintone_field_mappings'), {});
+    const customerField = fieldMappings.customer || '文字_基本情報_お客様名_メイン';
+    const salesField = fieldMappings.sales || 'ユーザー選択_基本情報_営業';
+    const designField = fieldMappings.design || 'ユーザー選択_基本情報_設計';
+    const icField = fieldMappings.ic || 'ユーザー選択_基本情報_IC';
+    const constructionField = fieldMappings.construction || 'ユーザー選択_基本情報_工事';
+    const layoutField = fieldMappings.layout || '';
+    const permitField = fieldMappings.permit || '';
+    const meetingField = fieldMappings.meeting || '';
+
+    // kintoneからレコード取得
+    const result = await callKintoneProxy('getAllRecords');
+
+    if (!result.success) {
+      log('❌ kintone自動同期失敗:', result.error);
+      return;
+    }
+
+    const records = result.data?.records || [];
+    if (records.length === 0) {
+      log('⚠️ kintoneレコードなし');
+      return;
+    }
+
+    // 既存プロジェクトをインデックス化
+    const projectsByKintoneId = new Map();
+    for (const p of projects) {
+      if (p.kintone_record_id) {
+        projectsByKintoneId.set(String(p.kintone_record_id), p);
+      }
+    }
+
+    let updated = 0;
+    let added = 0;
+
+    for (const record of records) {
+      try {
+        const kintoneRecordId = extractKintoneRecordId(record);
+        if (!kintoneRecordId) continue;
+
+        const getValue = (field) => {
+          if (!field) return null;
+          const val = record[field]?.value;
+          if (val === undefined || val === null) return null;
+          if (Array.isArray(val)) {
+            const names = val.map(v => v.name || v.code || String(v)).filter(Boolean);
+            return names.length > 0 ? names.join(', ') : null;
+          }
+          const strVal = String(val).trim();
+          return strVal || null;
+        };
+
+        const customer = getValue(customerField);
+        if (!customer) continue;
+
+        const existingProject = projectsByKintoneId.get(kintoneRecordId);
+
+        if (existingProject) {
+          // 既存プロジェクトを更新（日付フィールドのみ同期）
+          const updates = {};
+          let hasChanges = false;
+
+          // 間取確定日
+          if (layoutField) {
+            const layoutDate = getValue(layoutField);
+            if (layoutDate && layoutDate !== existingProject.layout_date) {
+              updates.layout_date = layoutDate;
+              hasChanges = true;
+            }
+          }
+
+          // 着工許可日
+          if (permitField) {
+            const permitDate = getValue(permitField);
+            if (permitDate && permitDate !== existingProject.permit_date) {
+              updates.permit_date = permitDate;
+              hasChanges = true;
+            }
+          }
+
+          // 変更契約前会議日
+          if (meetingField) {
+            const meetingDate = getValue(meetingField);
+            if (meetingDate && meetingDate !== existingProject.meeting_date) {
+              updates.meeting_date = meetingDate;
+              hasChanges = true;
+            }
+          }
+
+          // 担当者更新
+          const sales = getValue(salesField);
+          const design = getValue(designField);
+          const ic = getValue(icField);
+          const construction = getValue(constructionField);
+
+          if (sales && sales !== existingProject.sales_assignee) {
+            updates.sales_assignee = sales;
+            hasChanges = true;
+          }
+          if (design && design !== existingProject.assigned_to) {
+            updates.assigned_to = design;
+            hasChanges = true;
+          }
+          if (ic && ic !== existingProject.ic_assignee) {
+            updates.ic_assignee = ic;
+            hasChanges = true;
+          }
+          if (construction && construction !== existingProject.construction_assignee) {
+            updates.construction_assignee = construction;
+            hasChanges = true;
+          }
+
+          if (hasChanges) {
+            const { error } = await supabase
+              .from('projects')
+              .update(updates)
+              .eq('id', existingProject.id);
+
+            if (!error) {
+              Object.assign(existingProject, updates);
+              updated++;
+            }
+          }
+        } else {
+          // 新規プロジェクト追加
+          const newProject = {
+            customer: customer,
+            kintone_record_id: kintoneRecordId,
+            specifications: 'LIFE',
+            status: 'active',
+            assigned_to: getValue(designField),
+            ic_assignee: getValue(icField),
+            sales_assignee: getValue(salesField),
+            construction_assignee: getValue(constructionField),
+            layout_date: getValue(layoutField),
+            permit_date: getValue(permitField),
+            meeting_date: getValue(meetingField),
+            progress: {},
+            is_archived: false
+          };
+
+          const { data, error } = await supabase
+            .from('projects')
+            .insert(newProject)
+            .select()
+            .single();
+
+          if (!error && data) {
+            projects.push(data);
+            projectsByKintoneId.set(kintoneRecordId, data);
+            added++;
+          }
+        }
+      } catch (e) {
+        // 個別レコードのエラーは無視
+      }
+    }
+
+    if (updated > 0 || added > 0) {
+      log(`✅ kintone自動同期完了: 更新${updated}件, 追加${added}件`);
+      showToast(`kintone同期完了: 更新${updated}件, 追加${added}件`, 'success');
+      renderSidebar();
+      renderProjects();
+    } else {
+      log('✅ kintone自動同期完了: 変更なし');
+    }
+  } catch (e) {
+    log('❌ kintone自動同期エラー:', e);
   }
 }
 
