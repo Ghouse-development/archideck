@@ -11126,59 +11126,6 @@ function renderProjectCard(project) {
         <button class="btn btn-ghost btn-small" onclick="editProject('${project.id}')">編集</button>
       </div>
     </div>
-    ${(() => {
-      // 進捗率に応じた色を取得
-      const getProgressColor = (pct) => {
-        if (pct >= 80) return 'var(--success-color)';
-        if (pct >= 50) return 'var(--primary-color)';
-        if (pct >= 25) return 'var(--warning-color)';
-        return 'var(--danger-color)';
-      };
-      const designColor = getProgressColor(progress);
-      const icColor = icProgress !== null ? getProgressColor(icProgress) : 'var(--info-color)';
-      const extColor = exteriorProgress !== null ? getProgressColor(exteriorProgress) : 'var(--info-color)';
-      const reColor = realestateProgress !== null ? getProgressColor(realestateProgress) : 'var(--info-color)';
-      const conColor = constructionProgress !== null ? getProgressColor(constructionProgress) : 'var(--info-color)';
-
-      // 部署別進捗表示
-      if (viewCategory === 'admin' || !viewCategory) {
-        // 管理者: すべての進捗を表示（担当者が設定されているもののみ）
-        let html = `<div class="progress-section"><div class="progress-header"><span class="progress-label">設計進捗</span><span class="progress-value" style="color: ${designColor}">${progress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width: ${progress}%; background: ${designColor}"></div></div>`;
-        if (icProgress !== null) {
-          html += `<div class="progress-header" style="margin-top:8px"><span class="progress-label">IC進捗</span><span class="progress-value" style="color: ${icColor}">${icProgress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width: ${icProgress}%; background: ${icColor}"></div></div>`;
-        }
-        if (exteriorProgress !== null) {
-          html += `<div class="progress-header" style="margin-top:8px"><span class="progress-label">外構進捗</span><span class="progress-value" style="color: ${extColor}">${exteriorProgress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width: ${exteriorProgress}%; background: ${extColor}"></div></div>`;
-        }
-        if (realestateProgress !== null) {
-          html += `<div class="progress-header" style="margin-top:8px"><span class="progress-label">不動産進捗</span><span class="progress-value" style="color: ${reColor}">${realestateProgress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width: ${realestateProgress}%; background: ${reColor}"></div></div>`;
-        }
-        if (constructionProgress !== null) {
-          html += `<div class="progress-header" style="margin-top:8px"><span class="progress-label">工事進捗</span><span class="progress-value" style="color: ${conColor}">${constructionProgress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width: ${constructionProgress}%; background: ${conColor}"></div></div>`;
-        }
-        html += '</div>';
-        return html;
-      } else if (viewCategory === '設計') {
-        // 設計担当: 設計進捗のみ
-        return `<div class="progress-section"><div class="progress-header"><span class="progress-label">設計進捗</span><span class="progress-value" style="color: ${designColor}">${progress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width: ${progress}%; background: ${designColor}"></div></div></div>`;
-      } else if (viewCategory === 'IC') {
-        // IC担当: IC進捗のみ
-        return icProgress !== null ? `<div class="progress-section"><div class="progress-header"><span class="progress-label">IC進捗</span><span class="progress-value" style="color: ${icColor}">${icProgress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width: ${icProgress}%; background: ${icColor}"></div></div></div>` : '<div class="progress-section"><p style="color: var(--text-muted); font-size: 13px;">IC担当者が設定されていません</p></div>';
-      } else if (viewCategory === '外構') {
-        // 外構担当: 外構進捗のみ
-        return exteriorProgress !== null ? `<div class="progress-section"><div class="progress-header"><span class="progress-label">外構進捗</span><span class="progress-value" style="color: ${extColor}">${exteriorProgress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width: ${exteriorProgress}%; background: ${extColor}"></div></div></div>` : '<div class="progress-section"><p style="color: var(--text-muted); font-size: 13px;">外構タスクが登録されていません</p></div>';
-      } else if (viewCategory === '不動産') {
-        // 不動産担当: 不動産進捗のみ
-        return realestateProgress !== null ? `<div class="progress-section"><div class="progress-header"><span class="progress-label">不動産進捗</span><span class="progress-value" style="color: ${reColor}">${realestateProgress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width: ${realestateProgress}%; background: ${reColor}"></div></div></div>` : '<div class="progress-section"><p style="color: var(--text-muted); font-size: 13px;">不動産タスクが登録されていません</p></div>';
-      } else if (viewCategory === '工事') {
-        // 工事担当: 工事進捗のみ
-        return constructionProgress !== null ? `<div class="progress-section"><div class="progress-header"><span class="progress-label">工事進捗</span><span class="progress-value" style="color: ${conColor}">${constructionProgress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width: ${constructionProgress}%; background: ${conColor}"></div></div></div>` : '<div class="progress-section"><p style="color: var(--text-muted); font-size: 13px;">工事タスクが登録されていません</p></div>';
-      } else {
-        // その他: 進捗なし
-        return '<div class="progress-section"><p style="color: var(--text-muted); font-size: 13px;">進捗管理は現在設定されていません</p></div>';
-      }
-    })()}
-
     <div class="card-quick-actions">
       <button class="quick-action-btn" onclick="openCardModal('${project.id}', 'tasks')">✅ タスク<span class="section-badge badge-warning" id="taskBadge_${project.id}" style="display:none">0</span></button>
       <button class="quick-action-btn" onclick="openCardModal('${project.id}', 'memo')">📝 メモ<span class="section-badge badge-success" id="memoBadge_${project.id}" style="display:${project.shared_memo ? 'inline-flex' : 'none'}">1</span></button>
