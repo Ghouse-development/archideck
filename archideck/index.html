@@ -18434,32 +18434,36 @@ function restoreBackup() {
 
 // kintone連携設定保存
 async function saveKintoneSettings() {
-  const settings = {
-    domain: document.getElementById('kintoneDomain').value,
-    app_id: document.getElementById('kintoneAppId').value,
-    api_token: document.getElementById('kintoneApiToken').value
-  };
+  try {
+    const settings = {
+      domain: document.getElementById('kintoneDomain').value,
+      app_id: document.getElementById('kintoneAppId').value,
+      api_token: document.getElementById('kintoneApiToken').value
+    };
 
-  if (!settings.domain || !settings.app_id || !settings.api_token) {
-    showToast('すべての項目を入力してください', 'error');
-    return;
+    if (!settings.domain || !settings.app_id || !settings.api_token) {
+      showToast('すべての項目を入力してください', 'error');
+      return;
+    }
+
+    const { error } = await supabase
+      .from('kintone_settings')
+      .upsert({
+        ...settings,
+        is_active: true,
+        updated_at: new Date().toISOString()
+      });
+
+    if (error) {
+      showToast('設定保存に失敗しました（kintone_settingsテーブルが存在しない可能性があります）', 'error');
+      return;
+    }
+
+    kintoneSettings = settings;
+    showToast('kintone設定を保存しました', 'success');
+  } catch (e) {
+    showToast('設定保存中にエラーが発生しました', 'error');
   }
-
-  const { error } = await supabase
-    .from('kintone_settings')
-    .upsert({
-      ...settings,
-      is_active: true,
-      updated_at: new Date().toISOString()
-    });
-
-  if (error) {
-    showToast('設定保存に失敗しました', 'error');
-    return;
-  }
-
-  kintoneSettings = settings;
-  showToast('kintone設定を保存しました', 'success');
 }
 
 // kintone接続テスト
@@ -18488,17 +18492,29 @@ async function testKintoneConnection() {
 
 // kintone設定読み込み
 async function loadKintoneSettings() {
-  const { data } = await supabase
-    .from('kintone_settings')
-    .select('*')
-    .eq('is_active', true)
-    .single();
+  try {
+    const { data, error } = await supabase
+      .from('kintone_settings')
+      .select('*')
+      .eq('is_active', true)
+      .single();
 
-  if (data) {
-    kintoneSettings = data;
-    document.getElementById('kintoneDomain').value = data.domain || '';
-    document.getElementById('kintoneAppId').value = data.app_id || '';
-    // APIトークンは表示しない（セキュリティ）
+    // エラーの場合（テーブルが存在しない、RLSエラーなど）は静かに終了
+    if (error) {
+      // 406/401エラーは無視（テーブル未作成の環境向け）
+      return;
+    }
+
+    if (data) {
+      kintoneSettings = data;
+      const domainEl = document.getElementById('kintoneDomain');
+      const appIdEl = document.getElementById('kintoneAppId');
+      if (domainEl) domainEl.value = data.domain || '';
+      if (appIdEl) appIdEl.value = data.app_id || '';
+      // APIトークンは表示しない（セキュリティ）
+    }
+  } catch (e) {
+    // 例外発生時も静かに終了
   }
 }
 
