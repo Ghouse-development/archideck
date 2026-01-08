@@ -9977,7 +9977,8 @@ function renderSidebar() {
 
   const sekkeiDesigners = getSekkeiDesigners();
   const icDesigners = getIcDesigners();
-  const allCount = projects.filter(p => p.status !== 'completed').length;
+  // 全案件: 完了済（is_archived）を除外
+  const allCount = projects.filter(p => p.status !== 'completed' && !p.is_archived).length;
 
   // 完了済の件数
   const archivedCount = projects.filter(p => p.is_archived).length;
