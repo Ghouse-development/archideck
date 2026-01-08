@@ -10175,6 +10175,18 @@ function renderSidebar() {
 function selectDesigner(name) {
   currentDesignerTab = name;
 
+  // アーカイブフィルターをリセット
+  const archiveFilter = document.getElementById('archiveFilter');
+  if (archiveFilter) {
+    if (name === 'ARCHIVED') {
+      // 完了済みタブ: 完了済みのみ表示
+      archiveFilter.value = 'archived';
+    } else {
+      // その他のタブ: アクティブのみ表示
+      archiveFilter.value = 'active';
+    }
+  }
+
   // URLを更新
   updateURLWithDesigner(name);
 
