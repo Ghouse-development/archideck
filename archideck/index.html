@@ -11690,12 +11690,12 @@ function renderProjectCard(project) {
         <input type="checkbox" class="batch-checkbox" data-project-id="${project.id}" ${isSelected ? 'checked' : ''} onclick="event.stopPropagation(); BatchOperations.toggle('${project.id}')" title="選択">
         <div>
           <div class="card-title"><span class="customer-name">${escapeHtml(project.customer)}</span><span class="badge badge-primary">${escapeHtml(project.specifications || 'LIFE')}</span>${project.is_archived ? '<span class="badge badge-success">完了済み</span>' : ''}${!project.is_archived && staleDays >= 7 ? `<span class="badge badge-warning" title="${staleDays}日間未更新">⚠️ ${staleDays}日</span>` : ''}</div>
-          <div class="card-subtitle"><span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this)" style="cursor: pointer; text-decoration: underline dotted;" title="クリックで担当者変更">設計：${escapeHtml(project.assigned_to || '未割当')}</span>${project.ic_assignee ? `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'ic_assignee')" style="cursor: pointer; text-decoration: underline dotted;" title="クリックでIC担当者変更"> | IC：${escapeHtml(project.ic_assignee)}</span>` : `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'ic_assignee')" style="cursor: pointer; color: var(--text-muted); font-size: 11px;" title="IC担当者を追加"> | +IC</span>`}${project.exterior_assignee ? `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'exterior_assignee')" style="cursor: pointer; text-decoration: underline dotted;" title="クリックで外構担当者変更"> | 外構：${escapeHtml(project.exterior_assignee)}</span>` : `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'exterior_assignee')" style="cursor: pointer; color: var(--text-muted); font-size: 11px;" title="外構担当者を追加"> | +外構</span>`}${project.realestate_assignee ? `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'realestate_assignee')" style="cursor: pointer; text-decoration: underline dotted;" title="クリックで不動産担当者変更"> | 不動産：${escapeHtml(project.realestate_assignee)}</span>` : `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'realestate_assignee')" style="cursor: pointer; color: var(--text-muted); font-size: 11px;" title="不動産担当者を追加"> | +不動産</span>`}${project.construction_assignee ? `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'construction_assignee')" style="cursor: pointer; text-decoration: underline dotted;" title="クリックで工事担当者変更"> | 工事：${escapeHtml(project.construction_assignee)}</span>` : `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'construction_assignee')" style="cursor: pointer; color: var(--text-muted); font-size: 11px;" title="工事担当者を追加"> | +工事</span>`}${(() => { const ds = DeadlineManager.getStatus(project.id); return ds ? ` <span style="background: ${ds.color}; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-left: 8px;" onclick="event.stopPropagation(); DeadlineManager.showModal('${project.id}')" title="期限を変更">📅 ${ds.label}</span>` : ` <span style="color: var(--text-muted); font-size: 11px; cursor: pointer;" onclick="event.stopPropagation(); DeadlineManager.showModal('${project.id}')" title="期限を設定">📅 期限設定</span>`; })()}</div>
+          <div class="card-subtitle"><span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this)" style="cursor: pointer; text-decoration: underline dotted;" title="クリックで担当者変更">設計：${escapeHtml(project.assigned_to || '未割当')}</span>${project.ic_assignee ? `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'ic_assignee')" style="cursor: pointer; text-decoration: underline dotted;" title="クリックでIC担当者変更"> | IC：${escapeHtml(project.ic_assignee)}</span>` : `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'ic_assignee')" style="cursor: pointer; color: var(--text-muted); font-size: 11px;" title="IC担当者を追加"> | +IC</span>`}${project.exterior_assignee ? `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'exterior_assignee')" style="cursor: pointer; text-decoration: underline dotted;" title="クリックで外構担当者変更"> | 外構：${escapeHtml(project.exterior_assignee)}</span>` : `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'exterior_assignee')" style="cursor: pointer; color: var(--text-muted); font-size: 11px;" title="外構担当者を追加"> | +外構</span>`}${project.realestate_assignee ? `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'realestate_assignee')" style="cursor: pointer; text-decoration: underline dotted;" title="クリックで不動産担当者変更"> | 不動産：${escapeHtml(project.realestate_assignee)}</span>` : `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'realestate_assignee')" style="cursor: pointer; color: var(--text-muted); font-size: 11px;" title="不動産担当者を追加"> | +不動産</span>`}${project.construction_assignee ? `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'construction_assignee')" style="cursor: pointer; text-decoration: underline dotted;" title="クリックで工事担当者変更"> | 工事：${escapeHtml(project.construction_assignee)}</span>` : `<span class="quick-edit-trigger" onclick="event.stopPropagation(); QuickEdit.showAssigneeDropdown('${project.id}', this, 'construction_assignee')" style="cursor: pointer; color: var(--text-muted); font-size: 11px;" title="工事担当者を追加"> | +工事</span>`}</div>
           ${(() => {
             const dates = [];
             if (project.layout_confirmed_date) dates.push(`間取確定: ${project.layout_confirmed_date}`);
-            if (project.construction_permit_date) dates.push(`着工許可: ${project.construction_permit_date}`);
             if (project.pre_contract_meeting_date) dates.push(`変更契約前会議: ${project.pre_contract_meeting_date}`);
+            if (project.construction_permit_date) dates.push(`着工許可: ${project.construction_permit_date}`);
             return dates.length > 0 ? `<div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">${dates.join(' | ')}</div>` : '';
           })()}
         </div>
@@ -11706,7 +11706,12 @@ function renderProjectCard(project) {
             <input type="checkbox" checked onchange="restoreFromArchive('${project.id}')" style="width: 16px; height: 16px; cursor: pointer;">
             完了済
           </label>
-        ` : ''}
+        ` : `
+          <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; background: #F3F4F6; padding: 4px 12px; border-radius: 6px; font-size: 12px; color: #6B7280; border: 1px solid #E5E7EB;" title="チェックで完了済みに移動">
+            <input type="checkbox" onchange="markAsCompleted('${project.id}')" style="width: 14px; height: 14px; cursor: pointer;">
+            完了
+          </label>
+        `}
         <button class="btn btn-ghost btn-small" onclick="quickEmail('${project.id}')" title="メール作成">📧</button>
         <button class="btn btn-ghost btn-small" onclick="editProject('${project.id}')">編集</button>
       </div>
@@ -12897,6 +12902,38 @@ async function toggleArchive(projectId, isArchived) {
 }
 
 // 完了済から復元（チェックボックス解除時）
+// チェックボックスで完了済みにする
+async function markAsCompleted(projectId) {
+  const project = projects.find(p => p.id === projectId);
+  if (!project) return;
+
+  showStatus('更新中...', 'saving');
+
+  const { error } = await supabase
+    .from('projects')
+    .update({
+      is_archived: true,
+      archived_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', projectId);
+
+  if (error) {
+    showStatus('エラー', 'error');
+    showToast('完了処理に失敗しました: ' + error.message, 'error');
+    renderProjects();
+    return;
+  }
+
+  project.is_archived = true;
+  project.archived_at = new Date().toISOString();
+
+  showStatus('保存済み', 'saved');
+  showToast(`「${project.customer}」を完了済みに移動しました`, 'success');
+  renderProjects();
+  renderSidebar();
+}
+
 async function restoreFromArchive(projectId) {
   const project = projects.find(p => p.id === projectId);
   if (!project) return;
