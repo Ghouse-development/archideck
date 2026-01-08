@@ -1876,42 +1876,6 @@ input:checked + .toggle-slider:before {
   flex-shrink: 0;
 }
 
-/* クラウドURL入力（太陽光・地盤調査用） */
-.task-item.has-cloud-url {
-  flex-wrap: wrap;
-}
-
-.cloud-url-row {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 8px;
-  padding-top: 8px;
-  border-top: 1px dashed var(--border-light);
-}
-
-.cloud-url-input {
-  flex: 1;
-  padding: 6px 10px;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  font-size: 12px;
-  color: var(--text-primary);
-}
-
-.cloud-url-input:focus {
-  border-color: var(--primary-color);
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
-}
-
-.cloud-url-link {
-  font-size: 16px;
-  text-decoration: none;
-  flex-shrink: 0;
-}
-
 .task-checkbox {
   width: 18px;
   height: 18px;
@@ -10052,29 +10016,75 @@ function collectCalendarEvents() {
 
     const progressData = project.progress || {};
 
-    // 設計タスクの期限
+    // 設計タスクの期限と依頼日
     tasksV2.filter(t => t.category === '設計').forEach(task => {
       const taskData = progressData[task.task_key];
       if (taskData?.due_date) {
         events.push({
           date: taskData.due_date,
           customer: project.customer,
-          taskName: task.task_name,
+          taskName: task.task_name + '(期限)',
           category: 'design',
+          projectId: project.id
+        });
+      }
+      if (taskData?.request_date) {
+        events.push({
+          date: taskData.request_date,
+          customer: project.customer,
+          taskName: task.task_name + '(依頼)',
+          category: 'task',
           projectId: project.id
         });
       }
     });
 
-    // ICタスクの期限
+    // ICタスクの期限と依頼日
     tasksV2.filter(t => t.category === 'IC').forEach(task => {
       const taskData = progressData[task.task_key];
       if (taskData?.due_date) {
         events.push({
           date: taskData.due_date,
           customer: project.customer,
-          taskName: task.task_name,
+          taskName: task.task_name + '(期限)',
           category: 'ic',
+          projectId: project.id
+        });
+      }
+      if (taskData?.request_date) {
+        events.push({
+          date: taskData.request_date,
+          customer: project.customer,
+          taskName: task.task_name + '(依頼)',
+          category: 'task',
+          projectId: project.id
+        });
+      }
+    });
+
+    // 外構タスクの依頼日
+    tasksV2.filter(t => t.category === '外構').forEach(task => {
+      const taskData = progressData[task.task_key];
+      if (taskData?.request_date) {
+        events.push({
+          date: taskData.request_date,
+          customer: project.customer,
+          taskName: task.task_name + '(依頼)',
+          category: 'exterior',
+          projectId: project.id
+        });
+      }
+    });
+
+    // 工事タスクの依頼日
+    tasksV2.filter(t => t.category === '工事').forEach(task => {
+      const taskData = progressData[task.task_key];
+      if (taskData?.request_date) {
+        events.push({
+          date: taskData.request_date,
+          customer: project.customer,
+          taskName: task.task_name + '(依頼)',
+          category: 'construction',
           projectId: project.id
         });
       }
@@ -10830,12 +10840,18 @@ function renderProjectCard(project) {
       }
     }
 
-    const hasVendor = taskVendorMappings.some(m => m.task_id === taskDef.id);
-    // メールボタン表示条件: タスク設定でメール有効 & 業者紐づけあり & 社内対応でないステータス
+    // メールボタン表示条件: タスク設定でメール有効（has_email_button=true）の場合のみ表示
+    // 社内対応ステータスの場合は非表示
+    // 太陽光依頼は特別な外部リンクボタンを表示
     const isInternalStatus = INTERNAL_STATUSES.includes(task.state);
-    const showEmailButton = taskDef.has_email_button !== false && hasVendor && !isInternalStatus;
-    const emailBtn = showEmailButton ?
-      `<button class="task-email-btn" onclick="openEmailFromTask('${project.id}', '${key}')" title="メール作成">📧</button>` : '';
+    const showEmailButton = taskDef.has_email_button === true && !isInternalStatus;
+    let emailBtn = '';
+    if (key === 'solar') {
+      // 太陽光依頼は外部サイトへのリンクボタン
+      emailBtn = `<a href="https://bmp-shop.com/nextsolar/wp/wp-login.php" target="_blank" class="task-email-btn" title="太陽光サイトを開く" style="text-decoration:none;">🔗</a>`;
+    } else if (showEmailButton) {
+      emailBtn = `<button class="task-email-btn" onclick="openEmailFromTask('${project.id}', '${key}')" title="メール作成">📧</button>`;
+    }
 
     let stateSelect = '';
     const stateOptions = getTaskStateOptions(key);
@@ -10858,16 +10874,8 @@ function renderProjectCard(project) {
       ? `<span class="request-date-badge" title="依頼日: ${task.request_date}">${formatDateShort(task.request_date)}</span>`
       : '';
 
-    // 太陽光・地盤調査にクラウドURL入力を追加
-    const cloudUrlInput = (key === 'solar' || key === 'ground_survey')
-      ? `<div class="cloud-url-row">
-          <input type="url" class="cloud-url-input" placeholder="クラウドURL" value="${escapeHtml(task.cloud_url || '')}" onchange="updateTaskCloudUrl('${project.id}', '${key}', this.value)">
-          ${task.cloud_url ? `<a href="${escapeHtml(task.cloud_url)}" target="_blank" class="cloud-url-link" title="URLを開く">🔗</a>` : ''}
-        </div>`
-      : '';
-
-    return `<div class="task-item ${cloudUrlInput ? 'has-cloud-url' : ''}">
-      <span class="task-label">${taskDef.task_name}</span>${stateSelect}${requestDateBadge}${emailBtn}${cloudUrlInput}</div>`;
+    return `<div class="task-item">
+      <span class="task-label">${taskDef.task_name}</span>${stateSelect}${requestDateBadge}${emailBtn}</div>`;
   }).join('');
 
   // IC業務内容を生成（IC担当者が設定されている場合のみ）
@@ -11083,9 +11091,9 @@ function renderProjectCard(project) {
 
     <div class="card-quick-actions">
       <button class="quick-action-btn" onclick="openCardModal('${project.id}', 'tasks')">✅ タスク<span class="section-badge badge-warning" id="taskBadge_${project.id}" style="display:none">0</span></button>
-      <button class="quick-action-btn" onclick="openCardModal('${project.id}', 'memo')">📝 メモ</button>
+      <button class="quick-action-btn" onclick="openCardModal('${project.id}', 'memo')">📝 メモ<span class="section-badge badge-success" id="memoBadge_${project.id}" style="display:${project.shared_memo ? 'inline-flex' : 'none'}">①</span></button>
       <button class="quick-action-btn" onclick="openCardModal('${project.id}', 'minutes')">📄 議事録<span class="section-badge badge-primary" id="minutesBadge_${project.id}" style="display:none">0</span></button>
-      <button class="quick-action-btn" onclick="openCardModal('${project.id}', 'handover')">📋 引継書</button>
+      <button class="quick-action-btn" onclick="openCardModal('${project.id}', 'handover')">📋 引継書<span class="section-badge badge-info" id="handoverBadge_${project.id}" style="display:none">①</span></button>
     </div>
 
     ${(() => {
@@ -11118,10 +11126,10 @@ function renderProjectCard(project) {
         return `<div class="card-section biz-section collapsed"><div class="card-section-header" onclick="toggleBizSection(this, '${project.id}')"><span class="card-section-title">${icon} ${title}${countBadge}</span><span class="card-section-toggle">▼</span></div><div class="card-section-content">${content}</div></div>`;
       };
 
-      // 非管理者向け: シンプルなセクション（アコーディオンなし、未完了/全タスク数を表示）
+      // 非管理者向け: シンプルなセクション（アコーディオンあり、初期状態は閉じる、未完了/全タスク数を表示）
       const getSimpleBizContent = (title, icon, content, count) => {
         const countBadge = count.total > 0 ? `<span class="biz-task-count" style="margin-left:8px;font-size:12px;color:${count.incomplete > 0 ? 'var(--warning-color)' : 'var(--success-color)'};">${count.incomplete}/${count.total}</span>` : '';
-        return `<div class="card-section"><div class="card-section-header" style="cursor:default;"><span class="card-section-title">${icon} ${title}${countBadge}</span></div><div class="card-section-content" style="display:block;">${content}</div></div>`;
+        return `<div class="card-section biz-section collapsed"><div class="card-section-header" onclick="toggleBizSection(this, '${project.id}')"><span class="card-section-title">${icon} ${title}${countBadge}</span><span class="card-section-toggle">▼</span></div><div class="card-section-content">${content}</div></div>`;
       };
 
       if (viewCategory === 'admin' || !viewCategory) {
@@ -11436,42 +11444,6 @@ async function updateTaskDueDate(projectId, taskKey, dueDate) {
   if (dueDate) {
     showToast('期限を設定しました', 'success');
   }
-}
-
-// タスクのクラウドURL更新（太陽光・地盤調査用）
-async function updateTaskCloudUrl(projectId, taskKey, cloudUrl) {
-  const project = projects.find(p => p.id === projectId);
-  if (!project) return;
-
-  // URLバリデーション（空の場合はスキップ）
-  if (cloudUrl && !cloudUrl.match(/^https?:\/\/.+/)) {
-    showToast('有効なURLを入力してください（http:// または https:// で始まる）', 'error');
-    return;
-  }
-
-  const progressData = JSON.parse(JSON.stringify(project.progress || {}));
-  if (!progressData[taskKey]) {
-    progressData[taskKey] = { completed: false, date: '', state: '', cloud_url: '' };
-  }
-  progressData[taskKey].cloud_url = cloudUrl;
-
-  showStatus('保存中...', 'saving');
-  const { error } = await supabase
-    .from('projects')
-    .update({ progress: progressData, updated_at: new Date().toISOString() })
-    .eq('id', projectId);
-
-  if (error) {
-    showStatus('エラー', 'error');
-    ErrorHandler.handle(error, 'クラウドURL保存');
-    return;
-  }
-
-  project.progress = progressData;
-  project.updated_at = new Date().toISOString();
-  renderProjects();
-  showStatus('保存済み', 'saved');
-  showToast(cloudUrl ? 'クラウドURLを保存しました' : 'クラウドURLを削除しました', 'success');
 }
 
 // ステータス色分けのクラスを取得
@@ -15849,6 +15821,24 @@ async function loadBadgeCounts(projectId) {
     if (!minError && minutes) {
       updateMinutesBadge(projectId, minutes.length);
     }
+
+    // 引継書バッジを取得
+    const { data: handover, error: handoverError } = await supabase
+      .from('project_handovers')
+      .select('content')
+      .eq('project_id', projectId)
+      .single();
+
+    if (!handoverError && handover && handover.content) {
+      let hasContent = false;
+      try {
+        const handoverData = JSON.parse(handover.content);
+        hasContent = Object.values(handoverData).some(v => v && v.trim());
+      } catch (e) {
+        hasContent = !!handover.content.trim();
+      }
+      updateHandoverBadge(projectId, hasContent);
+    }
   } catch (e) {
     console.error('Badge load error:', e);
   }
@@ -17003,6 +16993,36 @@ function updateMinutesBadge(projectId, count) {
       badge.style.display = 'none';
     }
   }
+}
+
+// 引継書バッジを更新
+function updateHandoverBadge(projectId, hasContent) {
+  const badge = document.getElementById(`handoverBadge_${projectId}`);
+  if (badge) {
+    badge.style.display = hasContent ? 'inline-flex' : 'none';
+  }
+}
+
+// 引継書バッジを読み込み時に更新
+async function loadHandoverBadge(projectId) {
+  try {
+    const { data, error } = await supabase
+      .from('project_handovers')
+      .select('content')
+      .eq('project_id', projectId)
+      .single();
+
+    if (data && data.content) {
+      let hasContent = false;
+      try {
+        const handoverData = JSON.parse(data.content);
+        hasContent = Object.values(handoverData).some(v => v && v.trim());
+      } catch (e) {
+        hasContent = !!data.content.trim();
+      }
+      updateHandoverBadge(projectId, hasContent);
+    }
+  } catch (e) {}
 }
 
 // 議事録削除
