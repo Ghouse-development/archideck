@@ -18759,7 +18759,13 @@ async function importFromKintoneDirect() {
   statusEl.innerHTML = '<span style="color: var(--text-muted);">📥 kintoneからデータを取得中...</span>';
 
   try {
-    // 1. フィールドマッピングを取得
+    // 1. ログイン確認
+    if (!currentUser?.id) {
+      statusEl.innerHTML = '<span style="color: var(--danger-color);">❌ ログインが必要です</span>';
+      return;
+    }
+
+    // 2. フィールドマッピングを取得
     const fieldMappings = safeJsonParse(localStorage.getItem('kintone_field_mappings'), {});
     const customerField = fieldMappings.customer || '文字_基本情報_お客様名_メイン';
     const salesField = fieldMappings.sales || 'ユーザー選択_基本情報_営業';
