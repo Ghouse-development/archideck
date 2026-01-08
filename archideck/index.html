@@ -6342,7 +6342,7 @@ let projects = [];
 let designers = [];
 
 // IC関連定数
-const IC_MAKER_TASKS = ['ic_kitchen', 'ic_bath', 'ic_washroom', 'ic_toilet', 'ic_lighting', 'ic_tategu', 'ic_curtain', 'ic_zousaku', 'ic_furniture'];
+const IC_MAKER_TASKS = ['ic_kitchen', 'ic_bath', 'ic_washroom', 'ic_toilet', 'ic_lighting', 'ic_tategu', 'ic_curtain', 'ic_zousaku', 'ic_furniture', 'ic_iron', 'ic_other_estimate'];
 const INTERNAL_STATUSES = ['オリジナル', 'GRAFTECT', '-', '']; // 社内対応ステータス（メール不要）
 let emailTemplates = [];
 let vendors = [];
@@ -8099,11 +8099,12 @@ async function runICTasksMigration() {
       { task_key: 'ic_curtain', task_name: 'カーテン紹介', category: 'IC', display_order: 17, has_state: true, state_options: '["-", "無し", "依頼済"]', has_email_button: true },
       { task_key: 'ic_zousaku', task_name: '造作業者紹介', category: 'IC', display_order: 18, has_state: true, state_options: '["-", "無し", "依頼済"]', has_email_button: true },
       { task_key: 'ic_furniture', task_name: '家具見積依頼', category: 'IC', display_order: 19, has_state: true, state_options: '["-", "無し", "依頼済"]', has_email_button: true },
-      { task_key: 'ic_iron', task_name: 'アイアン', category: 'IC', display_order: 20, has_state: true, state_options: '["-", "無し", "依頼済"]', has_email_button: true },
-      { task_key: 'ic_final_checklist', task_name: '確定図チェックリスト', category: 'IC', display_order: 21, has_state: true, state_options: '["-", "実施済"]', has_email_button: false },
-      { task_key: 'ic_op_check', task_name: 'OP見積チェック', category: 'IC', display_order: 22, has_state: true, state_options: '["-", "依頼済", "保存済"]', has_email_button: false },
-      { task_key: 'ic_meeting_followup', task_name: '会議後確認事項送付', category: 'IC', display_order: 23, has_state: true, state_options: '["-", "送付済"]', has_email_button: false },
-      { task_key: 'ic_final_approval', task_name: '確定図承認', category: 'IC', display_order: 24, has_state: true, state_options: '["-", "依頼中", "ダンドリワーク保存済"]', has_email_button: false }
+      { task_key: 'ic_iron', task_name: 'アイアン依頼', category: 'IC', display_order: 20, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: true },
+      { task_key: 'ic_other_estimate', task_name: 'その他見積依頼', category: 'IC', display_order: 21, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: true, has_memo: true },
+      { task_key: 'ic_final_checklist', task_name: '確定図チェックリスト', category: 'IC', display_order: 22, has_state: true, state_options: '["-", "実施済"]', has_email_button: false },
+      { task_key: 'ic_op_check', task_name: 'OP見積チェック', category: 'IC', display_order: 23, has_state: true, state_options: '["-", "依頼済", "保存済"]', has_email_button: false },
+      { task_key: 'ic_meeting_followup', task_name: '会議後確認事項送付', category: 'IC', display_order: 24, has_state: true, state_options: '["-", "送付済"]', has_email_button: false },
+      { task_key: 'ic_final_approval', task_name: '確定図承認', category: 'IC', display_order: 25, has_state: true, state_options: '["-", "依頼中", "ダンドリワーク保存済"]', has_email_button: false }
     ];
 
     const { error: insertError } = await supabase
@@ -8113,7 +8114,7 @@ async function runICTasksMigration() {
     if (insertError) {
       throw new Error('ICタスク挿入エラー: ' + insertError.message);
     }
-    log('✅ 21項目のICタスク追加完了');
+    log('✅ ICタスク追加完了');
 
     // データ再読み込み
     await loadTasksV2();
@@ -8193,11 +8194,12 @@ async function autoMigrateICTasks() {
       { task_key: 'ic_curtain', task_name: 'カーテン紹介', category: 'IC', display_order: 17, has_state: true, state_options: '["-", "無し", "依頼済"]', has_email_button: true },
       { task_key: 'ic_zousaku', task_name: '造作業者紹介', category: 'IC', display_order: 18, has_state: true, state_options: '["-", "無し", "依頼済"]', has_email_button: true },
       { task_key: 'ic_furniture', task_name: '家具見積依頼', category: 'IC', display_order: 19, has_state: true, state_options: '["-", "無し", "依頼済"]', has_email_button: true },
-      { task_key: 'ic_iron', task_name: 'アイアン', category: 'IC', display_order: 20, has_state: true, state_options: '["-", "無し", "依頼済"]', has_email_button: true },
-      { task_key: 'ic_final_checklist', task_name: '確定図チェックリスト', category: 'IC', display_order: 21, has_state: true, state_options: '["-", "実施済"]', has_email_button: false },
-      { task_key: 'ic_op_check', task_name: 'OP見積チェック', category: 'IC', display_order: 22, has_state: true, state_options: '["-", "依頼済", "保存済"]', has_email_button: false },
-      { task_key: 'ic_meeting_followup', task_name: '会議後確認事項送付', category: 'IC', display_order: 23, has_state: true, state_options: '["-", "送付済"]', has_email_button: false },
-      { task_key: 'ic_final_approval', task_name: '確定図承認', category: 'IC', display_order: 24, has_state: true, state_options: '["-", "依頼中", "ダンドリワーク保存済"]', has_email_button: false }
+      { task_key: 'ic_iron', task_name: 'アイアン依頼', category: 'IC', display_order: 20, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: true },
+      { task_key: 'ic_other_estimate', task_name: 'その他見積依頼', category: 'IC', display_order: 21, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: true, has_memo: true },
+      { task_key: 'ic_final_checklist', task_name: '確定図チェックリスト', category: 'IC', display_order: 22, has_state: true, state_options: '["-", "実施済"]', has_email_button: false },
+      { task_key: 'ic_op_check', task_name: 'OP見積チェック', category: 'IC', display_order: 23, has_state: true, state_options: '["-", "依頼済", "保存済"]', has_email_button: false },
+      { task_key: 'ic_meeting_followup', task_name: '会議後確認事項送付', category: 'IC', display_order: 24, has_state: true, state_options: '["-", "送付済"]', has_email_button: false },
+      { task_key: 'ic_final_approval', task_name: '確定図承認', category: 'IC', display_order: 25, has_state: true, state_options: '["-", "依頼中", "ダンドリワーク保存済"]', has_email_button: false }
     ];
 
     const { error: insertError } = await supabase
@@ -10992,8 +10994,13 @@ function renderProjectCard(project) {
       ? `<input type="date" class="task-due-input" value="${task.due_date || ''}" onchange="updateTaskDueDate('${project.id}', '${key}', this.value)" title="期限を設定">`
       : '';
 
+    // その他見積依頼などhas_memoがtrueのタスクにメモ入力欄を追加
+    const memoInput = taskDef.has_memo
+      ? `<input type="text" class="task-memo-input" value="${task.memo || ''}" placeholder="依頼内容を入力" onchange="updateTaskMemo('${project.id}', '${key}', this.value)" style="width: 120px; font-size: 11px; padding: 2px 4px; border: 1px solid var(--border-color); border-radius: 3px; margin-left: 4px;">`
+      : '';
+
     return `<div class="task-item">
-      <span class="task-label">${taskDef.task_name}</span>${stateSelect}${dueDateInput}${requestDateBadge}${emailBtn}</div>`;
+      <span class="task-label">${taskDef.task_name}</span>${stateSelect}${memoInput}${dueDateInput}${requestDateBadge}${emailBtn}</div>`;
   }).join('');
 
   // 外構業務内容を生成
@@ -11530,6 +11537,36 @@ async function updateTaskDueDate(projectId, taskKey, dueDate) {
   }
 }
 
+// タスクメモの更新（その他見積依頼など）
+async function updateTaskMemo(projectId, taskKey, memo) {
+  const project = projects.find(p => p.id === projectId);
+  if (!project) return;
+
+  // 既存のprogressデータを完全にコピーして新しいオブジェクトを作成
+  const progressData = JSON.parse(JSON.stringify(project.progress || {}));
+  // 既存のタスクデータを保持しながらmemoのみ更新
+  if (!progressData[taskKey]) {
+    progressData[taskKey] = { completed: false, date: '', state: '', due_date: '', memo: '' };
+  }
+  progressData[taskKey].memo = memo;
+
+  showStatus('保存中...', 'saving');
+  const { error } = await supabase
+    .from('projects')
+    .update({ progress: progressData, updated_at: new Date().toISOString() })
+    .eq('id', projectId);
+
+  if (error) {
+    showStatus('エラー', 'error');
+    ErrorHandler.handle(error, 'メモ保存');
+    return;
+  }
+
+  project.progress = progressData;
+  project.updated_at = new Date().toISOString();
+  showStatus('保存済み', 'saved');
+}
+
 // ステータス色分けのクラスを取得
 // taskKey: オプション。ICタスクの特別な色分けに使用
 function getStateColorClass(state, lastOption, taskKey = '') {
@@ -11552,6 +11589,16 @@ function getStateColorClass(state, lastOption, taskKey = '') {
   if (taskKey === 'ic_zousaku' || taskKey === 'ic_furniture' || taskKey === 'ic_tile_pres') {
     if (state === '無' || state === '無し' || state === '依頼済' || state === '作成済') {
       return 'state-blue';
+    }
+  }
+
+  // アイアン依頼・その他見積依頼: 「無し」「保存済」は青色、「依頼済」は黄色
+  if (taskKey === 'ic_iron' || taskKey === 'ic_other_estimate') {
+    if (state === '無し' || state === '保存済') {
+      return 'state-blue';
+    }
+    if (state === '依頼済') {
+      return 'state-yellow';
     }
   }
 
@@ -15640,13 +15687,9 @@ renderSidebar = function() {
         countClass = 'count-yellow';
       }
 
-      // タスク数バッジ
-      const taskBadge = taskInfo.total > 0 ? `<span style="font-size:10px;padding:2px 4px;border-radius:4px;background:${incompleteTasks > 0 ? 'var(--warning-bg)' : 'var(--success-bg)'};color:${incompleteTasks > 0 ? 'var(--warning-color)' : 'var(--success-color)'};">${incompleteTasks}/${taskInfo.total}</span>` : '';
-
       sectionHtml += `
         <div class="sidebar-item ${currentDesignerTab === designer.name ? 'active' : ''}" onclick="selectDesigner('${designer.name}')">
           <span class="sidebar-item-label ${nameClass}">${designer.name}</span>
-          ${taskBadge}
           <button class="sidebar-task-btn" onclick="event.stopPropagation(); openStaffTasksModal('${designer.name}')" title="タスク一覧">📋</button>
           <span class="sidebar-item-count ${countClass}">${count}</span>
         </div>
