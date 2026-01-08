@@ -16890,8 +16890,6 @@ async function uploadMinutesWithDate(projectId, file) {
       meeting_date: meetingDate // ファイル名から予測した打合せ日
     };
 
-    console.log('Inserting minutes:', insertData); // デバッグ用
-
     const { data: insertedData, error: dbError } = await supabase
       .from('project_minutes')
       .insert(insertData)
@@ -16905,8 +16903,6 @@ async function uploadMinutesWithDate(projectId, file) {
       showToast('議事録登録に失敗しました: ' + (dbError.message || dbError.code || 'Unknown error'), 'error');
       return;
     }
-
-    console.log('Minutes inserted:', insertedData); // デバッグ用
 
     // 通知を送信
     const notifyEmails = [];
@@ -17052,8 +17048,6 @@ async function uploadMinutes(projectId, file) {
       uploaded_by: currentUser?.email || 'anonymous@archideck.jp'
     };
 
-    console.log('Inserting minutes:', insertData); // デバッグ用
-
     const { data: insertedData, error: dbError } = await supabase
       .from('project_minutes')
       .insert(insertData)
@@ -17067,8 +17061,6 @@ async function uploadMinutes(projectId, file) {
       showToast('議事録登録に失敗しました: ' + (dbError.message || dbError.code || 'Unknown error'), 'error');
       return;
     }
-
-    console.log('Minutes inserted:', insertedData); // デバッグ用
 
     // 通知を送信
     const project = projects.find(p => p.id === projectId);
