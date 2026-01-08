@@ -3091,43 +3091,50 @@ input:checked + .toggle-slider:before {
 
 /* ===== カレンダー ===== */
 .calendar-container {
-  padding: 24px;
-  max-width: 1200px;
-  margin: 0 auto;
+  padding: 12px;
+  max-width: 100%;
+  margin: 0;
+  height: calc(100vh - 120px);
+  display: flex;
+  flex-direction: column;
 }
 
 .calendar-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-  margin-bottom: 20px;
+  gap: 24px;
+  margin-bottom: 8px;
+  padding: 8px 0;
 }
 
 .calendar-title {
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 600;
   color: var(--text-primary);
+  min-width: 140px;
+  text-align: center;
 }
 
 .calendar-legend {
   display: flex;
-  gap: 16px;
+  gap: 12px;
   justify-content: center;
-  margin-bottom: 16px;
+  margin-bottom: 8px;
   flex-wrap: wrap;
 }
 
 .legend-item {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 12px;
+  gap: 4px;
+  font-size: 11px;
   color: var(--text-muted);
 }
 
 .legend-dot {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
 }
 
@@ -3145,11 +3152,12 @@ input:checked + .toggle-slider:before {
   border: 1px solid var(--border-color);
   border-radius: 8px;
   overflow: hidden;
+  flex: 1;
 }
 
 .calendar-day-header {
   background: var(--bg-tertiary);
-  padding: 10px;
+  padding: 6px;
   text-align: center;
   font-weight: 600;
   font-size: 12px;
@@ -3158,14 +3166,19 @@ input:checked + .toggle-slider:before {
 
 .calendar-day {
   background: var(--bg-primary);
-  min-height: 100px;
-  padding: 8px;
+  min-height: 80px;
+  padding: 4px;
   position: relative;
+  transition: background 0.15s;
+}
+
+.calendar-day:hover {
+  background: var(--bg-secondary);
 }
 
 .calendar-day.other-month {
   background: var(--bg-secondary);
-  opacity: 0.5;
+  opacity: 0.4;
 }
 
 .calendar-day.today {
@@ -3173,28 +3186,29 @@ input:checked + .toggle-slider:before {
 }
 
 .calendar-day-number {
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 500;
   color: var(--text-primary);
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .calendar-day.today .calendar-day-number {
   background: var(--primary-color);
   color: white;
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 11px;
 }
 
 .calendar-events {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  max-height: 70px;
+  gap: 1px;
+  max-height: calc(100% - 26px);
   overflow-y: auto;
 }
 
@@ -3206,16 +3220,18 @@ input:checked + .toggle-slider:before {
   overflow: hidden;
   text-overflow: ellipsis;
   cursor: pointer;
+  border-left: 3px solid;
+  background: white;
 }
 
-.calendar-event.design { background: #BBDEFB; color: #1565C0; }
-.calendar-event.ic { background: #E1BEE7; color: #7B1FA2; }
-.calendar-event.exterior { background: #C8E6C9; color: #388E3C; }
-.calendar-event.construction { background: #FFE0B2; color: #E65100; }
-.calendar-event.task { background: #FFCDD2; color: #C62828; }
+.calendar-event.design { border-color: #1565C0; color: #1565C0; }
+.calendar-event.ic { border-color: #7B1FA2; color: #7B1FA2; }
+.calendar-event.exterior { border-color: #388E3C; color: #388E3C; }
+.calendar-event.construction { border-color: #E65100; color: #E65100; }
+.calendar-event.task { border-color: #C62828; color: #C62828; }
 
 .calendar-event:hover {
-  opacity: 0.8;
+  background: var(--bg-secondary);
 }
 
 /* ===== 分析ダッシュボード ===== */
@@ -3793,6 +3809,16 @@ input:checked + .toggle-slider:before {
 
 .section-badge.badge-warning {
   background: var(--warning-color);
+  color: white;
+}
+
+.section-badge.badge-success {
+  background: var(--success-color);
+  color: white;
+}
+
+.section-badge.badge-info {
+  background: var(--info-color);
   color: white;
 }
 
@@ -5063,7 +5089,7 @@ textarea:focus-visible {
             </div>
 
             <div style="margin-top: 24px; padding: 16px; background: var(--bg-secondary); border-radius: var(--radius-md);">
-              <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 12px;">フィールドマッピング</h3>
+              <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 12px;">フィールドマッピング（基本情報）</h3>
               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                 <div class="form-group" style="margin-bottom: 0;">
                   <label class="form-label" style="font-size: 12px;">邸名フィールド</label>
@@ -5080,6 +5106,28 @@ textarea:focus-visible {
                 <div class="form-group" style="margin-bottom: 0;">
                   <label class="form-label" style="font-size: 12px;">変更契約前会議フィールド</label>
                   <input type="text" class="form-input" id="kintoneFieldMeeting" placeholder="pre_contract_meeting" style="width: 100%;">
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-top: 16px; padding: 16px; background: var(--bg-secondary); border-radius: var(--radius-md);">
+              <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 12px;">フィールドマッピング（担当者）</h3>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label class="form-label" style="font-size: 12px;">営業担当フィールド</label>
+                  <input type="text" class="form-input" id="kintoneFieldSales" placeholder="sales_assignee" style="width: 100%;">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label class="form-label" style="font-size: 12px;">設計担当フィールド</label>
+                  <input type="text" class="form-input" id="kintoneFieldDesign" placeholder="design_assignee" style="width: 100%;">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label class="form-label" style="font-size: 12px;">IC担当フィールド</label>
+                  <input type="text" class="form-input" id="kintoneFieldIC" placeholder="ic_assignee" style="width: 100%;">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label class="form-label" style="font-size: 12px;">工事担当フィールド</label>
+                  <input type="text" class="form-input" id="kintoneFieldConstruction" placeholder="construction_assignee" style="width: 100%;">
                 </div>
               </div>
             </div>
@@ -11025,9 +11073,9 @@ function renderProjectCard(project) {
 
     <div class="card-quick-actions">
       <button class="quick-action-btn" onclick="openCardModal('${project.id}', 'tasks')">✅ タスク<span class="section-badge badge-warning" id="taskBadge_${project.id}" style="display:none">0</span></button>
-      <button class="quick-action-btn" onclick="openCardModal('${project.id}', 'memo')">📝 メモ<span class="section-badge badge-success" id="memoBadge_${project.id}" style="display:${project.shared_memo ? 'inline-flex' : 'none'}">①</span></button>
+      <button class="quick-action-btn" onclick="openCardModal('${project.id}', 'memo')">📝 メモ<span class="section-badge badge-success" id="memoBadge_${project.id}" style="display:${project.shared_memo ? 'inline-flex' : 'none'}">1</span></button>
       <button class="quick-action-btn" onclick="openCardModal('${project.id}', 'minutes')">📄 議事録<span class="section-badge badge-primary" id="minutesBadge_${project.id}" style="display:none">0</span></button>
-      <button class="quick-action-btn" onclick="openCardModal('${project.id}', 'handover')">📋 引継書<span class="section-badge badge-info" id="handoverBadge_${project.id}" style="display:none">①</span></button>
+      <button class="quick-action-btn" onclick="openCardModal('${project.id}', 'handover')">📋 引継書<span class="section-badge badge-info" id="handoverBadge_${project.id}" style="display:none">1</span></button>
     </div>
 
     ${(() => {
@@ -18343,6 +18391,19 @@ async function saveKintoneSettings() {
       api_token: document.getElementById('kintoneApiToken').value
     };
 
+    // フィールドマッピングをlocalStorageに保存
+    const fieldMappings = {
+      customer: document.getElementById('kintoneFieldCustomer')?.value || '',
+      layout: document.getElementById('kintoneFieldLayout')?.value || '',
+      permit: document.getElementById('kintoneFieldPermit')?.value || '',
+      meeting: document.getElementById('kintoneFieldMeeting')?.value || '',
+      sales: document.getElementById('kintoneFieldSales')?.value || '',
+      design: document.getElementById('kintoneFieldDesign')?.value || '',
+      ic: document.getElementById('kintoneFieldIC')?.value || '',
+      construction: document.getElementById('kintoneFieldConstruction')?.value || ''
+    };
+    localStorage.setItem('kintone_field_mappings', JSON.stringify(fieldMappings));
+
     if (!settings.domain || !settings.app_id || !settings.api_token) {
       showToast('すべての項目を入力してください', 'error');
       return;
@@ -18404,10 +18465,7 @@ async function loadKintoneSettings() {
     // エラーの場合（テーブルが存在しない、RLSエラーなど）は静かに終了
     if (error) {
       // 406/401エラーは無視（テーブル未作成の環境向け）
-      return;
-    }
-
-    if (data) {
+    } else if (data) {
       kintoneSettings = data;
       const domainEl = document.getElementById('kintoneDomain');
       const appIdEl = document.getElementById('kintoneAppId');
@@ -18415,6 +18473,17 @@ async function loadKintoneSettings() {
       if (appIdEl) appIdEl.value = data.app_id || '';
       // APIトークンは表示しない（セキュリティ）
     }
+
+    // フィールドマッピングをlocalStorageから読み込み
+    const fieldMappings = safeJsonParse(localStorage.getItem('kintone_field_mappings'), {});
+    if (fieldMappings.customer) document.getElementById('kintoneFieldCustomer').value = fieldMappings.customer;
+    if (fieldMappings.layout) document.getElementById('kintoneFieldLayout').value = fieldMappings.layout;
+    if (fieldMappings.permit) document.getElementById('kintoneFieldPermit').value = fieldMappings.permit;
+    if (fieldMappings.meeting) document.getElementById('kintoneFieldMeeting').value = fieldMappings.meeting;
+    if (fieldMappings.sales) document.getElementById('kintoneFieldSales').value = fieldMappings.sales;
+    if (fieldMappings.design) document.getElementById('kintoneFieldDesign').value = fieldMappings.design;
+    if (fieldMappings.ic) document.getElementById('kintoneFieldIC').value = fieldMappings.ic;
+    if (fieldMappings.construction) document.getElementById('kintoneFieldConstruction').value = fieldMappings.construction;
   } catch (e) {
     // 例外発生時も静かに終了
   }
@@ -18440,9 +18509,29 @@ async function importFromKintone() {
 
     const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
 
-    const customerIdx = headers.findIndex(h => h.includes('顧客') || h.includes('邸名') || h.includes('customer'));
+    // フィールドマッピングを取得
+    const fieldMappings = safeJsonParse(localStorage.getItem('kintone_field_mappings'), {});
+
+    // カラムインデックスを検索（マッピング設定があればそれを優先）
+    const findColIdx = (mapping, fallbacks) => {
+      if (mapping) {
+        const idx = headers.findIndex(h => h === mapping || h.includes(mapping));
+        if (idx !== -1) return idx;
+      }
+      for (const fb of fallbacks) {
+        const idx = headers.findIndex(h => h.includes(fb));
+        if (idx !== -1) return idx;
+      }
+      return -1;
+    };
+
+    const customerIdx = findColIdx(fieldMappings.customer, ['顧客', '邸名', 'customer']);
     const addressIdx = headers.findIndex(h => h.includes('建築地') || h.includes('住所') || h.includes('address'));
     const recordIdIdx = headers.findIndex(h => h.includes('レコード') || h.includes('record') || h === '$id');
+    const salesIdx = findColIdx(fieldMappings.sales, ['営業担当', '営業', 'sales']);
+    const designIdx = findColIdx(fieldMappings.design, ['設計担当', '設計', 'design']);
+    const icIdx = findColIdx(fieldMappings.ic, ['IC担当', 'IC', 'ic']);
+    const constructionIdx = findColIdx(fieldMappings.construction, ['工事担当', '工事', 'construction']);
 
     if (customerIdx === -1) {
       showToast('顧客名/邸名カラムが見つかりません', 'error');
@@ -18457,6 +18546,10 @@ async function importFromKintone() {
       const customer = cols[customerIdx];
       const address = addressIdx >= 0 ? cols[addressIdx] : '';
       const kintoneRecordId = recordIdIdx >= 0 ? cols[recordIdIdx] : '';
+      const salesAssignee = salesIdx >= 0 ? cols[salesIdx] : '';
+      const designAssignee = designIdx >= 0 ? cols[designIdx] : '';
+      const icAssignee = icIdx >= 0 ? cols[icIdx] : '';
+      const constructionAssignee = constructionIdx >= 0 ? cols[constructionIdx] : '';
 
       // 既存チェック
       const existing = projects.find(p => p.customer === customer);
@@ -18467,7 +18560,10 @@ async function importFromKintone() {
         customer,
         building_address: address,
         kintone_record_id: kintoneRecordId,
-        assigned_to: designers.find(d => d.category === '設計')?.name || '',
+        sales_assignee: salesAssignee,
+        assigned_to: designAssignee || designers.find(d => d.category === '設計')?.name || '',
+        ic_assignee: icAssignee,
+        construction_assignee: constructionAssignee,
         specifications: 'LIFE',
         status: 'active',
         progress: {}
@@ -18485,16 +18581,18 @@ async function importFromKintone() {
 
 // kintoneへエクスポート（CSV）
 function exportToKintone() {
-  const headers = ['案件ID', 'kintone_record_id', '顧客名', '建築地', '設計担当', 'IC担当', '外構担当', '不動産担当', '商品', '進捗率', '間取確定日', '着工許可日', '変更契約前会議日', '更新日'];
+  const headers = ['案件ID', 'kintone_record_id', '顧客名', '建築地', '営業担当', '設計担当', 'IC担当', '外構担当', '不動産担当', '工事担当', '商品', '進捗率', '間取確定日', '着工許可日', '変更契約前会議日', '更新日'];
   const rows = projects.map(p => [
     p.id,
     p.kintone_record_id || '',
     p.customer,
     p.building_address || '',
+    p.sales_assignee || '',
     p.assigned_to,
     p.ic_assignee || '',
     p.exterior_assignee || '',
     p.realestate_assignee || '',
+    p.construction_assignee || '',
     p.specifications,
     calculateProgress(p) + '%',
     p.layout_confirmed_date || '',
