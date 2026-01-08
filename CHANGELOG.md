@@ -1,5 +1,15 @@
 # ArchiDeck 開発履歴
 
+## v4.70.0 (2026-01-08)
+
+### バグ修正（コードレビュー対応）
+
+#### 修正内容
+- **saveProject**: 未定義の`memo`変数参照を削除
+- **IC完了判定**: icProgressがnullの場合のロジック修正
+- **calculateProgress**: projectがnullの場合のガード追加
+- **syncToKintone**: エラーハンドリングを適切に追加（silent catchを修正）
+
 ## v4.69.0 (2026-01-08)
 
 ### kintone全件取得・ソースフィルター・IC完了判定修正

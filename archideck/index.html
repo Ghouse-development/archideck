@@ -10613,9 +10613,10 @@ function renderProjects() {
     const isICDesigner = designers.some(d => d.category === 'IC' && d.name.trim() === currentDesignerTab.trim());
     if (isICDesigner) {
       const icProgress = calculateICProgress(p);
-      // IC担当者がいてIC進捗100%なら完了、IC担当者がいない場合は通常のアーカイブ判定に従う
+      // IC担当者がいてIC進捗100%（またはタスクなし）なら完了、IC担当者がいない場合は通常のアーカイブ判定に従う
       const hasICAssignee = !!p.ic_assignee;
-      const isICComplete = hasICAssignee ? icProgress === 100 : true;
+      // icProgressがnull（タスクなし）の場合も完了扱い
+      const isICComplete = hasICAssignee ? (icProgress === null || icProgress === 100) : true;
       if (archiveFilter === 'active') {
         // アクティブ表示: 未アーカイブ、またはアーカイブ済みだがIC未完了
         if (isArchived && isICComplete) return false;
@@ -11237,6 +11238,7 @@ function renderProjectCard(project) {
 }
 
 function calculateProgress(project) {
+  if (!project) return 0;
   const progressData = project.progress || {};
   const tasks = getTasksForAssignee(project.assigned_to);
   if (tasks.length === 0) return 0;
@@ -11872,7 +11874,6 @@ async function saveProject() {
         ic_assignee: icAssignee || null,
         ic_designer_id: icDesignerId,
         specifications,
-        memo,
         updated_at: new Date().toISOString()
       });
     } else {
@@ -11884,7 +11885,6 @@ async function saveProject() {
         ic_assignee: icAssignee || null,
         ic_designer_id: icDesignerId,
         specifications,
-        memo,
         status: 'active',
         progress: blankProgress,
         created_by: currentUser?.id || null
@@ -19201,17 +19201,24 @@ async function syncToKintone(projectId) {
   showToast('kintone同期をリクエストしました（サーバーサイド処理待ち）', 'info');
 
   // 同期リクエストをDBに記録
-  await supabase.from('kintone_sync_queue').insert({
-    project_id: projectId,
-    kintone_record_id: project.kintone_record_id,
-    sync_type: 'push',
-    status: 'pending',
-    data: {
-      layout_confirmed_date: project.layout_confirmed_date,
-      construction_permit_date: project.construction_permit_date,
-      pre_contract_meeting_date: project.pre_contract_meeting_date
+  try {
+    const { error } = await supabase.from('kintone_sync_queue').insert({
+      project_id: projectId,
+      kintone_record_id: project.kintone_record_id,
+      sync_type: 'push',
+      status: 'pending',
+      data: {
+        layout_confirmed_date: project.layout_confirmed_date,
+        construction_permit_date: project.construction_permit_date,
+        pre_contract_meeting_date: project.pre_contract_meeting_date
+      }
+    });
+    if (error) {
+      console.error('kintone同期キュー追加エラー:', error);
     }
-  }).catch(() => {});
+  } catch (e) {
+    console.error('kintone同期キュー例外:', e);
+  }
 }
 
 // 外構担当ドロップダウンを設定
