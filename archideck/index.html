@@ -5461,7 +5461,7 @@ textarea:focus-visible {
                 </div>
                 <div class="form-group" style="margin-bottom: 0;">
                   <label class="form-label" style="font-size: 12px;">⑨商品</label>
-                  <input type="text" class="form-input" id="kintoneFieldProduct" placeholder="文字列_基本情報_商品" style="width: 100%;">
+                  <input type="text" class="form-input" id="kintoneFieldProduct" placeholder="ドロップダウン_営業_契約後_商品" style="width: 100%;">
                 </div>
               </div>
             </div>
@@ -5484,6 +5484,10 @@ textarea:focus-visible {
                 <div class="form-group" style="margin-bottom: 0;">
                   <label class="form-label" style="font-size: 12px;">⑤工事担当</label>
                   <input type="text" class="form-input" id="kintoneFieldConstruction" placeholder="ユーザー選択_基本情報_工事" style="width: 100%;">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label class="form-label" style="font-size: 12px;">⑩外構担当</label>
+                  <input type="text" class="form-input" id="kintoneFieldExterior" placeholder="文字列_基本情報_外構施工担当" style="width: 100%;">
                 </div>
               </div>
             </div>
@@ -19629,7 +19633,8 @@ async function saveKintoneSettings() {
       sales: settings.field_sales,
       design: settings.field_design,
       ic: settings.field_ic,
-      construction: settings.field_construction
+      construction: settings.field_construction,
+      exterior: document.getElementById('kintoneFieldExterior')?.value || ''
     };
     localStorage.setItem('kintone_field_mappings', JSON.stringify(fieldMappings));
 
@@ -19838,6 +19843,7 @@ async function importFromKintoneDirect() {
     const designField = fieldMappings.design || 'ユーザー選択_基本情報_設計';
     const icField = fieldMappings.ic || 'ユーザー選択_基本情報_IC';
     const constructionField = fieldMappings.construction || 'ユーザー選択_基本情報_工事';
+    const exteriorField = fieldMappings.exterior || '';
     // 日付フィールド
     const layoutField = fieldMappings.layout || '';
     const permitField = fieldMappings.permit || '';
@@ -19845,7 +19851,7 @@ async function importFromKintoneDirect() {
     // 商品フィールド
     const productField = fieldMappings.product || '';
 
-    console.log('Field mappings:', { customerField, salesField, designField, icField, constructionField, layoutField, permitField, meetingField, productField });
+    console.log('Field mappings:', { customerField, salesField, designField, icField, constructionField, exteriorField, layoutField, permitField, meetingField, productField });
 
     // 2. kintoneからレコード取得（全件取得 - 500件制限回避）
     const result = await callKintoneProxy('getAllRecords');
@@ -19965,12 +19971,14 @@ async function importFromKintoneDirect() {
         const icValRaw = getValue(icField);
         const salesValRaw = getValue(salesField);
         const constructionValRaw = getValue(constructionField);
+        const exteriorValRaw = exteriorField ? getValue(exteriorField) : null;
 
         // 担当者名をシステム内の名前にマッチング
         const designVal = matchDesignerName(designValRaw, '設計');
         const icVal = matchDesignerName(icValRaw, 'IC');
         const salesVal = matchDesignerName(salesValRaw, '営業');
         const constructionVal = matchDesignerName(constructionValRaw, '工事');
+        const exteriorVal = exteriorValRaw ? matchDesignerName(exteriorValRaw, '外構') : null;
 
         // 日付フィールド値（複数形式対応）
         const layoutDate = parseDateValue(record, layoutField);
@@ -19991,6 +19999,7 @@ async function importFromKintoneDirect() {
           if (icVal) updateData.ic_assignee = icVal;
           if (salesVal) updateData.sales_assignee = salesVal;
           if (constructionVal) updateData.construction_assignee = constructionVal;
+          if (exteriorVal) updateData.exterior_assignee = exteriorVal;
           if (layoutDate) updateData.layout_confirmed_date = layoutDate;
           if (permitDate) updateData.construction_permit_date = permitDate;
           if (meetingDate) updateData.pre_contract_meeting_date = meetingDate;
@@ -20024,6 +20033,7 @@ async function importFromKintoneDirect() {
           if (icVal) insertData.ic_assignee = icVal;
           if (salesVal) insertData.sales_assignee = salesVal;
           if (constructionVal) insertData.construction_assignee = constructionVal;
+          if (exteriorVal) insertData.exterior_assignee = exteriorVal;
           if (layoutDate) insertData.layout_confirmed_date = layoutDate;
           if (permitDate) insertData.construction_permit_date = permitDate;
           if (meetingDate) insertData.pre_contract_meeting_date = meetingDate;
@@ -20401,6 +20411,7 @@ async function loadKintoneSettings() {
     const permitEl = document.getElementById('kintoneFieldPermit');
     const meetingEl = document.getElementById('kintoneFieldMeeting');
     const productEl = document.getElementById('kintoneFieldProduct');
+    const exteriorEl = document.getElementById('kintoneFieldExterior');
     const salesEl2 = document.getElementById('kintoneFieldSales');
     const designEl2 = document.getElementById('kintoneFieldDesign');
     const icEl2 = document.getElementById('kintoneFieldIC');
@@ -20411,6 +20422,7 @@ async function loadKintoneSettings() {
     if (permitEl && fieldMappings.permit) permitEl.value = fieldMappings.permit;
     if (meetingEl && fieldMappings.meeting) meetingEl.value = fieldMappings.meeting;
     if (productEl && fieldMappings.product) productEl.value = fieldMappings.product;
+    if (exteriorEl && fieldMappings.exterior) exteriorEl.value = fieldMappings.exterior;
     // 担当者フィールドはDBから読み込み済みだが、フォールバックとしてlocalStorageも確認
     if (salesEl2 && !salesEl2.value && fieldMappings.sales) salesEl2.value = fieldMappings.sales;
     if (designEl2 && !designEl2.value && fieldMappings.design) designEl2.value = fieldMappings.design;
@@ -20440,6 +20452,7 @@ async function autoSyncKintone() {
     const designField = fieldMappings.design || 'ユーザー選択_基本情報_設計';
     const icField = fieldMappings.ic || 'ユーザー選択_基本情報_IC';
     const constructionField = fieldMappings.construction || 'ユーザー選択_基本情報_工事';
+    const exteriorField = fieldMappings.exterior || '';
     const layoutField = fieldMappings.layout || '';
     const permitField = fieldMappings.permit || '';
     const meetingField = fieldMappings.meeting || '';
@@ -20538,11 +20551,13 @@ async function autoSyncKintone() {
           const designRaw = getValue(designField);
           const icRaw = getValue(icField);
           const constructionRaw = getValue(constructionField);
+          const exteriorRaw = exteriorField ? getValue(exteriorField) : null;
 
           const sales = matchDesignerName(salesRaw, '営業');
           const design = matchDesignerName(designRaw, '設計');
           const ic = matchDesignerName(icRaw, 'IC');
           const construction = matchDesignerName(constructionRaw, '工事');
+          const exterior = exteriorRaw ? matchDesignerName(exteriorRaw, '外構') : null;
 
           if (sales && sales !== existingProject.sales_assignee) {
             updates.sales_assignee = sales;
@@ -20560,6 +20575,10 @@ async function autoSyncKintone() {
             updates.construction_assignee = construction;
             hasChanges = true;
           }
+          if (exterior && exterior !== existingProject.exterior_assignee) {
+            updates.exterior_assignee = exterior;
+            hasChanges = true;
+          }
 
           if (hasChanges) {
             const { error } = await supabase
@@ -20575,6 +20594,7 @@ async function autoSyncKintone() {
         } else {
           // 新規プロジェクト追加（名前マッチング適用）
           const productValue = productField ? getValue(productField) : null;
+          const exteriorValue = exteriorField ? matchDesignerName(getValue(exteriorField), '外構') : null;
           const newProject = {
             customer: customer,
             kintone_record_id: kintoneRecordId,
@@ -20584,6 +20604,7 @@ async function autoSyncKintone() {
             ic_assignee: matchDesignerName(getValue(icField), 'IC'),
             sales_assignee: matchDesignerName(getValue(salesField), '営業'),
             construction_assignee: matchDesignerName(getValue(constructionField), '工事'),
+            exterior_assignee: exteriorValue,
             layout_confirmed_date: getValue(layoutField),
             construction_permit_date: getValue(permitField),
             pre_contract_meeting_date: getValue(meetingField),
