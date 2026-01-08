@@ -5714,6 +5714,26 @@ textarea:focus-visible {
   </div>
 </div>
 
+<!-- モーダル：完了済み確認 -->
+<div id="archiveConfirmModal" class="modal">
+  <div class="modal-content" style="max-width: 400px;">
+    <div class="modal-header">
+      <h2 class="modal-title">完了済みに移動</h2>
+      <button class="close" onclick="closeArchiveConfirmModal()">&times;</button>
+    </div>
+    <div class="modal-body" style="text-align: center; padding: 30px;">
+      <div style="font-size: 48px; margin-bottom: 16px;">📦</div>
+      <p id="archiveConfirmProjectName" style="font-size: 18px; font-weight: 600; margin-bottom: 8px;"></p>
+      <p style="color: var(--text-secondary); margin-bottom: 16px;">この案件を完了済みに移動しますか？</p>
+      <p style="color: var(--text-muted); font-size: 12px;">完了済みの案件は「完了済」フィルターで確認できます。</p>
+    </div>
+    <div class="modal-footer" style="justify-content: center; gap: 12px;">
+      <button class="btn btn-ghost" onclick="closeArchiveConfirmModal()">キャンセル</button>
+      <button class="btn btn-success" onclick="executeArchive()" style="background: linear-gradient(135deg, #10b981, #059669);">完了済みにする</button>
+    </div>
+  </div>
+</div>
+
 <!-- トースト通知 -->
 <div id="toast" class="toast"></div>
 <div id="contextMenu" class="context-menu">
@@ -11851,18 +11871,78 @@ async function deleteProject(projectId) {
   });
 }
 
-async function toggleArchive(projectId, isArchived) {
+let archiveConfirmProjectId = null;
+
+// 完了済み確認モーダルを開く
+function openArchiveConfirmModal(projectId) {
   const project = projects.find(p => p.id === projectId);
   if (!project) return;
 
-  const message = isArchived ? '完了済みにしますか？' : '案件を復元しますか？';
-  if (!confirm(message)) return;
+  archiveConfirmProjectId = projectId;
+  document.getElementById('archiveConfirmProjectName').textContent = project.customer;
+  ModalManager.open(document.getElementById('archiveConfirmModal'));
+}
+
+function closeArchiveConfirmModal() {
+  ModalManager.close(document.getElementById('archiveConfirmModal'));
+  archiveConfirmProjectId = null;
+}
+
+// 完了済みに移動を実行
+async function executeArchive() {
+  if (!archiveConfirmProjectId) return;
+
+  const project = projects.find(p => p.id === archiveConfirmProjectId);
+  if (!project) return;
 
   showStatus('更新中...', 'saving');
 
   const updateData = {
-    is_archived: isArchived,
-    archived_at: isArchived ? new Date().toISOString() : null
+    is_archived: true,
+    archived_at: new Date().toISOString()
+  };
+
+  const { error } = await supabase
+    .from('projects')
+    .update(updateData)
+    .eq('id', archiveConfirmProjectId);
+
+  if (error) {
+    showStatus('エラー', 'error');
+    showToast('更新に失敗しました: ' + error.message, 'error');
+    closeArchiveConfirmModal();
+    return;
+  }
+
+  // ローカルデータを更新
+  project.is_archived = true;
+  project.archived_at = updateData.archived_at;
+
+  closeArchiveConfirmModal();
+  renderProjects();
+  renderSidebar();
+  showStatus('保存済み', 'saved');
+  showToast('案件を完了済みにしました', 'success');
+}
+
+async function toggleArchive(projectId, isArchived) {
+  const project = projects.find(p => p.id === projectId);
+  if (!project) return;
+
+  // 完了済みにする場合はモーダルで確認
+  if (isArchived) {
+    openArchiveConfirmModal(projectId);
+    return;
+  }
+
+  // 復元の場合は従来通りconfirmで確認
+  if (!confirm('案件を復元しますか？')) return;
+
+  showStatus('更新中...', 'saving');
+
+  const updateData = {
+    is_archived: false,
+    archived_at: null
   };
 
   const { error } = await supabase
@@ -11877,13 +11957,13 @@ async function toggleArchive(projectId, isArchived) {
   }
 
   // ローカルデータを更新
-  project.is_archived = isArchived;
-  project.archived_at = updateData.archived_at;
+  project.is_archived = false;
+  project.archived_at = null;
 
   renderProjects();
   renderSidebar();
   showStatus('保存済み', 'saved');
-  showToast(isArchived ? '案件を完了済みにしました' : '案件を復元しました', 'success');
+  showToast('案件を復元しました', 'success');
 }
 
 // 完了済から復元（チェックボックス解除時）

@@ -1,5 +1,14 @@
 # ArchiDeck 開発履歴
 
+## v4.63.0 (2026-01-08)
+
+### 完了済み確認モーダル追加
+
+#### 1. 完了済み確認モーダル
+- **モーダルUI**: `confirm()`ダイアログからモーダルに変更
+- **関数追加**: `openArchiveConfirmModal()`, `closeArchiveConfirmModal()`, `executeArchive()`
+- **UX改善**: プロジェクト名を表示し、完了済フィルターの説明を追加
+
 ## v4.62.0 (2026-01-08)
 
 ### カレンダー・kintone連携・UI改善
