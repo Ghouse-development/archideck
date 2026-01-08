@@ -5141,13 +5141,14 @@ textarea:focus-visible {
             <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border-color);">
               <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">データ連携</h3>
               <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-                <button class="btn btn-ghost" onclick="importFromKintone()">📥 kintoneからインポート（CSV）</button>
+                <button class="btn btn-primary" onclick="importFromKintoneDirect()">📥 kintoneから直接インポート</button>
+                <button class="btn btn-ghost" onclick="importFromKintone()">📥 CSVインポート</button>
                 <button class="btn btn-ghost" onclick="exportToKintone()">📤 CSVエクスポート</button>
               </div>
               <p style="font-size: 12px; color: var(--text-muted); margin-top: 12px;">
-                kintoneからエクスポートしたCSVファイルをインポートできます。<br>
-                顧客名/邸名、建築地、レコードIDカラムが自動認識されます。
+                kintoneから直接データを取得してインポートできます。
               </p>
+              <div id="kintoneImportStatus" style="margin-top: 12px;"></div>
             </div>
           </div>
         </div>
@@ -18750,6 +18751,134 @@ async function addKintoneRecord(record) {
 // kintoneレコード更新
 async function updateKintoneRecord(recordId, record) {
   return await callKintoneProxy('updateRecord', { recordId, record });
+}
+
+// kintoneから直接インポート
+async function importFromKintoneDirect() {
+  const statusEl = document.getElementById('kintoneImportStatus');
+  statusEl.innerHTML = '<span style="color: var(--text-muted);">📥 kintoneからデータを取得中...</span>';
+
+  try {
+    // フィールドマッピングを取得
+    const fieldMappings = safeJsonParse(localStorage.getItem('kintone_field_mappings'), {});
+
+    // kintoneからレコード取得
+    const result = await fetchKintoneRecords();
+
+    if (!result.success) {
+      statusEl.innerHTML = `<span style="color: var(--danger-color);">❌ ${result.error}</span>`;
+      return;
+    }
+
+    const records = result.data?.records || [];
+    if (records.length === 0) {
+      statusEl.innerHTML = '<span style="color: var(--warning-color);">⚠️ レコードが見つかりませんでした</span>';
+      return;
+    }
+
+    statusEl.innerHTML = `<span style="color: var(--text-muted);">📥 ${records.length}件のレコードを処理中...</span>`;
+
+    let imported = 0;
+    let updated = 0;
+    let skipped = 0;
+
+    for (const record of records) {
+      try {
+        // フィールドマッピングに基づいてデータを抽出
+        const customerField = fieldMappings.customer || '文字_基本情報_お客様名_メイン';
+        const salesField = fieldMappings.sales || 'ユーザー選択_基本情報_営業';
+        const designField = fieldMappings.design || 'ユーザー選択_基本情報_設計';
+        const icField = fieldMappings.ic || 'ユーザー選択_基本情報_IC';
+        const constructionField = fieldMappings.construction || 'ユーザー選択_基本情報_工事';
+        const layoutField = fieldMappings.layout || '日付_設計_プラン確定_予定手入力';
+        const permitField = fieldMappings.permit || '日付_設計_着工許可_予定手入力';
+        const meetingField = fieldMappings.meeting || '日付_IC_変更契約前会議_予定手入力';
+
+        // kintoneのフィールド値を取得（ユーザー選択フィールドは配列）
+        const getValue = (field) => {
+          const val = record[field]?.value;
+          if (Array.isArray(val)) {
+            return val.map(v => v.name || v.code || v).join(', ');
+          }
+          return val || '';
+        };
+
+        const customer = getValue(customerField);
+        if (!customer) {
+          skipped++;
+          continue;
+        }
+
+        const kintoneRecordId = record['$id']?.value || record['レコード番号']?.value;
+
+        // 既存プロジェクトを確認（kintone_record_idまたは顧客名で検索）
+        let existingProject = null;
+        if (kintoneRecordId) {
+          existingProject = projects.find(p => p.kintone_record_id === kintoneRecordId);
+        }
+        if (!existingProject) {
+          existingProject = projects.find(p => p.customer === customer);
+        }
+
+        const projectData = {
+          customer,
+          sales_assignee: getValue(salesField),
+          assigned_to: getValue(designField),
+          ic_assignee: getValue(icField),
+          construction_assignee: getValue(constructionField),
+          layout_date: getValue(layoutField) || null,
+          permit_date: getValue(permitField) || null,
+          meeting_date: getValue(meetingField) || null,
+          kintone_record_id: kintoneRecordId,
+          updated_at: new Date().toISOString()
+        };
+
+        if (existingProject) {
+          // 更新
+          const { error } = await supabase
+            .from('projects')
+            .update(projectData)
+            .eq('id', existingProject.id);
+
+          if (!error) {
+            Object.assign(existingProject, projectData);
+            updated++;
+          }
+        } else {
+          // 新規作成
+          projectData.organization_id = currentOrganization?.id;
+          projectData.status = 'active';
+          projectData.progress = {};
+          projectData.created_at = new Date().toISOString();
+
+          const { data: newProject, error } = await supabase
+            .from('projects')
+            .insert(projectData)
+            .select()
+            .single();
+
+          if (!error && newProject) {
+            projects.push(newProject);
+            imported++;
+          }
+        }
+      } catch (e) {
+        console.error('Record import error:', e);
+        skipped++;
+      }
+    }
+
+    // 完了
+    renderProjects();
+    renderSidebar();
+    statusEl.innerHTML = `<span style="color: var(--success-color);">✅ 完了: ${imported}件インポート、${updated}件更新、${skipped}件スキップ</span>`;
+    showToast(`kintoneから${imported + updated}件をインポートしました`, 'success');
+
+  } catch (e) {
+    console.error('Import error:', e);
+    statusEl.innerHTML = `<span style="color: var(--danger-color);">❌ エラー: ${e.message}</span>`;
+    showToast('インポートに失敗しました', 'error');
+  }
 }
 
 // kintone設定読み込み
