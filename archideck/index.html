@@ -12125,8 +12125,8 @@ function getStateColorClass(state, lastOption, taskKey = '') {
     return 'state-yellow';
   }
 
-  // ICタスク特別処理: 造作業者紹介・家具見積依頼・タイルプレゼンは「無」「無し」も青色
-  if (taskKey === 'ic_zousaku' || taskKey === 'ic_furniture' || taskKey === 'ic_tile_pres') {
+  // ICタスク特別処理: カーテン紹介・造作業者紹介・家具見積依頼・タイルプレゼンは「無」「無し」も青色
+  if (taskKey === 'ic_curtain' || taskKey === 'ic_zousaku' || taskKey === 'ic_furniture' || taskKey === 'ic_tile_pres') {
     if (state === '無' || state === '無し' || state === '依頼済' || state === '作成済') {
       return 'state-blue';
     }
