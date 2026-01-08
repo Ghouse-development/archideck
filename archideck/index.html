@@ -18692,9 +18692,13 @@ async function testKintoneConnection() {
         `<span style="color: var(--success-color);">✅ 接続成功！アプリ「${result.data?.name || appId}」に接続しました</span>`;
       showToast('kintone接続に成功しました', 'success');
     } else {
+      // 詳細エラー情報を表示
+      let errorMsg = result.error || '接続に失敗しました';
+      if (result.hint) errorMsg += `<br><small style="color: var(--text-muted);">${result.hint}</small>`;
+      if (result.details) errorMsg += `<br><small style="color: var(--text-muted);">${result.details}</small>`;
       document.getElementById('kintoneStatus').innerHTML =
-        `<span style="color: var(--danger-color);">❌ ${result.error || '接続に失敗しました'}</span>`;
-      showToast('kintone接続に失敗しました', 'error');
+        `<span style="color: var(--danger-color);">❌ ${errorMsg}</span>`;
+      showToast('kintone接続に失敗しました: ' + result.error, 'error');
     }
   } catch (e) {
     document.getElementById('kintoneStatus').innerHTML =
@@ -18710,12 +18714,25 @@ async function callKintoneProxy(action, data = {}) {
       body: { action, data }
     });
 
+    // Edge Functionからのエラーレスポンス
     if (response.error) {
-      return { success: false, error: response.error.message };
+      console.error('Edge Function error:', response.error);
+      return { success: false, error: response.error.message || 'Edge Function エラー' };
     }
 
-    return response.data;
+    // レスポンスデータを確認
+    if (response.data) {
+      // Edge Functionがエラーを返した場合（success: falseの場合）
+      if (response.data.success === false) {
+        console.error('kintone-proxy returned error:', response.data);
+        return response.data;
+      }
+      return response.data;
+    }
+
+    return { success: false, error: 'レスポンスが空です' };
   } catch (e) {
+    console.error('callKintoneProxy exception:', e);
     return { success: false, error: e.message };
   }
 }

@@ -17,11 +17,24 @@ serve(async (req) => {
   }
 
   try {
-    const { action, data } = await req.json()
+    const body = await req.json()
+    const { action, data } = body
 
-    // Supabaseクライアント作成
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    // Supabaseクライアント作成（Service Role Keyを使用してRLSをバイパス）
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+
+    if (!supabaseUrl || !supabaseKey) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: '環境変数が設定されていません',
+          debug: { url: !!supabaseUrl, key: !!supabaseKey }
+        }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     const supabase = createClient(supabaseUrl, supabaseKey)
 
     // kintone設定を取得
@@ -31,14 +44,47 @@ serve(async (req) => {
       .eq('is_active', true)
       .limit(1)
 
-    if (settingsError || !settings || settings.length === 0) {
+    if (settingsError) {
       return new Response(
-        JSON.stringify({ error: 'kintone設定が見つかりません' }),
+        JSON.stringify({
+          success: false,
+          error: 'DB読み取りエラー: ' + settingsError.message,
+          code: settingsError.code,
+          details: settingsError.details
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    if (!settings || settings.length === 0) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'kintone設定が見つかりません。設定画面で保存してください。',
+          hint: 'kintone_settingsテーブルにis_active=trueのレコードがありません'
+        }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
     const config = settings[0]
+
+    // 設定の検証
+    if (!config.domain || !config.app_id || !config.api_token) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'kintone設定が不完全です',
+          missing: {
+            domain: !config.domain,
+            app_id: !config.app_id,
+            api_token: !config.api_token
+          }
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     const kintoneUrl = `https://${config.domain}/k/v1`
     const headers = {
       'X-Cybozu-API-Token': config.api_token,
@@ -124,7 +170,7 @@ serve(async (req) => {
 
       default:
         return new Response(
-          JSON.stringify({ error: '不明なアクション: ' + action }),
+          JSON.stringify({ success: false, error: '不明なアクション: ' + action }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
     }
@@ -132,8 +178,12 @@ serve(async (req) => {
     if (!response.ok) {
       const errorText = await response.text()
       return new Response(
-        JSON.stringify({ error: `kintone API エラー: ${response.status}`, details: errorText }),
-        { status: response.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({
+          success: false,
+          error: `kintone API エラー: ${response.status}`,
+          details: errorText
+        }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
@@ -145,7 +195,7 @@ serve(async (req) => {
 
   } catch (error) {
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ success: false, error: error.message, stack: error.stack }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
