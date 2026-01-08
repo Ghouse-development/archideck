@@ -5088,22 +5088,23 @@ textarea:focus-visible {
 
             <div style="margin-top: 24px; padding: 16px; background: var(--bg-secondary); border-radius: var(--radius-md);">
               <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 12px;">フィールドマッピング（基本情報）</h3>
+              <div class="form-hint" style="font-size: 11px; margin-bottom: 12px;">kintoneのフィールドコードを入力してください</div>
               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                 <div class="form-group" style="margin-bottom: 0;">
-                  <label class="form-label" style="font-size: 12px;">邸名フィールド</label>
-                  <input type="text" class="form-input" id="kintoneFieldCustomer" placeholder="customer_name" style="width: 100%;">
+                  <label class="form-label" style="font-size: 12px;">①邸名（お客様名）</label>
+                  <input type="text" class="form-input" id="kintoneFieldCustomer" placeholder="文字_基本情報_お客様名_メイン" style="width: 100%;">
                 </div>
                 <div class="form-group" style="margin-bottom: 0;">
-                  <label class="form-label" style="font-size: 12px;">間取確定日フィールド</label>
-                  <input type="text" class="form-input" id="kintoneFieldLayout" placeholder="layout_confirmed_date" style="width: 100%;">
+                  <label class="form-label" style="font-size: 12px;">⑥プラン確定日</label>
+                  <input type="text" class="form-input" id="kintoneFieldLayout" placeholder="日付_設計_プラン確定_予定手入力" style="width: 100%;">
                 </div>
                 <div class="form-group" style="margin-bottom: 0;">
-                  <label class="form-label" style="font-size: 12px;">着工許可フィールド</label>
-                  <input type="text" class="form-input" id="kintoneFieldPermit" placeholder="construction_permit" style="width: 100%;">
+                  <label class="form-label" style="font-size: 12px;">⑧着工許可日</label>
+                  <input type="text" class="form-input" id="kintoneFieldPermit" placeholder="日付_設計_着工許可_予定手入力" style="width: 100%;">
                 </div>
                 <div class="form-group" style="margin-bottom: 0;">
-                  <label class="form-label" style="font-size: 12px;">変更契約前会議フィールド</label>
-                  <input type="text" class="form-input" id="kintoneFieldMeeting" placeholder="pre_contract_meeting" style="width: 100%;">
+                  <label class="form-label" style="font-size: 12px;">⑦変更契約前会議日</label>
+                  <input type="text" class="form-input" id="kintoneFieldMeeting" placeholder="日付_IC_変更契約前会議_予定手入力" style="width: 100%;">
                 </div>
               </div>
             </div>
@@ -5112,20 +5113,20 @@ textarea:focus-visible {
               <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 12px;">フィールドマッピング（担当者）</h3>
               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                 <div class="form-group" style="margin-bottom: 0;">
-                  <label class="form-label" style="font-size: 12px;">営業担当フィールド</label>
-                  <input type="text" class="form-input" id="kintoneFieldSales" placeholder="sales_assignee" style="width: 100%;">
+                  <label class="form-label" style="font-size: 12px;">②営業担当</label>
+                  <input type="text" class="form-input" id="kintoneFieldSales" placeholder="ユーザー選択_基本情報_営業" style="width: 100%;">
                 </div>
                 <div class="form-group" style="margin-bottom: 0;">
-                  <label class="form-label" style="font-size: 12px;">設計担当フィールド</label>
-                  <input type="text" class="form-input" id="kintoneFieldDesign" placeholder="design_assignee" style="width: 100%;">
+                  <label class="form-label" style="font-size: 12px;">③設計担当</label>
+                  <input type="text" class="form-input" id="kintoneFieldDesign" placeholder="ユーザー選択_基本情報_設計" style="width: 100%;">
                 </div>
                 <div class="form-group" style="margin-bottom: 0;">
-                  <label class="form-label" style="font-size: 12px;">IC担当フィールド</label>
-                  <input type="text" class="form-input" id="kintoneFieldIC" placeholder="ic_assignee" style="width: 100%;">
+                  <label class="form-label" style="font-size: 12px;">④IC担当</label>
+                  <input type="text" class="form-input" id="kintoneFieldIC" placeholder="ユーザー選択_基本情報_IC" style="width: 100%;">
                 </div>
                 <div class="form-group" style="margin-bottom: 0;">
-                  <label class="form-label" style="font-size: 12px;">工事担当フィールド</label>
-                  <input type="text" class="form-input" id="kintoneFieldConstruction" placeholder="construction_assignee" style="width: 100%;">
+                  <label class="form-label" style="font-size: 12px;">⑤工事担当</label>
+                  <input type="text" class="form-input" id="kintoneFieldConstruction" placeholder="ユーザー選択_基本情報_工事" style="width: 100%;">
                 </div>
               </div>
             </div>
@@ -18611,37 +18612,60 @@ async function saveKintoneSettings() {
     const settings = {
       domain: document.getElementById('kintoneDomain').value,
       app_id: document.getElementById('kintoneAppId').value,
-      api_token: document.getElementById('kintoneApiToken').value
+      api_token: document.getElementById('kintoneApiToken').value,
+      field_sales: document.getElementById('kintoneFieldSales')?.value || '',
+      field_design: document.getElementById('kintoneFieldDesign')?.value || '',
+      field_ic: document.getElementById('kintoneFieldIC')?.value || '',
+      field_construction: document.getElementById('kintoneFieldConstruction')?.value || ''
     };
 
-    // フィールドマッピングをlocalStorageに保存
+    // フィールドマッピングをlocalStorageにもバックアップ保存
     const fieldMappings = {
       customer: document.getElementById('kintoneFieldCustomer')?.value || '',
       layout: document.getElementById('kintoneFieldLayout')?.value || '',
       permit: document.getElementById('kintoneFieldPermit')?.value || '',
       meeting: document.getElementById('kintoneFieldMeeting')?.value || '',
-      sales: document.getElementById('kintoneFieldSales')?.value || '',
-      design: document.getElementById('kintoneFieldDesign')?.value || '',
-      ic: document.getElementById('kintoneFieldIC')?.value || '',
-      construction: document.getElementById('kintoneFieldConstruction')?.value || ''
+      sales: settings.field_sales,
+      design: settings.field_design,
+      ic: settings.field_ic,
+      construction: settings.field_construction
     };
     localStorage.setItem('kintone_field_mappings', JSON.stringify(fieldMappings));
 
     if (!settings.domain || !settings.app_id || !settings.api_token) {
-      showToast('すべての項目を入力してください', 'error');
+      showToast('ドメイン、アプリID、APIトークンは必須です', 'error');
       return;
     }
 
-    const { error } = await supabase
+    // 既存レコードを確認
+    const { data: existing } = await supabase
       .from('kintone_settings')
-      .upsert({
-        ...settings,
-        is_active: true,
-        updated_at: new Date().toISOString()
-      });
+      .select('id')
+      .eq('is_active', true)
+      .limit(1);
+
+    let error;
+    if (existing && existing.length > 0) {
+      // 既存レコードを更新
+      ({ error } = await supabase
+        .from('kintone_settings')
+        .update({
+          ...settings,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', existing[0].id));
+    } else {
+      // 新規作成
+      ({ error } = await supabase
+        .from('kintone_settings')
+        .insert({
+          ...settings,
+          is_active: true
+        }));
+    }
 
     if (error) {
-      showToast('設定保存に失敗しました（kintone_settingsテーブルが存在しない可能性があります）', 'error');
+      showToast('設定保存に失敗しました: ' + error.message, 'error');
       return;
     }
 
@@ -18683,30 +18707,52 @@ async function loadKintoneSettings() {
       .from('kintone_settings')
       .select('*')
       .eq('is_active', true)
-      .single();
+      .limit(1);
 
-    // エラーの場合（テーブルが存在しない、RLSエラーなど）は静かに終了
-    if (error) {
-      // 406/401エラーは無視（テーブル未作成の環境向け）
-    } else if (data) {
-      kintoneSettings = data;
+    // DBから読み込み成功した場合
+    if (!error && data && data.length > 0) {
+      const settings = data[0];
+      kintoneSettings = settings;
+
       const domainEl = document.getElementById('kintoneDomain');
       const appIdEl = document.getElementById('kintoneAppId');
-      if (domainEl) domainEl.value = data.domain || '';
-      if (appIdEl) appIdEl.value = data.app_id || '';
-      // APIトークンは表示しない（セキュリティ）
+      const apiTokenEl = document.getElementById('kintoneApiToken');
+
+      if (domainEl) domainEl.value = settings.domain || '';
+      if (appIdEl) appIdEl.value = settings.app_id || '';
+      if (apiTokenEl) apiTokenEl.value = settings.api_token || '';
+
+      // 担当者フィールドマッピングをDBから読み込み
+      const salesEl = document.getElementById('kintoneFieldSales');
+      const designEl = document.getElementById('kintoneFieldDesign');
+      const icEl = document.getElementById('kintoneFieldIC');
+      const constructionEl = document.getElementById('kintoneFieldConstruction');
+      if (salesEl && settings.field_sales) salesEl.value = settings.field_sales;
+      if (designEl && settings.field_design) designEl.value = settings.field_design;
+      if (icEl && settings.field_ic) icEl.value = settings.field_ic;
+      if (constructionEl && settings.field_construction) constructionEl.value = settings.field_construction;
     }
 
-    // フィールドマッピングをlocalStorageから読み込み
+    // 基本情報フィールドはlocalStorageから読み込み（DBにカラムがないため）
     const fieldMappings = safeJsonParse(localStorage.getItem('kintone_field_mappings'), {});
-    if (fieldMappings.customer) document.getElementById('kintoneFieldCustomer').value = fieldMappings.customer;
-    if (fieldMappings.layout) document.getElementById('kintoneFieldLayout').value = fieldMappings.layout;
-    if (fieldMappings.permit) document.getElementById('kintoneFieldPermit').value = fieldMappings.permit;
-    if (fieldMappings.meeting) document.getElementById('kintoneFieldMeeting').value = fieldMappings.meeting;
-    if (fieldMappings.sales) document.getElementById('kintoneFieldSales').value = fieldMappings.sales;
-    if (fieldMappings.design) document.getElementById('kintoneFieldDesign').value = fieldMappings.design;
-    if (fieldMappings.ic) document.getElementById('kintoneFieldIC').value = fieldMappings.ic;
-    if (fieldMappings.construction) document.getElementById('kintoneFieldConstruction').value = fieldMappings.construction;
+    const customerEl = document.getElementById('kintoneFieldCustomer');
+    const layoutEl = document.getElementById('kintoneFieldLayout');
+    const permitEl = document.getElementById('kintoneFieldPermit');
+    const meetingEl = document.getElementById('kintoneFieldMeeting');
+    const salesEl2 = document.getElementById('kintoneFieldSales');
+    const designEl2 = document.getElementById('kintoneFieldDesign');
+    const icEl2 = document.getElementById('kintoneFieldIC');
+    const constructionEl2 = document.getElementById('kintoneFieldConstruction');
+
+    if (customerEl && fieldMappings.customer) customerEl.value = fieldMappings.customer;
+    if (layoutEl && fieldMappings.layout) layoutEl.value = fieldMappings.layout;
+    if (permitEl && fieldMappings.permit) permitEl.value = fieldMappings.permit;
+    if (meetingEl && fieldMappings.meeting) meetingEl.value = fieldMappings.meeting;
+    // 担当者フィールドはDBから読み込み済みだが、フォールバックとしてlocalStorageも確認
+    if (salesEl2 && !salesEl2.value && fieldMappings.sales) salesEl2.value = fieldMappings.sales;
+    if (designEl2 && !designEl2.value && fieldMappings.design) designEl2.value = fieldMappings.design;
+    if (icEl2 && !icEl2.value && fieldMappings.ic) icEl2.value = fieldMappings.ic;
+    if (constructionEl2 && !constructionEl2.value && fieldMappings.construction) constructionEl2.value = fieldMappings.construction;
   } catch (e) {
     // 例外発生時も静かに終了
   }
