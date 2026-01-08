@@ -18849,9 +18849,10 @@ async function importFromKintoneDirect() {
             updated++;
           }
         } else {
-          // 7. 新規作成（organization_idは省略可能）
+          // 7. 新規作成
           const insertData = {
             customer,
+            uid: currentUser?.id,
             status: 'active',
             progress: {},
             specifications: 'LIFE'
