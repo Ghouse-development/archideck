@@ -20413,8 +20413,8 @@ async function autoSyncKintone() {
           // 間取確定日
           if (layoutField) {
             const layoutDate = getValue(layoutField);
-            if (layoutDate && layoutDate !== existingProject.layout_date) {
-              updates.layout_date = layoutDate;
+            if (layoutDate && layoutDate !== existingProject.layout_confirmed_date) {
+              updates.layout_confirmed_date = layoutDate;
               hasChanges = true;
             }
           }
@@ -20422,8 +20422,8 @@ async function autoSyncKintone() {
           // 着工許可日
           if (permitField) {
             const permitDate = getValue(permitField);
-            if (permitDate && permitDate !== existingProject.permit_date) {
-              updates.permit_date = permitDate;
+            if (permitDate && permitDate !== existingProject.construction_permit_date) {
+              updates.construction_permit_date = permitDate;
               hasChanges = true;
             }
           }
@@ -20431,8 +20431,8 @@ async function autoSyncKintone() {
           // 変更契約前会議日
           if (meetingField) {
             const meetingDate = getValue(meetingField);
-            if (meetingDate && meetingDate !== existingProject.meeting_date) {
-              updates.meeting_date = meetingDate;
+            if (meetingDate && meetingDate !== existingProject.pre_contract_meeting_date) {
+              updates.pre_contract_meeting_date = meetingDate;
               hasChanges = true;
             }
           }
@@ -20487,9 +20487,9 @@ async function autoSyncKintone() {
             ic_assignee: matchDesignerName(getValue(icField), 'IC'),
             sales_assignee: matchDesignerName(getValue(salesField), '営業'),
             construction_assignee: matchDesignerName(getValue(constructionField), '工事'),
-            layout_date: getValue(layoutField),
-            permit_date: getValue(permitField),
-            meeting_date: getValue(meetingField),
+            layout_confirmed_date: getValue(layoutField),
+            construction_permit_date: getValue(permitField),
+            pre_contract_meeting_date: getValue(meetingField),
             progress: {},
             is_archived: false
           };
