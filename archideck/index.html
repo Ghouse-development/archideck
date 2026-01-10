@@ -5436,15 +5436,20 @@ textarea:focus-visible {
             </div>
 
             <div class="form-group">
-              <label class="form-label">アプリID</label>
-              <input type="text" class="form-input" id="kintoneAppId" placeholder="例：123" style="width: 100%;">
-            </div>
-
-            <div class="form-group">
               <label class="form-label">APIトークン</label>
               <input type="password" class="form-input" id="kintoneApiToken" placeholder="APIトークンを入力" style="width: 100%;">
-              <div class="form-hint" style="font-size: 11px; margin-top: 4px;">kintoneアプリの設定からAPIトークンを発行してください</div>
+              <div class="form-hint" style="font-size: 11px; margin-top: 4px;">kintoneアプリの設定からAPIトークンを発行してください（複数アプリで共通のトークンを使用）</div>
             </div>
+
+            <div style="margin-top: 24px; padding: 16px; background: var(--bg-secondary); border-radius: var(--radius-md);">
+              <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 12px;">年度別アプリ設定</h3>
+              <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">年度ごとに異なるアプリIDを設定できます。複数年度をまたいでデータ管理が可能です。</p>
+              <div id="kintoneAppsList" style="display: flex; flex-direction: column; gap: 8px;"></div>
+              <button class="btn btn-ghost" onclick="addKintoneAppRow()" style="margin-top: 12px;">+ 年度を追加</button>
+            </div>
+
+            <!-- 後方互換性のための非表示フィールド -->
+            <input type="hidden" id="kintoneAppId" value="">
 
             <div style="margin-top: 24px; padding: 16px; background: var(--bg-secondary); border-radius: var(--radius-md);">
               <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 12px;">フィールドマッピング（基本情報）</h3>
@@ -5508,13 +5513,19 @@ textarea:focus-visible {
 
             <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border-color);">
               <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">データ連携</h3>
+              <div style="margin-bottom: 16px;">
+                <label class="form-label" style="font-size: 13px;">インポート対象年度</label>
+                <div id="kintoneImportYearSelect" style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;">
+                  <!-- 動的に年度チェックボックスが追加される -->
+                </div>
+              </div>
               <div style="display: flex; gap: 12px; flex-wrap: wrap;">
                 <button class="btn btn-primary" onclick="importFromKintoneDirect()">📥 kintoneから直接インポート</button>
                 <button class="btn btn-ghost" onclick="importFromKintone()">📥 CSVインポート</button>
                 <button class="btn btn-ghost" onclick="exportToKintone()">📤 CSVエクスポート</button>
               </div>
               <p style="font-size: 12px; color: var(--text-muted); margin-top: 12px;">
-                kintoneから直接データを取得してインポートできます。
+                選択した年度のkintoneアプリからデータを取得してインポートします。
               </p>
               <div id="kintoneImportStatus" style="margin-top: 12px;"></div>
 
@@ -19918,17 +19929,127 @@ function restoreBackup() {
   fileInput.click();
 }
 
+// kintone年度別アプリ管理
+let kintoneApps = []; // { year: '2025', appId: '123', label: '2025年度' }
+
+// 年度アプリ行を追加
+function addKintoneAppRow(year = '', appId = '') {
+  const currentYear = new Date().getFullYear();
+  if (!year) year = String(currentYear);
+
+  const container = document.getElementById('kintoneAppsList');
+  if (!container) return;
+
+  const rowId = 'kintoneApp_' + Date.now();
+  const row = document.createElement('div');
+  row.id = rowId;
+  row.style.cssText = 'display: flex; gap: 8px; align-items: center;';
+  row.innerHTML = `
+    <input type="text" class="form-input kintone-app-year" placeholder="年度（例：2025）" value="${year}" style="width: 100px;">
+    <input type="text" class="form-input kintone-app-id" placeholder="アプリID" value="${appId}" style="flex: 1;">
+    <button class="btn btn-danger btn-small" onclick="removeKintoneAppRow('${rowId}')" style="padding: 6px 10px;">✕</button>
+  `;
+  container.appendChild(row);
+
+  updateKintoneImportYearSelect();
+}
+
+// 年度アプリ行を削除
+function removeKintoneAppRow(rowId) {
+  const row = document.getElementById(rowId);
+  if (row) row.remove();
+  updateKintoneImportYearSelect();
+}
+
+// アプリ一覧を取得
+function getKintoneAppsFromUI() {
+  const apps = [];
+  const rows = document.querySelectorAll('#kintoneAppsList > div');
+  rows.forEach(row => {
+    const year = row.querySelector('.kintone-app-year')?.value?.trim();
+    const appId = row.querySelector('.kintone-app-id')?.value?.trim();
+    if (year && appId) {
+      apps.push({ year, appId, label: year + '年度' });
+    }
+  });
+  return apps;
+}
+
+// アプリ一覧をUIに描画
+function renderKintoneApps(apps) {
+  const container = document.getElementById('kintoneAppsList');
+  if (!container) return;
+  container.innerHTML = '';
+
+  if (apps && apps.length > 0) {
+    apps.forEach(app => {
+      addKintoneAppRow(app.year, app.appId);
+    });
+  } else {
+    // デフォルトで今年度を追加
+    addKintoneAppRow();
+  }
+}
+
+// インポート年度選択を更新
+function updateKintoneImportYearSelect() {
+  const container = document.getElementById('kintoneImportYearSelect');
+  if (!container) return;
+
+  const apps = getKintoneAppsFromUI();
+  if (apps.length === 0) {
+    container.innerHTML = '<span style="color: var(--text-muted); font-size: 12px;">年度別アプリを設定してください</span>';
+    return;
+  }
+
+  container.innerHTML = apps.map(app => `
+    <label style="display: flex; align-items: center; gap: 6px; padding: 6px 12px; background: var(--bg-secondary); border-radius: 6px; cursor: pointer; font-size: 13px;">
+      <input type="checkbox" class="kintone-import-year" value="${app.appId}" data-year="${app.year}" checked>
+      ${app.label}
+    </label>
+  `).join('') + `
+    <label style="display: flex; align-items: center; gap: 6px; padding: 6px 12px; background: var(--bg-secondary); border-radius: 6px; cursor: pointer; font-size: 13px;">
+      <input type="checkbox" id="kintoneImportAllYears" onchange="toggleAllKintoneYears(this.checked)" checked>
+      全選択
+    </label>
+  `;
+}
+
+// 全年度選択/解除
+function toggleAllKintoneYears(checked) {
+  document.querySelectorAll('.kintone-import-year').forEach(cb => {
+    cb.checked = checked;
+  });
+}
+
+// 選択された年度のアプリIDを取得
+function getSelectedKintoneAppIds() {
+  const selected = [];
+  document.querySelectorAll('.kintone-import-year:checked').forEach(cb => {
+    selected.push({ appId: cb.value, year: cb.dataset.year });
+  });
+  return selected;
+}
+
 // kintone連携設定保存
 async function saveKintoneSettings() {
   try {
+    // 年度別アプリを取得
+    const apps = getKintoneAppsFromUI();
+
+    // 後方互換性のため、最初のアプリIDをapp_idに設定
+    const primaryAppId = apps.length > 0 ? apps[0].appId : '';
+    document.getElementById('kintoneAppId').value = primaryAppId;
+
     const settings = {
       domain: document.getElementById('kintoneDomain').value,
-      app_id: document.getElementById('kintoneAppId').value,
+      app_id: primaryAppId,
       api_token: document.getElementById('kintoneApiToken').value,
       field_sales: document.getElementById('kintoneFieldSales')?.value || '',
       field_design: document.getElementById('kintoneFieldDesign')?.value || '',
       field_ic: document.getElementById('kintoneFieldIC')?.value || '',
-      field_construction: document.getElementById('kintoneFieldConstruction')?.value || ''
+      field_construction: document.getElementById('kintoneFieldConstruction')?.value || '',
+      apps: apps // 年度別アプリ配列を追加
     };
 
     // フィールドマッピングをlocalStorageにもバックアップ保存
@@ -19946,8 +20067,16 @@ async function saveKintoneSettings() {
     };
     localStorage.setItem('kintone_field_mappings', JSON.stringify(fieldMappings));
 
-    if (!settings.domain || !settings.app_id || !settings.api_token) {
-      showToast('ドメイン、アプリID、APIトークンは必須です', 'error');
+    // 年度別アプリもlocalStorageに保存
+    localStorage.setItem('kintone_apps', JSON.stringify(apps));
+
+    if (!settings.domain || !settings.api_token) {
+      showToast('ドメインとAPIトークンは必須です', 'error');
+      return;
+    }
+
+    if (apps.length === 0) {
+      showToast('少なくとも1つの年度アプリを設定してください', 'error');
       return;
     }
 
@@ -19958,13 +20087,25 @@ async function saveKintoneSettings() {
       .eq('is_active', true)
       .limit(1);
 
+    // apps配列はJSONとして保存（データベースにはapps_jsonとして）
+    const dbSettings = {
+      domain: settings.domain,
+      app_id: settings.app_id,
+      api_token: settings.api_token,
+      field_sales: settings.field_sales,
+      field_design: settings.field_design,
+      field_ic: settings.field_ic,
+      field_construction: settings.field_construction,
+      apps_json: JSON.stringify(apps)
+    };
+
     let error;
     if (existing && existing.length > 0) {
       // 既存レコードを更新
       ({ error } = await supabase
         .from('kintone_settings')
         .update({
-          ...settings,
+          ...dbSettings,
           updated_at: new Date().toISOString()
         })
         .eq('id', existing[0].id));
@@ -19973,19 +20114,24 @@ async function saveKintoneSettings() {
       ({ error } = await supabase
         .from('kintone_settings')
         .insert({
-          ...settings,
+          ...dbSettings,
           is_active: true
         }));
     }
 
     if (error) {
-      showToast('設定保存に失敗しました: ' + error.message, 'error');
-      return;
+      // apps_jsonカラムがない場合は無視して続行
+      if (!error.message.includes('apps_json')) {
+        showToast('設定保存に失敗しました: ' + error.message, 'error');
+        return;
+      }
     }
 
     kintoneSettings = settings;
+    kintoneApps = apps;
     showToast('kintone設定を保存しました', 'success');
   } catch (e) {
+    console.error('kintone設定保存エラー:', e);
     showToast('設定保存中にエラーが発生しました', 'error');
   }
 }
@@ -20710,7 +20856,30 @@ async function loadKintoneSettings() {
       if (designEl && settings.field_design) designEl.value = settings.field_design;
       if (icEl && settings.field_ic) icEl.value = settings.field_ic;
       if (constructionEl && settings.field_construction) constructionEl.value = settings.field_construction;
+
+      // 年度別アプリをDBから読み込み（apps_jsonカラムがある場合）
+      if (settings.apps_json) {
+        try {
+          kintoneApps = JSON.parse(settings.apps_json);
+        } catch (e) {
+          kintoneApps = [];
+        }
+      }
     }
+
+    // 年度別アプリをlocalStorageからフォールバック読み込み
+    if (!kintoneApps || kintoneApps.length === 0) {
+      kintoneApps = safeJsonParse(localStorage.getItem('kintone_apps'), []);
+    }
+
+    // 後方互換性：app_idが設定されていてkintoneAppsが空の場合、app_idをkintoneAppsに追加
+    if (kintoneApps.length === 0 && kintoneSettings?.app_id) {
+      const currentYear = new Date().getFullYear();
+      kintoneApps = [{ year: String(currentYear), appId: kintoneSettings.app_id, label: currentYear + '年度' }];
+    }
+
+    // 年度別アプリをUIに描画
+    renderKintoneApps(kintoneApps);
 
     // 基本情報フィールドはlocalStorageから読み込み（DBにカラムがないため）
     const fieldMappings = safeJsonParse(localStorage.getItem('kintone_field_mappings'), {});
@@ -20738,6 +20907,7 @@ async function loadKintoneSettings() {
     if (constructionEl2 && !constructionEl2.value && fieldMappings.construction) constructionEl2.value = fieldMappings.construction;
   } catch (e) {
     // 例外発生時も静かに終了
+    console.warn('kintone設定読み込みエラー:', e);
   }
 }
 
