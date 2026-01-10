@@ -8269,6 +8269,7 @@ async function init() {
     renderCategoriesList();       // カテゴリ管理
     renderTasksManagement();      // タスク管理
     renderProductsList();         // 商品管理
+    debugShow('init: 画面描画完了');
 
     // モバイルスワイプジェスチャー初期化
     MobileGestures.init();
@@ -8759,51 +8760,24 @@ async function loadDesigners() {
   log('🔄 担当データ読み込み開始...');
 
   try {
-    const { data, error, count } = await supabase
-      .from('designers')
-      .select('*', { count: 'exact' })
-      .order('display_order');
-
-    log('📡 Supabaseレスポンス:', {
-      success: !error,
-      dataLength: data?.length || 0,
-      count: count,
-      error: error,
-      rawDataSample: data?.slice(0, 3)
-    });
+    const { data, error, count } = await supabaseWithTimeout(() =>
+      supabase
+        .from('designers')
+        .select('*', { count: 'exact' })
+        .order('display_order'),
+      10000
+    );
 
     if (error) {
       logError('❌ 担当データ読み込みエラー:', error);
-      logError('エラー詳細:', {
-        message: error.message,
-        details: error.details,
-        hint: error.hint,
-        code: error.code
-      });
       designers = [];
       return;
     }
 
     designers = data || [];
-
-    // カテゴリごとの内訳を表示
-    const byCategory = designers.reduce((acc, d) => {
-      const cat = d.category || '(なし)';
-      acc[cat] = (acc[cat] || 0) + 1;
-      return acc;
-    }, {});
-
-    log('✅ 担当データ読み込み完了:', {
-      '総数': designers.length,
-      'カテゴリ別': byCategory,
-      'サンプル': designers.slice(0, 3).map(d => ({ name: d.name, category: d.category, email: d.email }))
-    });
-
-    if (designers.length === 0) {
-      warn('⚠️ 警告: 担当データが0件です！Supabaseのテーブルにデータがあるか確認してください。');
-    }
+    log('✅ 担当データ読み込み完了:', designers.length, '件');
   } catch (err) {
-    logError('❌ loadDesigners()で予期しないエラー:', err);
+    logError('❌ loadDesigners()タイムアウトまたはエラー:', err);
     designers = [];
   }
 }
@@ -8817,29 +8791,40 @@ async function loadCurrentDesigner() {
     return;
   }
 
-  const { data, error } = await supabase
-    .from('designers')
-    .select('*')
-    .eq('email', currentUser.email)
-    .single();
+  try {
+    const { data, error } = await supabaseWithTimeout(() =>
+      supabase
+        .from('designers')
+        .select('*')
+        .eq('email', currentUser.email)
+        .single(),
+      10000
+    );
 
-  if (error) {
-    warn('担当情報の取得に失敗:', error);
+    if (error) {
+      warn('担当情報の取得に失敗:', error);
+      currentDesigner = null;
+      return;
+    }
+
+    currentDesigner = data;
+    log('現在の担当:', currentDesigner);
+  } catch (e) {
+    warn('担当情報取得タイムアウト:', e.message);
     currentDesigner = null;
-    return;
   }
-
-  currentDesigner = data;
-  log('現在の担当:', currentDesigner);
 }
 
 async function loadProjects() {
   log('🔄 案件データ読み込み中...');
   try {
-    const { data, error } = await supabase
-      .from('projects')
-      .select('*')
-      .order('created_at', { ascending: false });
+    const { data, error } = await supabaseWithTimeout(() =>
+      supabase
+        .from('projects')
+        .select('*')
+        .order('created_at', { ascending: false }),
+      15000  // 案件データは多い可能性があるので長めに
+    );
     if (error) {
       logError('❌ 案件データ読み込みエラー:', error);
       projects = [];
@@ -8847,15 +8832,11 @@ async function loadProjects() {
     }
     projects = data || [];
     log('✅ 案件データ読み込み完了:', projects.length, '件');
-    log('📋 読み込んだ案件の詳細:');
-    projects.forEach(p => {
-      log(`  - ${p.customer}: assigned_to="${p.assigned_to}", ic_assignee="${p.ic_assignee}"`);
-    });
 
-    // 既存データのクリーンアップ: assigned_toとic_assigneeの前後の空白を削除
-    await cleanupProjectAssignees();
+    // クリーンアップは非同期で後から実行（ブロックしない）
+    setTimeout(() => cleanupProjectAssignees(), 1000);
   } catch (err) {
-    logError('❌ loadProjects()で予期しないエラー:', err);
+    logError('❌ loadProjects()タイムアウトまたはエラー:', err);
     projects = [];
   }
 }
@@ -8923,53 +8904,51 @@ async function cleanupProjectAssignees() {
 }
 
 async function loadEmailTemplates() {
-  log('🔄 メールテンプレートデータ読み込み中...');
   try {
-    const { data, error } = await supabase
-      .from('email_templates')
-      .select('*')
-      .order('display_name');
+    const { data, error } = await supabaseWithTimeout(() =>
+      supabase.from('email_templates').select('*').order('display_name'),
+      10000
+    );
     if (error) {
-      logError('❌ メールテンプレートデータ読み込みエラー:', error);
+      logError('❌ メールテンプレート読み込みエラー:', error);
       emailTemplates = [];
       return;
     }
     emailTemplates = data || [];
-    log('✅ メールテンプレートデータ読み込み完了:', emailTemplates.length, '件');
+    log('✅ メールテンプレート読み込み完了:', emailTemplates.length, '件');
   } catch (err) {
-    logError('❌ loadEmailTemplates()で予期しないエラー:', err);
+    logError('❌ loadEmailTemplatesタイムアウト:', err);
     emailTemplates = [];
   }
 }
 
 async function loadVendors() {
-  log('🔄 業者データ読み込み中...');
   try {
-    const { data, error } = await supabase
-      .from('template_vendors')
-      .select('*')
-      .order('company');
+    const { data, error } = await supabaseWithTimeout(() =>
+      supabase.from('template_vendors').select('*').order('company'),
+      10000
+    );
     if (error) {
-      logError('❌ 業者データ読み込みエラー:', error);
+      logError('❌ 業者読み込みエラー:', error);
       vendors = [];
       return;
     }
     vendors = data || [];
-    log('✅ 業者データ読み込み完了:', vendors.length, '件');
+    log('✅ 業者読み込み完了:', vendors.length, '件');
   } catch (err) {
-    logError('❌ loadVendors()で予期しないエラー:', err);
+    logError('❌ loadVendorsタイムアウト:', err);
     vendors = [];
   }
 }
 
 async function loadTaskMappings() {
-  log('🔄 タスクマッピングデータ読み込み中...');
   try {
-    const { data, error } = await supabase
-      .from('task_template_mappings')
-      .select('*');
+    const { data, error } = await supabaseWithTimeout(() =>
+      supabase.from('task_template_mappings').select('*'),
+      10000
+    );
     if (error) {
-      logError('❌ タスクマッピングデータ読み込みエラー:', error);
+      logError('❌ タスクマッピング読み込みエラー:', error);
       taskMappings = {};
       return;
     }
@@ -8977,50 +8956,71 @@ async function loadTaskMappings() {
     (data || []).forEach(mapping => {
       taskMappings[mapping.task_key] = mapping.template_id;
     });
-    log('✅ タスクマッピングデータ読み込み完了:', Object.keys(taskMappings).length, '件');
+    log('✅ タスクマッピング読み込み完了:', Object.keys(taskMappings).length, '件');
   } catch (err) {
-    logError('❌ loadTaskMappings()で予期しないエラー:', err);
+    logError('❌ loadTaskMappingsタイムアウト:', err);
     taskMappings = {};
   }
 }
 
+// 汎用タイムアウト付きSupabaseクエリ
+async function supabaseWithTimeout(queryFn, timeoutMs = 10000) {
+  const timeout = new Promise((_, reject) =>
+    setTimeout(() => reject(new Error('Query timeout')), timeoutMs)
+  );
+  return Promise.race([queryFn(), timeout]);
+}
+
 // 新システム用データ読み込み
 async function loadVendorCategories() {
-  const { data, error } = await supabase
-    .from('vendor_categories')
-    .select('*')
-    .order('display_order');
+  try {
+    const { data, error } = await supabaseWithTimeout(() =>
+      supabase
+        .from('vendor_categories')
+        .select('*')
+        .order('display_order'),
+      10000
+    );
 
-  if (error) {
-    logError('❌ 業者カテゴリ読み込みエラー:', error);
+    if (error) {
+      logError('❌ 業者カテゴリ読み込みエラー:', error);
+      vendorCategories = [];
+      return;
+    }
+
+    vendorCategories = data || [];
+    log('✅ 業者カテゴリ読み込み完了:', vendorCategories.length, '件');
+  } catch (e) {
+    logError('❌ 業者カテゴリ読み込みタイムアウト:', e.message);
     vendorCategories = [];
-    return;
   }
-
-  vendorCategories = data || [];
-  log('✅ 業者カテゴリ読み込み完了:', vendorCategories.length, '件');
 }
 
 async function loadTasksV2() {
-  const { data, error } = await supabase
-    .from('tasks')
-    .select('*')
-    .order('display_order');
+  try {
+    const { data, error } = await supabaseWithTimeout(() =>
+      supabase.from('tasks').select('*').order('display_order'),
+      10000
+    );
 
-  if (error) {
-    logError('❌ タスク読み込みエラー:', error);
+    if (error) {
+      logError('❌ タスク読み込みエラー:', error);
+      tasksV2 = [];
+      return;
+    }
+
+    tasksV2 = data || [];
+    log('✅ タスク読み込み完了:', tasksV2.length, '件');
+
+    // ICタスクが21項目未満の場合は警告表示
+    const icTasks = tasksV2.filter(t => t.category === 'IC');
+    const notice = document.getElementById('icMigrationNotice');
+    if (notice) {
+      notice.style.display = icTasks.length < 21 ? 'block' : 'none';
+    }
+  } catch (e) {
+    logError('❌ loadTasksV2タイムアウト:', e);
     tasksV2 = [];
-    return;
-  }
-
-  tasksV2 = data || [];
-  log('✅ タスク読み込み完了:', tasksV2.length, '件');
-
-  // ICタスクが21項目未満の場合は警告表示
-  const icTasks = tasksV2.filter(t => t.category === 'IC');
-  const notice = document.getElementById('icMigrationNotice');
-  if (notice) {
-    notice.style.display = icTasks.length < 21 ? 'block' : 'none';
   }
 }
 
@@ -9211,39 +9211,24 @@ async function autoMigrateICTasks() {
 }
 
 async function loadVendorsV2() {
-  log('🔄 業者データ読み込み開始...', {
-    timestamp: new Date().toISOString()
-  });
+  try {
+    const { data, error } = await supabaseWithTimeout(() =>
+      supabase.from('vendors_v2').select('*').order('company'),
+      10000
+    );
 
-  const { data, error } = await supabase
-    .from('vendors_v2')
-    .select('*')
-    .order('company');
+    if (error) {
+      logError('❌ 業者V2読み込みエラー:', error);
+      vendorsV2 = [];
+      return;
+    }
 
-  log('📡 loadVendorsV2 Supabaseレスポンス:', {
-    success: !error,
-    dataLength: data?.length || 0,
-    error: error,
-    rawData: data
-  });
-
-  if (error) {
-    logError('❌ 業者読み込みエラー:', error);
-    showToast('業者データ読み込みエラー: ' + error.message, 'error');
+    vendorsV2 = data || [];
+    log('✅ 業者V2読み込み完了:', vendorsV2.length, '件');
+  } catch (e) {
+    logError('❌ loadVendorsV2タイムアウト:', e);
     vendorsV2 = [];
-    return;
   }
-
-  if (!data || data.length === 0) {
-    logError('⚠️ CRITICAL: vendors_v2テーブルにデータが0件です！');
-    warn('vendors_v2テーブルにデータが登録されていません');
-    vendorsV2 = [];
-    return;
-  }
-
-  vendorsV2 = data || [];
-  log('✅ 業者読み込み完了:', vendorsV2.length, '件');
-  log('✅ 業者データ詳細:', vendorsV2);
 }
 
 function mergeVendorCategories() {
@@ -9272,39 +9257,52 @@ function mergeVendorCategories() {
 }
 
 async function loadTaskVendorMappings() {
-  const { data, error } = await supabase
-    .from('task_vendor_mappings_v2')
-    .select('*');
+  try {
+    const { data, error } = await supabaseWithTimeout(() =>
+      supabase
+        .from('task_vendor_mappings_v2')
+        .select('*'),
+      10000
+    );
 
-  if (error) {
-    logError('❌ タスク-業者紐づけ読み込みエラー:', error);
+    if (error) {
+      logError('❌ タスク-業者紐づけ読み込みエラー:', error);
+      taskVendorMappings = [];
+      return;
+    }
+
+    taskVendorMappings = data || [];
+    log('✅ タスク-業者紐づけ読み込み完了:', taskVendorMappings.length, '件');
+  } catch (e) {
+    logError('❌ タスク-業者紐づけタイムアウト:', e.message);
     taskVendorMappings = [];
-    return;
   }
-
-  taskVendorMappings = data || [];
-  log('✅ タスク-業者紐づけ読み込み完了:', taskVendorMappings.length, '件');
 }
 
 async function loadProducts() {
-  const { data, error } = await supabase
-    .from('products')
-    .select('*')
-    .order('display_order');
-  if (!error && data) {
-    products = data;
-  } else {
-    // テーブルが存在しない場合のフォールバック
-    products = [
-      { id: '1', name: 'LIFE', display_order: 1 },
-      { id: '2', name: 'LIFE+', display_order: 2 },
-      { id: '3', name: 'HOURS', display_order: 3 },
-      { id: '4', name: 'LACIE', display_order: 4 },
-      { id: '5', name: 'LIFE Limited', display_order: 5 },
-      { id: '6', name: 'LIFE+ Limited', display_order: 6 }
-    ];
+  try {
+    const { data, error } = await supabaseWithTimeout(() =>
+      supabase.from('products').select('*').order('display_order'),
+      10000
+    );
+    if (!error && data) {
+      products = data;
+    } else {
+      // テーブルが存在しない場合のフォールバック
+      products = [
+        { id: '1', name: 'LIFE', display_order: 1 },
+        { id: '2', name: 'LIFE+', display_order: 2 },
+        { id: '3', name: 'HOURS', display_order: 3 },
+        { id: '4', name: 'LACIE', display_order: 4 },
+        { id: '5', name: 'LIFE Limited', display_order: 5 },
+        { id: '6', name: 'LIFE+ Limited', display_order: 6 }
+      ];
+    }
+    log('✅ 商品読み込み完了:', products.length, '件');
+  } catch (e) {
+    logError('❌ loadProductsタイムアウト:', e);
+    products = [];
   }
-  log('✅ 商品読み込み完了:', products.length, '件');
 }
 
 // ============================================
@@ -19453,15 +19451,15 @@ let fcOrganizations = [];
 
 async function loadFcOrganizations() {
   try {
-    const { data, error } = await supabase
-      .from('fc_organizations')
-      .select('*')
-      .order('created_at', { ascending: false });
+    const { data, error } = await supabaseWithTimeout(() =>
+      supabase.from('fc_organizations').select('*').order('created_at', { ascending: false }),
+      10000
+    );
 
     if (error) {
       // テーブルが存在しない場合はスキップ
       if (error.code === '42P01') {
-        warn('fc_organizationsテーブルが存在しません。SQLを実行してください。');
+        warn('fc_organizationsテーブルが存在しません');
         return;
       }
       throw error;
@@ -19470,7 +19468,8 @@ async function loadFcOrganizations() {
     fcOrganizations = data || [];
     renderFcList();
   } catch (e) {
-    warn('FC組織読み込みエラー:', e);
+    warn('FC組織読み込みエラーまたはタイムアウト:', e);
+    fcOrganizations = [];
   }
 }
 
