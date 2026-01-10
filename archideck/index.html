@@ -7375,11 +7375,16 @@ async function checkAuth() {
       // その他の場合は担当情報を取得してcategoryを判定
       debugShow('8. designerData取得中...');
       try {
-        const { data: designerData, error: designerError } = await supabase
+        const designerTimeout = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('designerData timeout')), 10000)
+        );
+        const designerQuery = supabase
           .from('designers')
           .select('*')
           .eq('email', currentUser.email)
           .single();
+
+        const { data: designerData, error: designerError } = await Promise.race([designerQuery, designerTimeout]);
 
         debugShow('9. designerData取得完了');
 
