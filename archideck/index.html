@@ -4888,6 +4888,10 @@ textarea:focus-visible {
       <button class="btn btn-primary" style="width: 100%; margin-bottom: 8px;" onclick="sendPasswordReset()">再設定メールを送信</button>
       <button class="btn btn-ghost" style="width: 100%;" onclick="hideForgotPassword()">キャンセル</button>
     </div>
+    <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-color);">
+      <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">開発中のためパスワード無しでログイン可能</p>
+      <button class="btn btn-ghost" style="width: 100%;" onclick="enterDemoMode()">パスワード無しで入る</button>
+    </div>
   </div>
 </div>
 
@@ -5455,6 +5459,20 @@ textarea:focus-visible {
               </ul>
             </div>
 
+            <!-- システム設定 -->
+            <div style="margin-top: 48px; padding-top: 32px; border-top: 1px solid var(--border-color);">
+              <h3 style="margin-bottom: 20px; font-size: 18px; font-weight: 600;">システム設定</h3>
+
+              <div class="form-group">
+                <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                  <input type="checkbox" id="demoModeToggle" onchange="saveDemoModeSetting()" style="width: 20px; height: 20px; cursor: pointer;">
+                  <span style="font-weight: 500;">デモモードを有効にする</span>
+                </label>
+                <div class="form-hint" style="margin-top: 8px; padding-left: 32px;">
+                  有効にすると、パスワードなしでログインできます（テスト・デモ用）
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -7125,6 +7143,41 @@ function updateUserDisplay(displayName) {
   if (userAvatarEl) userAvatarEl.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=4A90E2&color=fff&size=32`;
 }
 
+// デモモードフラグ
+let isDemoMode = false;
+let demoModeEnabled = true; // デフォルトで有効（追って認証システムを実装予定）
+
+// デモモード設定を保存
+function saveDemoModeSetting() {
+  const toggle = document.getElementById('demoModeToggle');
+  if (toggle) {
+    demoModeEnabled = toggle.checked;
+    localStorage.setItem('demoModeEnabled', demoModeEnabled ? 'true' : 'false');
+    showToast(demoModeEnabled ? 'デモモードを有効にしました' : 'デモモードを無効にしました', 'success');
+  }
+}
+
+// デモモード設定を読み込み
+function loadDemoModeSetting() {
+  const saved = localStorage.getItem('demoModeEnabled');
+  // デフォルトはtrue（未設定またはtrueの場合に有効）
+  demoModeEnabled = saved !== 'false';
+  const toggle = document.getElementById('demoModeToggle');
+  if (toggle) {
+    toggle.checked = demoModeEnabled;
+  }
+  return demoModeEnabled;
+}
+
+// デモモード（パスワード無しでログイン）
+async function enterDemoMode() {
+  log('🎭 デモモードで入場...');
+  document.getElementById('loginContainer').style.display = 'none';
+  isDemoMode = true;
+  // 管理者モードで直接メイン画面へ
+  await selectAccountType('admin');
+}
+
 // パスワード再設定UI表示
 function showForgotPassword() {
   document.getElementById('forgotPasswordSection').style.display = 'block';
@@ -7319,14 +7372,22 @@ async function signIn() {
 
   log('📧 入力されたメール:', email);
 
+  // パスワードが空の場合
+  if (!password && email) {
+    // デモモードが有効な場合のみ許可
+    if (demoModeEnabled) {
+      log('🎭 パスワード無し - デモモードで続行');
+      enterDemoMode();
+      return;
+    } else {
+      showToast('パスワードを入力してください', 'error');
+      return;
+    }
+  }
+
   if (!email) {
     logError('❌ メールアドレスが空です');
     showToast('メールアドレスを入力してください', 'error');
-    return;
-  }
-
-  if (!password) {
-    showToast('パスワードを入力してください', 'error');
     return;
   }
 
@@ -7426,6 +7487,8 @@ async function checkAuth() {
     return;
   }
 
+  // デモモード設定を読み込み
+  loadDemoModeSetting();
   const { data: { session } } = await supabase.auth.getSession();
 
   if (session) {
@@ -11261,6 +11324,7 @@ function switchSubTab(panelName, element) {
       renderProductsList();
       break;
     case 'customize':
+      loadDemoModeSetting();
       break;
     case 'kintone':
       loadKintoneSettings();
@@ -11319,6 +11383,7 @@ function openSettingsPanel(panelName) {
       renderProductsList();
       break;
     case 'customize':
+      loadDemoModeSetting();
       break;
     case 'kintone':
       loadKintoneSettings();
