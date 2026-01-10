@@ -11733,10 +11733,9 @@ function renderProjectCard(project) {
     }
 
     // メールボタン表示条件: タスク設定でメール無効（has_email_button=false）でなければ表示
-    // 社内対応ステータスの場合は非表示
+    // 設計タスクは常に表示（ステータスに関係なく）
     // 太陽光依頼は特別な外部リンクボタンを表示
-    const isInternalStatus = INTERNAL_STATUSES.includes(task.state);
-    const showEmailButton = taskDef.has_email_button !== false && !isInternalStatus;
+    const showEmailButton = taskDef.has_email_button !== false;
     let emailBtn = '';
     if (key === 'solar') {
       // 太陽光依頼は外部サイトへのリンクボタン
@@ -12342,10 +12341,12 @@ function selectStatusCard(cardEl, projectId, taskKey) {
     cardEl.classList.add(stateClass);
   }
 
-  // メールボタンの表示/非表示を更新
+  // メールボタンの表示/非表示を更新（設計タスクは常に表示）
   const taskItem = cardEl.closest('.task-item');
+  const taskDef = tasksV2.find(t => t.task_key === taskKey);
+  const isDesignTask = taskDef?.category === '設計';
   const isInternalStatus = INTERNAL_STATUSES.includes(state);
-  if (taskItem) {
+  if (taskItem && !isDesignTask) {
     const emailBtn = taskItem.querySelector('.task-email-btn');
     if (emailBtn) {
       emailBtn.style.display = isInternalStatus ? 'none' : '';
