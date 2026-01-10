@@ -6375,8 +6375,8 @@ const ContextMenu = {
     const project = projects.find(p => p.id === projectId);
     if (!project) return;
 
-    // メニュー項目を動的に更新
-    const archiveItem = this.menu.querySelector('.context-menu-item:nth-child(5)');
+    // メニュー項目を動的に更新（4番目の子要素がアーカイブ項目）
+    const archiveItem = this.menu.querySelector('.context-menu-item:nth-child(4)');
     if (archiveItem) {
       archiveItem.innerHTML = project.is_archived ? '📂 復元' : '📦 完了済みに移動';
     }
