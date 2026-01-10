@@ -7330,6 +7330,15 @@ async function saveNewPassword() {
   }
 
   try {
+    // セッション状態を確認
+    const { data: { session } } = await supabase.auth.getSession();
+    log('🔑 パスワード設定時のセッション:', session ? session.user.email : 'なし');
+
+    if (!session) {
+      showToast('セッションが無効です。メールのリンクを再度クリックしてください。', 'error');
+      return;
+    }
+
     const { error } = await supabase.auth.updateUser({
       password: newPassword
     });
@@ -7427,11 +7436,33 @@ async function checkAuth() {
   const isRecoveryFlow = hashParams.includes('type=recovery') || hashParams.includes('type=signup');
 
   if (isRecoveryFlow) {
-    log('🔑 パスワードリカバリーフロー検出 - onAuthStateChangeを待機');
-    // リカバリーフローの場合は、onAuthStateChangeでPASSWORD_RECOVERYイベントを待つ
-    // ログイン画面は表示せず、パスワード設定画面を直接表示
+    log('🔑 パスワードリカバリーフロー検出 - セッション確立を待機');
+    // リカバリーフローの場合は、Supabaseがトークンを処理するのを待つ
     document.getElementById('loginContainer').style.display = 'none';
     document.getElementById('setPasswordContainer').style.display = 'flex';
+
+    // Supabaseがトークンを処理してセッションを確立するのを待機
+    let retryCount = 0;
+    const maxRetries = 20; // 最大10秒待機（500ms × 20）
+    const waitForSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        log('✅ リカバリーセッション確立:', session.user.email);
+        return;
+      }
+      retryCount++;
+      if (retryCount < maxRetries) {
+        log('⏳ セッション待機中...', retryCount);
+        await new Promise(resolve => setTimeout(resolve, 500));
+        await waitForSession();
+      } else {
+        log('❌ セッション確立タイムアウト');
+        showToast('セッションの確立に失敗しました。メールのリンクを再度クリックしてください。', 'error');
+        document.getElementById('setPasswordContainer').style.display = 'none';
+        document.getElementById('loginContainer').style.display = 'flex';
+      }
+    };
+    await waitForSession();
     return;
   }
 
