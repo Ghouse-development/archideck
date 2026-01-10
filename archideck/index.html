@@ -7200,149 +7200,113 @@ async function signOut() {
 async function checkAuth() {
   log('🔍 認証状態をチェック中...');
 
-  // フォールバック用: 何かエラーが起きたらログイン画面を表示
-  const showLoginScreen = () => {
+  // URLハッシュにパスワードリカバリートークンが含まれているかチェック
+  const hashParams = window.location.hash.substring(1);
+
+  // エラーがある場合（リンク期限切れ等）
+  if (hashParams.includes('error=')) {
+    const urlParams = new URLSearchParams(hashParams);
+    const errorCode = urlParams.get('error_code');
+    const errorDesc = urlParams.get('error_description');
+    log('❌ 認証エラー:', errorCode, errorDesc);
+
+    if (errorCode === 'otp_expired') {
+      showToast('メールリンクの有効期限が切れています。「パスワードを忘れた方」から再送信してください。', 'error', 8000);
+    } else {
+      showToast('認証エラー: ' + (errorDesc || errorCode), 'error', 8000);
+    }
+    // エラー後はログイン画面を表示
     document.getElementById('loginContainer').style.display = 'flex';
     document.getElementById('mainContainer').classList.remove('show');
-    document.getElementById('setPasswordContainer').style.display = 'none';
-  };
+    // URLからエラーパラメータを除去
+    history.replaceState(null, '', window.location.pathname);
+    return;
+  }
 
-  try {
-    // URLハッシュにパスワードリカバリートークンが含まれているかチェック
-    const hashParams = window.location.hash.substring(1);
+  const isRecoveryFlow = hashParams.includes('type=recovery') || hashParams.includes('type=signup');
 
-    // エラーがある場合（リンク期限切れ等）
-    if (hashParams.includes('error=')) {
-      const urlParams = new URLSearchParams(hashParams);
-      const errorCode = urlParams.get('error_code');
-      const errorDesc = urlParams.get('error_description');
-      log('❌ 認証エラー:', errorCode, errorDesc);
+  if (isRecoveryFlow) {
+    log('🔑 パスワードリカバリーフロー検出 - セッション確立を待機');
+    // リカバリーフローの場合は、Supabaseがトークンを処理するのを待つ
+    document.getElementById('loginContainer').style.display = 'none';
+    document.getElementById('setPasswordContainer').style.display = 'flex';
 
-      if (errorCode === 'otp_expired') {
-        showToast('メールリンクの有効期限が切れています。「パスワードを忘れた方」から再送信してください。', 'error', 8000);
-      } else {
-        showToast('認証エラー: ' + (errorDesc || errorCode), 'error', 8000);
-      }
-      // エラー後はログイン画面を表示
-      showLoginScreen();
-      // URLからエラーパラメータを除去
-      history.replaceState(null, '', window.location.pathname);
-      return;
-    }
-
-    const isRecoveryFlow = hashParams.includes('type=recovery') || hashParams.includes('type=signup');
-
-    if (isRecoveryFlow) {
-      log('🔑 パスワードリカバリーフロー検出 - セッション確立を待機');
-      // リカバリーフローの場合は、Supabaseがトークンを処理するのを待つ
-      document.getElementById('loginContainer').style.display = 'none';
-      document.getElementById('setPasswordContainer').style.display = 'flex';
-
-      // Supabaseがトークンを処理してセッションを確立するのを待機
-      let retryCount = 0;
-      const maxRetries = 20; // 最大10秒待機（500ms × 20）
-      const waitForSession = async () => {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-          log('✅ リカバリーセッション確立:', session.user.email);
-          return;
-        }
-        retryCount++;
-        if (retryCount < maxRetries) {
-          log('⏳ セッション待機中...', retryCount);
-          await new Promise(resolve => setTimeout(resolve, 500));
-          await waitForSession();
-        } else {
-          log('❌ セッション確立タイムアウト');
-          showToast('セッションの確立に失敗しました。メールのリンクを再度クリックしてください。', 'error');
-          showLoginScreen();
-        }
-      };
-      await waitForSession();
-      return;
-    }
-
-    // セッション取得
-    let session = null;
-    try {
-      const result = await supabase.auth.getSession();
-      session = result?.data?.session;
-    } catch (sessionError) {
-      logError('❌ セッション取得エラー:', sessionError);
-      // セッション取得に失敗した場合は古いセッションをクリアしてログイン画面へ
-      try { await supabase.auth.signOut(); } catch (e) { }
-      showLoginScreen();
-      return;
-    }
-
-    if (session) {
-      log('✅ セッション検出:', session.user.email);
-      currentUser = session.user;
-
-      // ★重要: メインコンテナを先に表示してからデータ取得（真っ白防止）
-      document.getElementById('loginContainer').style.display = 'none';
-      document.getElementById('mainContainer').classList.add('show');
-
-      // admin@ghouse.jpの場合は管理者モードで直接メイン画面へ
-      if (currentUser.email === 'admin@ghouse.jp') {
-        log('👑 管理者ログイン - 全権限モード');
-        await selectAccountType('admin');
+    // Supabaseがトークンを処理してセッションを確立するのを待機
+    let retryCount = 0;
+    const maxRetries = 20; // 最大10秒待機（500ms × 20）
+    const waitForSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        log('✅ リカバリーセッション確立:', session.user.email);
         return;
       }
-
-      // その他の場合は担当情報を取得してcategoryを判定
-      try {
-        const { data: designerData, error: designerError } = await supabase
-          .from('designers')
-          .select('*')
-          .eq('email', currentUser.email)
-          .single();
-
-        if (designerError) {
-          warn('⚠️ 担当情報取得エラー:', designerError);
-        }
-
-        if (designerData) {
-          currentDesigner = designerData;
-          currentUserCategory = designerData.category;
-          log('✅ 担当情報取得:', currentDesigner.name, '/', currentUserCategory);
-
-          // ログイン成功したのでauth_confirmedをtrueに更新（招待ボタン非表示用）
-          if (!designerData.auth_confirmed) {
-            await supabase.from('designers').update({ auth_confirmed: true }).eq('id', designerData.id);
-            currentDesigner.auth_confirmed = true;
-          }
-        } else {
-          warn('⚠️ 担当情報が見つかりません:', currentUser.email);
-        }
-      } catch (designerFetchError) {
-        logError('❌ 担当情報取得例外:', designerFetchError);
-        // エラーでも続行（管理者として扱う）
+      retryCount++;
+      if (retryCount < maxRetries) {
+        log('⏳ セッション待機中...', retryCount);
+        await new Promise(resolve => setTimeout(resolve, 500));
+        await waitForSession();
+      } else {
+        log('❌ セッション確立タイムアウト');
+        showToast('セッションの確立に失敗しました。メールのリンクを再度クリックしてください。', 'error');
+        document.getElementById('setPasswordContainer').style.display = 'none';
+        document.getElementById('loginContainer').style.display = 'flex';
       }
+    };
+    await waitForSession();
+    return;
+  }
 
-      // ユーザー名・アバターを表示
-      updateUserDisplay(currentUser.email.split('@')[0]);
+  const { data: { session } } = await supabase.auth.getSession();
 
-      try {
-        await init();
-      } catch (initError) {
-        logError('❌ 初期化エラー:', initError);
-        // 初期化エラーでもメイン画面は表示したまま
-      }
+  if (session) {
+    log('✅ セッション検出:', session.user.email);
+    currentUser = session.user;
+    document.getElementById('loginContainer').style.display = 'none';
 
-      // 初期化完了後にURL直接アクセスの処理を実行（1回だけ）
-      if (!window.location.hash || window.location.hash === '#') {
-        window.location.hash = 'projects';
+    // admin@ghouse.jpの場合は管理者モードで直接メイン画面へ
+    if (currentUser.email === 'admin@ghouse.jp') {
+      log('👑 管理者ログイン - 全権限モード');
+      await selectAccountType('admin');
+      return;
+    }
+
+    // その他の場合は担当情報を取得してcategoryを判定
+    const { data: designerData } = await supabase
+      .from('designers')
+      .select('*')
+      .eq('email', currentUser.email)
+      .single();
+
+    if (designerData) {
+      currentDesigner = designerData;
+      currentUserCategory = designerData.category;
+      log('✅ 担当情報取得:', currentDesigner.name, '/', currentUserCategory);
+
+      // ログイン成功したのでauth_confirmedをtrueに更新（招待ボタン非表示用）
+      if (!designerData.auth_confirmed) {
+        await supabase.from('designers').update({ auth_confirmed: true }).eq('id', designerData.id);
+        currentDesigner.auth_confirmed = true;
       }
     } else {
-      log('❌ セッションなし - ログイン画面を表示');
-      showLoginScreen();
+      warn('⚠️ 担当情報が見つかりません:', currentUser.email);
     }
-  } catch (error) {
-    logError('❌ checkAuth 致命的エラー:', error);
-    // 何か予期しないエラーが起きた場合は必ずログイン画面を表示
-    showLoginScreen();
-    showToast('認証エラーが発生しました。再度ログインしてください。', 'error');
+
+    // メインコンテナを表示
+    document.getElementById('mainContainer').classList.add('show');
+
+    // ユーザー名・アバターを表示
+    updateUserDisplay(currentUser.email.split('@')[0]);
+
+    await init();
+
+    // 初期化完了後にURL直接アクセスの処理を実行（1回だけ）
+    if (!window.location.hash || window.location.hash === '#') {
+      window.location.hash = 'projects';
+    }
+  } else {
+    log('❌ セッションなし - ログイン画面を表示');
+    document.getElementById('loginContainer').style.display = 'flex';
+    document.getElementById('mainContainer').classList.remove('show');
   }
 }
 
@@ -7353,79 +7317,59 @@ let isAuthProcessing = false;
 supabase.auth.onAuthStateChange(async (event, session) => {
   log('🔔 認証イベント:', event, 'currentUser:', currentUser?.email, 'processing:', isAuthProcessing);
 
-  try {
-    if (event === 'SIGNED_IN' && !currentUser && !isAuthProcessing) {
-      isAuthProcessing = true;
-      log('✅ SIGNED_IN イベント処理開始:', session.user.email);
+  if (event === 'SIGNED_IN' && !currentUser && !isAuthProcessing) {
+    isAuthProcessing = true;
+    log('✅ SIGNED_IN イベント処理開始:', session.user.email);
 
-      currentUser = session.user;
+    currentUser = session.user;
+    document.getElementById('loginContainer').style.display = 'none';
 
-      // ★重要: メインコンテナを先に表示してからデータ取得（真っ白防止）
-      document.getElementById('loginContainer').style.display = 'none';
-      document.getElementById('mainContainer').classList.add('show');
-
-      // admin@ghouse.jpの場合は管理者モードで直接メイン画面へ
-      if (currentUser.email === 'admin@ghouse.jp') {
-        log('👑 管理者ログイン - 全権限モード');
-        await selectAccountType('admin');
-        isAuthProcessing = false;
-        return;
-      }
-
-      // その他の場合は担当情報を取得してcategoryを判定
-      try {
-        const { data: designerData, error: designerError } = await supabase
-          .from('designers')
-          .select('*')
-          .eq('email', currentUser.email)
-          .single();
-
-        if (designerError) {
-          warn('⚠️ 担当情報取得エラー:', designerError);
-        }
-
-        if (designerData) {
-          currentDesigner = designerData;
-          currentUserCategory = designerData.category;
-          log('✅ 担当情報取得:', currentDesigner.name, '/', currentUserCategory);
-
-          // ログイン成功したのでauth_confirmedをtrueに更新（招待ボタン非表示用）
-          if (!designerData.auth_confirmed) {
-            await supabase.from('designers').update({ auth_confirmed: true }).eq('id', designerData.id);
-            currentDesigner.auth_confirmed = true;
-          }
-        } else {
-          warn('⚠️ 担当情報が見つかりません:', currentUser.email);
-        }
-      } catch (designerFetchError) {
-        logError('❌ 担当情報取得例外:', designerFetchError);
-      }
-
-      // ユーザー名・アバターを表示
-      updateUserDisplay(currentUser.email.split('@')[0]);
-
-      try {
-        await init();
-      } catch (initError) {
-        logError('❌ 初期化エラー:', initError);
-      }
+    // admin@ghouse.jpの場合は管理者モードで直接メイン画面へ
+    if (currentUser.email === 'admin@ghouse.jp') {
+      log('👑 管理者ログイン - 全権限モード');
+      await selectAccountType('admin');
       isAuthProcessing = false;
-    } else if (event === 'PASSWORD_RECOVERY') {
-      log('🔑 PASSWORD_RECOVERY イベント - パスワード設定画面を表示');
-      // パスワード設定モーダルを表示
-      showSetPasswordModal();
-    } else if (event === 'SIGNED_OUT') {
-      log('👋 SIGNED_OUT イベント');
-      location.reload();
-    } else {
-      log('⏭️ イベントをスキップ');
+      return;
     }
-  } catch (error) {
-    logError('❌ onAuthStateChange 致命的エラー:', error);
+
+    // その他の場合は担当情報を取得してcategoryを判定
+    const { data: designerData } = await supabase
+      .from('designers')
+      .select('*')
+      .eq('email', currentUser.email)
+      .single();
+
+    if (designerData) {
+      currentDesigner = designerData;
+      currentUserCategory = designerData.category;
+      log('✅ 担当情報取得:', currentDesigner.name, '/', currentUserCategory);
+
+      // ログイン成功したのでauth_confirmedをtrueに更新（招待ボタン非表示用）
+      if (!designerData.auth_confirmed) {
+        await supabase.from('designers').update({ auth_confirmed: true }).eq('id', designerData.id);
+        currentDesigner.auth_confirmed = true;
+      }
+    } else {
+      warn('⚠️ 担当情報が見つかりません:', currentUser.email);
+    }
+
+    // メインコンテナを表示
+    document.getElementById('mainContainer').classList.add('show');
+
+    // ユーザー名・アバターを表示
+    updateUserDisplay(currentUser.email.split('@')[0]);
+
+    await init();
     isAuthProcessing = false;
-    // エラー時はログイン画面を表示
-    document.getElementById('loginContainer').style.display = 'flex';
-    document.getElementById('mainContainer').classList.remove('show');
+  } else if (event === 'PASSWORD_RECOVERY') {
+    log('🔑 PASSWORD_RECOVERY イベント - パスワード設定画面を表示');
+    // パスワード設定モーダルを表示
+    showSetPasswordModal();
+  } else if (event === 'SIGNED_OUT') {
+    log('👋 SIGNED_OUT イベント');
+    location.reload();
+  } else {
+    log('⏭️ イベントをスキップ');
   }
 });
 
