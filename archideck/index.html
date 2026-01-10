@@ -18102,7 +18102,7 @@ async function uploadMinutesWithDate(projectId, file) {
       logError('DB insert error:', dbError);
       console.error('DB insert error details:', JSON.stringify(dbError));
       // ストレージにアップロード済みのファイルを削除
-      await supabase.storage.from('minutes').remove([storagePath]).catch(() => {});
+      await supabase.storage.from('minutes').remove([storagePath]).catch(e => console.warn('ストレージ削除エラー:', e));
       showToast('議事録登録に失敗しました: ' + (dbError.message || dbError.code || 'Unknown error'), 'error');
       return;
     }
@@ -18128,7 +18128,7 @@ async function uploadMinutesWithDate(projectId, file) {
         title: '新しい議事録がアップロードされました',
         message: `${project.customer}様の議事録「${autoTitle}」がアップロードされました`,
         link: `#projects?id=${projectId}`
-      }).catch(() => {});
+      }).catch(e => console.warn('通知送信エラー:', e));
     }
 
     showToast('議事録をアップロードしました', 'success');
@@ -18260,7 +18260,7 @@ async function uploadMinutes(projectId, file) {
       logError('DB insert error:', dbError);
       console.error('DB insert error details:', JSON.stringify(dbError));
       // ストレージにアップロード済みのファイルを削除
-      await supabase.storage.from('minutes').remove([safeStoragePath]).catch(() => {});
+      await supabase.storage.from('minutes').remove([safeStoragePath]).catch(e => console.warn('ストレージ削除エラー:', e));
       showToast('議事録登録に失敗しました: ' + (dbError.message || dbError.code || 'Unknown error'), 'error');
       return;
     }
@@ -18282,14 +18282,14 @@ async function uploadMinutes(projectId, file) {
         if (extDesigner?.email) notifyEmails.push(extDesigner.email);
       }
 
-      // 通知をDBに登録（エラーは無視）
+      // 通知をDBに登録
       for (const email of notifyEmails) {
         await supabase.from('notifications').insert({
           user_email: email,
           title: '新しい議事録がアップロードされました',
           message: `${project.customer}様の議事録「${file.name}」がアップロードされました`,
           link: `#projects?id=${projectId}`
-        }).catch(() => {});
+        }).catch(e => console.warn('通知送信エラー:', e));
       }
     }
 
