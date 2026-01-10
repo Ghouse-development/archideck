@@ -16961,14 +16961,8 @@ renderSidebar = function() {
     const collapsed = isCollapsed(category);
 
     // セクション全体のタスク数を計算
-    let totalTasks = 0;
-    let completedTasks = 0;
-    designersList.forEach(designer => {
-      const taskInfo = getTaskCount ? getTaskCount(designer) : { total: 0, completed: 0 };
-      totalTasks += taskInfo.total;
-      completedTasks += taskInfo.completed;
-    });
-    const sectionTaskBadge = totalTasks > 0 ? `<span style="font-size:11px;color:${totalTasks - completedTasks > 0 ? 'var(--warning-color)' : 'var(--success-color)'};margin-left:6px;">${totalTasks - completedTasks}/${totalTasks}</span>` : '';
+    // 部署タイトル横のタスク数表示は不要（削除済み）
+    const sectionTaskBadge = '';
 
     let sectionHtml = `<div class="sidebar-section sidebar-collapsible ${collapsed ? 'collapsed' : ''}">
       <div class="sidebar-section-title" onclick="toggleSidebarSection('${category}')" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
