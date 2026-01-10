@@ -11184,10 +11184,17 @@ function openSettingsPanel(panelName) {
   const panel = document.getElementById(panelName + 'Panel');
   if (panel) panel.classList.add('active');
 
+  // URLを更新
+  if (!isHandlingHashChange && window.location.hash !== `#settings/${panelName}`) {
+    window.location.hash = `settings/${panelName}`;
+  }
+
   // パネル固有の初期化処理
   switch(panelName) {
     case 'staff':
       renderDesignerListInline();
+      renderDepartmentChips();
+      updateDepartmentDropdowns();
       break;
     case 'vendors':
       renderCategoryFilters();
@@ -16836,20 +16843,13 @@ function handleHashChange() {
     const btn = document.querySelectorAll('.header-nav-btn')[3];
     if (btn) switchMainTab('settings', btn);
 
-    // サブタブの切り替え
+    // サブタブ（設定パネル）の切り替え
     if (subTab) {
       setTimeout(() => {
-        const subTabMap = {
-          'staff': 0,
-          'vendors': 1,
-          'categories': 2,
-          'tasks': 3,
-          'products': 4
-        };
-        const index = subTabMap[subTab];
-        if (index !== undefined) {
-          const subBtn = document.querySelectorAll('.sub-tab-btn')[index];
-          if (subBtn) switchSubTab(subTab, subBtn);
+        // 有効なパネル名のリスト
+        const validPanels = ['staff', 'vendors', 'categories', 'tasks', 'icTasks', 'exteriorTasks', 'realestateTasks', 'constructionTasks', 'products', 'customize', 'kintone', 'account'];
+        if (validPanels.includes(subTab)) {
+          openSettingsPanel(subTab);
         }
         // フラグをリセット（遅延後）
         setTimeout(() => {
