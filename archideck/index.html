@@ -13296,6 +13296,7 @@ function renderDesignerListInline() {
     const count = countField ? projects.filter(p => p[countField] === designer.name).length : '-';
     const emailDisplay = designer.email && !designer.email.includes('@temp.local') ? designer.email : '<span style="color: var(--text-muted);">未設定</span>';
     const phoneDisplay = designer.phone ? designer.phone : '<span style="color: var(--text-muted);">未設定</span>';
+    const departmentDisplay = designer.department ? designer.department : '<span style="color: var(--text-muted);">未設定</span>';
     const canManageAuth = currentUserCategory === 'admin' || designer.id === currentDesigner?.id;
     const authButton = canManageAuth ? `<button class="btn btn-secondary btn-small" onclick="openDesignerAuthModal('${designer.id}')" style="margin-right: 4px;">🔑</button>` : '';
     return `
@@ -13304,6 +13305,7 @@ function renderDesignerListInline() {
         <td><strong>${designer.name}</strong></td>
         <td>${emailDisplay}</td>
         <td>${phoneDisplay}</td>
+        <td>${departmentDisplay}</td>
         <td>${countField ? count + '件' : '-'}</td>
         <td>
           <button class="btn btn-ghost btn-small" onclick="openEditDesignerModal('${designer.id}')" style="margin-right: 4px;">✏️ 編集</button>
@@ -13317,7 +13319,7 @@ function renderDesignerListInline() {
   // 設計担当
   if (sekkeiDesigners.length > 0) {
     html += '<h4 style="margin: 20px 0 12px; color: var(--primary-color);">📐 設計担当</h4>';
-    html += '<div class="table-container"><table class="table"><thead><tr><th width="40"></th><th>スタッフ名</th><th>メールアドレス</th><th>電話番号</th><th>担当案件数</th><th>操作</th></tr></thead><tbody id="sekkeiTbody">';
+    html += '<div class="table-container"><table class="table"><thead><tr><th width="40"></th><th>スタッフ名</th><th>メールアドレス</th><th>電話番号</th><th>部署</th><th>担当案件数</th><th>操作</th></tr></thead><tbody id="sekkeiTbody">';
     sekkeiDesigners.forEach(designer => {
       html += renderDesignerRow(designer, '設計', 'assigned_to');
     });
@@ -13327,7 +13329,7 @@ function renderDesignerListInline() {
   // IC担当
   if (icDesigners.length > 0) {
     html += '<h4 style="margin: 20px 0 12px; color: var(--success-color);">🎨 IC担当</h4>';
-    html += '<div class="table-container"><table class="table"><thead><tr><th width="40"></th><th>スタッフ名</th><th>メールアドレス</th><th>電話番号</th><th>担当案件数</th><th>操作</th></tr></thead><tbody id="icTbody">';
+    html += '<div class="table-container"><table class="table"><thead><tr><th width="40"></th><th>スタッフ名</th><th>メールアドレス</th><th>電話番号</th><th>部署</th><th>担当案件数</th><th>操作</th></tr></thead><tbody id="icTbody">';
     icDesigners.forEach(designer => {
       html += renderDesignerRow(designer, 'IC', 'ic_assignee');
     });
@@ -13337,7 +13339,7 @@ function renderDesignerListInline() {
   // 外構担当
   if (exteriorDesigners.length > 0) {
     html += '<h4 style="margin: 20px 0 12px; color: var(--secondary-color);">🌳 外構担当</h4>';
-    html += '<div class="table-container"><table class="table"><thead><tr><th width="40"></th><th>スタッフ名</th><th>メールアドレス</th><th>電話番号</th><th>担当案件数</th><th>操作</th></tr></thead><tbody id="exteriorTbody">';
+    html += '<div class="table-container"><table class="table"><thead><tr><th width="40"></th><th>スタッフ名</th><th>メールアドレス</th><th>電話番号</th><th>部署</th><th>担当案件数</th><th>操作</th></tr></thead><tbody id="exteriorTbody">';
     exteriorDesigners.forEach(designer => {
       html += renderDesignerRow(designer, '外構', 'exterior_assignee');
     });
@@ -13348,7 +13350,7 @@ function renderDesignerListInline() {
   const realestateDesigners = [...designers].filter(d => d.category === '不動産').sort((a, b) => (a.display_order || 999) - (b.display_order || 999));
   if (realestateDesigners.length > 0) {
     html += '<h4 style="margin: 20px 0 12px; color: #8B4513;">🏠 不動産担当</h4>';
-    html += '<div class="table-container"><table class="table"><thead><tr><th width="40"></th><th>スタッフ名</th><th>メールアドレス</th><th>電話番号</th><th>担当案件数</th><th>操作</th></tr></thead><tbody id="realestateTbody">';
+    html += '<div class="table-container"><table class="table"><thead><tr><th width="40"></th><th>スタッフ名</th><th>メールアドレス</th><th>電話番号</th><th>部署</th><th>担当案件数</th><th>操作</th></tr></thead><tbody id="realestateTbody">';
     realestateDesigners.forEach(designer => {
       html += renderDesignerRow(designer, '不動産', 'realestate_assignee');
     });
@@ -13359,7 +13361,7 @@ function renderDesignerListInline() {
   const constructionDesigners = [...designers].filter(d => d.category === '工事').sort((a, b) => (a.display_order || 999) - (b.display_order || 999));
   if (constructionDesigners.length > 0) {
     html += '<h4 style="margin: 20px 0 12px; color: #FF6B35;">🔨 工事担当</h4>';
-    html += '<div class="table-container"><table class="table"><thead><tr><th width="40"></th><th>スタッフ名</th><th>メールアドレス</th><th>電話番号</th><th>担当案件数</th><th>操作</th></tr></thead><tbody id="constructionTbody">';
+    html += '<div class="table-container"><table class="table"><thead><tr><th width="40"></th><th>スタッフ名</th><th>メールアドレス</th><th>電話番号</th><th>部署</th><th>担当案件数</th><th>操作</th></tr></thead><tbody id="constructionTbody">';
     constructionDesigners.forEach(designer => {
       html += renderDesignerRow(designer, '工事', 'construction_assignee');
     });
@@ -13370,7 +13372,7 @@ function renderDesignerListInline() {
   const salesDesigners = [...designers].filter(d => d.category === '営業').sort((a, b) => (a.display_order || 999) - (b.display_order || 999));
   if (salesDesigners.length > 0) {
     html += '<h4 style="margin: 20px 0 12px; color: #2196F3;">💼 営業担当</h4>';
-    html += '<div class="table-container"><table class="table"><thead><tr><th width="40"></th><th>スタッフ名</th><th>メールアドレス</th><th>電話番号</th><th>担当案件数</th><th>操作</th></tr></thead><tbody id="salesTbody">';
+    html += '<div class="table-container"><table class="table"><thead><tr><th width="40"></th><th>スタッフ名</th><th>メールアドレス</th><th>電話番号</th><th>部署</th><th>担当案件数</th><th>操作</th></tr></thead><tbody id="salesTbody">';
     salesDesigners.forEach(designer => {
       html += renderDesignerRow(designer, '営業', 'sales_assignee');
     });
@@ -13381,7 +13383,7 @@ function renderDesignerListInline() {
   const adminDesigners = [...designers].filter(d => d.category === '管理者').sort((a, b) => (a.display_order || 999) - (b.display_order || 999));
   if (adminDesigners.length > 0) {
     html += '<h4 style="margin: 20px 0 12px; color: #9C27B0;">👑 管理者</h4>';
-    html += '<div class="table-container"><table class="table"><thead><tr><th width="40"></th><th>スタッフ名</th><th>メールアドレス</th><th>電話番号</th><th>担当案件数</th><th>操作</th></tr></thead><tbody id="adminTbody">';
+    html += '<div class="table-container"><table class="table"><thead><tr><th width="40"></th><th>スタッフ名</th><th>メールアドレス</th><th>電話番号</th><th>部署</th><th>担当案件数</th><th>操作</th></tr></thead><tbody id="adminTbody">';
     adminDesigners.forEach(designer => {
       html += renderDesignerRow(designer, '管理者', null);
     });
@@ -13423,6 +13425,10 @@ function openEditDesignerModal(designerId) {
           <input type="tel" class="form-input" id="editDesignerPhone" value="${designer.phone || ''}" placeholder="例: 090-1234-5678" style="width: 100%;">
         </div>
         <div class="form-group">
+          <label class="form-label">部署</label>
+          <input type="text" class="form-input" id="editDesignerDepartment" value="${designer.department || ''}" placeholder="例: 経営企画部・システム開発部" style="width: 100%;">
+        </div>
+        <div class="form-group">
           <label class="form-label">カテゴリ</label>
           <select class="form-input" id="editDesignerCategory" style="width: 100%;">
             <option value="設計" ${designer.category === '設計' ? 'selected' : ''}>設計担当</option>
@@ -13454,6 +13460,7 @@ async function saveEditDesigner() {
   const name = document.getElementById('editDesignerName').value.trim();
   const email = document.getElementById('editDesignerEmail').value.trim();
   const phone = document.getElementById('editDesignerPhone').value.trim();
+  const department = document.getElementById('editDesignerDepartment').value.trim();
   const category = document.getElementById('editDesignerCategory').value;
 
   if (!name) {
@@ -13477,7 +13484,8 @@ async function saveEditDesigner() {
     name,
     category,
     email: email || `${name.replace(/\s/g, '')}@temp.local`,
-    phone: phone || null
+    phone: phone || null,
+    department: department || null
   };
 
   const { error } = await supabase
@@ -14117,11 +14125,11 @@ async function openEmailFromTask(projectId, taskKey) {
     }
   }
 
-  // 担当者情報を取得
-  const designer = designers.find(d => d.id === project.designer_id);
-  const staffName = designer ? designer.name : '';
-  const staffEmail = designer?.email && !designer.email.includes('@temp.local') ? designer.email : '';
-  const staffPhone = designer?.phone || '';
+  // 現在ログインしているユーザーの情報を署名に使用
+  const staffName = currentDesigner?.name || '';
+  const staffEmail = currentDesigner?.email && !currentDesigner.email.includes('@temp.local') ? currentDesigner.email : '';
+  const staffPhone = currentDesigner?.phone || '';
+  const staffDepartment = currentDesigner?.department || '';
 
   // 現在日付から期日を設定（デフォルト：7日後）
   const today = new Date();
@@ -14140,6 +14148,7 @@ async function openEmailFromTask(projectId, taskKey) {
       .replace(/\{staffName\}/g, staffName)
       .replace(/\{staffEmail\}/g, staffEmail)
       .replace(/\{staffPhone\}/g, staffPhone)
+      .replace(/\{staffDepartment\}/g, staffDepartment)
       .replace(/\{taskName\}/g, taskDef.task_name)
       .replace(/\{company\}/g, vendor.company)
       .replace(/\{contact\}/g, vendor.contact || 'ご担当者様');
@@ -14155,7 +14164,7 @@ ${vendor.contact || 'ご担当者'} 様
 いつもお世話になっております。
 株式会社Gハウスの${staffName}です。
 
-下記案件につきまして、${taskDef.task_name}をお願いいたします。
+下記案件につきまして、${taskDef.task_name}の御見積作成をお願いいたします。
 
 ――――――――――――――
 【案件名】${project.customer}様邸
@@ -14170,7 +14179,7 @@ ${vendor.contact || 'ご担当者'} 様
 お忙しいところ恐れ入りますが、
 何卒よろしくお願いいたします。
 
-株式会社Gハウス
+株式会社Gハウス${staffDepartment ? '\n' + staffDepartment : ''}
 ${staffName}${staffPhone ? '\nTEL：' + staffPhone : ''}${staffEmail ? '\nMail：' + staffEmail : ''}`;
 
   // 初期の件名と本文を生成（業者テンプレートがあればそちらを優先）
