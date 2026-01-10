@@ -14327,7 +14327,7 @@ async function openEmailFromTask(projectId, taskKey) {
   // 現在日付から期日を設定（デフォルト：7日後）
   const today = new Date();
   const dueDate = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
-  const dueDateStr = dueDate.toLocaleDateString('ja-JP', { month: 'long', day: 'numeric' }).replace('/', '月') + '日';
+  const dueDateStr = dueDate.toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' });
 
   // 選択中のメーカーに対応した業者（または最初の業者）のテンプレートを使用
   const vendor = taskVendors[0];
