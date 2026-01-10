@@ -14407,9 +14407,11 @@ function openGmailFromModal() {
 
   if (!addresses) return;
 
-  // 資料添付の警告を表示
-  if (!confirm('📎 Gmailを開きます。\n\n本文に「添付」と記載されている場合は、Gmail側で資料を添付してから送信してください。\n\n続けますか？')) {
-    return;
+  // 本文に「添付」が含まれる場合のみ警告を表示
+  if (body.includes('添付')) {
+    if (!confirm('⚠️ 添付ファイルの確認\n\n本文に「添付」という記載がありますが、ファイルはGmail側で添付する必要があります。\n\n資料の準備はできていますか？')) {
+      return;
+    }
   }
 
   // Gmail URLを生成
@@ -14424,8 +14426,9 @@ function openGmailFromModal() {
   // モーダルを閉じる
   closeEmailModal();
 
-  // トーストで通知
-  showToast('Gmailを開きました。資料の添付を忘れずに！', 'success');
+  // トーストで通知（添付がある場合のみ警告）
+  const toastMsg = body.includes('添付') ? 'Gmailを開きました。資料の添付を忘れずに！' : 'Gmailを開きました';
+  showToast(toastMsg, 'success');
 }
 
 function openOutlookFromModal() {
@@ -14435,9 +14438,11 @@ function openOutlookFromModal() {
 
   if (!addresses) return;
 
-  // 資料添付の警告を表示
-  if (!confirm('📎 Outlookを開きます。\n\n本文に「添付」と記載されている場合は、Outlook側で資料を添付してから送信してください。\n\n続けますか？')) {
-    return;
+  // 本文に「添付」が含まれる場合のみ警告を表示
+  if (body.includes('添付')) {
+    if (!confirm('⚠️ 添付ファイルの確認\n\n本文に「添付」という記載がありますが、ファイルはOutlook側で添付する必要があります。\n\n資料の準備はできていますか？')) {
+      return;
+    }
   }
 
   // Outlook Web URLを生成
@@ -14452,7 +14457,9 @@ function openOutlookFromModal() {
   // モーダルを閉じる
   closeEmailModal();
 
-  showToast('Outlookを開きました。資料の添付を忘れずに！', 'success');
+  // トーストで通知（添付がある場合のみ警告）
+  const toastMsg = body.includes('添付') ? 'Outlookを開きました。資料の添付を忘れずに！' : 'Outlookを開きました';
+  showToast(toastMsg, 'success');
 }
 
 function copyEmailToClipboard() {
