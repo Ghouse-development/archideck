@@ -10652,7 +10652,7 @@ function renderSidebar() {
 
 function selectDesigner(name) {
   currentDesignerTab = name;
-  log('📅 selectDesigner: 担当者変更', { name, currentDesignerTab });
+  console.log('📅 selectDesigner: 担当者変更', { name, currentDesignerTab });
 
   // アーカイブフィルターをリセット
   const archiveFilter = document.getElementById('archiveFilter');
@@ -10672,12 +10672,9 @@ function selectDesigner(name) {
   renderSidebar();
   renderProjects();
 
-  // カレンダータブがアクティブな場合は再描画
-  const calendarTab = document.getElementById('calendarTab');
-  if (calendarTab && calendarTab.classList.contains('active')) {
-    log('📅 selectDesigner: カレンダータブがアクティブなので再描画');
-    renderCalendar();
-  }
+  // カレンダーは常に再描画（担当者フィルタリングのため）
+  console.log('📅 selectDesigner: renderCalendar呼び出し');
+  renderCalendar();
 }
 
 // 担当者の完了済案件を表示
@@ -10737,9 +10734,13 @@ function navigateCalendar(direction) {
 }
 
 function renderCalendar() {
+  console.log('📅 renderCalendar: 開始', { currentDesignerTab });
   const grid = document.getElementById('calendarGrid');
   const title = document.getElementById('calendarTitle');
-  if (!grid || !title) return;
+  if (!grid || !title) {
+    console.log('📅 renderCalendar: DOM要素が見つからない', { grid: !!grid, title: !!title });
+    return;
+  }
 
   const year = calendarCurrentDate.getFullYear();
   const month = calendarCurrentDate.getMonth();
@@ -10754,6 +10755,7 @@ function renderCalendar() {
 
   // 期限付きタスクを収集
   const events = collectCalendarEvents();
+  console.log('📅 renderCalendar: イベント収集完了', { eventCount: events.length });
 
   // カレンダーグリッド生成
   let html = '';
@@ -10808,7 +10810,7 @@ function renderCalendar() {
 function collectCalendarEvents() {
   const events = [];
 
-  log('📅 collectCalendarEvents: 開始', { currentDesignerTab, totalProjects: projects.length });
+  console.log('📅 collectCalendarEvents: 開始', { currentDesignerTab, totalProjects: projects.length });
 
   // サイドバーで選択した担当者の案件のみをフィルタリング
   const filteredProjects = projects.filter(project => {
@@ -10840,7 +10842,7 @@ function collectCalendarEvents() {
            salesAssigned === selectedName;
   });
 
-  log('📅 collectCalendarEvents: フィルタ後', { filteredCount: filteredProjects.length });
+  console.log('📅 collectCalendarEvents: フィルタ後', { filteredCount: filteredProjects.length });
 
   filteredProjects.forEach(project => {
     const progressData = project.progress || {};
