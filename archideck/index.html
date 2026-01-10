@@ -14238,9 +14238,9 @@ ${vendor.contact || 'ご担当者'} 様
 株式会社Gハウス${staffDepartment ? '\n' + staffDepartment : ''}
 ${staffName}${staffPhone ? '\nTEL：' + staffPhone : ''}${staffEmail ? '\nMail：' + staffEmail : ''}`;
 
-  // 初期の件名と本文を生成（業者テンプレートがあればそちらを優先）
-  const initialSubject = vendor.subject_format ? replacePlaceholders(vendor.subject_format) : defaultSubject;
-  const initialBody = vendor.template_text ? replacePlaceholders(vendor.template_text) : defaultBody;
+  // 初期の件名と本文を生成（常にデフォルトテンプレートを使用）
+  const initialSubject = defaultSubject;
+  const initialBody = defaultBody;
 
   // モーダルを表示
   showEmailModal(project, taskDef, taskVendors, initialSubject, initialBody);
