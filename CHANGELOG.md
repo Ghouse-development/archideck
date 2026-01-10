@@ -1,5 +1,21 @@
 # ArchiDeck 開発履歴
 
+## v4.99.18 (2026-01-10)
+
+### 全データ読み込み関数に10秒タイムアウトを追加
+
+**問題**
+- ユーザー報告：`VendorCategories`と`TaskVendorMappings`の読み込みがハング
+- `CurrentDesigner`と`Projects`も完了しない
+
+**対応内容**
+- 12の全load関数にsupabaseWithTimeout()ラッパーを適用
+- 各クエリは10秒（Projectsは15秒）でタイムアウト
+- タイムアウト時は空配列を返し、アプリは継続動作
+- `cleanupProjectAssignees`を非同期化（init()をブロックしない）
+
+---
+
 ## v4.99.17 (2026-01-10)
 
 ### デバッグ強化：ハング箇所の特定
