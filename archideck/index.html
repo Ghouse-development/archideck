@@ -918,7 +918,7 @@ body {
   gap: 24px;
 }
 
-/* プロジェクトカード - Premium Design */
+/* 案件カード - Premium Design */
 .project-card {
   background: var(--bg-primary);
   border: 1px solid var(--border-color);
@@ -2115,7 +2115,7 @@ input:checked + .toggle-slider:before {
   color: white;
 }
 
-/* プロジェクトカードフッター */
+/* 案件カードフッター */
 .project-card-footer {
   margin-top: 16px;
   padding-top: 16px;
@@ -4806,7 +4806,7 @@ textarea:focus-visible {
     padding: 0 !important;
   }
 
-  /* カード・プロジェクト */
+  /* カード・案件 */
   .project-card {
     break-inside: avoid;
     page-break-inside: avoid;
@@ -5116,7 +5116,7 @@ textarea:focus-visible {
         <div id="settingsCardsView" class="settings-cards-grid">
           <div class="settings-card" onclick="openSettingsPanel('staff')">
             <div class="settings-card-icon">👥</div>
-            <div class="settings-card-title">スタッフ管理</div>
+            <div class="settings-card-title">担当管理</div>
             <div class="settings-card-description">設計・IC・外構・不動産・工事の担当者を管理</div>
           </div>
           <div class="settings-card" onclick="openSettingsPanel('vendors')">
@@ -5186,15 +5186,15 @@ textarea:focus-visible {
           </div>
         </div>
 
-        <!-- スタッフ管理 -->
+        <!-- 担当管理 -->
         <div id="staffPanel" class="sub-tab-panel">
           <button class="settings-back-btn" onclick="closeSettingsPanel()">← 設定に戻る</button>
           <div style="max-width: 1000px; margin: 0 auto;">
-            <h2 style="margin-bottom: 20px; font-size: 24px; font-weight: 700;">👥 スタッフ管理</h2>
+            <h2 style="margin-bottom: 20px; font-size: 24px; font-weight: 700;">👥 担当管理</h2>
             <div class="form-group">
-              <label class="form-label">新しいスタッフを追加</label>
+              <label class="form-label">新しい担当を追加</label>
               <div style="display: grid; grid-template-columns: 1fr 1fr 150px 150px; gap: 12px; align-items: center;">
-                <input type="text" class="form-input" id="newDesignerNameInline" placeholder="スタッフ名 *">
+                <input type="text" class="form-input" id="newDesignerNameInline" placeholder="担当名 *">
                 <input type="email" class="form-input" id="newDesignerEmailInline" placeholder="メールアドレス *">
                 <input type="tel" class="form-input" id="newDesignerPhoneInline" placeholder="携帯番号(11桁)" maxlength="11" pattern="[0-9]{11}" style="width: 150px;">
                 <select class="form-select" id="newDesignerDepartmentInline" style="width: 150px;">
@@ -5822,18 +5822,18 @@ textarea:focus-visible {
   </div>
 </div>
 
-<!-- モーダル：スタッフ管理 -->
+<!-- モーダル：担当管理 -->
 <div id="designerModal" class="modal">
   <div class="modal-content">
     <div class="modal-header">
-      <h2 class="modal-title">スタッフ管理</h2>
+      <h2 class="modal-title">担当管理</h2>
       <button class="close" onclick="closeDesignerModal()">&times;</button>
     </div>
     <div class="modal-body">
       <div class="form-group">
-        <label class="form-label">新しいスタッフを追加</label>
+        <label class="form-label">新しい担当を追加</label>
         <div style="display: grid; grid-template-columns: 1fr auto auto; gap: 12px;">
-          <input type="text" class="form-input" id="newDesignerName" placeholder="スタッフ名">
+          <input type="text" class="form-input" id="newDesignerName" placeholder="担当名">
           <select class="form-select" id="newDesignerCategory" style="width: 150px;">
             <option value="設計">設計担当</option>
             <option value="IC">IC担当</option>
@@ -6116,11 +6116,11 @@ textarea:focus-visible {
   </div>
 </div>
 
-<!-- モーダル：スタッフ認証設定 -->
+<!-- モーダル：担当認証設定 -->
 <div id="designerAuthModal" class="modal">
   <div class="modal-content" style="max-width: 500px;">
     <div class="modal-header">
-      <h2 class="modal-title">🔑 スタッフ認証設定</h2>
+      <h2 class="modal-title">🔑 担当認証設定</h2>
       <button class="close" onclick="closeDesignerAuthModal()">&times;</button>
     </div>
     <div class="modal-body">
@@ -6128,7 +6128,7 @@ textarea:focus-visible {
         <input type="hidden" id="authDesignerId">
 
         <div class="form-group">
-          <label class="form-label">スタッフ名</label>
+          <label class="form-label">担当名</label>
           <input type="text" class="form-input" id="authDesignerName" disabled>
         </div>
 
@@ -6580,7 +6580,7 @@ const UndoManager = {
           .from('projects')
           .update(action.oldValue)
           .eq('id', action.projectId);
-        if (error) throw new Error(`プロジェクト更新失敗: ${error.message}`);
+        if (error) throw new Error(`案件更新失敗: ${error.message}`);
         // ローカルデータも更新
         const projectIdx = projects.findIndex(p => p.id === action.projectId);
         if (projectIdx !== -1) {
@@ -6606,7 +6606,7 @@ const UndoManager = {
 
       case 'CREATE_PROJECT': {
         const { error } = await supabase.from('projects').delete().eq('id', action.projectId);
-        if (error) throw new Error(`プロジェクト削除失敗: ${error.message}`);
+        if (error) throw new Error(`案件削除失敗: ${error.message}`);
         projects = projects.filter(p => p.id !== action.projectId);
         renderProjects();
         renderSidebar();
@@ -6619,7 +6619,7 @@ const UndoManager = {
           .insert(action.oldValue)
           .select()
           .single();
-        if (error) throw new Error(`プロジェクト復元失敗: ${error.message}`);
+        if (error) throw new Error(`案件復元失敗: ${error.message}`);
         if (data) {
           projects.push(data);
         }
@@ -6656,7 +6656,7 @@ const UndoManager = {
           .from('projects')
           .update(action.newValue)
           .eq('id', action.projectId);
-        if (error) throw new Error(`プロジェクト更新失敗: ${error.message}`);
+        if (error) throw new Error(`案件更新失敗: ${error.message}`);
         const projectIdx = projects.findIndex(p => p.id === action.projectId);
         if (projectIdx !== -1) {
           Object.assign(projects[projectIdx], action.newValue);
@@ -6685,7 +6685,7 @@ const UndoManager = {
           .insert(action.newValue)
           .select()
           .single();
-        if (error) throw new Error(`プロジェクト作成失敗: ${error.message}`);
+        if (error) throw new Error(`案件作成失敗: ${error.message}`);
         if (data) {
           projects.push(data);
         }
@@ -6696,7 +6696,7 @@ const UndoManager = {
 
       case 'DELETE_PROJECT': {
         const { error } = await supabase.from('projects').delete().eq('id', action.projectId);
-        if (error) throw new Error(`プロジェクト削除失敗: ${error.message}`);
+        if (error) throw new Error(`案件削除失敗: ${error.message}`);
         projects = projects.filter(p => p.id !== action.projectId);
         renderProjects();
         renderSidebar();
@@ -7323,7 +7323,7 @@ async function checkAuth() {
       return;
     }
 
-    // その他の場合はスタッフ情報を取得してcategoryを判定
+    // その他の場合は担当情報を取得してcategoryを判定
     const { data: designerData } = await supabase
       .from('designers')
       .select('*')
@@ -7333,9 +7333,9 @@ async function checkAuth() {
     if (designerData) {
       currentDesigner = designerData;
       currentUserCategory = designerData.category;
-      log('✅ スタッフ情報取得:', currentDesigner.name, '/', currentUserCategory);
+      log('✅ 担当情報取得:', currentDesigner.name, '/', currentUserCategory);
     } else {
-      warn('⚠️ スタッフ情報が見つかりません:', currentUser.email);
+      warn('⚠️ 担当情報が見つかりません:', currentUser.email);
     }
 
     // メインコンテナを表示
@@ -7379,7 +7379,7 @@ supabase.auth.onAuthStateChange(async (event, session) => {
       return;
     }
 
-    // その他の場合はスタッフ情報を取得してcategoryを判定
+    // その他の場合は担当情報を取得してcategoryを判定
     const { data: designerData } = await supabase
       .from('designers')
       .select('*')
@@ -7389,9 +7389,9 @@ supabase.auth.onAuthStateChange(async (event, session) => {
     if (designerData) {
       currentDesigner = designerData;
       currentUserCategory = designerData.category;
-      log('✅ スタッフ情報取得:', currentDesigner.name, '/', currentUserCategory);
+      log('✅ 担当情報取得:', currentDesigner.name, '/', currentUserCategory);
     } else {
-      warn('⚠️ スタッフ情報が見つかりません:', currentUser.email);
+      warn('⚠️ 担当情報が見つかりません:', currentUser.email);
     }
 
     // メインコンテナを表示
@@ -8095,7 +8095,7 @@ async function init() {
       taskVendorMappingsLength: taskVendorMappings.length
     });
 
-    renderDesignerListInline();  // スタッフ管理
+    renderDesignerListInline();  // 担当管理
     renderCategoryFilters();      // カテゴリフィルター
     populateAssigneeFilters();    // 担当者フィルター
     renderVendorsV2();            // 業者管理
@@ -8145,7 +8145,7 @@ function setupRealtimeSync() {
 
     log('🔄 リアルタイム同期を開始...');
 
-    // プロジェクトテーブルの変更を監視
+    // 案件テーブルの変更を監視
     realtimeChannel = supabase
       .channel('realtime-sync')
       .on('postgres_changes', {
@@ -8189,7 +8189,7 @@ function setupRealtimeSync() {
   }
 }
 
-// プロジェクト変更ハンドラー
+// 案件変更ハンドラー
 function handleProjectChange(payload) {
   const { eventType, new: newRecord, old: oldRecord } = payload;
   log(`📡 リアルタイム: projects ${eventType}`, payload);
@@ -8206,7 +8206,7 @@ function handleProjectChange(payload) {
 
   switch (eventType) {
     case 'INSERT':
-      // 新規プロジェクトが追加された
+      // 新規案件が追加された
       if (newRecord && !projects.find(p => p.id === newRecord.id)) {
         projects.push(newRecord);
         showToast(`新規案件が追加されました: ${newRecord.customer}`, 'info', 3000);
@@ -8216,7 +8216,7 @@ function handleProjectChange(payload) {
       break;
 
     case 'UPDATE':
-      // プロジェクトが更新された
+      // 案件が更新された
       if (newRecord) {
         const idx = projects.findIndex(p => p.id === newRecord.id);
         if (idx !== -1) {
@@ -8237,7 +8237,7 @@ function handleProjectChange(payload) {
       break;
 
     case 'DELETE':
-      // プロジェクトが削除された
+      // 案件が削除された
       if (oldRecord) {
         const idx = projects.findIndex(p => p.id === oldRecord.id);
         if (idx !== -1) {
@@ -8251,7 +8251,7 @@ function handleProjectChange(payload) {
   }
 }
 
-// スタッフ変更ハンドラー
+// 担当変更ハンドラー
 function handleDesignerChange(payload) {
   const { eventType, new: newRecord, old: oldRecord } = payload;
   log(`📡 リアルタイム: designers ${eventType}`, payload);
@@ -8294,7 +8294,7 @@ function handleTaskChange(payload) {
   const { eventType, new: newRecord } = payload;
   log(`📡 リアルタイム: project_tasks ${eventType}`, payload);
 
-  // タスクが変更されたプロジェクトを再描画
+  // タスクが変更された案件を再描画
   if (newRecord && newRecord.project_id) {
     const projectCard = document.querySelector(`[data-project-id="${newRecord.project_id}"]`);
     if (projectCard) {
@@ -8309,7 +8309,7 @@ function handleMinutesChange(payload) {
   const { eventType, new: newRecord } = payload;
   log(`📡 リアルタイム: project_minutes ${eventType}`, payload);
 
-  // 議事録が変更されたプロジェクトを再描画
+  // 議事録が変更された案件を再描画
   if (newRecord && newRecord.project_id) {
     const projectCard = document.querySelector(`[data-project-id="${newRecord.project_id}"]`);
     if (projectCard) {
@@ -8414,14 +8414,14 @@ ArchiDeck デバッグ情報
 メモリ上のデータ
 ----------------
 案件数: ${projects.length}件
-スタッフ数: ${designers.length}人
+担当数: ${designers.length}人
 タスク数: ${tasksV2.length}件
 業者数: ${vendorsV2.length}件
 
 データベース直接確認
 --------------------
 DB案件数: ${dbProjectsCount}件
-DBスタッフ数: ${dbDesignersCount}人
+DB担当数: ${dbDesignersCount}人
 ${dbError ? `DBエラー: ${dbError.message || dbError}` : ''}
 
 案件詳細
@@ -8430,11 +8430,11 @@ ${projects.slice(0, 5).map(p => `・${p.customer} (設計:${p.assigned_to || '�
 ${projects.length > 5 ? `...他${projects.length - 5}件` : ''}
 ${projects.length === 0 ? '（案件データなし）' : ''}
 
-スタッフ詳細
+担当詳細
 ----------
 ${designers.slice(0, 5).map(d => `・${d.name} (${d.category})`).join('\n')}
 ${designers.length > 5 ? `...他${designers.length - 5}人` : ''}
-${designers.length === 0 ? '（スタッフデータなし）' : ''}
+${designers.length === 0 ? '（担当データなし）' : ''}
 
 アーカイブ状況
 --------------
@@ -8478,12 +8478,12 @@ window.debug = function() {
   log('='.repeat(80));
 
   log('\n📊 基本情報:');
-  log('  - スタッフ数:', designers.length);
+  log('  - 担当数:', designers.length);
   log('  - 案件数:', projects.length);
   log('  - タスク数:', tasksV2.length);
   log('  - 業者数:', vendorsV2.length);
 
-  log('\n👥 スタッフ一覧:');
+  log('\n👥 担当一覧:');
   designers.forEach(d => {
     log(`  - [${d.category}] ${d.name} (${d.email})`);
   });
@@ -8508,8 +8508,8 @@ window.checkAssignment = function(designerName, projectName) {
 
   const designer = designers.find(d => d.name.includes(designerName));
   if (!designer) {
-    logError(`❌ スタッフ "${designerName}" が見つかりません`);
-    log('登録されているスタッフ:', designers.map(d => d.name));
+    logError(`❌ 担当 "${designerName}" が見つかりません`);
+    log('登録されている担当:', designers.map(d => d.name));
     return;
   }
 
@@ -8521,7 +8521,7 @@ window.checkAssignment = function(designerName, projectName) {
   }
 
   log('\n✅ データ確認:');
-  log('スタッフ情報:', {
+  log('担当情報:', {
     name: designer.name,
     nameLength: designer.name.length,
     nameTrimmed: designer.name.trim(),
@@ -8589,7 +8589,7 @@ log('  - checkAssignment("担当者名", "案件名") : 割り当てチェック
 // データ読み込み
 // ============================================
 async function loadDesigners() {
-  log('🔄 スタッフデータ読み込み開始...');
+  log('🔄 担当データ読み込み開始...');
 
   try {
     const { data, error, count } = await supabase
@@ -8606,7 +8606,7 @@ async function loadDesigners() {
     });
 
     if (error) {
-      logError('❌ スタッフデータ読み込みエラー:', error);
+      logError('❌ 担当データ読み込みエラー:', error);
       logError('エラー詳細:', {
         message: error.message,
         details: error.details,
@@ -8626,14 +8626,14 @@ async function loadDesigners() {
       return acc;
     }, {});
 
-    log('✅ スタッフデータ読み込み完了:', {
+    log('✅ 担当データ読み込み完了:', {
       '総数': designers.length,
       'カテゴリ別': byCategory,
       'サンプル': designers.slice(0, 3).map(d => ({ name: d.name, category: d.category, email: d.email }))
     });
 
     if (designers.length === 0) {
-      warn('⚠️ 警告: スタッフデータが0件です！Supabaseのテーブルにデータがあるか確認してください。');
+      warn('⚠️ 警告: 担当データが0件です！Supabaseのテーブルにデータがあるか確認してください。');
     }
   } catch (err) {
     logError('❌ loadDesigners()で予期しないエラー:', err);
@@ -8644,7 +8644,7 @@ async function loadDesigners() {
 async function loadCurrentDesigner() {
   if (!currentUser || !currentUser.email) return;
 
-  // admin@ghouse.jpの場合はスタッフを特定しない（全案件閲覧可能）
+  // admin@ghouse.jpの場合は担当を特定しない（全案件閲覧可能）
   if (currentUser.email === 'admin@ghouse.jp') {
     currentDesigner = null;
     return;
@@ -8657,13 +8657,13 @@ async function loadCurrentDesigner() {
     .single();
 
   if (error) {
-    warn('スタッフ情報の取得に失敗:', error);
+    warn('担当情報の取得に失敗:', error);
     currentDesigner = null;
     return;
   }
 
   currentDesigner = data;
-  log('現在のスタッフ:', currentDesigner);
+  log('現在の担当:', currentDesigner);
 }
 
 async function loadProjects() {
@@ -11470,7 +11470,7 @@ function renderDesignerTabs() {
   }
 
   log('🎨 担当者タブ描画:', {
-    '総スタッフ数': designers.length,
+    '総担当数': designers.length,
     '設計担当': designers.filter(d => d.category === '設計').length,
     'IC担当': designers.filter(d => d.category === 'IC').length,
     '案件数': projects.length
@@ -13294,7 +13294,7 @@ async function restoreFromArchive(projectId) {
 }
 
 // ============================================
-// スタッフ管理機能
+// 担当管理機能
 // ============================================
 function openDesignerModal() {
   renderDesignerList();
@@ -13315,8 +13315,8 @@ function renderDesignerList() {
     return (a.display_order || 999) - (b.display_order || 999);
   });
 
-  container.innerHTML = '<h3 style="margin: 24px 0 16px; font-size: 18px; font-weight: 600;">登録済みスタッフ（' + designers.length + '名）</h3>' +
-    '<div class="table-container"><table class="table"><thead><tr><th>スタッフ名</th><th>カテゴリ</th><th>担当案件数</th><th>操作</th></tr></thead><tbody>' +
+  container.innerHTML = '<h3 style="margin: 24px 0 16px; font-size: 18px; font-weight: 600;">登録済み担当（' + designers.length + '名）</h3>' +
+    '<div class="table-container"><table class="table"><thead><tr><th>担当名</th><th>カテゴリ</th><th>担当案件数</th><th>操作</th></tr></thead><tbody>' +
     sortedDesigners.map(designer => {
       const count = projects.filter(p => p.assigned_to === designer.name).length;
       const categoryLabel = designer.category === '設計' ? '設計担当' : 'IC担当';
@@ -13337,12 +13337,12 @@ async function addDesigner() {
   const category = document.getElementById('newDesignerCategory')?.value || '';
 
   if (!name) {
-    showToast('スタッフ名を入力してください', 'error');
+    showToast('担当名を入力してください', 'error');
     return;
   }
 
   if (designers.find(d => d.name === name)) {
-    showToast('既に存在するスタッフ名です', 'error');
+    showToast('既に存在する担当名です', 'error');
     return;
   }
 
@@ -13372,7 +13372,7 @@ async function addDesigner() {
   renderDesignerTabs();
   renderSidebar();
   showStatus('保存済み', 'saved');
-  showToast('スタッフを追加しました', 'success');
+  showToast('担当を追加しました', 'success');
 }
 
 async function deleteDesigner(designerId) {
@@ -13380,7 +13380,7 @@ async function deleteDesigner(designerId) {
   const hasProjects = projects.some(p => p.assigned_to === designer.name);
 
   if (hasProjects) {
-    showToast('このスタッフは案件に割当てられています。案件の担当を変更してから削除してください。', 'error');
+    showToast('この担当は案件に割当てられています。案件の担当を変更してから削除してください。', 'error');
     return;
   }
 
@@ -13404,11 +13404,11 @@ async function deleteDesigner(designerId) {
     renderDesignerListInline();
     renderSidebar();
     showStatus('保存済み', 'saved');
-    showToast('スタッフを削除しました', 'success');
+    showToast('担当を削除しました', 'success');
   });
 }
 
-// インライン版スタッフ管理関数
+// インライン版担当管理関数
 function renderDesignerListInline() {
   const container = document.getElementById('designerListInline');
   if (!container) return;
@@ -13417,10 +13417,10 @@ function renderDesignerListInline() {
   const icDesigners = [...designers].filter(d => d.category === 'IC').sort((a, b) => (a.display_order || 999) - (b.display_order || 999));
   const exteriorDesigners = [...designers].filter(d => d.category === '外構').sort((a, b) => (a.display_order || 999) - (b.display_order || 999));
 
-  let html = '<h3 style="margin: 24px 0 16px; font-size: 18px; font-weight: 600;">登録済みスタッフ（' + designers.length + '名）</h3>';
+  let html = '<h3 style="margin: 24px 0 16px; font-size: 18px; font-weight: 600;">登録済み担当（' + designers.length + '名）</h3>';
   html += '<p style="color: var(--text-secondary); margin-bottom: 16px;">💡 行をドラッグ&ドロップして表示順序を変更できます</p>';
 
-  // スタッフ行を生成するヘルパー関数
+  // 担当行を生成するヘルパー関数
   function renderDesignerRow(designer, category, countField) {
     const count = countField ? projects.filter(p => p[countField] === designer.name).length : '-';
     const emailDisplay = designer.email && !designer.email.includes('@temp.local') ? designer.email : '<span style="color: var(--text-muted);">未設定</span>';
@@ -13448,7 +13448,7 @@ function renderDesignerListInline() {
   // 設計担当
   if (sekkeiDesigners.length > 0) {
     html += '<h4 style="margin: 20px 0 12px; color: var(--primary-color);">📐 設計担当</h4>';
-    html += '<div class="table-container"><table class="table"><thead><tr><th width="40"></th><th>スタッフ名</th><th>メールアドレス</th><th>電話番号</th><th>部署</th><th>担当案件数</th><th>操作</th></tr></thead><tbody id="sekkeiTbody">';
+    html += '<div class="table-container"><table class="table"><thead><tr><th width="40"></th><th>担当名</th><th>メールアドレス</th><th>電話番号</th><th>部署</th><th>担当案件数</th><th>操作</th></tr></thead><tbody id="sekkeiTbody">';
     sekkeiDesigners.forEach(designer => {
       html += renderDesignerRow(designer, '設計', 'assigned_to');
     });
@@ -13458,7 +13458,7 @@ function renderDesignerListInline() {
   // IC担当
   if (icDesigners.length > 0) {
     html += '<h4 style="margin: 20px 0 12px; color: var(--success-color);">🎨 IC担当</h4>';
-    html += '<div class="table-container"><table class="table"><thead><tr><th width="40"></th><th>スタッフ名</th><th>メールアドレス</th><th>電話番号</th><th>部署</th><th>担当案件数</th><th>操作</th></tr></thead><tbody id="icTbody">';
+    html += '<div class="table-container"><table class="table"><thead><tr><th width="40"></th><th>担当名</th><th>メールアドレス</th><th>電話番号</th><th>部署</th><th>担当案件数</th><th>操作</th></tr></thead><tbody id="icTbody">';
     icDesigners.forEach(designer => {
       html += renderDesignerRow(designer, 'IC', 'ic_assignee');
     });
@@ -13468,7 +13468,7 @@ function renderDesignerListInline() {
   // 外構担当
   if (exteriorDesigners.length > 0) {
     html += '<h4 style="margin: 20px 0 12px; color: var(--secondary-color);">🌳 外構担当</h4>';
-    html += '<div class="table-container"><table class="table"><thead><tr><th width="40"></th><th>スタッフ名</th><th>メールアドレス</th><th>電話番号</th><th>部署</th><th>担当案件数</th><th>操作</th></tr></thead><tbody id="exteriorTbody">';
+    html += '<div class="table-container"><table class="table"><thead><tr><th width="40"></th><th>担当名</th><th>メールアドレス</th><th>電話番号</th><th>部署</th><th>担当案件数</th><th>操作</th></tr></thead><tbody id="exteriorTbody">';
     exteriorDesigners.forEach(designer => {
       html += renderDesignerRow(designer, '外構', 'exterior_assignee');
     });
@@ -13479,7 +13479,7 @@ function renderDesignerListInline() {
   const realestateDesigners = [...designers].filter(d => d.category === '不動産').sort((a, b) => (a.display_order || 999) - (b.display_order || 999));
   if (realestateDesigners.length > 0) {
     html += '<h4 style="margin: 20px 0 12px; color: #8B4513;">🏠 不動産担当</h4>';
-    html += '<div class="table-container"><table class="table"><thead><tr><th width="40"></th><th>スタッフ名</th><th>メールアドレス</th><th>電話番号</th><th>部署</th><th>担当案件数</th><th>操作</th></tr></thead><tbody id="realestateTbody">';
+    html += '<div class="table-container"><table class="table"><thead><tr><th width="40"></th><th>担当名</th><th>メールアドレス</th><th>電話番号</th><th>部署</th><th>担当案件数</th><th>操作</th></tr></thead><tbody id="realestateTbody">';
     realestateDesigners.forEach(designer => {
       html += renderDesignerRow(designer, '不動産', 'realestate_assignee');
     });
@@ -13490,7 +13490,7 @@ function renderDesignerListInline() {
   const constructionDesigners = [...designers].filter(d => d.category === '工事').sort((a, b) => (a.display_order || 999) - (b.display_order || 999));
   if (constructionDesigners.length > 0) {
     html += '<h4 style="margin: 20px 0 12px; color: #FF6B35;">🔨 工事担当</h4>';
-    html += '<div class="table-container"><table class="table"><thead><tr><th width="40"></th><th>スタッフ名</th><th>メールアドレス</th><th>電話番号</th><th>部署</th><th>担当案件数</th><th>操作</th></tr></thead><tbody id="constructionTbody">';
+    html += '<div class="table-container"><table class="table"><thead><tr><th width="40"></th><th>担当名</th><th>メールアドレス</th><th>電話番号</th><th>部署</th><th>担当案件数</th><th>操作</th></tr></thead><tbody id="constructionTbody">';
     constructionDesigners.forEach(designer => {
       html += renderDesignerRow(designer, '工事', 'construction_assignee');
     });
@@ -13501,7 +13501,7 @@ function renderDesignerListInline() {
   const salesDesigners = [...designers].filter(d => d.category === '営業').sort((a, b) => (a.display_order || 999) - (b.display_order || 999));
   if (salesDesigners.length > 0) {
     html += '<h4 style="margin: 20px 0 12px; color: #2196F3;">💼 営業担当</h4>';
-    html += '<div class="table-container"><table class="table"><thead><tr><th width="40"></th><th>スタッフ名</th><th>メールアドレス</th><th>電話番号</th><th>部署</th><th>担当案件数</th><th>操作</th></tr></thead><tbody id="salesTbody">';
+    html += '<div class="table-container"><table class="table"><thead><tr><th width="40"></th><th>担当名</th><th>メールアドレス</th><th>電話番号</th><th>部署</th><th>担当案件数</th><th>操作</th></tr></thead><tbody id="salesTbody">';
     salesDesigners.forEach(designer => {
       html += renderDesignerRow(designer, '営業', 'sales_assignee');
     });
@@ -13512,7 +13512,7 @@ function renderDesignerListInline() {
   const adminDesigners = [...designers].filter(d => d.category === '管理者').sort((a, b) => (a.display_order || 999) - (b.display_order || 999));
   if (adminDesigners.length > 0) {
     html += '<h4 style="margin: 20px 0 12px; color: #9C27B0;">👑 管理者</h4>';
-    html += '<div class="table-container"><table class="table"><thead><tr><th width="40"></th><th>スタッフ名</th><th>メールアドレス</th><th>電話番号</th><th>部署</th><th>担当案件数</th><th>操作</th></tr></thead><tbody id="adminTbody">';
+    html += '<div class="table-container"><table class="table"><thead><tr><th width="40"></th><th>担当名</th><th>メールアドレス</th><th>電話番号</th><th>部署</th><th>担当案件数</th><th>操作</th></tr></thead><tbody id="adminTbody">';
     adminDesigners.forEach(designer => {
       html += renderDesignerRow(designer, '管理者', null);
     });
@@ -13525,7 +13525,7 @@ function renderDesignerListInline() {
   setupDragAndDrop();
 }
 
-// スタッフ編集モーダル
+// 担当編集モーダル
 function openEditDesignerModal(designerId) {
   const designer = designers.find(d => d.id === designerId);
   if (!designer) return;
@@ -13536,13 +13536,13 @@ function openEditDesignerModal(designerId) {
   modal.innerHTML = `
     <div class="modal-content" style="max-width: 500px;">
       <div class="modal-header">
-        <h2 class="modal-title">スタッフ編集</h2>
+        <h2 class="modal-title">担当編集</h2>
         <button class="close" onclick="closeEditDesignerModal()">&times;</button>
       </div>
       <div class="modal-body">
         <input type="hidden" id="editDesignerId" value="${designer.id}">
         <div class="form-group">
-          <label class="form-label">スタッフ名 *</label>
+          <label class="form-label">担当名 *</label>
           <input type="text" class="form-input" id="editDesignerName" value="${designer.name}" style="width: 100%;">
         </div>
         <div class="form-group">
@@ -13596,7 +13596,7 @@ async function saveEditDesigner() {
   const category = document.getElementById('editDesignerCategory').value;
 
   if (!name) {
-    showToast('スタッフ名を入力してください', 'error');
+    showToast('担当名を入力してください', 'error');
     return;
   }
 
@@ -13611,7 +13611,7 @@ async function saveEditDesigner() {
 
   // 名前が変更された場合、重複チェック
   if (name !== designer.name && designers.find(d => d.name === name && d.id !== designerId)) {
-    showToast('既に存在するスタッフ名です', 'error');
+    showToast('既に存在する担当名です', 'error');
     return;
   }
 
@@ -13663,7 +13663,7 @@ async function saveEditDesigner() {
   renderSidebar();
   renderProjects();
   showStatus('保存済み', 'saved');
-  showToast('スタッフ情報を更新しました', 'success');
+  showToast('担当情報を更新しました', 'success');
 }
 
 async function addDesignerInline() {
@@ -13674,7 +13674,7 @@ async function addDesignerInline() {
   const category = document.getElementById('newDesignerCategoryInline').value;
 
   if (!name) {
-    showToast('スタッフ名を入力してください', 'error');
+    showToast('担当名を入力してください', 'error');
     return;
   }
 
@@ -13697,7 +13697,7 @@ async function addDesignerInline() {
   }
 
   if (designers.find(d => d.name === name)) {
-    showToast('既に存在するスタッフ名です', 'error');
+    showToast('既に存在する担当名です', 'error');
     return;
   }
 
@@ -13723,7 +13723,7 @@ async function addDesignerInline() {
       .select();
 
     if (error) {
-      throw new Error('スタッフ情報の保存に失敗しました: ' + error.message);
+      throw new Error('担当情報の保存に失敗しました: ' + error.message);
     }
 
     const newDesigner = data[0];
@@ -13764,7 +13764,7 @@ async function addDesignerInline() {
     renderDesignerListInline();
     renderSidebar();
     showStatus('保存済み', 'saved');
-    showToast(`スタッフを追加しました。${email} にパスワード設定メールを送信しました。`, 'success');
+    showToast(`担当を追加しました。${email} にパスワード設定メールを送信しました。`, 'success');
 
   } catch (err) {
     showStatus('エラー', 'error');
@@ -13777,7 +13777,7 @@ async function deleteDesignerInline(designerId) {
   const hasProjects = projects.some(p => p.assigned_to === designer.name);
 
   if (hasProjects) {
-    showToast('このスタッフは案件に割当てられています。案件の担当を変更してから削除してください。', 'error');
+    showToast('この担当は案件に割当てられています。案件の担当を変更してから削除してください。', 'error');
     return;
   }
 
@@ -13799,11 +13799,11 @@ async function deleteDesignerInline(designerId) {
   renderDesignerListInline();
   renderSidebar();
   showStatus('保存済み', 'saved');
-  showToast('スタッフを削除しました', 'success');
+  showToast('担当を削除しました', 'success');
 }
 
 // ============================================
-// スタッフ認証設定
+// 担当認証設定
 // ============================================
 function openDesignerAuthModal(designerId) {
   const designer = designers.find(d => d.id === designerId);
@@ -13997,10 +13997,10 @@ function handleDesignerDragLeave(e) {
 async function updateDesignerOrder(draggedId, targetId, category) {
   showStatus('並び替え中...', 'saving');
 
-  // 該当カテゴリのスタッフを取得
+  // 該当カテゴリの担当を取得
   const categoryDesigners = designers.filter(d => d.category === category);
 
-  // ドラッグされたスタッフとターゲットスタッフを見つける
+  // ドラッグされた担当とターゲット担当を見つける
   const draggedIndex = categoryDesigners.findIndex(d => d.id === draggedId);
   const targetIndex = categoryDesigners.findIndex(d => d.id === targetId);
 
@@ -16351,7 +16351,7 @@ const DeadlineManager = {
 };
 
 // ============================================
-// プロジェクトテンプレート
+// 案件テンプレート
 // ============================================
 const TemplateManager = {
   templates: safeJsonParse(localStorage.getItem('projectTemplates'), []),
@@ -16789,7 +16789,7 @@ function handleHashChange() {
   // 担当者フィルターを復元
   if (designerParam) {
     currentDesignerTab = designerParam;
-    // サイドバーとプロジェクト表示を更新（タブ切り替え後に実行）
+    // サイドバーと案件表示を更新（タブ切り替え後に実行）
     setTimeout(() => {
       renderSidebar();
       if (mainTab === 'projects') {
@@ -17353,7 +17353,7 @@ async function toggleProjectTask(taskId, projectId, isCompleted) {
   await loadProjectTasksList(projectId);
   // バッジカウントを更新
   await loadBadgeCounts(projectId);
-  // スタッフ別タスク一覧も更新
+  // 担当別タスク一覧も更新
   renderStaffTasksList();
 }
 
@@ -19223,7 +19223,7 @@ const AppTour = {
     {
       target: '[onclick*="showSettingsTab"]',
       title: '設定画面',
-      content: 'スタッフ・業者・タスクの管理、データのバックアップなどはこちらから。',
+      content: '担当・業者・タスクの管理、データのバックアップなどはこちらから。',
       position: 'left'
     }
   ],
@@ -20489,7 +20489,7 @@ async function importFromKintoneDirect() {
 
     statusEl.innerHTML = `<span style="color: var(--text-muted);">📥 ${records.length}件のレコードを処理中...${hitLimit ? ' (10,000件制限)' : ''}</span>`;
 
-    // 3. 既存プロジェクトをkintone_record_idでインデックス化（高速検索用）
+    // 3. 既存案件をkintone_record_idでインデックス化（高速検索用）
     const projectsByKintoneId = new Map();
     const projectsByCustomer = new Map();
     for (const p of projects) {
@@ -20555,7 +20555,7 @@ async function importFromKintoneDirect() {
           continue;
         }
 
-        // 6. 既存プロジェクトを確認（kintone_record_idを優先）
+        // 6. 既存案件を確認（kintone_record_idを優先）
         let existingProject = projectsByKintoneId.get(kintoneRecordId);
 
         // kintone_record_idでマッチしない場合、顧客名でkintone未連携の既存データを検索
@@ -20564,7 +20564,7 @@ async function importFromKintoneDirect() {
           const customerMatch = projectsByCustomer.get(customer);
           if (customerMatch && !customerMatch.kintone_record_id) {
             existingProject = customerMatch;
-            // このプロジェクトをkintone連携として更新するため、マップから削除
+            // この案件をkintone連携として更新するため、マップから削除
             projectsByCustomer.delete(customer);
           }
         }
@@ -20939,7 +20939,7 @@ async function clearDemoData() {
       .in('project_id', demoIds);
     if (!handoverError && handoverCount) deletedRelated += handoverCount;
 
-    // プロジェクト本体を削除
+    // 案件本体を削除
     const { error, count } = await supabase
       .from('projects')
       .delete({ count: 'exact' })
@@ -21099,7 +21099,7 @@ async function autoSyncKintone() {
       return;
     }
 
-    // 既存プロジェクトをインデックス化
+    // 既存案件をインデックス化
     const projectsByKintoneId = new Map();
     for (const p of projects) {
       if (p.kintone_record_id) {
@@ -21133,7 +21133,7 @@ async function autoSyncKintone() {
         const existingProject = projectsByKintoneId.get(kintoneRecordId);
 
         if (existingProject) {
-          // 既存プロジェクトを更新（日付フィールドのみ同期）
+          // 既存案件を更新（日付フィールドのみ同期）
           const updates = {};
           let hasChanges = false;
 
@@ -21219,7 +21219,7 @@ async function autoSyncKintone() {
             }
           }
         } else {
-          // 新規プロジェクト追加（名前マッチング適用）
+          // 新規案件追加（名前マッチング適用）
           const productValue = productField ? getValue(productField) : null;
           const exteriorValue = exteriorField ? matchDesignerName(getValue(exteriorField), '外構') : null;
           const newProject = {
