@@ -7386,14 +7386,16 @@ let isAuthProcessing = false;
 
 // 認証状態変更を監視
 supabase.auth.onAuthStateChange(async (event, session) => {
-  log('🔔 認証イベント:', event, 'currentUser:', currentUser?.email, 'processing:', isAuthProcessing);
+  debugShow('AUTH EVENT: ' + event);
+  debugShow('AUTH: session=' + (session ? 'あり' : 'なし') + ', currentUser=' + (currentUser?.email || 'なし') + ', isAuthProcessing=' + isAuthProcessing);
 
   if (event === 'SIGNED_IN' && session && session.user && !currentUser && !isAuthProcessing) {
     isAuthProcessing = true;
-    log('✅ SIGNED_IN イベント処理開始:', session.user.email);
+    debugShow('AUTH: SIGNED_IN処理開始');
 
     currentUser = session.user;
     document.getElementById('loginContainer').style.display = 'none';
+    debugShow('AUTH: loginContainer非表示');
 
     // admin@ghouse.jpの場合は管理者モードで直接メイン画面へ
     if (currentUser.email === 'admin@ghouse.jp') {
@@ -7433,26 +7435,29 @@ supabase.auth.onAuthStateChange(async (event, session) => {
     }
 
     // メインコンテナを表示（認証成功後に必ず実行）
+    debugShow('AUTH: mainContainer表示');
     document.getElementById('mainContainer').classList.add('show');
 
     // ユーザー名・アバターを表示
     updateUserDisplay(currentUser.email.split('@')[0]);
 
+    debugShow('AUTH: init呼び出し中...');
     try {
       await init();
+      debugShow('AUTH: init完了');
     } catch (initError) {
-      logError('❌ 初期化エラー:', initError);
+      debugShow('AUTH ERROR: init失敗 - ' + initError.message);
     }
     isAuthProcessing = false;
+    debugShow('AUTH: 処理完了');
   } else if (event === 'PASSWORD_RECOVERY') {
-    log('🔑 PASSWORD_RECOVERY イベント - パスワード設定画面を表示');
-    // パスワード設定モーダルを表示
+    debugShow('AUTH: PASSWORD_RECOVERY');
     showSetPasswordModal();
   } else if (event === 'SIGNED_OUT') {
-    log('👋 SIGNED_OUT イベント');
+    debugShow('AUTH: SIGNED_OUT - リロード');
     location.reload();
   } else {
-    log('⏭️ イベントをスキップ');
+    debugShow('AUTH: イベントスキップ');
   }
 });
 
