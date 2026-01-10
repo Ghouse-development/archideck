@@ -7233,17 +7233,9 @@ async function signOut() {
   }
 }
 
-// デバッグ表示（画面に状態を表示）
+// デバッグ表示（無効化）
 function debugShow(message) {
-  console.log('[DEBUG]', message);
-  let debugDiv = document.getElementById('debugOverlay');
-  if (!debugDiv) {
-    debugDiv = document.createElement('div');
-    debugDiv.id = 'debugOverlay';
-    debugDiv.style.cssText = 'position:fixed;top:0;left:0;right:0;background:yellow;color:black;padding:10px;z-index:99999;font-size:12px;';
-    document.body.appendChild(debugDiv);
-  }
-  debugDiv.innerHTML += message + '<br>';
+  // 何もしない
 }
 
 async function checkAuth() {
