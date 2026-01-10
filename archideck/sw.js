@@ -1,62 +1,25 @@
-// ArchiDeck Service Worker v3.0 - 2026-01-10
-const CACHE_NAME = 'archideck-v3';
-const urlsToCache = [
-  '/archideck/index.html',
-  '/archideck/manifest.json'
-];
+// ArchiDeck Service Worker v4.0 - 2026-01-10
+// キャッシュ無効化版（プッシュ通知のみ対応）
 
-// インストール時にキャッシュ
+// インストール時 - キャッシュなし、即座にアクティベート
 self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(urlsToCache))
-      .then(() => self.skipWaiting())
-  );
+  self.skipWaiting();
 });
 
-// アクティベート時に古いキャッシュを削除
+// アクティベート時 - 全キャッシュを削除
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(cacheNames => {
       return Promise.all(
-        cacheNames.filter(name => name !== CACHE_NAME)
-          .map(name => caches.delete(name))
+        cacheNames.map(name => caches.delete(name))
       );
     }).then(() => self.clients.claim())
   );
 });
 
-// フェッチ時の処理（ネットワーク優先、失敗時はキャッシュ）
+// フェッチ時 - キャッシュせず常にネットワークから取得
 self.addEventListener('fetch', event => {
-  const url = event.request.url;
-
-  // http/https以外のスキーム（chrome-extension://等）はキャッシュ不可
-  if (!url.startsWith('http://') && !url.startsWith('https://')) {
-    return;
-  }
-
-  // APIリクエストはキャッシュしない
-  if (url.includes('supabase.co')) {
-    return;
-  }
-
-  event.respondWith(
-    fetch(event.request)
-      .then(response => {
-        // 成功時はキャッシュを更新
-        if (response.status === 200) {
-          const responseClone = response.clone();
-          caches.open(CACHE_NAME).then(cache => {
-            cache.put(event.request, responseClone);
-          });
-        }
-        return response;
-      })
-      .catch(() => {
-        // オフライン時はキャッシュから返す
-        return caches.match(event.request);
-      })
-  );
+  // 何もしない（ブラウザのデフォルト動作に任せる）
 });
 
 // プッシュ通知受信

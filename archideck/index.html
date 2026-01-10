@@ -4812,6 +4812,7 @@ textarea:focus-visible {
             <button class="btn btn-ghost btn-small" onclick="toggleFilterPanel()" id="filterToggleBtn" title="フィルター展開">🔽 絞込</button>
             <button class="btn btn-ghost btn-small" onclick="resetAllFilters()" title="リセット">🔄</button>
             <div class="toolbar-spacer"></div>
+            <button class="btn btn-ghost btn-small" onclick="manualKintoneSync()" title="kintone同期" id="kintoneRefreshBtn">🔄 kintone</button>
             <button class="btn btn-ghost btn-small" onclick="DataImporter.showModal()" title="取込">📥</button>
             <button class="btn btn-ghost btn-small" onclick="exportCSV()" title="出力">📤</button>
             <button class="btn btn-primary btn-small" onclick="openProjectModal()">+ 追加</button>
@@ -20023,7 +20024,8 @@ async function saveKintoneSettings() {
       field_design: settings.field_design,
       field_ic: settings.field_ic,
       field_construction: settings.field_construction,
-      apps_json: JSON.stringify(apps)
+      apps_json: JSON.stringify(apps),
+      field_mappings_json: JSON.stringify(fieldMappings)
     };
 
     let error;
@@ -20808,8 +20810,18 @@ async function loadKintoneSettings() {
     // 年度別アプリをUIに描画
     renderKintoneApps(kintoneApps);
 
-    // 基本情報フィールドはlocalStorageから読み込み（DBにカラムがないため）
-    const fieldMappings = safeJsonParse(localStorage.getItem('kintone_field_mappings'), {});
+    // 基本情報フィールドをDBから読み込み（フォールバック：localStorage）
+    let fieldMappings = {};
+    if (kintoneSettings?.field_mappings_json) {
+      // DBから読み込み
+      fieldMappings = safeJsonParse(kintoneSettings.field_mappings_json, {});
+      // localStorageにも保存（同期用）
+      localStorage.setItem('kintone_field_mappings', kintoneSettings.field_mappings_json);
+    } else {
+      // フォールバック：localStorageから読み込み
+      fieldMappings = safeJsonParse(localStorage.getItem('kintone_field_mappings'), {});
+    }
+
     const customerEl = document.getElementById('kintoneFieldCustomer');
     const layoutEl = document.getElementById('kintoneFieldLayout');
     const permitEl = document.getElementById('kintoneFieldPermit');
@@ -21044,6 +21056,33 @@ async function autoSyncKintone() {
     }
   } catch (e) {
     log('❌ kintone自動同期エラー:', e);
+  }
+}
+
+// 手動kintone同期（ボタンから呼び出し）
+async function manualKintoneSync() {
+  const btn = document.getElementById('kintoneRefreshBtn');
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = '🔄 同期中...';
+  }
+
+  try {
+    // kintone設定を確認
+    if (!kintoneSettings || !kintoneSettings.domain || !kintoneSettings.app_id || !kintoneSettings.api_token) {
+      showToast('kintone連携が設定されていません。設定画面で設定してください。', 'error');
+      return;
+    }
+
+    await autoSyncKintone();
+    showToast('kintone同期が完了しました', 'success');
+  } catch (e) {
+    showToast('kintone同期に失敗しました: ' + e.message, 'error');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = '🔄 kintone';
+    }
   }
 }
 
