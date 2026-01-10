@@ -4895,6 +4895,29 @@ textarea:focus-visible {
   </div>
 </div>
 
+<!-- パスワード設定画面（初回ログイン用） -->
+<div id="setPasswordContainer" class="login-container" style="display: none;">
+  <div class="login-card">
+    <h1>パスワード設定</h1>
+    <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">ArchiDeck</p>
+    <p>新しいパスワードを設定してください</p>
+    <form onsubmit="saveNewPassword(); return false;" style="margin-bottom: 20px;">
+      <div class="form-group" style="margin-bottom: 16px;">
+        <label class="form-label">新しいパスワード</label>
+        <input type="password" class="form-input" id="setNewPassword" placeholder="英数字混合8文字以上" style="width: 100%;">
+      </div>
+      <div class="form-group" style="margin-bottom: 16px;">
+        <label class="form-label">新しいパスワード（確認）</label>
+        <input type="password" class="form-input" id="setConfirmPassword" placeholder="もう一度入力" style="width: 100%;">
+      </div>
+      <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">
+        ※ パスワードは英字と数字を含む8文字以上で設定してください
+      </p>
+      <button type="submit" class="btn btn-primary" style="width: 100%;">パスワードを設定</button>
+    </form>
+  </div>
+</div>
+
 <!-- メインアプリケーション -->
 <div id="mainContainer" class="main-container">
   <!-- ヘッダー -->
@@ -7269,6 +7292,69 @@ async function changePassword() {
   }
 }
 
+// パスワード設定モーダルを表示（初回ログイン/パスワードリセット用）
+function showSetPasswordModal() {
+  log('🔑 パスワード設定画面を表示');
+  document.getElementById('loginContainer').style.display = 'none';
+  document.getElementById('mainContainer').classList.remove('show');
+  document.getElementById('setPasswordContainer').style.display = 'flex';
+}
+
+// 新しいパスワードを保存（初回設定用）
+async function saveNewPassword() {
+  const newPassword = document.getElementById('setNewPassword').value;
+  const confirmPassword = document.getElementById('setConfirmPassword').value;
+
+  // バリデーション
+  if (!newPassword) {
+    showToast('新しいパスワードを入力してください', 'error');
+    return;
+  }
+
+  // 英数字混合8文字以上のチェック
+  const hasLetter = /[a-zA-Z]/.test(newPassword);
+  const hasNumber = /[0-9]/.test(newPassword);
+  if (newPassword.length < 8 || !hasLetter || !hasNumber) {
+    showToast('パスワードは英字と数字を含む8文字以上で設定してください', 'error');
+    return;
+  }
+
+  if (newPassword !== confirmPassword) {
+    showToast('パスワードが一致しません', 'error');
+    return;
+  }
+
+  if (!window.supabase) {
+    showToast('エラー: システムが初期化されていません', 'error');
+    return;
+  }
+
+  try {
+    const { error } = await supabase.auth.updateUser({
+      password: newPassword
+    });
+
+    if (error) {
+      logError('パスワード設定エラー:', error);
+      showToast('パスワード設定に失敗しました: ' + error.message, 'error');
+      return;
+    }
+
+    // 入力欄をクリア
+    document.getElementById('setNewPassword').value = '';
+    document.getElementById('setConfirmPassword').value = '';
+
+    // パスワード設定画面を非表示にしてログイン画面へ
+    document.getElementById('setPasswordContainer').style.display = 'none';
+    document.getElementById('loginContainer').style.display = 'flex';
+
+    showToast('パスワードを設定しました。新しいパスワードでログインしてください。', 'success', 5000);
+  } catch (e) {
+    logError('パスワード設定例外:', e);
+    showToast('エラーが発生しました', 'error');
+  }
+}
+
 async function signIn() {
   log('🔐 ログイン処理開始...');
 
@@ -7335,6 +7421,20 @@ async function signOut() {
 
 async function checkAuth() {
   log('🔍 認証状態をチェック中...');
+
+  // URLハッシュにパスワードリカバリートークンが含まれているかチェック
+  const hashParams = window.location.hash.substring(1);
+  const isRecoveryFlow = hashParams.includes('type=recovery') || hashParams.includes('type=signup');
+
+  if (isRecoveryFlow) {
+    log('🔑 パスワードリカバリーフロー検出 - onAuthStateChangeを待機');
+    // リカバリーフローの場合は、onAuthStateChangeでPASSWORD_RECOVERYイベントを待つ
+    // ログイン画面は表示せず、パスワード設定画面を直接表示
+    document.getElementById('loginContainer').style.display = 'none';
+    document.getElementById('setPasswordContainer').style.display = 'flex';
+    return;
+  }
+
   // デモモード設定を読み込み
   loadDemoModeSetting();
   const { data: { session } } = await supabase.auth.getSession();
@@ -7430,6 +7530,10 @@ supabase.auth.onAuthStateChange(async (event, session) => {
 
     await init();
     isAuthProcessing = false;
+  } else if (event === 'PASSWORD_RECOVERY') {
+    log('🔑 PASSWORD_RECOVERY イベント - パスワード設定画面を表示');
+    // パスワード設定モーダルを表示
+    showSetPasswordModal();
   } else if (event === 'SIGNED_OUT') {
     log('👋 SIGNED_OUT イベント');
     location.reload();
@@ -13781,7 +13885,7 @@ async function addDesignerInline() {
 
     // 3. パスワード設定メールを送信
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: window.location.origin + '/#password-reset'
+      redirectTo: window.location.origin + '/archideck/index.html#set-password'
     });
 
     if (resetError) {

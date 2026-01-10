@@ -1,5 +1,36 @@
 # ArchiDeck 開発履歴
 
+## v4.99.3 (2026-01-10)
+
+### パスワード設定メールのリンク修正
+
+#### 問題
+- 担当者追加時に送信されるパスワード設定メールのリンクをクリックすると、パスワード設定画面ではなくログイン画面に遷移してしまう
+
+#### 修正内容
+1. **リダイレクトURLを修正**
+   - 変更前: `window.location.origin + '/#password-reset'`（パスが不正）
+   - 変更後: `window.location.origin + '/archideck/index.html#set-password'`
+
+2. **PASSWORD_RECOVERYイベント処理を追加**
+   - Supabaseの`onAuthStateChange`で`PASSWORD_RECOVERY`イベントを検出
+   - パスワード設定画面を自動表示
+
+3. **パスワード設定画面を追加**
+   - 新しいパスワード入力（2回入力で確認）
+   - バリデーション: 英字と数字を含む8文字以上
+   - 設定完了後、ログイン画面へ遷移
+
+4. **checkAuth()でリカバリーフローを検出**
+   - URLハッシュに`type=recovery`または`type=signup`が含まれる場合を検出
+   - ログイン画面を表示せず、パスワード設定画面を直接表示
+
+#### 新規関数
+- `showSetPasswordModal()`: パスワード設定画面を表示
+- `saveNewPassword()`: 新しいパスワードを保存
+
+---
+
 ## v4.99.2 (2026-01-10)
 
 ### 部署選択の初期化順序修正
