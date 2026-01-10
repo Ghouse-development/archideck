@@ -7256,7 +7256,17 @@ async function checkAuth() {
     return;
   }
 
-  const { data: { session } } = await supabase.auth.getSession();
+  // セッション取得（エラー時はログイン画面へ）
+  let session = null;
+  try {
+    const result = await supabase.auth.getSession();
+    session = result?.data?.session;
+  } catch (sessionError) {
+    logError('❌ セッション取得エラー:', sessionError);
+    document.getElementById('loginContainer').style.display = 'flex';
+    document.getElementById('mainContainer').classList.remove('show');
+    return;
+  }
 
   if (session) {
     log('✅ セッション検出:', session.user.email);
@@ -7271,33 +7281,47 @@ async function checkAuth() {
     }
 
     // その他の場合は担当情報を取得してcategoryを判定
-    const { data: designerData } = await supabase
-      .from('designers')
-      .select('*')
-      .eq('email', currentUser.email)
-      .single();
+    try {
+      const { data: designerData, error: designerError } = await supabase
+        .from('designers')
+        .select('*')
+        .eq('email', currentUser.email)
+        .single();
 
-    if (designerData) {
-      currentDesigner = designerData;
-      currentUserCategory = designerData.category;
-      log('✅ 担当情報取得:', currentDesigner.name, '/', currentUserCategory);
-
-      // ログイン成功したのでauth_confirmedをtrueに更新（招待ボタン非表示用）
-      if (!designerData.auth_confirmed) {
-        await supabase.from('designers').update({ auth_confirmed: true }).eq('id', designerData.id);
-        currentDesigner.auth_confirmed = true;
+      if (designerError) {
+        warn('⚠️ 担当情報取得エラー:', designerError.message);
       }
-    } else {
-      warn('⚠️ 担当情報が見つかりません:', currentUser.email);
+
+      if (designerData) {
+        currentDesigner = designerData;
+        currentUserCategory = designerData.category;
+        log('✅ 担当情報取得:', currentDesigner.name, '/', currentUserCategory);
+
+        // ログイン成功したのでauth_confirmedをtrueに更新（招待ボタン非表示用）
+        if (!designerData.auth_confirmed) {
+          await supabase.from('designers').update({ auth_confirmed: true }).eq('id', designerData.id);
+          currentDesigner.auth_confirmed = true;
+        }
+      } else {
+        warn('⚠️ 担当情報が見つかりません:', currentUser.email);
+      }
+    } catch (designerFetchError) {
+      // 担当情報取得に失敗してもログインは継続（エラーログのみ）
+      logError('❌ 担当情報取得例外:', designerFetchError);
     }
 
-    // メインコンテナを表示
+    // メインコンテナを表示（認証成功後に必ず実行）
     document.getElementById('mainContainer').classList.add('show');
 
     // ユーザー名・アバターを表示
     updateUserDisplay(currentUser.email.split('@')[0]);
 
-    await init();
+    try {
+      await init();
+    } catch (initError) {
+      // 初期化に失敗してもメイン画面は表示（エラーログのみ）
+      logError('❌ 初期化エラー:', initError);
+    }
 
     // 初期化完了後にURL直接アクセスの処理を実行（1回だけ）
     if (!window.location.hash || window.location.hash === '#') {
@@ -7333,33 +7357,45 @@ supabase.auth.onAuthStateChange(async (event, session) => {
     }
 
     // その他の場合は担当情報を取得してcategoryを判定
-    const { data: designerData } = await supabase
-      .from('designers')
-      .select('*')
-      .eq('email', currentUser.email)
-      .single();
+    try {
+      const { data: designerData, error: designerError } = await supabase
+        .from('designers')
+        .select('*')
+        .eq('email', currentUser.email)
+        .single();
 
-    if (designerData) {
-      currentDesigner = designerData;
-      currentUserCategory = designerData.category;
-      log('✅ 担当情報取得:', currentDesigner.name, '/', currentUserCategory);
-
-      // ログイン成功したのでauth_confirmedをtrueに更新（招待ボタン非表示用）
-      if (!designerData.auth_confirmed) {
-        await supabase.from('designers').update({ auth_confirmed: true }).eq('id', designerData.id);
-        currentDesigner.auth_confirmed = true;
+      if (designerError) {
+        warn('⚠️ 担当情報取得エラー:', designerError.message);
       }
-    } else {
-      warn('⚠️ 担当情報が見つかりません:', currentUser.email);
+
+      if (designerData) {
+        currentDesigner = designerData;
+        currentUserCategory = designerData.category;
+        log('✅ 担当情報取得:', currentDesigner.name, '/', currentUserCategory);
+
+        // ログイン成功したのでauth_confirmedをtrueに更新（招待ボタン非表示用）
+        if (!designerData.auth_confirmed) {
+          await supabase.from('designers').update({ auth_confirmed: true }).eq('id', designerData.id);
+          currentDesigner.auth_confirmed = true;
+        }
+      } else {
+        warn('⚠️ 担当情報が見つかりません:', currentUser.email);
+      }
+    } catch (designerFetchError) {
+      logError('❌ 担当情報取得例外:', designerFetchError);
     }
 
-    // メインコンテナを表示
+    // メインコンテナを表示（認証成功後に必ず実行）
     document.getElementById('mainContainer').classList.add('show');
 
     // ユーザー名・アバターを表示
     updateUserDisplay(currentUser.email.split('@')[0]);
 
-    await init();
+    try {
+      await init();
+    } catch (initError) {
+      logError('❌ 初期化エラー:', initError);
+    }
     isAuthProcessing = false;
   } else if (event === 'PASSWORD_RECOVERY') {
     log('🔑 PASSWORD_RECOVERY イベント - パスワード設定画面を表示');
