@@ -6791,9 +6791,10 @@ function loadDepartmentMaster() {
   const saved = localStorage.getItem('departmentMaster');
   if (saved) {
     const parsed = JSON.parse(saved);
-    // 旧デフォルト値の場合は新デフォルトに更新
-    const isOldDefault = OLD_DEFAULT_DEPARTMENTS.every(d => parsed.includes(d)) && parsed.length === OLD_DEFAULT_DEPARTMENTS.length;
-    if (isOldDefault) {
+    // 空の配列または旧デフォルト値の場合は新デフォルトに更新
+    const isEmpty = !Array.isArray(parsed) || parsed.length === 0;
+    const isOldDefault = Array.isArray(parsed) && OLD_DEFAULT_DEPARTMENTS.every(d => parsed.includes(d)) && parsed.length === OLD_DEFAULT_DEPARTMENTS.length;
+    if (isEmpty || isOldDefault) {
       departmentMaster = [...DEFAULT_DEPARTMENTS];
       saveDepartmentMaster();
     } else {
