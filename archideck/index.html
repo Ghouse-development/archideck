@@ -6784,12 +6784,21 @@ let designers = [];
 
 // 部署マスタ（localStorage管理）
 let departmentMaster = [];
-const DEFAULT_DEPARTMENTS = ['経営企画部', 'システム開発部', '設計部', '営業部', '工事部', 'IC部'];
+const DEFAULT_DEPARTMENTS = ['注文住宅事業部', '不動産事業部', '外構事業部', 'AX戦略部'];
+const OLD_DEFAULT_DEPARTMENTS = ['経営企画部', 'システム開発部', '設計部', '営業部', '工事部', 'IC部'];
 
 function loadDepartmentMaster() {
   const saved = localStorage.getItem('departmentMaster');
   if (saved) {
-    departmentMaster = JSON.parse(saved);
+    const parsed = JSON.parse(saved);
+    // 旧デフォルト値の場合は新デフォルトに更新
+    const isOldDefault = OLD_DEFAULT_DEPARTMENTS.every(d => parsed.includes(d)) && parsed.length === OLD_DEFAULT_DEPARTMENTS.length;
+    if (isOldDefault) {
+      departmentMaster = [...DEFAULT_DEPARTMENTS];
+      saveDepartmentMaster();
+    } else {
+      departmentMaster = parsed;
+    }
   } else {
     departmentMaster = [...DEFAULT_DEPARTMENTS];
     saveDepartmentMaster();
