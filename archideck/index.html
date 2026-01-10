@@ -17275,13 +17275,26 @@ async function addProjectTask(projectId, taskName, dueDate) {
     }
 
     // 入力欄をクリア
-    document.getElementById(`newTaskName_${projectId}`).value = '';
-    document.getElementById(`newTaskDue_${projectId}`).value = '';
+    const taskNameEl = document.getElementById(`newTaskName_${projectId}`);
+    const taskDueEl = document.getElementById(`newTaskDue_${projectId}`);
+    if (taskNameEl) taskNameEl.value = '';
+    if (taskDueEl) taskDueEl.value = '';
 
     showToast('タスクを追加しました', 'success');
-    await loadProjectTasksList(projectId);
-    // バッジカウントを更新
-    await loadBadgeCounts(projectId);
+
+    // タスクリスト更新（エラーがあっても続行）
+    try {
+      await loadProjectTasksList(projectId);
+    } catch (e) {
+      console.warn('タスクリスト更新エラー:', e);
+    }
+
+    // バッジカウントを更新（エラーがあっても続行）
+    try {
+      await loadBadgeCounts(projectId);
+    } catch (e) {
+      console.warn('バッジカウント更新エラー:', e);
+    }
   } catch (err) {
     logError('タスク追加例外:', err);
     showToast('タスク追加中にエラーが発生しました', 'error');
