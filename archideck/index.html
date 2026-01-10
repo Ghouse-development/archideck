@@ -7291,50 +7291,53 @@ async function checkAuth() {
     return;
   }
 
-  // ローカルストレージの診断
+  // ローカルストレージから直接セッションを確認
+  // （getSession()がハングする問題の回避策）
   const storageKey = 'sb-twzsirpfudqwboeyakta-auth-token';
   const storedSession = localStorage.getItem(storageKey);
-  console.log('[診断] localStorage キー:', storageKey);
-  console.log('[診断] localStorage 値:', storedSession ? '存在する' : 'なし');
+  let session = null;
 
   if (storedSession) {
     try {
       const parsed = JSON.parse(storedSession);
-      console.log('[診断] セッションデータ:', {
-        hasAccessToken: !!parsed.access_token,
-        hasRefreshToken: !!parsed.refresh_token,
-        expiresAt: parsed.expires_at ? new Date(parsed.expires_at * 1000).toLocaleString() : 'なし',
-        isExpired: parsed.expires_at ? (parsed.expires_at * 1000 < Date.now()) : 'N/A',
-        userEmail: parsed.user?.email || 'なし'
-      });
+      const isExpired = parsed.expires_at ? (parsed.expires_at * 1000 < Date.now()) : true;
+
+      if (!isExpired && parsed.access_token && parsed.user) {
+        // 有効なセッションがlocalStorageにある場合は直接使用
+        console.log('[checkAuth] localStorageから有効なセッションを使用:', parsed.user.email);
+        session = {
+          access_token: parsed.access_token,
+          refresh_token: parsed.refresh_token,
+          expires_at: parsed.expires_at,
+          user: parsed.user
+        };
+      } else if (isExpired) {
+        console.log('[checkAuth] セッション期限切れ - 再ログイン必要');
+        localStorage.removeItem(storageKey);
+      }
     } catch (parseError) {
-      console.error('[診断] JSONパースエラー:', parseError.message);
-      console.log('[診断] 破損したデータを削除します');
+      console.error('[checkAuth] セッションデータ破損:', parseError.message);
       localStorage.removeItem(storageKey);
     }
   }
 
-  console.log('[checkAuth] getSession呼び出し中...');
-
-  // getSessionにタイムアウトを設定（5秒）
-  let session = null;
-  try {
-    const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('getSession timeout')), 5000)
-    );
-    const sessionPromise = supabase.auth.getSession();
-    const result = await Promise.race([sessionPromise, timeoutPromise]);
-    session = result.data?.session;
-    console.log('[checkAuth] getSession完了:', session ? session.user.email : 'なし');
-  } catch (e) {
-    console.error('[checkAuth] getSessionエラー/タイムアウト:', e.message);
-    // タイムアウト時：破損データの可能性があるのでクリアして再試行
-    console.log('[診断] セッションデータをクリアして再試行します');
-    localStorage.removeItem(storageKey);
-    // ログイン画面を表示
-    document.getElementById('loginContainer').style.display = 'flex';
-    document.getElementById('mainContainer').classList.remove('show');
-    return;
+  // localStorageにセッションがない場合のみgetSession()を呼ぶ
+  if (!session) {
+    console.log('[checkAuth] getSession呼び出し中...');
+    try {
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('getSession timeout')), 3000)
+      );
+      const sessionPromise = supabase.auth.getSession();
+      const result = await Promise.race([sessionPromise, timeoutPromise]);
+      session = result.data?.session;
+      console.log('[checkAuth] getSession完了:', session ? session.user.email : 'なし');
+    } catch (e) {
+      console.log('[checkAuth] getSessionタイムアウト - ログイン画面を表示');
+      document.getElementById('loginContainer').style.display = 'flex';
+      document.getElementById('mainContainer').classList.remove('show');
+      return;
+    }
   }
 
   if (session) {
