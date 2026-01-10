@@ -7239,15 +7239,13 @@ function debugShow(message) {
 }
 
 async function checkAuth() {
-  debugShow('1. checkAuth開始');
+  log('🔍 認証状態をチェック中...');
 
-  try {
-    // URLハッシュにパスワードリカバリートークンが含まれているかチェック
-    const hashParams = window.location.hash.substring(1);
-    debugShow('2. hashParams: ' + hashParams);
+  // URLハッシュにパスワードリカバリートークンが含まれているかチェック
+  const hashParams = window.location.hash.substring(1);
 
-    // エラーがある場合（リンク期限切れ等）
-    if (hashParams.includes('error=')) {
+  // エラーがある場合（リンク期限切れ等）
+  if (hashParams.includes('error=')) {
     const urlParams = new URLSearchParams(hashParams);
     const errorCode = urlParams.get('error_code');
     const errorDesc = urlParams.get('error_description');
@@ -7258,26 +7256,21 @@ async function checkAuth() {
     } else {
       showToast('認証エラー: ' + (errorDesc || errorCode), 'error', 8000);
     }
-    // エラー後はログイン画面を表示
     document.getElementById('loginContainer').style.display = 'flex';
     document.getElementById('mainContainer').classList.remove('show');
-    // URLからエラーパラメータを除去
     history.replaceState(null, '', window.location.pathname);
-    checkAuthCompleted = true;
     return;
   }
 
   const isRecoveryFlow = hashParams.includes('type=recovery') || hashParams.includes('type=signup');
 
   if (isRecoveryFlow) {
-    log('🔑 パスワードリカバリーフロー検出 - セッション確立を待機');
-    // リカバリーフローの場合は、Supabaseがトークンを処理するのを待つ
+    log('🔑 パスワードリカバリーフロー検出');
     document.getElementById('loginContainer').style.display = 'none';
     document.getElementById('setPasswordContainer').style.display = 'flex';
 
-    // Supabaseがトークンを処理してセッションを確立するのを待機
     let retryCount = 0;
-    const maxRetries = 20; // 最大10秒待機（500ms × 20）
+    const maxRetries = 20;
     const waitForSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
@@ -7286,152 +7279,60 @@ async function checkAuth() {
       }
       retryCount++;
       if (retryCount < maxRetries) {
-        log('⏳ セッション待機中...', retryCount);
         await new Promise(resolve => setTimeout(resolve, 500));
         await waitForSession();
       } else {
-        log('❌ セッション確立タイムアウト');
-        showToast('セッションの確立に失敗しました。メールのリンクを再度クリックしてください。', 'error');
+        showToast('セッションの確立に失敗しました。', 'error');
         document.getElementById('setPasswordContainer').style.display = 'none';
         document.getElementById('loginContainer').style.display = 'flex';
       }
     };
     await waitForSession();
-    checkAuthCompleted = true;
     return;
   }
 
-    // セッション取得（タイムアウト付き - ハング対策）
-    debugShow('3. getSession呼び出し中...');
-    let session = null;
-    try {
-      // 5秒でタイムアウト
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('getSession timeout')), 5000)
-      );
-      const sessionPromise = supabase.auth.getSession();
+  const { data: { session } } = await supabase.auth.getSession();
 
-      const result = await Promise.race([sessionPromise, timeoutPromise]);
-      session = result?.data?.session;
-      debugShow('4. session取得完了: ' + (session ? 'あり' : 'なし'));
-      if (session) {
-        debugShow('5. session.user: ' + (session.user ? session.user.email : 'null'));
-      }
-    } catch (sessionError) {
-      debugShow('ERROR: セッション取得エラー: ' + sessionError.message);
-      // タイムアウトまたはエラーの場合、状態をリセットしてログイン画面を表示
-      debugShow('状態をリセットしてログイン画面を表示...');
+  if (session) {
+    log('✅ セッション検出:', session.user.email);
+    currentUser = session.user;
+    document.getElementById('loginContainer').style.display = 'none';
 
-      // 重要: 認証状態をリセット（次のログイン試行のため）
-      currentUser = null;
-      currentDesigner = null;
-      isAuthProcessing = false;
-
-      try {
-        // Supabaseセッションをクリア（リロードを防ぐためフラグ設定）
-        isSilentSignOut = true;
-        await supabase.auth.signOut();
-        isSilentSignOut = false;
-      } catch (e) {
-        isSilentSignOut = false;
-        debugShow('signOutエラー（無視）: ' + e.message);
-      }
-
-      try {
-        // ローカルストレージもクリア
-        const keys = Object.keys(localStorage).filter(k => k.startsWith('sb-'));
-        keys.forEach(k => localStorage.removeItem(k));
-      } catch (e) {}
-
-      document.getElementById('loginContainer').style.display = 'flex';
-      document.getElementById('mainContainer').classList.remove('show');
-      checkAuthCompleted = true;  // 次のログインでonAuthStateChangeが処理できるように
-      debugShow('checkAuthCompleted = true');
+    // admin@ghouse.jpの場合は管理者モードで直接メイン画面へ
+    if (currentUser.email === 'admin@ghouse.jp') {
+      await selectAccountType('admin');
       return;
     }
 
-    if (session && session.user) {
-      debugShow('6. 有効なセッション検出');
-      currentUser = session.user;
-      document.getElementById('loginContainer').style.display = 'none';
-      debugShow('7. loginContainer非表示');
+    // 担当情報を取得
+    const { data: designerData } = await supabase
+      .from('designers')
+      .select('*')
+      .eq('email', currentUser.email)
+      .single();
 
-      // admin@ghouse.jpの場合は管理者モードで直接メイン画面へ
-      if (currentUser.email === 'admin@ghouse.jp') {
-        debugShow('8. 管理者ログイン');
-        await selectAccountType('admin');
-        debugShow('9. selectAccountType完了');
-        return;
+    if (designerData) {
+      currentDesigner = designerData;
+      currentUserCategory = designerData.category;
+      log('✅ 担当情報取得:', currentDesigner.name);
+
+      if (!designerData.auth_confirmed) {
+        await supabase.from('designers').update({ auth_confirmed: true }).eq('id', designerData.id);
+        currentDesigner.auth_confirmed = true;
       }
-
-      // その他の場合は担当情報を取得してcategoryを判定
-      debugShow('8. designerData取得中...');
-      try {
-        const designerTimeout = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('designerData timeout')), 10000)
-        );
-        const designerQuery = supabase
-          .from('designers')
-          .select('*')
-          .eq('email', currentUser.email)
-          .single();
-
-        const { data: designerData, error: designerError } = await Promise.race([designerQuery, designerTimeout]);
-
-        debugShow('9. designerData取得完了');
-
-        if (designerError) {
-          debugShow('WARNING: designerError: ' + designerError.message);
-        }
-
-        if (designerData) {
-          currentDesigner = designerData;
-          currentUserCategory = designerData.category;
-          debugShow('10. designer設定完了: ' + currentDesigner.name);
-
-          if (!designerData.auth_confirmed) {
-            await supabase.from('designers').update({ auth_confirmed: true }).eq('id', designerData.id);
-            currentDesigner.auth_confirmed = true;
-          }
-        } else {
-          debugShow('WARNING: 担当情報なし');
-        }
-      } catch (designerFetchError) {
-        debugShow('ERROR: designerFetch例外: ' + designerFetchError.message);
-      }
-
-      // メインコンテナを表示（認証成功後に必ず実行）
-      debugShow('11. mainContainer表示');
-      document.getElementById('mainContainer').classList.add('show');
-
-      // ユーザー名・アバターを表示
-      updateUserDisplay(currentUser.email.split('@')[0]);
-
-      debugShow('12. init呼び出し中...');
-      try {
-        await init();
-        debugShow('13. init完了');
-      } catch (initError) {
-        debugShow('ERROR: init例外: ' + initError.message);
-      }
-
-      // 初期化完了後にURL直接アクセスの処理を実行（1回だけ）
-      if (!window.location.hash || window.location.hash === '#') {
-        window.location.hash = 'projects';
-      }
-      debugShow('14. checkAuth完了');
-      checkAuthCompleted = true;
-    } else {
-      debugShow('6. セッションなし - ログイン画面表示');
-      document.getElementById('loginContainer').style.display = 'flex';
-      document.getElementById('mainContainer').classList.remove('show');
-      checkAuthCompleted = true;
     }
-  } catch (outerError) {
-    debugShow('FATAL ERROR: ' + outerError.message);
+
+    // メインコンテナを表示
+    document.getElementById('mainContainer').classList.add('show');
+    updateUserDisplay(currentUser.email.split('@')[0]);
+    await init();
+
+    if (!window.location.hash || window.location.hash === '#') {
+      window.location.hash = 'projects';
+    }
+  } else {
     document.getElementById('loginContainer').style.display = 'flex';
     document.getElementById('mainContainer').classList.remove('show');
-    checkAuthCompleted = true;
   }
 }
 
@@ -7439,100 +7340,48 @@ async function checkAuth() {
 let isAuthProcessing = false;
 // サイレントサインアウト中フラグ（リロード防止用）
 let isSilentSignOut = false;
-// checkAuth完了フラグ
-let checkAuthCompleted = false;
 
 // 認証状態変更を監視
 supabase.auth.onAuthStateChange(async (event, session) => {
-  debugShow('AUTH EVENT: ' + event + ' (checkAuthCompleted=' + checkAuthCompleted + ')');
-
-  // checkAuthが完了するまでSIGNED_INを処理しない（競合防止）
-  if (event === 'SIGNED_IN' && !checkAuthCompleted) {
-    debugShow('AUTH: checkAuth未完了のためスキップ');
-    return;
-  }
-
-  debugShow('AUTH: session=' + (session ? 'あり' : 'なし') + ', currentUser=' + (currentUser?.email || 'なし') + ', isAuthProcessing=' + isAuthProcessing);
+  log('🔔 認証イベント:', event);
 
   if (event === 'SIGNED_IN' && session && session.user && !currentUser && !isAuthProcessing) {
     isAuthProcessing = true;
-    debugShow('AUTH: SIGNED_IN処理開始');
-
     currentUser = session.user;
     document.getElementById('loginContainer').style.display = 'none';
-    debugShow('AUTH: loginContainer非表示');
-
-    // ★重要: 先にメインコンテナを表示（データ取得がハングしても画面は見える）
-    debugShow('AUTH: mainContainer表示');
-    document.getElementById('mainContainer').classList.add('show');
-    updateUserDisplay(currentUser.email.split('@')[0]);
 
     // admin@ghouse.jpの場合は管理者モードで直接メイン画面へ
     if (currentUser.email === 'admin@ghouse.jp') {
-      debugShow('AUTH: 管理者モード');
       currentUserCategory = 'admin';
-      try {
-        await init();
-        debugShow('AUTH: init完了');
-      } catch (e) {
-        debugShow('AUTH ERROR: init失敗');
-      }
+      document.getElementById('mainContainer').classList.add('show');
+      updateUserDisplay(currentUser.email.split('@')[0]);
+      await init();
       isAuthProcessing = false;
       return;
     }
 
-    // その他の場合は担当情報を取得してcategoryを判定（タイムアウト付き）
-    debugShow('AUTH: designerData取得中...');
-    try {
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('designerData timeout')), 5000)
-      );
-      const fetchPromise = supabase
-        .from('designers')
-        .select('*')
-        .eq('email', currentUser.email)
-        .single();
+    // 担当情報を取得
+    const { data: designerData } = await supabase
+      .from('designers')
+      .select('*')
+      .eq('email', currentUser.email)
+      .single();
 
-      const { data: designerData, error: designerError } = await Promise.race([fetchPromise, timeoutPromise]);
-
-      debugShow('AUTH: designerData取得完了');
-
-      if (designerError) {
-        debugShow('AUTH WARNING: ' + designerError.message);
-      }
-
-      if (designerData) {
-        currentDesigner = designerData;
-        currentUserCategory = designerData.category;
-        debugShow('AUTH: designer=' + currentDesigner.name);
-      } else {
-        debugShow('AUTH WARNING: 担当情報なし');
-      }
-    } catch (designerFetchError) {
-      debugShow('AUTH ERROR: designerData - ' + designerFetchError.message);
+    if (designerData) {
+      currentDesigner = designerData;
+      currentUserCategory = designerData.category;
     }
 
-    debugShow('AUTH: init呼び出し中...');
-    try {
-      await init();
-      debugShow('AUTH: init完了');
-    } catch (initError) {
-      debugShow('AUTH ERROR: init失敗 - ' + initError.message);
-    }
+    document.getElementById('mainContainer').classList.add('show');
+    updateUserDisplay(currentUser.email.split('@')[0]);
+    await init();
     isAuthProcessing = false;
-    debugShow('AUTH: 処理完了');
   } else if (event === 'PASSWORD_RECOVERY') {
-    debugShow('AUTH: PASSWORD_RECOVERY');
     showSetPasswordModal();
   } else if (event === 'SIGNED_OUT') {
-    if (isSilentSignOut) {
-      debugShow('AUTH: SIGNED_OUT - サイレント（リロードしない）');
-    } else {
-      debugShow('AUTH: SIGNED_OUT - リロード');
+    if (!isSilentSignOut) {
       location.reload();
     }
-  } else {
-    debugShow('AUTH: イベントスキップ');
   }
 });
 
