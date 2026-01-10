@@ -8029,7 +8029,15 @@ async function init() {
 
     log('🎨 画面描画開始...');
     renderSidebar();
-    renderProjects();
+
+    // ログイン時に自分の担当タブを自動選択（ALLや他の人への切り替えも可能）
+    if (currentDesigner && currentDesigner.name) {
+      log('👤 自分のタブを自動選択:', currentDesigner.name);
+      selectDesigner(currentDesigner.name);
+    } else {
+      renderProjects();
+    }
+
     renderTemplates();
     renderVendorsV2();
 
