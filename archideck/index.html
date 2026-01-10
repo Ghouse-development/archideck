@@ -13387,6 +13387,7 @@ function renderDesignerListInline() {
     const emailDisplay = designer.email && !designer.email.includes('@temp.local') ? designer.email : '<span style="color: var(--text-muted);">未設定</span>';
     const phoneDisplay = designer.phone ? designer.phone : '<span style="color: var(--text-muted);">未設定</span>';
     const departmentDisplay = designer.department ? designer.department : '<span style="color: var(--text-muted);">未設定</span>';
+    const hasValidEmail = designer.email && !designer.email.includes('@temp.local');
     return `
       <tr class="draggable-row" draggable="true" data-designer-id="${designer.id}" data-category="${category}">
         <td><span class="drag-handle">≡</span></td>
@@ -13396,6 +13397,7 @@ function renderDesignerListInline() {
         <td>${departmentDisplay}</td>
         <td>${countField ? count + '件' : '-'}</td>
         <td>
+          ${hasValidEmail ? `<button class="btn btn-primary btn-small" onclick="resendInvite('${designer.id}')" style="margin-right: 4px;">📧 招待</button>` : ''}
           <button class="btn btn-ghost btn-small" onclick="openEditDesignerModal('${designer.id}')" style="margin-right: 4px;">✏️ 編集</button>
           <button class="btn btn-danger btn-small" onclick="deleteDesignerInline('${designer.id}')">削除</button>
         </td>
@@ -13723,6 +13725,57 @@ async function addDesignerInline() {
     renderSidebar();
     showStatus('保存済み', 'saved');
     showToast(`担当を追加しました。${email} にパスワード設定メールを送信しました。`, 'success');
+
+  } catch (err) {
+    showStatus('エラー', 'error');
+    showToast(err.message, 'error');
+  }
+}
+
+// 既存担当者に招待メールを再送信
+async function resendInvite(designerId) {
+  const designer = designers.find(d => d.id === designerId);
+  if (!designer || !designer.email) {
+    showToast('メールアドレスが設定されていません', 'error');
+    return;
+  }
+
+  if (!confirm(`${designer.name}（${designer.email}）に招待メールを送信しますか？\n\nメール内のリンクからパスワードを設定できます。`)) {
+    return;
+  }
+
+  showStatus('送信中...', 'saving');
+
+  try {
+    // 1. まずSupabase Authにユーザーを作成を試みる（既に存在する場合はエラーになる）
+    const tempPassword = crypto.randomUUID().slice(0, 16) + 'Aa1!';
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email: designer.email,
+      password: tempPassword,
+      options: {
+        data: {
+          name: designer.name,
+          designer_id: designer.id
+        },
+        emailRedirectTo: window.location.origin
+      }
+    });
+
+    if (authError && !authError.message.includes('already registered')) {
+      console.warn('Auth登録:', authError.message);
+    }
+
+    // 2. パスワード設定メールを送信
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(designer.email, {
+      redirectTo: window.location.origin
+    });
+
+    if (resetError) {
+      throw new Error('メール送信に失敗しました: ' + resetError.message);
+    }
+
+    showStatus('保存済み', 'saved');
+    showToast(`${designer.email} に招待メールを送信しました`, 'success');
 
   } catch (err) {
     showStatus('エラー', 'error');
