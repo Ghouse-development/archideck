@@ -1290,81 +1290,6 @@ input:checked + .toggle-slider:before {
   justify-content: flex-end;
 }
 
-/* 統計ダッシュボード */
-.stats-dashboard {
-  background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
-  border-radius: var(--radius-lg);
-  padding: 20px;
-  margin-bottom: 20px;
-  box-shadow: var(--shadow-md);
-  border: 1px solid var(--border-color);
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 16px;
-}
-
-.stat-card {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 16px;
-  background: var(--bg-primary);
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-color);
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
-}
-
-.stat-card.stat-warning {
-  border-color: var(--warning-color);
-  background: var(--warning-light);
-}
-
-.stat-icon {
-  font-size: 28px;
-}
-
-.stat-content {
-  display: flex;
-  flex-direction: column;
-}
-
-.stat-value {
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--text-primary);
-  line-height: 1.2;
-}
-
-.stat-label {
-  font-size: 12px;
-  color: var(--text-secondary);
-  margin-top: 2px;
-}
-
-.stats-toggle-btn {
-  margin-top: 12px;
-  padding: 6px 12px;
-  background: transparent;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  font-size: 12px;
-  color: var(--text-muted);
-  transition: all 0.2s;
-}
-
-.stats-toggle-btn:hover {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-}
 
 /* 期限切れ・期限間近のカードスタイル */
 .project-card.overdue {
@@ -4872,47 +4797,6 @@ textarea:focus-visible {
             </div>
           </div>
         </div>
-    <!-- 統計ダッシュボード -->
-    <div id="statsDashboard" class="stats-dashboard" style="display: none;">
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-icon">📊</div>
-          <div class="stat-content">
-            <div class="stat-value" id="statTotalProjects">0</div>
-            <div class="stat-label">アクティブ案件</div>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon">📐</div>
-          <div class="stat-content">
-            <div class="stat-value" id="statDesignProgress">0%</div>
-            <div class="stat-label">平均設計進捗</div>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon">🎨</div>
-          <div class="stat-content">
-            <div class="stat-value" id="statICProgress">0%</div>
-            <div class="stat-label">平均IC進捗</div>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon">✅</div>
-          <div class="stat-content">
-            <div class="stat-value" id="statCompletedThisMonth">0</div>
-            <div class="stat-label">今月完了</div>
-          </div>
-        </div>
-        <div class="stat-card stat-warning" id="statOverdueCard" style="display: none;">
-          <div class="stat-icon">⚠️</div>
-          <div class="stat-content">
-            <div class="stat-value" id="statOverdue">0</div>
-            <div class="stat-label">期限超過</div>
-          </div>
-        </div>
-      </div>
-      <button class="stats-toggle-btn" onclick="toggleStatsDashboard()">統計を非表示</button>
-    </div>
     <div class="cards-container">
       <div class="cards-grid" id="projectsGrid"></div>
       <div class="empty-state" id="emptyProjects" style="display: none;">
@@ -7796,11 +7680,6 @@ function handleKeyboardShortcut(e) {
           // フィルターリセット
           e.preventDefault();
           resetAllFilters();
-          break;
-        case 'd':
-          // 統計ダッシュボード切り替え
-          e.preventDefault();
-          toggleStatsDashboard();
           break;
         case 'j':
           // 次のカードへ移動
@@ -11772,80 +11651,8 @@ function renderProjects() {
     }
   }, 100);
 
-  // 統計ダッシュボード更新
-  updateStatsDashboard();
 }
 
-// ============================================
-// 統計ダッシュボード機能
-// ============================================
-let statsVisible = localStorage.getItem('statsVisible') !== 'false';
-
-function toggleStatsDashboard() {
-  statsVisible = !statsVisible;
-  localStorage.setItem('statsVisible', statsVisible);
-  const dashboard = document.getElementById('statsDashboard');
-  if (dashboard) {
-    dashboard.style.display = statsVisible ? 'block' : 'none';
-    dashboard.querySelector('.stats-toggle-btn').textContent = statsVisible ? '統計を非表示' : '統計を表示';
-  }
-}
-
-function updateStatsDashboard() {
-  const dashboard = document.getElementById('statsDashboard');
-  if (!dashboard) return;
-
-  // 表示/非表示
-  dashboard.style.display = statsVisible ? 'block' : 'none';
-
-  // アクティブ案件数
-  const activeProjects = projects.filter(p => !p.is_archived);
-  document.getElementById('statTotalProjects').textContent = activeProjects.length;
-
-  // 平均設計進捗
-  if (activeProjects.length > 0) {
-    const avgDesignProgress = Math.round(activeProjects.reduce((sum, p) => sum + calculateProgress(p), 0) / activeProjects.length);
-    document.getElementById('statDesignProgress').textContent = avgDesignProgress + '%';
-  } else {
-    document.getElementById('statDesignProgress').textContent = '0%';
-  }
-
-  // 平均IC進捗
-  const projectsWithIC = activeProjects.filter(p => p.ic_assignee);
-  if (projectsWithIC.length > 0) {
-    const avgICProgress = Math.round(projectsWithIC.reduce((sum, p) => sum + (calculateICProgress(p) || 0), 0) / projectsWithIC.length);
-    document.getElementById('statICProgress').textContent = avgICProgress + '%';
-  } else {
-    document.getElementById('statICProgress').textContent = '-';
-  }
-
-  // 今月完了数
-  const now = new Date();
-  const thisMonth = now.getMonth();
-  const thisYear = now.getFullYear();
-  const completedThisMonth = projects.filter(p => {
-    if (!p.is_archived) return false;
-    const archivedDate = new Date(p.updated_at);
-    return archivedDate.getMonth() === thisMonth && archivedDate.getFullYear() === thisYear;
-  }).length;
-  document.getElementById('statCompletedThisMonth').textContent = completedThisMonth;
-
-  // 期限超過（期限が設定されていて超過しているもの）
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const overdueProjects = activeProjects.filter(p => {
-    const deadline = DeadlineManager.getDeadline(p.id);
-    if (!deadline) return false;
-    return new Date(deadline) < today;
-  });
-  const overdueCard = document.getElementById('statOverdueCard');
-  if (overdueProjects.length > 0) {
-    overdueCard.style.display = 'flex';
-    document.getElementById('statOverdue').textContent = overdueProjects.length;
-  } else {
-    overdueCard.style.display = 'none';
-  }
-}
 
 // 案件カードにスクロール
 function scrollToProject(projectId) {
