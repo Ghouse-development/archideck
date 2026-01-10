@@ -5193,9 +5193,15 @@ textarea:focus-visible {
             <h2 style="margin-bottom: 20px; font-size: 24px; font-weight: 700;">👥 スタッフ管理</h2>
             <div class="form-group">
               <label class="form-label">新しいスタッフを追加</label>
-              <div style="display: grid; grid-template-columns: 1fr 1fr auto auto; gap: 12px; align-items: center;">
+              <div style="display: grid; grid-template-columns: 1fr 1fr 150px 150px; gap: 12px; align-items: center;">
                 <input type="text" class="form-input" id="newDesignerNameInline" placeholder="スタッフ名 *">
                 <input type="email" class="form-input" id="newDesignerEmailInline" placeholder="メールアドレス *">
+                <input type="tel" class="form-input" id="newDesignerPhoneInline" placeholder="携帯番号(11桁)" maxlength="11" pattern="[0-9]{11}" style="width: 150px;">
+                <select class="form-select" id="newDesignerDepartmentInline" style="width: 150px;">
+                  <option value="">部署を選択</option>
+                </select>
+              </div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 12px; align-items: center; margin-top: 12px;">
                 <select class="form-select" id="newDesignerCategoryInline" style="width: 150px;">
                   <option value="設計">設計担当</option>
                   <option value="IC">IC担当</option>
@@ -5205,9 +5211,20 @@ textarea:focus-visible {
                   <option value="営業">営業担当</option>
                   <option value="管理者">管理者</option>
                 </select>
+                <div></div>
                 <button class="btn btn-primary" onclick="addDesignerInline()">追加</button>
               </div>
               <p style="color: var(--text-secondary); font-size: 12px; margin-top: 8px;">※ 追加後、担当者のメールアドレス宛にパスワード設定メールが自動送信されます</p>
+            </div>
+
+            <!-- 部署マスタ管理 -->
+            <div style="margin-top: 24px; padding: 16px; background: var(--bg-secondary); border-radius: 8px;">
+              <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 12px;">部署マスタ</h3>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;" id="departmentChips"></div>
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <input type="text" class="form-input" id="newDepartmentName" placeholder="新しい部署名" style="width: 200px;">
+                <button class="btn btn-ghost" onclick="addDepartment()">+ 追加</button>
+              </div>
             </div>
             <div id="designerListInline" style="margin-top: 24px;"></div>
           </div>
@@ -6765,6 +6782,78 @@ let currentUserCategory = null; // 'admin' | '設計' | 'IC'
 let projects = [];
 let designers = [];
 
+// 部署マスタ（localStorage管理）
+let departmentMaster = [];
+const DEFAULT_DEPARTMENTS = ['経営企画部', 'システム開発部', '設計部', '営業部', '工事部', 'IC部'];
+
+function loadDepartmentMaster() {
+  const saved = localStorage.getItem('departmentMaster');
+  if (saved) {
+    departmentMaster = JSON.parse(saved);
+  } else {
+    departmentMaster = [...DEFAULT_DEPARTMENTS];
+    saveDepartmentMaster();
+  }
+}
+
+function saveDepartmentMaster() {
+  localStorage.setItem('departmentMaster', JSON.stringify(departmentMaster));
+}
+
+function renderDepartmentChips() {
+  const container = document.getElementById('departmentChips');
+  if (!container) return;
+
+  container.innerHTML = departmentMaster.map((dept, index) => `
+    <span class="department-chip" style="display: inline-flex; align-items: center; gap: 4px; padding: 4px 12px; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 16px; font-size: 13px;">
+      ${escapeHtml(dept)}
+      <button onclick="removeDepartment(${index})" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 16px; line-height: 1; padding: 0 0 0 4px;">&times;</button>
+    </span>
+  `).join('');
+}
+
+function updateDepartmentDropdowns() {
+  const selects = document.querySelectorAll('#newDesignerDepartmentInline, #editDesignerDepartment');
+  selects.forEach(select => {
+    const currentValue = select.value;
+    const options = '<option value="">部署を選択</option>' +
+      departmentMaster.map(dept => `<option value="${escapeHtml(dept)}" ${currentValue === dept ? 'selected' : ''}>${escapeHtml(dept)}</option>`).join('');
+    select.innerHTML = options;
+  });
+}
+
+function addDepartment() {
+  const input = document.getElementById('newDepartmentName');
+  const name = input.value.trim();
+
+  if (!name) {
+    showToast('部署名を入力してください', 'error');
+    return;
+  }
+
+  if (departmentMaster.includes(name)) {
+    showToast('既に存在する部署名です', 'error');
+    return;
+  }
+
+  departmentMaster.push(name);
+  saveDepartmentMaster();
+  renderDepartmentChips();
+  updateDepartmentDropdowns();
+  input.value = '';
+  showToast('部署を追加しました', 'success');
+}
+
+function removeDepartment(index) {
+  if (!confirm(`「${departmentMaster[index]}」を削除しますか？`)) return;
+
+  departmentMaster.splice(index, 1);
+  saveDepartmentMaster();
+  renderDepartmentChips();
+  updateDepartmentDropdowns();
+  showToast('部署を削除しました', 'success');
+}
+
 // IC関連定数
 const IC_MAKER_TASKS = ['ic_kitchen', 'ic_bath', 'ic_washroom', 'ic_toilet', 'ic_lighting', 'ic_tategu', 'ic_curtain', 'ic_zousaku', 'ic_furniture', 'ic_iron', 'ic_other_estimate'];
 const INTERNAL_STATUSES = ['オリジナル', 'GRAFTECT', '-', '']; // 社内対応ステータス（メール不要）
@@ -7972,6 +8061,9 @@ async function init() {
 
     // 業者データとカテゴリデータをマージ（両方の読み込みが完了した後に実行）
     mergeVendorCategories();
+
+    // 部署マスタを読み込み
+    loadDepartmentMaster();
 
     // ICタスク自動マイグレーション（21項目未満の場合）
     await autoMigrateICTasks();
@@ -11010,6 +11102,8 @@ function switchSubTab(panelName, element) {
   switch(panelName) {
     case 'staff':
       renderDesignerListInline();
+      renderDepartmentChips();
+      updateDepartmentDropdowns();
       break;
     case 'vendors':
       renderCategoryFilters();
@@ -13447,12 +13541,15 @@ function openEditDesignerModal(designerId) {
           <input type="email" class="form-input" id="editDesignerEmail" value="${designer.email && !designer.email.includes('@temp.local') ? designer.email : ''}" placeholder="例: staff@example.com" style="width: 100%;">
         </div>
         <div class="form-group">
-          <label class="form-label">電話番号</label>
-          <input type="tel" class="form-input" id="editDesignerPhone" value="${designer.phone || ''}" placeholder="例: 090-1234-5678" style="width: 100%;">
+          <label class="form-label">携帯電話番号（11桁・ハイフンなし）</label>
+          <input type="tel" class="form-input" id="editDesignerPhone" value="${designer.phone || ''}" placeholder="例: 09012345678" maxlength="11" pattern="[0-9]{11}" style="width: 100%;">
         </div>
         <div class="form-group">
           <label class="form-label">部署</label>
-          <input type="text" class="form-input" id="editDesignerDepartment" value="${designer.department || ''}" placeholder="例: 経営企画部・システム開発部" style="width: 100%;">
+          <select class="form-input" id="editDesignerDepartment" style="width: 100%;">
+            <option value="">部署を選択</option>
+            ${departmentMaster.map(dept => `<option value="${escapeHtml(dept)}" ${designer.department === dept ? 'selected' : ''}>${escapeHtml(dept)}</option>`).join('')}
+          </select>
         </div>
         <div class="form-group">
           <label class="form-label">カテゴリ</label>
@@ -13486,11 +13583,17 @@ async function saveEditDesigner() {
   const name = document.getElementById('editDesignerName').value.trim();
   const email = document.getElementById('editDesignerEmail').value.trim();
   const phone = document.getElementById('editDesignerPhone').value.trim();
-  const department = document.getElementById('editDesignerDepartment').value.trim();
+  const department = document.getElementById('editDesignerDepartment').value;
   const category = document.getElementById('editDesignerCategory').value;
 
   if (!name) {
     showToast('スタッフ名を入力してください', 'error');
+    return;
+  }
+
+  // 電話番号形式チェック（11桁の数字のみ）
+  if (phone && !/^[0-9]{11}$/.test(phone)) {
+    showToast('携帯電話番号は11桁の数字で入力してください（ハイフンなし）', 'error');
     return;
   }
 
@@ -13557,6 +13660,8 @@ async function saveEditDesigner() {
 async function addDesignerInline() {
   const name = document.getElementById('newDesignerNameInline').value.trim();
   const email = document.getElementById('newDesignerEmailInline').value.trim();
+  const phone = document.getElementById('newDesignerPhoneInline').value.trim();
+  const department = document.getElementById('newDesignerDepartmentInline').value;
   const category = document.getElementById('newDesignerCategoryInline').value;
 
   if (!name) {
@@ -13573,6 +13678,12 @@ async function addDesignerInline() {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
     showToast('有効なメールアドレスを入力してください', 'error');
+    return;
+  }
+
+  // 電話番号形式チェック（11桁の数字のみ）
+  if (phone && !/^[0-9]{11}$/.test(phone)) {
+    showToast('携帯電話番号は11桁の数字で入力してください（ハイフンなし）', 'error');
     return;
   }
 
@@ -13599,7 +13710,7 @@ async function addDesignerInline() {
     // 1. designersテーブルにレコード追加
     const { data, error } = await supabase
       .from('designers')
-      .insert([{ name, category, email, created_by: currentUser?.id, display_order: newDisplayOrder }])
+      .insert([{ name, category, email, phone: phone || null, department: department || null, created_by: currentUser?.id, display_order: newDisplayOrder }])
       .select();
 
     if (error) {
@@ -13639,6 +13750,8 @@ async function addDesignerInline() {
     designers.push(newDesigner);
     document.getElementById('newDesignerNameInline').value = '';
     document.getElementById('newDesignerEmailInline').value = '';
+    document.getElementById('newDesignerPhoneInline').value = '';
+    document.getElementById('newDesignerDepartmentInline').value = '';
     renderDesignerListInline();
     renderSidebar();
     showStatus('保存済み', 'saved');
