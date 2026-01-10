@@ -1,5 +1,5 @@
-// ArchiDeck Service Worker v2.0 - 2025-12-13
-const CACHE_NAME = 'archideck-v2';
+// ArchiDeck Service Worker v3.0 - 2026-01-10
+const CACHE_NAME = 'archideck-v3';
 const urlsToCache = [
   '/archideck/index.html',
   '/archideck/manifest.json'
