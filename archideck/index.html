@@ -6786,6 +6786,7 @@ async function loadOrganization() {
   };
 
   try {
+    debugShow('loadOrg: currentUser.id=' + (currentUser?.id || 'undefined'));
     debugShow('loadOrg: memberData取得開始');
     const { data: memberData } = await queryWithTimeout(
       supabase
