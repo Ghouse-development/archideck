@@ -7280,6 +7280,12 @@ async function checkAuth() {
       currentDesigner = designerData;
       currentUserCategory = designerData.category;
       log('✅ 担当情報取得:', currentDesigner.name, '/', currentUserCategory);
+
+      // ログイン成功したのでauth_confirmedをtrueに更新（招待ボタン非表示用）
+      if (!designerData.auth_confirmed) {
+        await supabase.from('designers').update({ auth_confirmed: true }).eq('id', designerData.id);
+        currentDesigner.auth_confirmed = true;
+      }
     } else {
       warn('⚠️ 担当情報が見つかりません:', currentUser.email);
     }
@@ -7336,6 +7342,12 @@ supabase.auth.onAuthStateChange(async (event, session) => {
       currentDesigner = designerData;
       currentUserCategory = designerData.category;
       log('✅ 担当情報取得:', currentDesigner.name, '/', currentUserCategory);
+
+      // ログイン成功したのでauth_confirmedをtrueに更新（招待ボタン非表示用）
+      if (!designerData.auth_confirmed) {
+        await supabase.from('designers').update({ auth_confirmed: true }).eq('id', designerData.id);
+        currentDesigner.auth_confirmed = true;
+      }
     } else {
       warn('⚠️ 担当情報が見つかりません:', currentUser.email);
     }
@@ -13388,16 +13400,17 @@ function renderDesignerListInline() {
     const phoneDisplay = designer.phone ? designer.phone : '<span style="color: var(--text-muted);">未設定</span>';
     const departmentDisplay = designer.department ? designer.department : '<span style="color: var(--text-muted);">未設定</span>';
     const hasValidEmail = designer.email && !designer.email.includes('@temp.local');
+    const needsInvite = hasValidEmail && !designer.auth_confirmed;
     return `
       <tr class="draggable-row" draggable="true" data-designer-id="${designer.id}" data-category="${category}">
         <td><span class="drag-handle">≡</span></td>
-        <td><strong>${designer.name}</strong></td>
+        <td><strong>${designer.name}</strong>${designer.auth_confirmed ? ' <span style="color: var(--success-color); font-size: 12px;">✓</span>' : ''}</td>
         <td>${emailDisplay}</td>
         <td>${phoneDisplay}</td>
         <td>${departmentDisplay}</td>
         <td>${countField ? count + '件' : '-'}</td>
         <td>
-          ${hasValidEmail ? `<button class="btn btn-primary btn-small" onclick="resendInvite('${designer.id}')" style="margin-right: 4px;">📧 招待</button>` : ''}
+          ${needsInvite ? `<button class="btn btn-primary btn-small" onclick="resendInvite('${designer.id}')" style="margin-right: 4px;">📧 招待</button>` : ''}
           <button class="btn btn-ghost btn-small" onclick="openEditDesignerModal('${designer.id}')" style="margin-right: 4px;">✏️ 編集</button>
           <button class="btn btn-danger btn-small" onclick="deleteDesignerInline('${designer.id}')">削除</button>
         </td>
