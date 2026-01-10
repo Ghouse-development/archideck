@@ -10884,7 +10884,7 @@ function renderCalendar() {
     html += `<div class="calendar-day ${isToday ? 'today' : ''}">
       <div class="calendar-day-number">${day}</div>
       <div class="calendar-events">
-        ${dayEvents.slice(0, 3).map(e => `<div class="calendar-event ${e.category}" title="${escapeHtml(e.customer)}様邸: ${escapeHtml(e.taskName)}">${escapeHtml(e.customer.slice(0, 3))} ${escapeHtml(e.taskName.slice(0, 4))}</div>`).join('')}
+        ${dayEvents.slice(0, 3).map(e => `<div class="calendar-event ${e.category}" title="${escapeHtml(e.customer.replace(/様$/, ''))}様邸: ${escapeHtml(e.taskName)}">${escapeHtml(e.customer.slice(0, 3))} ${escapeHtml(e.taskName.slice(0, 4))}</div>`).join('')}
         ${dayEvents.length > 3 ? `<div class="calendar-event" style="background:#ddd;color:#666;">+${dayEvents.length - 3}件</div>` : ''}
       </div>
     </div>`;
@@ -14380,8 +14380,11 @@ async function openEmailFromTask(projectId, taskKey) {
       .replace(/\{contact\}/g, vendor.contact || 'ご担当者様');
   };
 
+  // 顧客名から末尾の「様」を除去（重複防止）
+  const customerName = project.customer.replace(/様$/, '');
+
   // デフォルトの件名フォーマット
-  const defaultSubject = `【${taskDef.task_name}依頼】${project.customer}様邸　期日：${dueDateStr}希望`;
+  const defaultSubject = `【${taskDef.task_name}依頼】${customerName}様邸　期日：${dueDateStr}希望`;
 
   // デフォルトの本文テンプレート
   const defaultBody = `${vendor.company}
@@ -14393,7 +14396,7 @@ ${vendor.contact || 'ご担当者'} 様
 下記案件につきまして、${taskDef.task_name}の御見積作成をお願いいたします。
 
 ――――――――――――――
-【案件名】${project.customer}様邸
+【案件名】${customerName}様邸
 【内容】${taskDef.task_name}
 【提出期限】${dueDateStr}
 ――――――――――――――
