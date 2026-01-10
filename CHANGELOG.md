@@ -1,5 +1,82 @@
 # ArchiDeck 開発履歴
 
+## v4.99.28 (2026-01-10)
+
+### コードクリーンアップ
+
+**削除内容（約150行）**
+- `checkAuth`内のconsole.logを削除
+- `debugShow`関数と全呼び出しを削除
+- `init()`内のタイムアウトラッパーを削除（シンプルなPromise.allSettledに）
+- `loadOrganization`内のタイムアウトラッパーを削除
+- `signIn`関数のデバッグコードを削除
+
+v4.99.11に近いシンプルなコードに戻った。
+
+---
+
+## v4.99.27 (2026-01-10)
+
+### 統計ダッシュボードを削除
+
+- `statsDashboard` HTMLを削除
+- `toggleStatsDashboard`/`updateStatsDashboard`関数を削除
+- キーボードショートカット（Dキー）を削除
+- 関連CSS（約75行）を削除
+
+---
+
+## v4.99.26 (2026-01-10)
+
+### kintone_settings 400エラーを修正
+
+**根本原因**
+- DBに存在しないカラム(`apps_json`, `field_mappings_json`)を更新しようとしていた
+
+**修正内容**
+- `apps_json`と`field_mappings_json`はlocalStorageで管理するように変更
+- DBには基本設定(`domain`, `app_id`等)のみ保存
+- `loadKintoneSettings`もlocalStorageから読み込むように統一
+
+---
+
+## v4.99.25 (2026-01-10)
+
+### getSession()ハング問題を回避
+
+**根本原因**
+- Supabase SDKの`getSession()`が、有効なセッションデータがあるにもかかわらず内部でハングする
+
+**解決策**
+- localStorageから直接セッションデータを読み取り
+- 有効なセッションがあれば`getSession()`をスキップ
+- `getSession()`は新規ログイン時のみ使用
+
+---
+
+## v4.99.21 - v4.99.24 (2026-01-10)
+
+### getSession()問題の調査と修正
+
+- v4.99.21: `onAuthStateChange`を簡素化、`checkAuthCompleted`フラグを削除
+- v4.99.22: `checkAuth`にコンソールログ追加で調査
+- v4.99.23: `getSession`にタイムアウト追加
+- v4.99.24: localStorage診断を追加、セッションデータの状態を確認
+
+**発見した問題**
+- `getSession()`がハングする（有効なセッションデータがあっても応答しない）
+- これが「白い画面」問題の根本原因だった
+
+---
+
+## v4.99.20 (2026-01-10)
+
+### デバッグオーバーレイ（黄色い画面）を削除
+
+- `debugShow`関数を無効化（何もしないように変更）
+
+---
+
 ## v4.99.18 (2026-01-10)
 
 ### 全データ読み込み関数に10秒タイムアウトを追加
