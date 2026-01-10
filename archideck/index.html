@@ -6778,36 +6778,44 @@ let organizationSettings = null;
 // 組織情報を読み込む
 async function loadOrganization() {
   try {
+    debugShow('loadOrg: memberData取得開始');
     const { data: memberData } = await supabase
       .from('organization_members')
       .select('organization_id')
       .eq('user_id', currentUser.id)
       .eq('status', 'active')
       .single();
+    debugShow('loadOrg: memberData取得完了');
 
     if (memberData) {
+      debugShow('loadOrg: orgData取得開始');
       const { data: orgData } = await supabase
         .from('organizations')
         .select('*')
         .eq('id', memberData.organization_id)
         .single();
+      debugShow('loadOrg: orgData取得完了');
 
       if (orgData) {
         currentOrganization = orgData;
         applyWhiteLabel(orgData);
 
         // サブスクリプション情報
+        debugShow('loadOrg: subData取得開始');
         const { data: subData } = await supabase
           .from('subscriptions')
           .select('*')
           .eq('organization_id', orgData.id)
           .single();
+        debugShow('loadOrg: subData取得完了');
 
         currentSubscription = subData;
         checkSubscriptionStatus(subData);
       }
     }
+    debugShow('loadOrg: 完了');
   } catch (error) {
+    debugShow('loadOrg: エラー（スキップ）: ' + error.message);
     log('組織情報の読み込みをスキップ（テーブル未作成の可能性）');
   }
 }
@@ -8112,6 +8120,7 @@ function showShortcutHelp() {
 // ============================================
 async function init() {
   log('🚀 初期化開始...');
+  debugShow('init: 開始');
   showStatus('読み込み中...', 'saving');
 
   // キーボードショートカット初期化
@@ -8125,13 +8134,26 @@ async function init() {
 
   // FCモード検出
   detectFCMode();
+  debugShow('init: 基本初期化完了');
 
   try {
-    // マルチテナント: 組織情報を先に読み込む
-    await loadOrganization();
+    // マルチテナント: 組織情報を先に読み込む（タイムアウト付き）
+    debugShow('init: loadOrganization開始');
+    const orgTimeout = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('loadOrganization timeout')), 10000)
+    );
+    await Promise.race([loadOrganization(), orgTimeout]);
+    debugShow('init: loadOrganization完了');
 
     log('📦 データ読み込み開始...');
-    const results = await Promise.allSettled([
+    debugShow('init: データ読み込み開始');
+
+    // 全体にタイムアウトを設定（30秒）
+    const dataLoadTimeout = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('data load timeout')), 30000)
+    );
+
+    const dataLoadPromise = Promise.allSettled([
       loadDesigners(),
       loadCurrentDesigner(),
       loadProjects(),
@@ -8145,6 +8167,10 @@ async function init() {
       loadProducts(),
       loadFcOrganizations()
     ]);
+
+    // タイムアウト付きで待機
+    const results = await Promise.race([dataLoadPromise, dataLoadTimeout]);
+    debugShow('init: データ読み込み完了');
 
     // 各結果を確認
     results.forEach((result, index) => {
@@ -8167,11 +8193,14 @@ async function init() {
     mergeVendorCategories();
 
     // 部署マスタを読み込み
+    debugShow('init: 部署マスタ読み込み開始');
     loadDepartmentMaster();
 
     // ICタスク自動マイグレーション（21項目未満の場合）
+    debugShow('init: ICタスクマイグレーション開始');
     await autoMigrateICTasks();
 
+    debugShow('init: 画面描画開始');
     log('🎨 画面描画開始...');
     renderSidebar();
 
@@ -8219,6 +8248,7 @@ async function init() {
       autoSyncKintone();
     }, 5000);
 
+    debugShow('init: 完了');
     log('✅ 初期化完了');
     showStatus('保存済み', 'saved');
 
@@ -8226,6 +8256,7 @@ async function init() {
     setupRealtimeSync();
 
   } catch (error) {
+    debugShow('init: ERROR: ' + error.message);
     logError('❌ 初期化エラー:', error);
     showStatus('エラー', 'error');
     showToast('データの読み込みに失敗しました: ' + error.message, 'error');
