@@ -6661,71 +6661,36 @@ let organizationSettings = null;
 
 // 組織情報を読み込む
 async function loadOrganization() {
-  // 個別クエリのタイムアウトラッパー
-  const queryWithTimeout = async (queryPromise, label, timeoutMs = 5000) => {
-    debugShow(`loadOrg: ${label}クエリ開始（timeout=${timeoutMs}ms）`);
-    const timeout = new Promise((_, reject) =>
-      setTimeout(() => {
-        debugShow(`loadOrg: ${label}タイムアウト発生！`);
-        reject(new Error(`${label} timeout`));
-      }, timeoutMs)
-    );
-    try {
-      const result = await Promise.race([queryPromise, timeout]);
-      debugShow(`loadOrg: ${label}クエリ完了`);
-      return result;
-    } catch (e) {
-      debugShow(`loadOrg: ${label}クエリエラー: ${e.message}`);
-      throw e;
-    }
-  };
-
   try {
-    debugShow('loadOrg: currentUser.id=' + (currentUser?.id || 'undefined'));
-    const { data: memberData } = await queryWithTimeout(
-      supabase
-        .from('organization_members')
-        .select('organization_id')
-        .eq('user_id', currentUser.id)
-        .eq('status', 'active')
-        .single(),
-      'memberData',
-      5000
-    );
+    const { data: memberData } = await supabase
+      .from('organization_members')
+      .select('organization_id')
+      .eq('user_id', currentUser.id)
+      .eq('status', 'active')
+      .single();
 
     if (memberData) {
-      const { data: orgData } = await queryWithTimeout(
-        supabase
-          .from('organizations')
-          .select('*')
-          .eq('id', memberData.organization_id)
-          .single(),
-        'orgData',
-        5000
-      );
+      const { data: orgData } = await supabase
+        .from('organizations')
+        .select('*')
+        .eq('id', memberData.organization_id)
+        .single();
 
       if (orgData) {
         currentOrganization = orgData;
         applyWhiteLabel(orgData);
 
-        // サブスクリプション情報
-        const { data: subData } = await queryWithTimeout(
-          supabase
-            .from('subscriptions')
-            .select('*')
-            .eq('organization_id', orgData.id)
-            .single(),
-          'subData',
-          5000
-        );
+        const { data: subData } = await supabase
+          .from('subscriptions')
+          .select('*')
+          .eq('organization_id', orgData.id)
+          .single();
 
         currentSubscription = subData;
         checkSubscriptionStatus(subData);
       }
     }
-    debugShow('loadOrg: 全クエリ完了');
   } catch (error) {
-    debugShow('loadOrg: エラー（スキップ）: ' + error.message);
     log('組織情報の読み込みをスキップ（テーブル未作成の可能性）');
   }
 }
@@ -7060,48 +7025,33 @@ async function saveNewPassword() {
 }
 
 async function signIn() {
-  debugShow('LOGIN: 開始');
-
   const email = document.getElementById('loginEmail')?.value?.trim() || '';
   const password = document.getElementById('loginPassword')?.value?.trim() || '';
 
-  debugShow('LOGIN: email=' + email);
-
   if (!email) {
-    debugShow('LOGIN ERROR: メールアドレスが空');
     showToast('メールアドレスを入力してください', 'error');
     return;
   }
 
   if (!password) {
-    debugShow('LOGIN ERROR: パスワードが空');
     showToast('パスワードを入力してください', 'error');
     return;
   }
 
   if (!window.supabase) {
-    debugShow('LOGIN ERROR: Supabase未初期化');
     showToast('エラー: Supabaseが初期化されていません。ページを再読み込みしてください。', 'error');
     return;
   }
 
   try {
-    debugShow('LOGIN: signInWithPassword呼び出し中...');
     const { data, error } = await supabase.auth.signInWithPassword({
       email: email,
       password: password
     });
-    debugShow('LOGIN: signInWithPassword完了');
 
-    if (error) {
-      debugShow('LOGIN ERROR: ' + error.message);
-      throw error;
-    }
-
-    debugShow('LOGIN: 成功 - ' + data.user.email);
-    // ログイン成功 - onAuthStateChangeで処理されるのでreloadは不要
+    if (error) throw error;
+    // ログイン成功 - onAuthStateChangeで処理される
   } catch (error) {
-    debugShow('LOGIN CATCH: ' + error.message);
     showToast('ログインに失敗しました: ' + error.message, 'error');
   }
 }
@@ -7115,11 +7065,6 @@ async function signOut() {
     logError('ログアウトエラー:', error);
     showToast('ログアウトに失敗しました', 'error');
   }
-}
-
-// デバッグ表示（無効化）
-function debugShow(message) {
-  // 何もしない
 }
 
 async function checkAuth() {
@@ -7176,7 +7121,6 @@ async function checkAuth() {
   }
 
   // ローカルストレージから直接セッションを確認
-  // （getSession()がハングする問題の回避策）
   const storageKey = 'sb-twzsirpfudqwboeyakta-auth-token';
   const storedSession = localStorage.getItem(storageKey);
   let session = null;
@@ -7187,8 +7131,6 @@ async function checkAuth() {
       const isExpired = parsed.expires_at ? (parsed.expires_at * 1000 < Date.now()) : true;
 
       if (!isExpired && parsed.access_token && parsed.user) {
-        // 有効なセッションがlocalStorageにある場合は直接使用
-        console.log('[checkAuth] localStorageから有効なセッションを使用:', parsed.user.email);
         session = {
           access_token: parsed.access_token,
           refresh_token: parsed.refresh_token,
@@ -7196,18 +7138,15 @@ async function checkAuth() {
           user: parsed.user
         };
       } else if (isExpired) {
-        console.log('[checkAuth] セッション期限切れ - 再ログイン必要');
         localStorage.removeItem(storageKey);
       }
     } catch (parseError) {
-      console.error('[checkAuth] セッションデータ破損:', parseError.message);
       localStorage.removeItem(storageKey);
     }
   }
 
   // localStorageにセッションがない場合のみgetSession()を呼ぶ
   if (!session) {
-    console.log('[checkAuth] getSession呼び出し中...');
     try {
       const timeoutPromise = new Promise((_, reject) =>
         setTimeout(() => reject(new Error('getSession timeout')), 3000)
@@ -7215,9 +7154,7 @@ async function checkAuth() {
       const sessionPromise = supabase.auth.getSession();
       const result = await Promise.race([sessionPromise, timeoutPromise]);
       session = result.data?.session;
-      console.log('[checkAuth] getSession完了:', session ? session.user.email : 'なし');
     } catch (e) {
-      console.log('[checkAuth] getSessionタイムアウト - ログイン画面を表示');
       document.getElementById('loginContainer').style.display = 'flex';
       document.getElementById('mainContainer').classList.remove('show');
       return;
@@ -7228,25 +7165,20 @@ async function checkAuth() {
     log('✅ セッション検出:', session.user.email);
     currentUser = session.user;
     document.getElementById('loginContainer').style.display = 'none';
-    console.log('[checkAuth] loginContainer非表示');
 
     // admin@ghouse.jpの場合は管理者モードで直接メイン画面へ
     if (currentUser.email === 'admin@ghouse.jp') {
-      console.log('[checkAuth] 管理者モード');
       await selectAccountType('admin');
       return;
     }
 
-    // 担当情報を取得（エラーが発生しても画面は表示する）
-    console.log('[checkAuth] designerData取得中...');
+    // 担当情報を取得
     try {
-      const { data: designerData, error: designerError } = await supabase
+      const { data: designerData } = await supabase
         .from('designers')
         .select('*')
         .eq('email', currentUser.email)
         .single();
-
-      console.log('[checkAuth] designerData取得完了:', designerData?.name || 'なし', designerError?.message || '');
 
       if (designerData) {
         currentDesigner = designerData;
@@ -7259,23 +7191,18 @@ async function checkAuth() {
         }
       }
     } catch (e) {
-      console.error('[checkAuth] designerDataエラー:', e.message);
+      // エラー時も続行
     }
 
     // メインコンテナを表示
-    console.log('[checkAuth] mainContainer表示');
     document.getElementById('mainContainer').classList.add('show');
     updateUserDisplay(currentUser.email.split('@')[0]);
-
-    console.log('[checkAuth] init呼び出し中...');
     await init();
-    console.log('[checkAuth] init完了');
 
     if (!window.location.hash || window.location.hash === '#') {
       window.location.hash = 'projects';
     }
   } else {
-    console.log('[checkAuth] セッションなし - ログイン画面表示');
     document.getElementById('loginContainer').style.display = 'flex';
     document.getElementById('mainContainer').classList.remove('show');
   }
@@ -7932,102 +7859,64 @@ function showShortcutHelp() {
 // ============================================
 async function init() {
   log('🚀 初期化開始...');
-  debugShow('init: 開始');
   showStatus('読み込み中...', 'saving');
 
-  // キーボードショートカット初期化
+  // 基本初期化
   initKeyboardShortcuts();
-
-  // コンテキストメニュー初期化
   ContextMenu.init();
-
-  // セッションタイムアウト初期化
   SessionManager.init();
-
-  // FCモード検出
   detectFCMode();
-  debugShow('init: 基本初期化完了');
 
   try {
-    // マルチテナント: 組織情報を先に読み込む（タイムアウト付き）
-    debugShow('init: loadOrganization開始');
-    const orgTimeout = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('loadOrganization timeout')), 10000)
-    );
-    await Promise.race([loadOrganization(), orgTimeout]);
-    debugShow('init: loadOrganization完了');
+    // マルチテナント: 組織情報を先に読み込む
+    await loadOrganization();
 
     log('📦 データ読み込み開始...');
-    debugShow('init: データ読み込み開始');
 
-    // 全体にタイムアウトを設定（30秒）
-    const dataLoadTimeout = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('data load timeout')), 30000)
-    );
-
-    // 各関数をデバッグラッパーで包む
-    const wrapWithDebug = (fn, name) => {
-      debugShow(`load: ${name} 開始`);
-      return fn().then(
-        result => { debugShow(`load: ${name} 完了`); return result; },
-        error => { debugShow(`load: ${name} ERROR: ${error.message}`); throw error; }
-      );
-    };
-
-    const dataLoadPromise = Promise.allSettled([
-      wrapWithDebug(loadDesigners, 'Designers'),
-      wrapWithDebug(loadCurrentDesigner, 'CurrentDesigner'),
-      wrapWithDebug(loadProjects, 'Projects'),
-      wrapWithDebug(loadEmailTemplates, 'EmailTemplates'),
-      wrapWithDebug(loadVendors, 'Vendors'),
-      wrapWithDebug(loadTaskMappings, 'TaskMappings'),
-      wrapWithDebug(loadVendorCategories, 'VendorCategories'),
-      wrapWithDebug(loadTasksV2, 'TasksV2'),
-      wrapWithDebug(loadVendorsV2, 'VendorsV2'),
-      wrapWithDebug(loadTaskVendorMappings, 'TaskVendorMappings'),
-      wrapWithDebug(loadProducts, 'Products'),
-      wrapWithDebug(loadFcOrganizations, 'FcOrganizations')
+    // データを並列読み込み
+    const results = await Promise.allSettled([
+      loadDesigners(),
+      loadCurrentDesigner(),
+      loadProjects(),
+      loadEmailTemplates(),
+      loadVendors(),
+      loadTaskMappings(),
+      loadVendorCategories(),
+      loadTasksV2(),
+      loadVendorsV2(),
+      loadTaskVendorMappings(),
+      loadProducts(),
+      loadFcOrganizations()
     ]);
 
-    // タイムアウト付きで待機
-    const results = await Promise.race([dataLoadPromise, dataLoadTimeout]);
-    debugShow('init: データ読み込み完了');
-
     // 各結果を確認
+    const names = ['スタッフ', '現在のスタッフ', '案件', 'テンプレート', '業者', 'タスク設定', 'カテゴリ', 'タスクV2', '業者V2', 'タスク業者紐づけ', '商品', 'FC組織'];
     results.forEach((result, index) => {
-      const names = ['スタッフ', '現在のスタッフ', '案件', 'テンプレート', '業者', 'タスク設定', 'カテゴリ', 'タスクV2', '業者V2', 'タスク業者紐づけ', '商品', 'FC組織'];
       if (result.status === 'rejected') {
         logError(`❌ ${names[index]}の読み込み失敗:`, result.reason);
-      } else {
-        log(`✅ ${names[index]}の読み込み成功`);
       }
     });
 
     // 失敗したものがあればエラーを表示
     const failedCount = results.filter(r => r.status === 'rejected').length;
     if (failedCount > 0) {
-      warn(`⚠️ ${failedCount}件のデータ読み込みに失敗しました`);
-      showToast(`${failedCount}件のデータ読み込みに失敗しました。コンソールを確認してください。`, 'error');
+      showToast(`${failedCount}件のデータ読み込みに失敗しました`, 'error');
     }
 
-    // 業者データとカテゴリデータをマージ（両方の読み込みが完了した後に実行）
+    // 業者データとカテゴリデータをマージ
     mergeVendorCategories();
 
     // 部署マスタを読み込み
-    debugShow('init: 部署マスタ読み込み開始');
     loadDepartmentMaster();
 
-    // ICタスク自動マイグレーション（21項目未満の場合）
-    debugShow('init: ICタスクマイグレーション開始');
+    // ICタスク自動マイグレーション
     await autoMigrateICTasks();
 
-    debugShow('init: 画面描画開始');
     log('🎨 画面描画開始...');
     renderSidebar();
 
-    // ログイン時に自分の担当タブを自動選択（ALLや他の人への切り替えも可能）
+    // ログイン時に自分の担当タブを自動選択
     if (currentDesigner && currentDesigner.name) {
-      log('👤 自分のタブを自動選択:', currentDesigner.name);
       selectDesigner(currentDesigner.name);
     } else {
       renderProjects();
@@ -8040,37 +7929,24 @@ async function init() {
     populateVendorCategoryDropdown();
     populateProductDropdown();
 
-    // 新システムの各管理画面の初期描画
-    log('🎨 新システム描画開始:', {
-      vendorsV2Length: vendorsV2.length,
-      vendorCategoriesLength: vendorCategories.length,
-      tasksV2Length: tasksV2.length,
-      taskVendorMappingsLength: taskVendorMappings.length
-    });
-
-    renderDesignerListInline();  // 担当管理
-    renderCategoryFilters();      // カテゴリフィルター
-    populateAssigneeFilters();    // 担当者フィルター
-    renderVendorsV2();            // 業者管理
-    renderCategoriesList();       // カテゴリ管理
-    renderTasksManagement();      // タスク管理
-    renderProductsList();         // 商品管理
-    debugShow('init: 画面描画完了');
+    // 各管理画面の初期描画
+    renderDesignerListInline();
+    renderCategoryFilters();
+    populateAssigneeFilters();
+    renderVendorsV2();
+    renderCategoriesList();
+    renderTasksManagement();
+    renderProductsList();
 
     // モバイルスワイプジェスチャー初期化
     MobileGestures.init();
 
-    // 期限リマインダーのチェック（3秒後に実行）
-    setTimeout(() => {
-      DeadlineManager.checkReminders();
-    }, 3000);
+    // 期限リマインダーのチェック（3秒後）
+    setTimeout(() => DeadlineManager.checkReminders(), 3000);
 
-    // kintone自動同期（5秒後に実行、設定されている場合のみ）
-    setTimeout(() => {
-      autoSyncKintone();
-    }, 5000);
+    // kintone自動同期（5秒後）
+    setTimeout(() => autoSyncKintone(), 5000);
 
-    debugShow('init: 完了');
     log('✅ 初期化完了');
     showStatus('保存済み', 'saved');
 
@@ -8078,7 +7954,6 @@ async function init() {
     setupRealtimeSync();
 
   } catch (error) {
-    debugShow('init: ERROR: ' + error.message);
     logError('❌ 初期化エラー:', error);
     showStatus('エラー', 'error');
     showToast('データの読み込みに失敗しました: ' + error.message, 'error');
