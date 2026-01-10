@@ -7292,8 +7292,24 @@ async function checkAuth() {
   }
 
   console.log('[checkAuth] getSession呼び出し中...');
-  const { data: { session } } = await supabase.auth.getSession();
-  console.log('[checkAuth] getSession完了:', session ? session.user.email : 'なし');
+
+  // getSessionにタイムアウトを設定（5秒）
+  let session = null;
+  try {
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('getSession timeout')), 5000)
+    );
+    const sessionPromise = supabase.auth.getSession();
+    const result = await Promise.race([sessionPromise, timeoutPromise]);
+    session = result.data?.session;
+    console.log('[checkAuth] getSession完了:', session ? session.user.email : 'なし');
+  } catch (e) {
+    console.error('[checkAuth] getSessionエラー/タイムアウト:', e.message);
+    // タイムアウトまたはエラー時はログイン画面を表示
+    document.getElementById('loginContainer').style.display = 'flex';
+    document.getElementById('mainContainer').classList.remove('show');
+    return;
+  }
 
   if (session) {
     log('✅ セッション検出:', session.user.email);
