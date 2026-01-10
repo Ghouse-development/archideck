@@ -6779,15 +6779,25 @@ let organizationSettings = null;
 async function loadOrganization() {
   // 個別クエリのタイムアウトラッパー
   const queryWithTimeout = async (queryPromise, label, timeoutMs = 5000) => {
+    debugShow(`loadOrg: ${label}クエリ開始（timeout=${timeoutMs}ms）`);
     const timeout = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error(`${label} timeout`)), timeoutMs)
+      setTimeout(() => {
+        debugShow(`loadOrg: ${label}タイムアウト発生！`);
+        reject(new Error(`${label} timeout`));
+      }, timeoutMs)
     );
-    return Promise.race([queryPromise, timeout]);
+    try {
+      const result = await Promise.race([queryPromise, timeout]);
+      debugShow(`loadOrg: ${label}クエリ完了`);
+      return result;
+    } catch (e) {
+      debugShow(`loadOrg: ${label}クエリエラー: ${e.message}`);
+      throw e;
+    }
   };
 
   try {
     debugShow('loadOrg: currentUser.id=' + (currentUser?.id || 'undefined'));
-    debugShow('loadOrg: memberData取得開始');
     const { data: memberData } = await queryWithTimeout(
       supabase
         .from('organization_members')
@@ -6798,10 +6808,8 @@ async function loadOrganization() {
       'memberData',
       5000
     );
-    debugShow('loadOrg: memberData取得完了');
 
     if (memberData) {
-      debugShow('loadOrg: orgData取得開始');
       const { data: orgData } = await queryWithTimeout(
         supabase
           .from('organizations')
@@ -6811,14 +6819,12 @@ async function loadOrganization() {
         'orgData',
         5000
       );
-      debugShow('loadOrg: orgData取得完了');
 
       if (orgData) {
         currentOrganization = orgData;
         applyWhiteLabel(orgData);
 
         // サブスクリプション情報
-        debugShow('loadOrg: subData取得開始');
         const { data: subData } = await queryWithTimeout(
           supabase
             .from('subscriptions')
@@ -6828,13 +6834,12 @@ async function loadOrganization() {
           'subData',
           5000
         );
-        debugShow('loadOrg: subData取得完了');
 
         currentSubscription = subData;
         checkSubscriptionStatus(subData);
       }
     }
-    debugShow('loadOrg: 完了');
+    debugShow('loadOrg: 全クエリ完了');
   } catch (error) {
     debugShow('loadOrg: エラー（スキップ）: ' + error.message);
     log('組織情報の読み込みをスキップ（テーブル未作成の可能性）');
