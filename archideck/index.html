@@ -7291,14 +7291,30 @@ async function checkAuth() {
       }
     } catch (sessionError) {
       debugShow('ERROR: セッション取得エラー: ' + sessionError.message);
-      // タイムアウトまたはエラーの場合、ローカルストレージのセッションをクリアして再試行
-      debugShow('セッションをクリアしてログイン画面を表示...');
+      // タイムアウトまたはエラーの場合、状態をリセットしてログイン画面を表示
+      debugShow('状態をリセットしてログイン画面を表示...');
+
+      // 重要: 認証状態をリセット（次のログイン試行のため）
+      currentUser = null;
+      currentDesigner = null;
+      isAuthProcessing = false;
+
       try {
-        localStorage.removeItem('sb-' + window.location.hostname + '-auth-token');
-        // Supabase v2のストレージキーも試す
+        // Supabaseセッションをクリア（リロードを防ぐためフラグ設定）
+        isSilentSignOut = true;
+        await supabase.auth.signOut();
+        isSilentSignOut = false;
+      } catch (e) {
+        isSilentSignOut = false;
+        debugShow('signOutエラー（無視）: ' + e.message);
+      }
+
+      try {
+        // ローカルストレージもクリア
         const keys = Object.keys(localStorage).filter(k => k.startsWith('sb-'));
         keys.forEach(k => localStorage.removeItem(k));
       } catch (e) {}
+
       document.getElementById('loginContainer').style.display = 'flex';
       document.getElementById('mainContainer').classList.remove('show');
       return;
@@ -7383,6 +7399,8 @@ async function checkAuth() {
 
 // 認証処理中フラグ
 let isAuthProcessing = false;
+// サイレントサインアウト中フラグ（リロード防止用）
+let isSilentSignOut = false;
 
 // 認証状態変更を監視
 supabase.auth.onAuthStateChange(async (event, session) => {
@@ -7454,8 +7472,12 @@ supabase.auth.onAuthStateChange(async (event, session) => {
     debugShow('AUTH: PASSWORD_RECOVERY');
     showSetPasswordModal();
   } else if (event === 'SIGNED_OUT') {
-    debugShow('AUTH: SIGNED_OUT - リロード');
-    location.reload();
+    if (isSilentSignOut) {
+      debugShow('AUTH: SIGNED_OUT - サイレント（リロードしない）');
+    } else {
+      debugShow('AUTH: SIGNED_OUT - リロード');
+      location.reload();
+    }
   } else {
     debugShow('AUTH: イベントスキップ');
   }
