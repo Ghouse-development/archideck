@@ -6777,23 +6777,39 @@ let organizationSettings = null;
 
 // 組織情報を読み込む
 async function loadOrganization() {
+  // 個別クエリのタイムアウトラッパー
+  const queryWithTimeout = async (queryPromise, label, timeoutMs = 5000) => {
+    const timeout = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error(`${label} timeout`)), timeoutMs)
+    );
+    return Promise.race([queryPromise, timeout]);
+  };
+
   try {
     debugShow('loadOrg: memberData取得開始');
-    const { data: memberData } = await supabase
-      .from('organization_members')
-      .select('organization_id')
-      .eq('user_id', currentUser.id)
-      .eq('status', 'active')
-      .single();
+    const { data: memberData } = await queryWithTimeout(
+      supabase
+        .from('organization_members')
+        .select('organization_id')
+        .eq('user_id', currentUser.id)
+        .eq('status', 'active')
+        .single(),
+      'memberData',
+      5000
+    );
     debugShow('loadOrg: memberData取得完了');
 
     if (memberData) {
       debugShow('loadOrg: orgData取得開始');
-      const { data: orgData } = await supabase
-        .from('organizations')
-        .select('*')
-        .eq('id', memberData.organization_id)
-        .single();
+      const { data: orgData } = await queryWithTimeout(
+        supabase
+          .from('organizations')
+          .select('*')
+          .eq('id', memberData.organization_id)
+          .single(),
+        'orgData',
+        5000
+      );
       debugShow('loadOrg: orgData取得完了');
 
       if (orgData) {
@@ -6802,11 +6818,15 @@ async function loadOrganization() {
 
         // サブスクリプション情報
         debugShow('loadOrg: subData取得開始');
-        const { data: subData } = await supabase
-          .from('subscriptions')
-          .select('*')
-          .eq('organization_id', orgData.id)
-          .single();
+        const { data: subData } = await queryWithTimeout(
+          supabase
+            .from('subscriptions')
+            .select('*')
+            .eq('organization_id', orgData.id)
+            .single(),
+          'subData',
+          5000
+        );
         debugShow('loadOrg: subData取得完了');
 
         currentSubscription = subData;
