@@ -10670,6 +10670,7 @@ function selectDesigner(name) {
 
   renderSidebar();
   renderProjects();
+  renderCalendar(); // カレンダーも担当者に連動
 }
 
 // 担当者の完了済案件を表示
@@ -10687,6 +10688,7 @@ function selectDesignerArchived(name) {
 
   renderSidebar();
   renderProjects();
+  renderCalendar(); // カレンダーも担当者に連動
 }
 
 // メインタブ切り替え
@@ -10799,18 +10801,21 @@ function renderCalendar() {
 function collectCalendarEvents() {
   const events = [];
 
-  // 現在のユーザーの担当案件のみをフィルタリング
-  const myProjects = projects.filter(project => {
+  // サイドバーで選択した担当者の案件のみをフィルタリング
+  const filteredProjects = projects.filter(project => {
+    // 完了済みタブの場合
+    if (currentDesignerTab === 'ARCHIVED') {
+      return project.is_archived;
+    }
+
+    // 通常は完了済みを除外
     if (project.is_archived) return false;
 
-    // 管理者は全案件を表示
-    if (currentUserCategory === 'admin' || currentUserCategory === '管理者') return true;
+    // 全案件の場合
+    if (currentDesignerTab === 'ALL') return true;
 
-    // 現在のユーザーの名前
-    const myName = currentDesigner?.name?.trim();
-    if (!myName) return true; // ユーザー情報がない場合は全表示
-
-    // 自分が担当している案件かチェック
+    // 特定の担当者が選択されている場合
+    const selectedName = currentDesignerTab.trim();
     const assigned = (project.assigned_to || '').trim();
     const icAssigned = (project.ic_assignee || '').trim();
     const exteriorAssigned = (project.exterior_assignee || '').trim();
@@ -10818,15 +10823,15 @@ function collectCalendarEvents() {
     const constructionAssigned = (project.construction_assignee || '').trim();
     const salesAssigned = (project.sales_assignee || '').trim();
 
-    return assigned === myName ||
-           icAssigned === myName ||
-           exteriorAssigned === myName ||
-           realestateAssigned === myName ||
-           constructionAssigned === myName ||
-           salesAssigned === myName;
+    return assigned === selectedName ||
+           icAssigned === selectedName ||
+           exteriorAssigned === selectedName ||
+           realestateAssigned === selectedName ||
+           constructionAssigned === selectedName ||
+           salesAssigned === selectedName;
   });
 
-  myProjects.forEach(project => {
+  filteredProjects.forEach(project => {
     const progressData = project.progress || {};
 
     // 設計タスクの期限と依頼日
