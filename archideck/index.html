@@ -5683,11 +5683,11 @@ textarea:focus-visible {
             <div class="card" style="padding: 20px;">
               <h3 style="margin: 0 0 16px; font-size: 16px;">パスワード変更</h3>
               <p style="margin: 0 0 16px; font-size: 13px; color: var(--text-secondary);">
-                新しいパスワードを入力してください。パスワードは6文字以上で設定してください。
+                新しいパスワードを入力してください。パスワードは英字と数字を含む8文字以上で設定してください。
               </p>
               <div class="form-group" style="margin-bottom: 16px;">
                 <label class="form-label">新しいパスワード</label>
-                <input type="password" class="form-input" id="newPassword" placeholder="6文字以上" style="width: 100%;">
+                <input type="password" class="form-input" id="newPassword" placeholder="英数字混合8文字以上" style="width: 100%;">
               </div>
               <div class="form-group" style="margin-bottom: 20px;">
                 <label class="form-label">新しいパスワード（確認）</label>
@@ -6789,16 +6789,30 @@ const OLD_DEFAULT_DEPARTMENTS = ['経営企画部', 'システム開発部', '�
 
 function loadDepartmentMaster() {
   const saved = localStorage.getItem('departmentMaster');
+  const version = localStorage.getItem('departmentMasterVersion');
+
+  // バージョン2未満または未設定の場合は強制的にデフォルト値を設定
+  if (!version || parseInt(version) < 2) {
+    departmentMaster = [...DEFAULT_DEPARTMENTS];
+    saveDepartmentMaster();
+    localStorage.setItem('departmentMasterVersion', '2');
+    return;
+  }
+
   if (saved) {
-    const parsed = JSON.parse(saved);
-    // 空の配列または旧デフォルト値の場合は新デフォルトに更新
-    const isEmpty = !Array.isArray(parsed) || parsed.length === 0;
-    const isOldDefault = Array.isArray(parsed) && OLD_DEFAULT_DEPARTMENTS.every(d => parsed.includes(d)) && parsed.length === OLD_DEFAULT_DEPARTMENTS.length;
-    if (isEmpty || isOldDefault) {
+    try {
+      const parsed = JSON.parse(saved);
+      // 有効な配列かつ空でない場合のみ使用
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        departmentMaster = parsed;
+      } else {
+        departmentMaster = [...DEFAULT_DEPARTMENTS];
+        saveDepartmentMaster();
+      }
+    } catch (e) {
+      // JSONパースエラーの場合はデフォルト値を使用
       departmentMaster = [...DEFAULT_DEPARTMENTS];
       saveDepartmentMaster();
-    } else {
-      departmentMaster = parsed;
     }
   } else {
     departmentMaster = [...DEFAULT_DEPARTMENTS];
@@ -7161,6 +7175,11 @@ async function sendPasswordReset() {
     return;
   }
 
+  // 確認ダイアログを表示
+  if (!confirm(`パスワードを再発行しますか？\n\n${email} 宛にパスワード再設定用のメールを送信します。\nメール内のリンクから新しいパスワードを設定してください。`)) {
+    return;
+  }
+
   try {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: window.location.origin + '/archideck/index.html#reset-password'
@@ -7205,8 +7224,11 @@ async function changePassword() {
     return;
   }
 
-  if (newPassword.length < 6) {
-    showToast('パスワードは6文字以上で設定してください', 'error');
+  // 英数字混合8文字以上のチェック
+  const hasLetter = /[a-zA-Z]/.test(newPassword);
+  const hasNumber = /[0-9]/.test(newPassword);
+  if (newPassword.length < 8 || !hasLetter || !hasNumber) {
+    showToast('パスワードは英字と数字を含む8文字以上で設定してください', 'error');
     return;
   }
 
@@ -13427,8 +13449,6 @@ function renderDesignerListInline() {
     const emailDisplay = designer.email && !designer.email.includes('@temp.local') ? designer.email : '<span style="color: var(--text-muted);">未設定</span>';
     const phoneDisplay = designer.phone ? designer.phone : '<span style="color: var(--text-muted);">未設定</span>';
     const departmentDisplay = designer.department ? designer.department : '<span style="color: var(--text-muted);">未設定</span>';
-    const canManageAuth = currentUserCategory === 'admin' || designer.id === currentDesigner?.id;
-    const authButton = canManageAuth ? `<button class="btn btn-secondary btn-small" onclick="openDesignerAuthModal('${designer.id}')" style="margin-right: 4px;">🔑</button>` : '';
     return `
       <tr class="draggable-row" draggable="true" data-designer-id="${designer.id}" data-category="${category}">
         <td><span class="drag-handle">≡</span></td>
@@ -13439,7 +13459,6 @@ function renderDesignerListInline() {
         <td>${countField ? count + '件' : '-'}</td>
         <td>
           <button class="btn btn-ghost btn-small" onclick="openEditDesignerModal('${designer.id}')" style="margin-right: 4px;">✏️ 編集</button>
-          ${authButton}
           <button class="btn btn-danger btn-small" onclick="deleteDesignerInline('${designer.id}')">削除</button>
         </td>
       </tr>
