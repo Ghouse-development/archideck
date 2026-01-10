@@ -7210,7 +7210,7 @@ async function sendPasswordReset() {
 
   try {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: window.location.origin + '/archideck/index.html#reset-password'
+      redirectTo: window.location.origin
     });
 
     if (error) {
@@ -13937,7 +13937,7 @@ async function addDesignerInline() {
 
     // 3. パスワード設定メールを送信
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: window.location.origin + '/archideck/index.html#set-password'
+      redirectTo: window.location.origin
     });
 
     if (resetError) {

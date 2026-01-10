@@ -35,6 +35,9 @@
    - `otp_expired`エラーを検出してユーザーにわかりやすいメッセージを表示
    - 「パスワードを忘れた方」から再送信を促す
 
+7. **リダイレクトURLをルートURLに統一**
+   - Supabaseダッシュボードの許可リストと一致させるため`window.location.origin`に変更
+
 #### 新規関数
 - `showSetPasswordModal()`: パスワード設定画面を表示
 - `saveNewPassword()`: 新しいパスワードを保存
