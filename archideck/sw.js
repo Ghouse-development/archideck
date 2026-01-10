@@ -28,8 +28,15 @@ self.addEventListener('activate', event => {
 
 // フェッチ時の処理（ネットワーク優先、失敗時はキャッシュ）
 self.addEventListener('fetch', event => {
+  const url = event.request.url;
+
+  // http/https以外のスキーム（chrome-extension://等）はキャッシュ不可
+  if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    return;
+  }
+
   // APIリクエストはキャッシュしない
-  if (event.request.url.includes('supabase.co')) {
+  if (url.includes('supabase.co')) {
     return;
   }
 
