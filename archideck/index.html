@@ -7291,46 +7291,62 @@ async function checkAuth() {
     return;
   }
 
+  console.log('[checkAuth] getSession呼び出し中...');
   const { data: { session } } = await supabase.auth.getSession();
+  console.log('[checkAuth] getSession完了:', session ? session.user.email : 'なし');
 
   if (session) {
     log('✅ セッション検出:', session.user.email);
     currentUser = session.user;
     document.getElementById('loginContainer').style.display = 'none';
+    console.log('[checkAuth] loginContainer非表示');
 
     // admin@ghouse.jpの場合は管理者モードで直接メイン画面へ
     if (currentUser.email === 'admin@ghouse.jp') {
+      console.log('[checkAuth] 管理者モード');
       await selectAccountType('admin');
       return;
     }
 
-    // 担当情報を取得
-    const { data: designerData } = await supabase
-      .from('designers')
-      .select('*')
-      .eq('email', currentUser.email)
-      .single();
+    // 担当情報を取得（エラーが発生しても画面は表示する）
+    console.log('[checkAuth] designerData取得中...');
+    try {
+      const { data: designerData, error: designerError } = await supabase
+        .from('designers')
+        .select('*')
+        .eq('email', currentUser.email)
+        .single();
 
-    if (designerData) {
-      currentDesigner = designerData;
-      currentUserCategory = designerData.category;
-      log('✅ 担当情報取得:', currentDesigner.name);
+      console.log('[checkAuth] designerData取得完了:', designerData?.name || 'なし', designerError?.message || '');
 
-      if (!designerData.auth_confirmed) {
-        await supabase.from('designers').update({ auth_confirmed: true }).eq('id', designerData.id);
-        currentDesigner.auth_confirmed = true;
+      if (designerData) {
+        currentDesigner = designerData;
+        currentUserCategory = designerData.category;
+        log('✅ 担当情報取得:', currentDesigner.name);
+
+        if (!designerData.auth_confirmed) {
+          await supabase.from('designers').update({ auth_confirmed: true }).eq('id', designerData.id);
+          currentDesigner.auth_confirmed = true;
+        }
       }
+    } catch (e) {
+      console.error('[checkAuth] designerDataエラー:', e.message);
     }
 
     // メインコンテナを表示
+    console.log('[checkAuth] mainContainer表示');
     document.getElementById('mainContainer').classList.add('show');
     updateUserDisplay(currentUser.email.split('@')[0]);
+
+    console.log('[checkAuth] init呼び出し中...');
     await init();
+    console.log('[checkAuth] init完了');
 
     if (!window.location.hash || window.location.hash === '#') {
       window.location.hash = 'projects';
     }
   } else {
+    console.log('[checkAuth] セッションなし - ログイン画面表示');
     document.getElementById('loginContainer').style.display = 'flex';
     document.getElementById('mainContainer').classList.remove('show');
   }
