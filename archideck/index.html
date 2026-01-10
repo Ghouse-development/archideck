@@ -7268,7 +7268,7 @@ async function checkAuth() {
     return;
   }
 
-  if (session) {
+  if (session && session.user) {
     log('✅ セッション検出:', session.user.email);
     currentUser = session.user;
     document.getElementById('loginContainer').style.display = 'none';
@@ -7341,7 +7341,7 @@ let isAuthProcessing = false;
 supabase.auth.onAuthStateChange(async (event, session) => {
   log('🔔 認証イベント:', event, 'currentUser:', currentUser?.email, 'processing:', isAuthProcessing);
 
-  if (event === 'SIGNED_IN' && !currentUser && !isAuthProcessing) {
+  if (event === 'SIGNED_IN' && session && session.user && !currentUser && !isAuthProcessing) {
     isAuthProcessing = true;
     log('✅ SIGNED_IN イベント処理開始:', session.user.email);
 

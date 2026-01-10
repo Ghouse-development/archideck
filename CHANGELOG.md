@@ -1,21 +1,32 @@
 # ArchiDeck 開発履歴
 
-## v4.99.13 (2026-01-10)
+## v4.99.14 (2026-01-10)
 
-### 画面が真っ白になる問題を修正
+### 画面が真っ白になる問題を修正（v3）
 
 **問題**
 - ログイン画面が一瞬表示された後、画面が完全に真っ白になる
-- 非同期処理でエラーが発生するとmainContainerが表示されない
+- コンソールエラーなし
 
-**原因**
-- designerData取得やinit()で例外が発生すると、mainContainer.classList.add('show')に到達しない
+**根本原因の特定**
+- `session`オブジェクトは存在するが`session.user`が`null`のケースがある
+- `session.user.email`へのアクセスでTypeErrorが発生
+- try-catchの外で発生するためキャッチされない
 
-**修正内容（認証順序は維持）**
-- designerData取得をtry-catchで囲む（例外でも処理継続）
-- init()をtry-catchで囲む（例外でも処理継続）
+**修正内容**
+- `if (session)` → `if (session && session.user)` に変更
+- onAuthStateChangeハンドラーも同様に修正
+
+---
+
+## v4.99.13 (2026-01-10)
+
+### 画面が真っ白になる問題を修正（v2）
+
+**修正内容**
+- designerData取得をtry-catchで囲む
+- init()をtry-catchで囲む
 - getSession()のエラー時はログイン画面を表示
-- mainContainer表示は認証成功後に必ず実行
 
 ---
 
