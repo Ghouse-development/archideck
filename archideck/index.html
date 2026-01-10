@@ -5168,6 +5168,11 @@ textarea:focus-visible {
             <div class="settings-card-title">FC管理</div>
             <div class="settings-card-description">フランチャイズ組織を管理</div>
           </div>
+          <div class="settings-card" onclick="openSettingsPanel('account')">
+            <div class="settings-card-icon">🔐</div>
+            <div class="settings-card-title">アカウント設定</div>
+            <div class="settings-card-description">パスワード変更・メールアドレス確認</div>
+          </div>
         </div>
 
         <!-- スタッフ管理 -->
@@ -5611,6 +5616,44 @@ textarea:focus-visible {
             </div>
           </div>
         </div>
+
+        <!-- アカウント設定 -->
+        <div id="accountPanel" class="sub-tab-panel">
+          <button class="settings-back-btn" onclick="closeSettingsPanel()">← 設定に戻る</button>
+          <div style="max-width: 600px; margin: 0 auto;">
+            <h2 style="margin-bottom: 20px; font-size: 24px; font-weight: 700;">🔐 アカウント設定</h2>
+
+            <!-- 現在のアカウント情報 -->
+            <div class="card" style="margin-bottom: 24px; padding: 20px;">
+              <h3 style="margin: 0 0 16px; font-size: 16px;">アカウント情報</h3>
+              <div style="margin-bottom: 12px;">
+                <label style="font-size: 13px; color: var(--text-secondary);">メールアドレス</label>
+                <div id="accountEmail" style="font-weight: 600; margin-top: 4px;">-</div>
+              </div>
+              <div>
+                <label style="font-size: 13px; color: var(--text-secondary);">ログインユーザー名</label>
+                <div id="accountUsername" style="font-weight: 600; margin-top: 4px;">-</div>
+              </div>
+            </div>
+
+            <!-- パスワード変更 -->
+            <div class="card" style="padding: 20px;">
+              <h3 style="margin: 0 0 16px; font-size: 16px;">パスワード変更</h3>
+              <p style="margin: 0 0 16px; font-size: 13px; color: var(--text-secondary);">
+                新しいパスワードを入力してください。パスワードは6文字以上で設定してください。
+              </p>
+              <div class="form-group" style="margin-bottom: 16px;">
+                <label class="form-label">新しいパスワード</label>
+                <input type="password" class="form-input" id="newPassword" placeholder="6文字以上" style="width: 100%;">
+              </div>
+              <div class="form-group" style="margin-bottom: 20px;">
+                <label class="form-label">新しいパスワード（確認）</label>
+                <input type="password" class="form-input" id="confirmPassword" placeholder="もう一度入力" style="width: 100%;">
+              </div>
+              <button class="btn btn-primary" onclick="changePassword()" style="width: 100%;">パスワードを変更</button>
+            </div>
+          </div>
+        </div>
       </div>
     </main>
   </div>
@@ -5751,6 +5794,11 @@ textarea:focus-visible {
           <select class="form-select" id="newDesignerCategory" style="width: 150px;">
             <option value="設計">設計担当</option>
             <option value="IC">IC担当</option>
+            <option value="外構">外構担当</option>
+            <option value="不動産">不動産担当</option>
+            <option value="工事">工事担当</option>
+            <option value="営業">営業担当</option>
+            <option value="管理者">管理者</option>
           </select>
           <button class="btn btn-primary" onclick="addDesigner()">追加</button>
         </div>
@@ -7003,6 +7051,68 @@ async function sendPasswordReset() {
     hideForgotPassword();
   } catch (e) {
     logError('パスワードリセット例外:', e);
+    showToast('エラーが発生しました', 'error');
+  }
+}
+
+// アカウント情報表示
+function renderAccountInfo() {
+  const emailEl = document.getElementById('accountEmail');
+  const usernameEl = document.getElementById('accountUsername');
+
+  if (currentUser) {
+    if (emailEl) emailEl.textContent = currentUser.email || '-';
+    if (usernameEl) usernameEl.textContent = currentUser.email?.split('@')[0] || '-';
+  } else {
+    if (emailEl) emailEl.textContent = 'ログインしていません';
+    if (usernameEl) usernameEl.textContent = '-';
+  }
+}
+
+// パスワード変更
+async function changePassword() {
+  const newPassword = document.getElementById('newPassword').value;
+  const confirmPassword = document.getElementById('confirmPassword').value;
+
+  // バリデーション
+  if (!newPassword) {
+    showToast('新しいパスワードを入力してください', 'error');
+    return;
+  }
+
+  if (newPassword.length < 6) {
+    showToast('パスワードは6文字以上で設定してください', 'error');
+    return;
+  }
+
+  if (newPassword !== confirmPassword) {
+    showToast('パスワードが一致しません', 'error');
+    return;
+  }
+
+  if (!window.supabase) {
+    showToast('エラー: システムが初期化されていません', 'error');
+    return;
+  }
+
+  try {
+    const { error } = await supabase.auth.updateUser({
+      password: newPassword
+    });
+
+    if (error) {
+      logError('パスワード変更エラー:', error);
+      showToast('パスワード変更に失敗しました: ' + error.message, 'error');
+      return;
+    }
+
+    // 入力欄をクリア
+    document.getElementById('newPassword').value = '';
+    document.getElementById('confirmPassword').value = '';
+
+    showToast('パスワードを変更しました', 'success');
+  } catch (e) {
+    logError('パスワード変更例外:', e);
     showToast('エラーが発生しました', 'error');
   }
 }
@@ -10689,9 +10799,34 @@ function renderCalendar() {
 function collectCalendarEvents() {
   const events = [];
 
-  projects.forEach(project => {
-    if (project.is_archived) return;
+  // 現在のユーザーの担当案件のみをフィルタリング
+  const myProjects = projects.filter(project => {
+    if (project.is_archived) return false;
 
+    // 管理者は全案件を表示
+    if (currentUserCategory === 'admin' || currentUserCategory === '管理者') return true;
+
+    // 現在のユーザーの名前
+    const myName = currentDesigner?.name?.trim();
+    if (!myName) return true; // ユーザー情報がない場合は全表示
+
+    // 自分が担当している案件かチェック
+    const assigned = (project.assigned_to || '').trim();
+    const icAssigned = (project.ic_assignee || '').trim();
+    const exteriorAssigned = (project.exterior_assignee || '').trim();
+    const realestateAssigned = (project.realestate_assignee || '').trim();
+    const constructionAssigned = (project.construction_assignee || '').trim();
+    const salesAssigned = (project.sales_assignee || '').trim();
+
+    return assigned === myName ||
+           icAssigned === myName ||
+           exteriorAssigned === myName ||
+           realestateAssigned === myName ||
+           constructionAssigned === myName ||
+           salesAssigned === myName;
+  });
+
+  myProjects.forEach(project => {
     const progressData = project.progress || {};
 
     // 設計タスクの期限と依頼日
@@ -10913,6 +11048,9 @@ function openSettingsPanel(panelName) {
       break;
     case 'kintone':
       loadKintoneSettings();
+      break;
+    case 'account':
+      renderAccountInfo();
       break;
   }
 }
@@ -13135,7 +13273,7 @@ function renderDesignerListInline() {
 
   // スタッフ行を生成するヘルパー関数
   function renderDesignerRow(designer, category, countField) {
-    const count = projects.filter(p => p[countField] === designer.name).length;
+    const count = countField ? projects.filter(p => p[countField] === designer.name).length : '-';
     const emailDisplay = designer.email && !designer.email.includes('@temp.local') ? designer.email : '<span style="color: var(--text-muted);">未設定</span>';
     const canManageAuth = currentUserCategory === 'admin' || designer.id === currentDesigner?.id;
     const authButton = canManageAuth ? `<button class="btn btn-secondary btn-small" onclick="openDesignerAuthModal('${designer.id}')" style="margin-right: 4px;">🔑</button>` : '';
@@ -13144,7 +13282,7 @@ function renderDesignerListInline() {
         <td><span class="drag-handle">≡</span></td>
         <td><strong>${designer.name}</strong></td>
         <td>${emailDisplay}</td>
-        <td>${count}件</td>
+        <td>${countField ? count + '件' : '-'}</td>
         <td>
           <button class="btn btn-ghost btn-small" onclick="openEditDesignerModal('${designer.id}')" style="margin-right: 4px;">✏️ 編集</button>
           ${authButton}
@@ -13195,6 +13333,39 @@ function renderDesignerListInline() {
     html += '</tbody></table></div>';
   }
 
+  // 工事担当
+  const constructionDesigners = [...designers].filter(d => d.category === '工事').sort((a, b) => (a.display_order || 999) - (b.display_order || 999));
+  if (constructionDesigners.length > 0) {
+    html += '<h4 style="margin: 20px 0 12px; color: #FF6B35;">🔨 工事担当</h4>';
+    html += '<div class="table-container"><table class="table"><thead><tr><th width="40"></th><th>スタッフ名</th><th>メールアドレス</th><th>担当案件数</th><th>操作</th></tr></thead><tbody id="constructionTbody">';
+    constructionDesigners.forEach(designer => {
+      html += renderDesignerRow(designer, '工事', 'construction_assignee');
+    });
+    html += '</tbody></table></div>';
+  }
+
+  // 営業担当
+  const salesDesigners = [...designers].filter(d => d.category === '営業').sort((a, b) => (a.display_order || 999) - (b.display_order || 999));
+  if (salesDesigners.length > 0) {
+    html += '<h4 style="margin: 20px 0 12px; color: #2196F3;">💼 営業担当</h4>';
+    html += '<div class="table-container"><table class="table"><thead><tr><th width="40"></th><th>スタッフ名</th><th>メールアドレス</th><th>担当案件数</th><th>操作</th></tr></thead><tbody id="salesTbody">';
+    salesDesigners.forEach(designer => {
+      html += renderDesignerRow(designer, '営業', 'sales_assignee');
+    });
+    html += '</tbody></table></div>';
+  }
+
+  // 管理者
+  const adminDesigners = [...designers].filter(d => d.category === '管理者').sort((a, b) => (a.display_order || 999) - (b.display_order || 999));
+  if (adminDesigners.length > 0) {
+    html += '<h4 style="margin: 20px 0 12px; color: #9C27B0;">👑 管理者</h4>';
+    html += '<div class="table-container"><table class="table"><thead><tr><th width="40"></th><th>スタッフ名</th><th>メールアドレス</th><th>担当案件数</th><th>操作</th></tr></thead><tbody id="adminTbody">';
+    adminDesigners.forEach(designer => {
+      html += renderDesignerRow(designer, '管理者', null);
+    });
+    html += '</tbody></table></div>';
+  }
+
   container.innerHTML = html;
 
   // ドラッグ&ドロップイベント設定
@@ -13234,6 +13405,7 @@ function openEditDesignerModal(designerId) {
             <option value="不動産" ${designer.category === '不動産' ? 'selected' : ''}>不動産担当</option>
             <option value="工事" ${designer.category === '工事' ? 'selected' : ''}>工事担当</option>
             <option value="営業" ${designer.category === '営業' ? 'selected' : ''}>営業担当</option>
+            <option value="管理者" ${designer.category === '管理者' ? 'selected' : ''}>管理者</option>
           </select>
         </div>
       </div>
