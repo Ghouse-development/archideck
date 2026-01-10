@@ -7433,6 +7433,27 @@ async function checkAuth() {
 
   // URLハッシュにパスワードリカバリートークンが含まれているかチェック
   const hashParams = window.location.hash.substring(1);
+
+  // エラーがある場合（リンク期限切れ等）
+  if (hashParams.includes('error=')) {
+    const urlParams = new URLSearchParams(hashParams);
+    const errorCode = urlParams.get('error_code');
+    const errorDesc = urlParams.get('error_description');
+    log('❌ 認証エラー:', errorCode, errorDesc);
+
+    if (errorCode === 'otp_expired') {
+      showToast('メールリンクの有効期限が切れています。「パスワードを忘れた方」から再送信してください。', 'error', 8000);
+    } else {
+      showToast('認証エラー: ' + (errorDesc || errorCode), 'error', 8000);
+    }
+    // エラー後はログイン画面を表示
+    document.getElementById('loginContainer').style.display = 'flex';
+    document.getElementById('mainContainer').classList.remove('show');
+    // URLからエラーパラメータを除去
+    history.replaceState(null, '', window.location.pathname);
+    return;
+  }
+
   const isRecoveryFlow = hashParams.includes('type=recovery') || hashParams.includes('type=signup');
 
   if (isRecoveryFlow) {
