@@ -1,5 +1,22 @@
 # ArchiDeck 開発履歴
 
+## v4.93.1 (2026-01-10)
+
+### バグ修正: タスク状態更新エラー
+
+#### 問題
+- タスクのステータスを変更するとコンソールエラーが発生
+- `Uncaught ReferenceError: updateTaskProgress is not defined`
+
+#### 原因
+- `selectStatusCard`関数内で存在しない`updateTaskProgress`を呼び出していた
+
+#### 修正
+- 正しい関数名`updateTaskState`に修正
+- 引数の形式も`updateTaskState(projectId, taskKey, state)`に修正
+
+---
+
 ## v4.93.0 (2026-01-10)
 
 ### スタッフ管理拡充・認証機能強化・カレンダー改善

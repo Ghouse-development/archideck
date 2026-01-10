@@ -12362,7 +12362,7 @@ function selectStatusCard(cardEl, projectId, taskKey) {
   }
 
   // 進捗データを保存
-  updateTaskProgress(projectId, taskKey, { state });
+  updateTaskState(projectId, taskKey, state);
 
   // ICタスクの場合、全5回完了チェック
   if (taskKey.startsWith('ic_')) {
