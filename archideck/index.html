@@ -8173,19 +8173,28 @@ async function init() {
       setTimeout(() => reject(new Error('data load timeout')), 30000)
     );
 
+    // 各関数をデバッグラッパーで包む
+    const wrapWithDebug = (fn, name) => {
+      debugShow(`load: ${name} 開始`);
+      return fn().then(
+        result => { debugShow(`load: ${name} 完了`); return result; },
+        error => { debugShow(`load: ${name} ERROR: ${error.message}`); throw error; }
+      );
+    };
+
     const dataLoadPromise = Promise.allSettled([
-      loadDesigners(),
-      loadCurrentDesigner(),
-      loadProjects(),
-      loadEmailTemplates(),
-      loadVendors(),
-      loadTaskMappings(),
-      loadVendorCategories(),
-      loadTasksV2(),
-      loadVendorsV2(),
-      loadTaskVendorMappings(),
-      loadProducts(),
-      loadFcOrganizations()
+      wrapWithDebug(loadDesigners, 'Designers'),
+      wrapWithDebug(loadCurrentDesigner, 'CurrentDesigner'),
+      wrapWithDebug(loadProjects, 'Projects'),
+      wrapWithDebug(loadEmailTemplates, 'EmailTemplates'),
+      wrapWithDebug(loadVendors, 'Vendors'),
+      wrapWithDebug(loadTaskMappings, 'TaskMappings'),
+      wrapWithDebug(loadVendorCategories, 'VendorCategories'),
+      wrapWithDebug(loadTasksV2, 'TasksV2'),
+      wrapWithDebug(loadVendorsV2, 'VendorsV2'),
+      wrapWithDebug(loadTaskVendorMappings, 'TaskVendorMappings'),
+      wrapWithDebug(loadProducts, 'Products'),
+      wrapWithDebug(loadFcOrganizations, 'FcOrganizations')
     ]);
 
     // タイムアウト付きで待機
