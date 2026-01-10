@@ -2089,19 +2089,30 @@ input:checked + .toggle-slider:before {
   box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
 }
 
-/* 業務内容カウントバッジ */
+/* 業務内容カウントバッジ - 統一スタイル */
 .biz-task-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   margin-left: 8px;
-  font-size: 12px;
-  font-weight: 500;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--primary-color);
+  color: white;
 }
 
 .biz-task-count.incomplete {
-  color: var(--warning-color);
+  background: var(--warning-color);
+  color: white;
 }
 
 .biz-task-count.complete {
-  color: var(--success-color);
+  background: var(--success-color);
+  color: white;
 }
 
 /* プロジェクトカードフッター */
@@ -11905,10 +11916,10 @@ function renderProjectCard(project) {
       </div>
     </div>
     <div class="card-quick-actions">
-      <button class="quick-action-btn" onclick="openCardModal('${project.id}', 'tasks')">✅ タスク<span class="section-badge badge-warning" id="taskBadge_${project.id}" style="display:none">0</span></button>
-      <button class="quick-action-btn" onclick="openCardModal('${project.id}', 'memo')">📝 メモ<span class="section-badge badge-success" id="memoBadge_${project.id}" style="display:${project.shared_memo ? 'inline-flex' : 'none'}">1</span></button>
+      <button class="quick-action-btn" onclick="openCardModal('${project.id}', 'tasks')">✅ タスク<span class="section-badge badge-primary" id="taskBadge_${project.id}" style="display:none">0</span></button>
+      <button class="quick-action-btn" onclick="openCardModal('${project.id}', 'memo')">📝 メモ<span class="section-badge badge-primary" id="memoBadge_${project.id}" style="display:${project.shared_memo ? 'inline-flex' : 'none'}">1</span></button>
       <button class="quick-action-btn" onclick="openCardModal('${project.id}', 'minutes')">📄 議事録<span class="section-badge badge-primary" id="minutesBadge_${project.id}" style="display:none">0</span></button>
-      <button class="quick-action-btn" onclick="openCardModal('${project.id}', 'handover')">📋 引継書<span class="section-badge badge-info" id="handoverBadge_${project.id}" style="display:none">1</span></button>
+      <button class="quick-action-btn" onclick="openCardModal('${project.id}', 'handover')">📋 引継書<span class="section-badge badge-primary" id="handoverBadge_${project.id}" style="display:none">1</span></button>
     </div>
 
     ${(() => {
