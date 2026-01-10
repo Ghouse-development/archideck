@@ -6790,15 +6790,12 @@ const OLD_DEFAULT_DEPARTMENTS = ['経営企画部', 'システム開発部', '�
 function loadDepartmentMaster() {
   const saved = localStorage.getItem('departmentMaster');
   const version = localStorage.getItem('departmentMasterVersion');
-  console.log('🏢 loadDepartmentMaster:', { saved, version });
 
   // バージョン2未満または未設定の場合は強制的にデフォルト値を設定
   if (!version || parseInt(version) < 2) {
-    console.log('🏢 Resetting to default departments (version check)');
     departmentMaster = [...DEFAULT_DEPARTMENTS];
     saveDepartmentMaster();
     localStorage.setItem('departmentMasterVersion', '2');
-    console.log('🏢 departmentMaster set to:', departmentMaster);
     return;
   }
 
@@ -6840,15 +6837,17 @@ function renderDepartmentChips() {
 }
 
 function updateDepartmentDropdowns() {
-  console.log('🏢 updateDepartmentDropdowns called', { departmentMaster, length: departmentMaster?.length });
+  // departmentMasterが空の場合は先に読み込む
+  if (!departmentMaster || departmentMaster.length === 0) {
+    loadDepartmentMaster();
+  }
+
   const selects = document.querySelectorAll('#newDesignerDepartmentInline, #editDesignerDepartment');
-  console.log('🏢 Found selects:', selects.length);
   selects.forEach(select => {
     const currentValue = select.value;
     const options = '<option value="">部署を選択</option>' +
       departmentMaster.map(dept => `<option value="${escapeHtml(dept)}" ${currentValue === dept ? 'selected' : ''}>${escapeHtml(dept)}</option>`).join('');
     select.innerHTML = options;
-    console.log('🏢 Updated select:', select.id, 'with', departmentMaster.length, 'options');
   });
 }
 
