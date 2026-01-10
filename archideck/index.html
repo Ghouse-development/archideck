@@ -7271,11 +7271,17 @@ async function checkAuth() {
     return;
   }
 
-    // セッション取得（エラー時はログイン画面へ）
+    // セッション取得（タイムアウト付き - ハング対策）
     debugShow('3. getSession呼び出し中...');
     let session = null;
     try {
-      const result = await supabase.auth.getSession();
+      // 5秒でタイムアウト
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('getSession timeout')), 5000)
+      );
+      const sessionPromise = supabase.auth.getSession();
+
+      const result = await Promise.race([sessionPromise, timeoutPromise]);
       session = result?.data?.session;
       debugShow('4. session取得完了: ' + (session ? 'あり' : 'なし'));
       if (session) {
@@ -7283,6 +7289,14 @@ async function checkAuth() {
       }
     } catch (sessionError) {
       debugShow('ERROR: セッション取得エラー: ' + sessionError.message);
+      // タイムアウトまたはエラーの場合、ローカルストレージのセッションをクリアして再試行
+      debugShow('セッションをクリアしてログイン画面を表示...');
+      try {
+        localStorage.removeItem('sb-' + window.location.hostname + '-auth-token');
+        // Supabase v2のストレージキーも試す
+        const keys = Object.keys(localStorage).filter(k => k.startsWith('sb-'));
+        keys.forEach(k => localStorage.removeItem(k));
+      } catch (e) {}
       document.getElementById('loginContainer').style.display = 'flex';
       document.getElementById('mainContainer').classList.remove('show');
       return;
