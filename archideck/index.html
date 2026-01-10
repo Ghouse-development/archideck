@@ -6070,12 +6070,12 @@ if (DEBUG_MODE) log('🚀 ArchiDeck バージョン:', APP_VERSION);
       log('🗑️ キャッシュ削除:', name);
     }
 
-    // Service Worker を更新
+    // Service Worker を登録解除（完全無効化）
     if ('serviceWorker' in navigator) {
       const registrations = await navigator.serviceWorker.getRegistrations();
       for (const reg of registrations) {
-        await reg.update();
-        log('🔄 Service Worker 更新');
+        await reg.unregister();
+        log('🗑️ Service Worker 登録解除');
       }
     }
     log('✅ キャッシュクリア完了');
@@ -21410,31 +21410,22 @@ window.addEventListener('DOMContentLoaded', () => {
   checkAuth();
   // URL直接アクセスの処理はcheckAuth() → init()完了後に自動実行される
 
-  // Service Worker登録（PWA対応）- 順序制御付き
+  // Service Worker完全無効化（キャッシュ問題の恒久対策）
   if ('serviceWorker' in navigator) {
     (async () => {
       try {
-        // 1. 古いキャッシュを全てクリア
-        const cacheNames = await caches.keys();
-        await Promise.all(cacheNames.map(async (cacheName) => {
-          await caches.delete(cacheName);
-          log('🗑️ キャッシュをクリア:', cacheName);
-        }));
-
-        // 2. 既存のService Workerを更新
+        // 1. 全てのService Workerを登録解除
         const registrations = await navigator.serviceWorker.getRegistrations();
-        await Promise.all(registrations.map(async (registration) => {
-          await registration.update();
-          log('🔄 Service Worker更新を確認');
-        }));
+        for (const registration of registrations) {
+          await registration.unregister();
+          log('🗑️ Service Worker登録解除完了');
+        }
 
-        // 3. Service Workerを登録
-        const reg = await navigator.serviceWorker.register('/archideck/sw.js', { updateViaCache: 'none' });
-        log('✅ Service Worker registered:', reg.scope);
-
-        // 新しいService Workerがあれば即座にアクティベート
-        if (reg.waiting) {
-          reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+        // 2. 全キャッシュを削除
+        const cacheNames = await caches.keys();
+        for (const cacheName of cacheNames) {
+          await caches.delete(cacheName);
+          log('🗑️ キャッシュ削除:', cacheName);
         }
       } catch (err) {
         logError('❌ Service Worker処理エラー:', err);
