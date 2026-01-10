@@ -7120,8 +7120,8 @@ async function changePassword() {
 async function signIn() {
   log('🔐 ログイン処理開始...');
 
-  const email = document.getElementById('loginEmail').value.trim();
-  const password = document.getElementById('loginPassword').value.trim();
+  const email = document.getElementById('loginEmail')?.value?.trim() || '';
+  const password = document.getElementById('loginPassword')?.value?.trim() || '';
 
   log('📧 入力されたメール:', email);
 
@@ -9120,14 +9120,14 @@ async function saveVendorV2() {
   // 二重クリック防止
   if (SaveGuard.isLocked('saveVendorV2')) return;
 
-  const id = document.getElementById('vendorId').value;
-  const company = document.getElementById('vendorCompany').value.trim();
-  const contact = document.getElementById('vendorContact').value.trim();
-  const tel = document.getElementById('vendorTel').value.trim();
-  const email = document.getElementById('vendorEmail').value.trim();
-  const categoryId = document.getElementById('vendorCategory').value;
-  const subjectFormat = document.getElementById('vendorSubject').value.trim();
-  const templateText = document.getElementById('vendorTemplate').value.trim();
+  const id = document.getElementById('vendorId')?.value || '';
+  const company = document.getElementById('vendorCompany')?.value?.trim() || '';
+  const contact = document.getElementById('vendorContact')?.value?.trim() || '';
+  const tel = document.getElementById('vendorTel')?.value?.trim() || '';
+  const email = document.getElementById('vendorEmail')?.value?.trim() || '';
+  const categoryId = document.getElementById('vendorCategory')?.value || '';
+  const subjectFormat = document.getElementById('vendorSubject')?.value?.trim() || '';
+  const templateText = document.getElementById('vendorTemplate')?.value?.trim() || '';
 
   if (!company) {
     showToast('会社名を入力してください', 'error');
@@ -10222,12 +10222,12 @@ function collectStateOptions() {
 async function saveTask() {
   if (SaveGuard.isLocked('saveTask')) return;
 
-  const id = document.getElementById('taskId').value;
-  const taskName = document.getElementById('taskName').value.trim();
-  const category = document.getElementById('taskCategory').value;
-  const order = parseInt(document.getElementById('taskOrder').value) || 0;
-  const hasState = document.getElementById('taskHasState').checked;
-  const hasEmailButton = document.getElementById('taskHasEmailButton').checked;
+  const id = document.getElementById('taskId')?.value || '';
+  const taskName = document.getElementById('taskName')?.value?.trim() || '';
+  const category = document.getElementById('taskCategory')?.value || '';
+  const order = parseInt(document.getElementById('taskOrder')?.value) || 0;
+  const hasState = document.getElementById('taskHasState')?.checked || false;
+  const hasEmailButton = document.getElementById('taskHasEmailButton')?.checked || false;
 
   if (!taskName) {
     showToast('タスク名を入力してください', 'error');
@@ -10953,6 +10953,7 @@ function collectCalendarEvents() {
     }
   });
 
+  console.log('📅 collectCalendarEvents: 完了', { totalEvents: events.length });
   return events;
 }
 
@@ -12843,10 +12844,10 @@ async function saveProject() {
     return;
   }
 
-  const customer = document.getElementById('projectCustomer').value.trim();
-  const assignedTo = document.getElementById('projectAssignedTo').value.trim(); // trim()追加
-  const icAssignee = document.getElementById('projectIcAssignee').value.trim(); // trim()追加
-  const specifications = document.getElementById('projectSpecifications').value;
+  const customer = document.getElementById('projectCustomer')?.value?.trim() || '';
+  const assignedTo = document.getElementById('projectAssignedTo')?.value?.trim() || '';
+  const icAssignee = document.getElementById('projectIcAssignee')?.value?.trim() || '';
+  const specifications = document.getElementById('projectSpecifications')?.value || '';
 
   log('💾 saveProject開始:', { customer, assignedTo, icAssignee, specifications });
 
@@ -13203,8 +13204,8 @@ function renderDesignerList() {
 }
 
 async function addDesigner() {
-  const name = document.getElementById('newDesignerName').value.trim();
-  const category = document.getElementById('newDesignerCategory').value;
+  const name = document.getElementById('newDesignerName')?.value?.trim() || '';
+  const category = document.getElementById('newDesignerCategory')?.value || '';
 
   if (!name) {
     showToast('スタッフ名を入力してください', 'error');
