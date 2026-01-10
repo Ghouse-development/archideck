@@ -1,5 +1,22 @@
 # ArchiDeck 開発履歴
 
+## v4.93.4 (2026-01-10)
+
+### コード品質改善（nullチェック追加）
+
+#### 重要フォーム関数にnullチェック追加
+- **signIn()**: ログインフォームの入力取得
+- **saveProject()**: 案件保存フォームの入力取得
+- **saveVendorV2()**: 業者保存フォームの入力取得
+- **addDesigner()**: 担当者追加フォームの入力取得
+- **saveTask()**: タスク保存フォームの入力取得
+
+#### 修正方法
+- `document.getElementById('xxx').value` → `document.getElementById('xxx')?.value || ''`
+- optional chaining (`?.`) を使用してTypeError防止
+
+---
+
 ## v4.93.3 (2026-01-10)
 
 ### カレンダー担当者連動・コード品質改善
