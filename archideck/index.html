@@ -20119,7 +20119,7 @@ async function saveKintoneSettings() {
       .eq('is_active', true)
       .limit(1);
 
-    // apps配列はJSONとして保存（データベースにはapps_jsonとして）
+    // 基本設定のみ保存（apps_json等はlocalStorageで管理）
     const dbSettings = {
       domain: settings.domain,
       app_id: settings.app_id,
@@ -20127,10 +20127,12 @@ async function saveKintoneSettings() {
       field_sales: settings.field_sales,
       field_design: settings.field_design,
       field_ic: settings.field_ic,
-      field_construction: settings.field_construction,
-      apps_json: JSON.stringify(apps),
-      field_mappings_json: JSON.stringify(fieldMappings)
+      field_construction: settings.field_construction
     };
+
+    // apps配列とフィールドマッピングはlocalStorageに保存
+    localStorage.setItem('kintone_apps', JSON.stringify(apps));
+    localStorage.setItem('kintone_field_mappings', JSON.stringify(fieldMappings));
 
     let error;
     if (existing && existing.length > 0) {
@@ -20153,11 +20155,9 @@ async function saveKintoneSettings() {
     }
 
     if (error) {
-      // apps_jsonカラムがない場合は無視して続行
-      if (!error.message.includes('apps_json')) {
-        showToast('設定保存に失敗しました: ' + error.message, 'error');
-        return;
-      }
+      console.error('kintone設定保存エラー:', error.message);
+      showToast('設定保存に失敗しました: ' + error.message, 'error');
+      return;
     }
 
     kintoneSettings = settings;
@@ -20890,20 +20890,10 @@ async function loadKintoneSettings() {
       if (icEl && settings.field_ic) icEl.value = settings.field_ic;
       if (constructionEl && settings.field_construction) constructionEl.value = settings.field_construction;
 
-      // 年度別アプリをDBから読み込み（apps_jsonカラムがある場合）
-      if (settings.apps_json) {
-        try {
-          kintoneApps = JSON.parse(settings.apps_json);
-        } catch (e) {
-          kintoneApps = [];
-        }
-      }
     }
 
-    // 年度別アプリをlocalStorageからフォールバック読み込み
-    if (!kintoneApps || kintoneApps.length === 0) {
-      kintoneApps = safeJsonParse(localStorage.getItem('kintone_apps'), []);
-    }
+    // 年度別アプリはlocalStorageから読み込み
+    kintoneApps = safeJsonParse(localStorage.getItem('kintone_apps'), []);
 
     // 後方互換性：app_idが設定されていてkintoneAppsが空の場合、app_idをkintoneAppsに追加
     if (kintoneApps.length === 0 && kintoneSettings?.app_id) {
@@ -20914,17 +20904,8 @@ async function loadKintoneSettings() {
     // 年度別アプリをUIに描画
     renderKintoneApps(kintoneApps);
 
-    // 基本情報フィールドをDBから読み込み（フォールバック：localStorage）
-    let fieldMappings = {};
-    if (kintoneSettings?.field_mappings_json) {
-      // DBから読み込み
-      fieldMappings = safeJsonParse(kintoneSettings.field_mappings_json, {});
-      // localStorageにも保存（同期用）
-      localStorage.setItem('kintone_field_mappings', kintoneSettings.field_mappings_json);
-    } else {
-      // フォールバック：localStorageから読み込み
-      fieldMappings = safeJsonParse(localStorage.getItem('kintone_field_mappings'), {});
-    }
+    // フィールドマッピングはlocalStorageから読み込み
+    const fieldMappings = safeJsonParse(localStorage.getItem('kintone_field_mappings'), {});
 
     const customerEl = document.getElementById('kintoneFieldCustomer');
     const layoutEl = document.getElementById('kintoneFieldLayout');
