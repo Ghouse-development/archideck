@@ -10652,6 +10652,7 @@ function renderSidebar() {
 
 function selectDesigner(name) {
   currentDesignerTab = name;
+  log('📅 selectDesigner: 担当者変更', { name, currentDesignerTab });
 
   // アーカイブフィルターをリセット
   const archiveFilter = document.getElementById('archiveFilter');
@@ -10670,7 +10671,13 @@ function selectDesigner(name) {
 
   renderSidebar();
   renderProjects();
-  renderCalendar(); // カレンダーも担当者に連動
+
+  // カレンダータブがアクティブな場合は再描画
+  const calendarTab = document.getElementById('calendarTab');
+  if (calendarTab && calendarTab.classList.contains('active')) {
+    log('📅 selectDesigner: カレンダータブがアクティブなので再描画');
+    renderCalendar();
+  }
 }
 
 // 担当者の完了済案件を表示
@@ -10801,6 +10808,8 @@ function renderCalendar() {
 function collectCalendarEvents() {
   const events = [];
 
+  log('📅 collectCalendarEvents: 開始', { currentDesignerTab, totalProjects: projects.length });
+
   // サイドバーで選択した担当者の案件のみをフィルタリング
   const filteredProjects = projects.filter(project => {
     // 完了済みタブの場合
@@ -10830,6 +10839,8 @@ function collectCalendarEvents() {
            constructionAssigned === selectedName ||
            salesAssigned === selectedName;
   });
+
+  log('📅 collectCalendarEvents: フィルタ後', { filteredCount: filteredProjects.length });
 
   filteredProjects.forEach(project => {
     const progressData = project.progress || {};
