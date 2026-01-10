@@ -7142,46 +7142,48 @@ async function saveNewPassword() {
 }
 
 async function signIn() {
-  log('🔐 ログイン処理開始...');
+  debugShow('LOGIN: 開始');
 
   const email = document.getElementById('loginEmail')?.value?.trim() || '';
   const password = document.getElementById('loginPassword')?.value?.trim() || '';
 
-  log('📧 入力されたメール:', email);
+  debugShow('LOGIN: email=' + email);
 
   if (!email) {
-    logError('❌ メールアドレスが空です');
+    debugShow('LOGIN ERROR: メールアドレスが空');
     showToast('メールアドレスを入力してください', 'error');
     return;
   }
 
   if (!password) {
+    debugShow('LOGIN ERROR: パスワードが空');
     showToast('パスワードを入力してください', 'error');
     return;
   }
 
   if (!window.supabase) {
-    logError('❌ Supabase CDNが読み込まれていません');
+    debugShow('LOGIN ERROR: Supabase未初期化');
     showToast('エラー: Supabaseが初期化されていません。ページを再読み込みしてください。', 'error');
     return;
   }
 
   try {
-    log('🔄 Supabase認証リクエスト送信中...');
+    debugShow('LOGIN: signInWithPassword呼び出し中...');
     const { data, error } = await supabase.auth.signInWithPassword({
       email: email,
       password: password
     });
+    debugShow('LOGIN: signInWithPassword完了');
 
     if (error) {
-      logError('❌ Supabase認証エラー:', error);
+      debugShow('LOGIN ERROR: ' + error.message);
       throw error;
     }
 
-    log('✅ ログイン成功:', data.user.email);
+    debugShow('LOGIN: 成功 - ' + data.user.email);
     // ログイン成功 - onAuthStateChangeで処理されるのでreloadは不要
   } catch (error) {
-    logError('❌ ログインエラー:', error);
+    debugShow('LOGIN CATCH: ' + error.message);
     showToast('ログインに失敗しました: ' + error.message, 'error');
   }
 }
