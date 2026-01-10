@@ -7291,6 +7291,29 @@ async function checkAuth() {
     return;
   }
 
+  // ローカルストレージの診断
+  const storageKey = 'sb-twzsirpfudqwboeyakta-auth-token';
+  const storedSession = localStorage.getItem(storageKey);
+  console.log('[診断] localStorage キー:', storageKey);
+  console.log('[診断] localStorage 値:', storedSession ? '存在する' : 'なし');
+
+  if (storedSession) {
+    try {
+      const parsed = JSON.parse(storedSession);
+      console.log('[診断] セッションデータ:', {
+        hasAccessToken: !!parsed.access_token,
+        hasRefreshToken: !!parsed.refresh_token,
+        expiresAt: parsed.expires_at ? new Date(parsed.expires_at * 1000).toLocaleString() : 'なし',
+        isExpired: parsed.expires_at ? (parsed.expires_at * 1000 < Date.now()) : 'N/A',
+        userEmail: parsed.user?.email || 'なし'
+      });
+    } catch (parseError) {
+      console.error('[診断] JSONパースエラー:', parseError.message);
+      console.log('[診断] 破損したデータを削除します');
+      localStorage.removeItem(storageKey);
+    }
+  }
+
   console.log('[checkAuth] getSession呼び出し中...');
 
   // getSessionにタイムアウトを設定（5秒）
@@ -7305,7 +7328,10 @@ async function checkAuth() {
     console.log('[checkAuth] getSession完了:', session ? session.user.email : 'なし');
   } catch (e) {
     console.error('[checkAuth] getSessionエラー/タイムアウト:', e.message);
-    // タイムアウトまたはエラー時はログイン画面を表示
+    // タイムアウト時：破損データの可能性があるのでクリアして再試行
+    console.log('[診断] セッションデータをクリアして再試行します');
+    localStorage.removeItem(storageKey);
+    // ログイン画面を表示
     document.getElementById('loginContainer').style.display = 'flex';
     document.getElementById('mainContainer').classList.remove('show');
     return;
