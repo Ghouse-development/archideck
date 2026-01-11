@@ -3210,6 +3210,91 @@ input:checked + .toggle-slider:before {
   line-height: 1.5;
 }
 
+/* 部署タブ */
+.dept-tab {
+  padding: 10px 20px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.dept-tab:hover {
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+}
+
+.dept-tab.active {
+  color: var(--primary-color);
+  border-bottom-color: var(--primary-color);
+  background: var(--primary-light);
+}
+
+.dept-content {
+  display: none;
+}
+
+.dept-content.active {
+  display: block;
+}
+
+.vendor-dept-content {
+  display: none;
+}
+
+.vendor-dept-content.active {
+  display: block;
+}
+
+/* 業者カテゴリカード */
+.vendor-category-card {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.vendor-category-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.vendor-category-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.vendor-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.vendor-item {
+  display: grid;
+  grid-template-columns: 1fr 120px 1fr 1fr 40px;
+  gap: 12px;
+  padding: 12px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  align-items: center;
+}
+
+.vendor-item-actions {
+  display: flex;
+  gap: 8px;
+}
+
 .settings-back-btn {
   display: inline-flex;
   align-items: center;
@@ -4852,40 +4937,10 @@ textarea:focus-visible {
             <div class="settings-card-title">担当管理</div>
             <div class="settings-card-description">設計・IC・外構・不動産・工事の担当者を管理</div>
           </div>
-          <div class="settings-card" onclick="openSettingsPanel('vendors')">
-            <div class="settings-card-icon">🏢</div>
-            <div class="settings-card-title">業者・メール管理</div>
-            <div class="settings-card-description">業者情報とメールテンプレートを管理</div>
-          </div>
-          <div class="settings-card" onclick="openSettingsPanel('categories')">
-            <div class="settings-card-icon">🏷️</div>
-            <div class="settings-card-title">カテゴリ管理</div>
-            <div class="settings-card-description">業者を分類するカテゴリを管理</div>
-          </div>
-          <div class="settings-card" onclick="openSettingsPanel('tasks')">
-            <div class="settings-card-icon">📐</div>
-            <div class="settings-card-title">設計業務管理</div>
-            <div class="settings-card-description">設計担当者のタスクを管理</div>
-          </div>
-          <div class="settings-card" onclick="openSettingsPanel('icTasks')">
-            <div class="settings-card-icon">🎨</div>
-            <div class="settings-card-title">IC業務管理</div>
-            <div class="settings-card-description">IC担当者のタスクを管理</div>
-          </div>
-          <div class="settings-card" onclick="openSettingsPanel('exteriorTasks')">
-            <div class="settings-card-icon">🌳</div>
-            <div class="settings-card-title">外構業務管理</div>
-            <div class="settings-card-description">外構担当者のタスクを管理</div>
-          </div>
-          <div class="settings-card" onclick="openSettingsPanel('realestateTasks')">
-            <div class="settings-card-icon">🏢</div>
-            <div class="settings-card-title">不動産業務管理</div>
-            <div class="settings-card-description">不動産担当者のタスクを管理</div>
-          </div>
-          <div class="settings-card" onclick="openSettingsPanel('constructionTasks')">
-            <div class="settings-card-icon">🔨</div>
-            <div class="settings-card-title">工事業務管理</div>
-            <div class="settings-card-description">工事担当者のタスクを管理</div>
+          <div class="settings-card" onclick="openSettingsPanel('taskManagement')">
+            <div class="settings-card-icon">📋</div>
+            <div class="settings-card-title">業務管理</div>
+            <div class="settings-card-description">各部署のタスクを管理</div>
           </div>
           <div class="settings-card" onclick="openSettingsPanel('products')">
             <div class="settings-card-icon">📦</div>
@@ -4912,10 +4967,10 @@ textarea:focus-visible {
             <div class="settings-card-title">FC管理</div>
             <div class="settings-card-description">フランチャイズ組織を管理</div>
           </div>
-          <div class="settings-card" onclick="openSettingsPanel('account')">
-            <div class="settings-card-icon">🔐</div>
-            <div class="settings-card-title">アカウント設定</div>
-            <div class="settings-card-description">パスワード変更・メールアドレス確認</div>
+          <div class="settings-card" onclick="openSettingsPanel('requestTemplates')">
+            <div class="settings-card-icon">📧</div>
+            <div class="settings-card-title">業者・依頼メール管理</div>
+            <div class="settings-card-description">業者情報・CC・メールテンプレートを管理</div>
           </div>
         </div>
 
@@ -4963,121 +5018,83 @@ textarea:focus-visible {
           </div>
         </div>
 
-        <!-- 業者管理 -->
-        <div id="vendorsPanel" class="sub-tab-panel">
+        <!-- 統合業務管理 -->
+        <div id="taskManagementPanel" class="sub-tab-panel">
           <button class="settings-back-btn" onclick="closeSettingsPanel()">← 設定に戻る</button>
-          <div class="toolbar" style="padding-bottom: 16px; border-bottom: 1px solid var(--border-color); margin-bottom: 24px;">
-            <div class="toolbar-left">
-              <div id="categoryFilters"></div>
-            </div>
-            <div class="toolbar-right">
-              <button class="btn btn-primary" onclick="openVendorModalV2()">+ 業者追加</button>
-            </div>
-          </div>
-          <div id="vendorsGrid" class="cards-grid"></div>
-        </div>
+          <div style="max-width: 1200px; margin: 0 auto;">
+            <h2 style="margin-bottom: 20px; font-size: 24px; font-weight: 700;">📋 業務管理</h2>
+            <p style="margin-bottom: 24px; color: var(--text-secondary);">各部署のタスクを管理します。部署タブを選択してタスクを追加・編集してください。</p>
 
-        <!-- カテゴリ管理 -->
-        <div id="categoriesPanel" class="sub-tab-panel">
-          <button class="settings-back-btn" onclick="closeSettingsPanel()">← 設定に戻る</button>
-          <div style="max-width: 800px; margin: 0 auto;">
-            <h2 style="margin-bottom: 20px; font-size: 24px; font-weight: 700;">🏷️ 業者カテゴリ管理</h2>
-            <p style="margin-bottom: 32px; color: var(--text-secondary);">業者を分類するカテゴリを追加・編集・削除できます。</p>
-            <div class="form-group">
-              <label class="form-label">新しいカテゴリを追加</label>
-              <div style="display: flex; gap: 12px;">
-                <input type="text" class="form-input" id="newCategoryNameInline" placeholder="カテゴリ名（例：電気工事）" style="flex: 1;">
-                <button class="btn btn-primary" onclick="addCategoryInline()">追加</button>
+            <!-- 部署タブ -->
+            <div class="department-tabs" style="display: flex; gap: 8px; margin-bottom: 24px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
+              <button class="dept-tab active" onclick="switchDeptTab('設計')" data-dept="設計">📐 設計</button>
+              <button class="dept-tab" onclick="switchDeptTab('IC')" data-dept="IC">🎨 IC</button>
+              <button class="dept-tab" onclick="switchDeptTab('外構')" data-dept="外構">🌳 外構</button>
+              <button class="dept-tab" onclick="switchDeptTab('不動産')" data-dept="不動産">🏢 不動産</button>
+              <button class="dept-tab" onclick="switchDeptTab('工事')" data-dept="工事">🔨 工事</button>
+            </div>
+
+            <!-- 設計タブ内容 -->
+            <div id="deptContent_設計" class="dept-content active">
+              <div class="toolbar" style="padding-bottom: 16px; margin-bottom: 16px;">
+                <div class="toolbar-right">
+                  <button class="btn btn-primary" onclick="openTaskModal('設計')">+ タスク追加</button>
+                </div>
               </div>
+              <div id="tasksGrid"></div>
             </div>
-            <div id="categoriesGrid" style="margin-top: 32px;"></div>
-          </div>
-        </div>
 
-        <!-- 設計業務管理 -->
-        <div id="tasksPanel" class="sub-tab-panel">
-          <button class="settings-back-btn" onclick="closeSettingsPanel()">← 設定に戻る</button>
-          <div class="toolbar" style="padding-bottom: 16px; border-bottom: 1px solid var(--border-color); margin-bottom: 24px;">
-            <div class="toolbar-left">
-              <h3 style="margin: 0; font-size: 18px;">📐 設計タスク管理</h3>
+            <!-- ICタブ内容 -->
+            <div id="deptContent_IC" class="dept-content" style="display: none;">
+              <div class="toolbar" style="padding-bottom: 16px; margin-bottom: 16px;">
+                <div class="toolbar-right">
+                  <button class="btn btn-warning" onclick="runICTasksMigration()" title="21項目のICタスクに更新">🔄 21項目に更新</button>
+                  <button class="btn btn-primary" onclick="openTaskModal('IC')">+ タスク追加</button>
+                </div>
+              </div>
+              <div id="icMigrationNotice" style="display: none; margin-bottom: 16px; padding: 12px; background: var(--warning-light); border-radius: var(--radius-md); border-left: 4px solid var(--warning-color);">
+                <p style="margin: 0; font-size: 13px; color: var(--warning-color);">
+                  ⚠️ <strong>ICタスクが古い形式です</strong>: 「21項目に更新」ボタンをクリックして、新しい21項目のICタスクに更新してください。
+                </p>
+              </div>
+              <div style="margin-bottom: 16px; padding: 12px; background: var(--primary-light); border-radius: var(--radius-md); border-left: 4px solid var(--primary-color);">
+                <p style="margin: 0; font-size: 13px; color: var(--primary-color);">
+                  💡 <strong>メール送信機能の設定</strong>: 「📧 業者・依頼メール管理」で各業者のメールアドレスを設定してください。
+                </p>
+              </div>
+              <div id="icTasksGrid"></div>
             </div>
-            <div class="toolbar-right">
-              <button class="btn btn-primary" onclick="openTaskModal('設計')">+ 設計タスク追加</button>
-            </div>
-          </div>
-          <p style="margin-bottom: 16px; color: var(--text-secondary);">設計担当者が使用するタスクを管理します。</p>
-          <div id="tasksGrid"></div>
-        </div>
 
-        <!-- IC業務管理 -->
-        <div id="icTasksPanel" class="sub-tab-panel">
-          <button class="settings-back-btn" onclick="closeSettingsPanel()">← 設定に戻る</button>
-          <div class="toolbar" style="padding-bottom: 16px; border-bottom: 1px solid var(--border-color); margin-bottom: 24px;">
-            <div class="toolbar-left">
-              <h3 style="margin: 0; font-size: 18px;">🎨 ICタスク管理</h3>
+            <!-- 外構タブ内容 -->
+            <div id="deptContent_外構" class="dept-content" style="display: none;">
+              <div class="toolbar" style="padding-bottom: 16px; margin-bottom: 16px;">
+                <div class="toolbar-right">
+                  <button class="btn btn-primary" onclick="openExteriorTaskModal()">+ タスク追加</button>
+                </div>
+              </div>
+              <div id="exteriorTasksGrid"></div>
             </div>
-            <div class="toolbar-right">
-              <button class="btn btn-warning" onclick="runICTasksMigration()" title="21項目のICタスクに更新">🔄 21項目に更新</button>
-              <button class="btn btn-primary" onclick="openTaskModal('IC')">+ ICタスク追加</button>
-            </div>
-          </div>
-          <p style="margin-bottom: 16px; color: var(--text-secondary);">IC担当者が使用するタスクを管理します。</p>
-          <div id="icMigrationNotice" style="display: none; margin-bottom: 16px; padding: 12px; background: var(--warning-light); border-radius: var(--radius-md); border-left: 4px solid var(--warning-color);">
-            <p style="margin: 0; font-size: 13px; color: var(--warning-color);">
-              ⚠️ <strong>ICタスクが古い形式です</strong>: 「21項目に更新」ボタンをクリックして、新しい21項目のICタスクに更新してください。
-            </p>
-          </div>
-          <div style="margin-bottom: 16px; padding: 12px; background: var(--primary-light); border-radius: var(--radius-md); border-left: 4px solid var(--primary-color);">
-            <p style="margin: 0; font-size: 13px; color: var(--primary-color);">
-              💡 <strong>メール送信機能の設定</strong>: キッチン・お風呂・洗面・トイレ・照明プランのメーカー選択に対応したメールを送信するには、「🏢 業者・メール管理」タブで各メーカーのメールアドレスを設定してください。
-            </p>
-          </div>
-          <div id="icTasksGrid"></div>
-        </div>
 
-        <!-- 外構業務管理 -->
-        <div id="exteriorTasksPanel" class="sub-tab-panel">
-          <button class="settings-back-btn" onclick="closeSettingsPanel()">← 設定に戻る</button>
-          <div class="toolbar" style="padding-bottom: 16px; border-bottom: 1px solid var(--border-color); margin-bottom: 24px;">
-            <div class="toolbar-left">
-              <h3 style="margin: 0; font-size: 18px;">🌳 外構業務タスク管理</h3>
+            <!-- 不動産タブ内容 -->
+            <div id="deptContent_不動産" class="dept-content" style="display: none;">
+              <div class="toolbar" style="padding-bottom: 16px; margin-bottom: 16px;">
+                <div class="toolbar-right">
+                  <button class="btn btn-primary" onclick="openRealestateTaskModal()">+ タスク追加</button>
+                </div>
+              </div>
+              <div id="realestateTasksGrid"></div>
             </div>
-            <div class="toolbar-right">
-              <button class="btn btn-primary" onclick="openExteriorTaskModal()">+ 外構タスク追加</button>
-            </div>
-          </div>
-          <p style="margin-bottom: 24px; color: var(--text-secondary);">外構設計の業務フローを管理します。</p>
-          <div id="exteriorTasksGrid"></div>
-        </div>
 
-        <!-- 不動産業務管理 -->
-        <div id="realestateTasksPanel" class="sub-tab-panel">
-          <button class="settings-back-btn" onclick="closeSettingsPanel()">← 設定に戻る</button>
-          <div class="toolbar" style="padding-bottom: 16px; border-bottom: 1px solid var(--border-color); margin-bottom: 24px;">
-            <div class="toolbar-left">
-              <h3 style="margin: 0; font-size: 18px;">🏢 不動産業務タスク管理</h3>
-            </div>
-            <div class="toolbar-right">
-              <button class="btn btn-primary" onclick="openRealestateTaskModal()">+ 不動産タスク追加</button>
-            </div>
-          </div>
-          <p style="margin-bottom: 24px; color: var(--text-secondary);">不動産関連の業務フローを管理します。</p>
-          <div id="realestateTasksGrid"></div>
-        </div>
-
-        <!-- 工事業務管理 -->
-        <div id="constructionTasksPanel" class="sub-tab-panel">
-          <button class="settings-back-btn" onclick="closeSettingsPanel()">← 設定に戻る</button>
-          <div class="toolbar" style="padding-bottom: 16px; border-bottom: 1px solid var(--border-color); margin-bottom: 24px;">
-            <div class="toolbar-left">
-              <h3 style="margin: 0; font-size: 18px;">🔨 工事業務タスク管理</h3>
-            </div>
-            <div class="toolbar-right">
-              <button class="btn btn-primary" onclick="openConstructionTaskModal()">+ 工事タスク追加</button>
+            <!-- 工事タブ内容 -->
+            <div id="deptContent_工事" class="dept-content" style="display: none;">
+              <div class="toolbar" style="padding-bottom: 16px; margin-bottom: 16px;">
+                <div class="toolbar-right">
+                  <button class="btn btn-primary" onclick="openConstructionTaskModal()">+ タスク追加</button>
+                </div>
+              </div>
+              <div id="constructionTasksGrid"></div>
             </div>
           </div>
-          <p style="margin-bottom: 24px; color: var(--text-secondary);">工事関連の業務フローを管理します。</p>
-          <div id="constructionTasksGrid"></div>
         </div>
 
         <!-- 商品管理 -->
@@ -5379,45 +5396,161 @@ textarea:focus-visible {
           </div>
         </div>
 
-        <!-- アカウント設定 -->
-        <div id="accountPanel" class="sub-tab-panel">
+        <!-- 業者・依頼メール管理 -->
+        <div id="requestTemplatesPanel" class="sub-tab-panel">
           <button class="settings-back-btn" onclick="closeSettingsPanel()">← 設定に戻る</button>
-          <div style="max-width: 600px; margin: 0 auto;">
-            <h2 style="margin-bottom: 20px; font-size: 24px; font-weight: 700;">🔐 アカウント設定</h2>
+          <div style="max-width: 1200px; margin: 0 auto;">
+            <h2 style="margin-bottom: 20px; font-size: 24px; font-weight: 700;">📧 業者・依頼メール管理</h2>
+            <p style="margin-bottom: 24px; color: var(--text-secondary);">
+              部署別に業者情報・メールテンプレートを管理できます。宛先、CC、件名、本文を設定すると、メール作成時に反映されます。
+            </p>
 
-            <!-- 現在のアカウント情報 -->
-            <div class="card" style="margin-bottom: 24px; padding: 20px;">
-              <h3 style="margin: 0 0 16px; font-size: 16px;">アカウント情報</h3>
-              <div style="margin-bottom: 12px;">
-                <label style="font-size: 13px; color: var(--text-secondary);">メールアドレス</label>
-                <div id="accountEmail" style="font-weight: 600; margin-top: 4px;">-</div>
-              </div>
-              <div>
-                <label style="font-size: 13px; color: var(--text-secondary);">ログインユーザー名</label>
-                <div id="accountUsername" style="font-weight: 600; margin-top: 4px;">-</div>
-              </div>
+            <!-- 部署タブ -->
+            <div class="department-tabs" style="display: flex; gap: 8px; margin-bottom: 24px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
+              <button class="dept-tab active" onclick="switchVendorDeptTab('設計')" data-vendor-dept="設計">📐 設計</button>
+              <button class="dept-tab" onclick="switchVendorDeptTab('IC')" data-vendor-dept="IC">🎨 IC</button>
+              <button class="dept-tab" onclick="switchVendorDeptTab('外構')" data-vendor-dept="外構">🌳 外構</button>
+              <button class="dept-tab" onclick="switchVendorDeptTab('不動産')" data-vendor-dept="不動産">🏢 不動産</button>
+              <button class="dept-tab" onclick="switchVendorDeptTab('工事')" data-vendor-dept="工事">🔨 工事</button>
             </div>
 
-            <!-- パスワード変更 -->
-            <div class="card" style="padding: 20px;">
-              <h3 style="margin: 0 0 16px; font-size: 16px;">パスワード変更</h3>
-              <p style="margin: 0 0 16px; font-size: 13px; color: var(--text-secondary);">
-                新しいパスワードを入力してください。パスワードは英字と数字を含む8文字以上で設定してください。
-              </p>
-              <div class="form-group" style="margin-bottom: 16px;">
-                <label class="form-label">新しいパスワード</label>
-                <input type="password" class="form-input" id="newPassword" placeholder="英数字混合8文字以上" style="width: 100%;">
+            <!-- 設計タブ内容 -->
+            <div id="vendorDeptContent_設計" class="vendor-dept-content active">
+              <div class="toolbar" style="padding-bottom: 16px; margin-bottom: 16px;">
+                <div class="toolbar-right">
+                  <button class="btn btn-primary" onclick="openAddVendorCategoryModal('設計')">+ カテゴリ追加</button>
+                </div>
               </div>
-              <div class="form-group" style="margin-bottom: 20px;">
-                <label class="form-label">新しいパスワード（確認）</label>
-                <input type="password" class="form-input" id="confirmPassword" placeholder="もう一度入力" style="width: 100%;">
+              <div id="vendorGrid_設計" class="cards-grid"></div>
+            </div>
+
+            <!-- ICタブ内容 -->
+            <div id="vendorDeptContent_IC" class="vendor-dept-content" style="display: none;">
+              <div class="toolbar" style="padding-bottom: 16px; margin-bottom: 16px;">
+                <div class="toolbar-right">
+                  <button class="btn btn-primary" onclick="openAddVendorCategoryModal('IC')">+ カテゴリ追加</button>
+                </div>
               </div>
-              <button class="btn btn-primary" onclick="changePassword()" style="width: 100%;">パスワードを変更</button>
+              <div id="vendorGrid_IC" class="cards-grid"></div>
+            </div>
+
+            <!-- 外構タブ内容 -->
+            <div id="vendorDeptContent_外構" class="vendor-dept-content" style="display: none;">
+              <div class="toolbar" style="padding-bottom: 16px; margin-bottom: 16px;">
+                <div class="toolbar-right">
+                  <button class="btn btn-primary" onclick="openAddVendorCategoryModal('外構')">+ カテゴリ追加</button>
+                </div>
+              </div>
+              <div id="vendorGrid_外構" class="cards-grid"></div>
+            </div>
+
+            <!-- 不動産タブ内容 -->
+            <div id="vendorDeptContent_不動産" class="vendor-dept-content" style="display: none;">
+              <div class="toolbar" style="padding-bottom: 16px; margin-bottom: 16px;">
+                <div class="toolbar-right">
+                  <button class="btn btn-primary" onclick="openAddVendorCategoryModal('不動産')">+ カテゴリ追加</button>
+                </div>
+              </div>
+              <div id="vendorGrid_不動産" class="cards-grid"></div>
+            </div>
+
+            <!-- 工事タブ内容 -->
+            <div id="vendorDeptContent_工事" class="vendor-dept-content" style="display: none;">
+              <div class="toolbar" style="padding-bottom: 16px; margin-bottom: 16px;">
+                <div class="toolbar-right">
+                  <button class="btn btn-primary" onclick="openAddVendorCategoryModal('工事')">+ カテゴリ追加</button>
+                </div>
+              </div>
+              <div id="vendorGrid_工事" class="cards-grid"></div>
             </div>
           </div>
         </div>
       </div>
     </main>
+  </div>
+</div>
+
+<!-- モーダル：依頼テンプレート編集 -->
+<div id="editRequestTemplateModal" class="modal">
+  <div class="modal-content" style="max-width: 900px;">
+    <div class="modal-header">
+      <h2 class="modal-title" id="editTemplateModalTitle">テンプレート編集</h2>
+      <button class="close" onclick="closeEditTemplateModal()">&times;</button>
+    </div>
+    <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+      <input type="hidden" id="editTemplateId">
+
+      <!-- 基本情報 -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
+        <div class="form-group">
+          <label class="form-label">テンプレート名 *</label>
+          <input type="text" class="form-input" id="editTemplateDisplayName" placeholder="例：サッシプレゼン依頼">
+        </div>
+        <div class="form-group">
+          <label class="form-label">カテゴリ</label>
+          <select class="form-select" id="editTemplateCategory">
+            <option value="設計">設計</option>
+            <option value="IC">IC</option>
+            <option value="外構">外構</option>
+            <option value="工事">工事</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 宛先情報 -->
+      <div class="card" style="padding: 16px; margin-bottom: 24px; background: var(--bg-secondary);">
+        <h3 style="margin: 0 0 16px; font-size: 16px; font-weight: 600;">📬 宛先情報</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
+          <div class="form-group">
+            <label class="form-label">会社名</label>
+            <input type="text" class="form-input" id="editTemplateCompany" placeholder="例：小倉サンダイン株式会社">
+          </div>
+          <div class="form-group">
+            <label class="form-label">担当者名</label>
+            <input type="text" class="form-input" id="editTemplateContact" placeholder="例：井上さま">
+          </div>
+          <div class="form-group">
+            <label class="form-label">メールアドレス</label>
+            <input type="email" class="form-input" id="editTemplateEmail" placeholder="例：sample@example.com">
+          </div>
+        </div>
+        <p style="margin: 8px 0 0; font-size: 12px; color: var(--text-secondary);">
+          ※複数の宛先がある場合は、担当者名・メールアドレスを改行またはセミコロン(;)で区切って入力してください
+        </p>
+      </div>
+
+      <!-- 件名・本文 -->
+      <div class="form-group" style="margin-bottom: 16px;">
+        <label class="form-label">件名テンプレート</label>
+        <input type="text" class="form-input" id="editTemplateSubject" placeholder="例：{customerName}様邸 〇〇依頼">
+        <p style="margin: 4px 0 0; font-size: 12px; color: var(--text-secondary);">
+          使用可能な変数: {customerName}=お客様名, {staffName}=担当者名, {dueDate}=期日
+        </p>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">本文テンプレート</label>
+        <textarea class="form-input" id="editTemplateBody" rows="15" style="font-family: monospace; font-size: 13px;" placeholder="メール本文を入力..."></textarea>
+        <p style="margin: 4px 0 0; font-size: 12px; color: var(--text-secondary);">
+          使用可能な変数: {company}=会社名, {contact}=担当者名, {customerName}=お客様名, {staffName}=担当者名, {dueDate}=期日, {specialContent}=特記事項
+        </p>
+      </div>
+
+      <!-- 複数業者選択（template_vendors） -->
+      <div id="editTemplateVendorsSection" style="display: none; margin-top: 24px;">
+        <div class="card" style="padding: 16px; background: var(--bg-secondary);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h3 style="margin: 0; font-size: 16px; font-weight: 600;">🏢 業者一覧（選択式）</h3>
+            <button class="btn btn-ghost btn-small" onclick="addTemplateVendorRow()">+ 業者追加</button>
+          </div>
+          <div id="templateVendorsList"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeEditTemplateModal()">キャンセル</button>
+      <button class="btn btn-primary" onclick="saveRequestTemplate()">保存</button>
+    </div>
   </div>
 </div>
 
@@ -5581,6 +5714,510 @@ textarea:focus-visible {
       <button class="close" onclick="closeEmailModal()">&times;</button>
     </div>
     <div class="modal-body" id="emailComposerContent"></div>
+  </div>
+</div>
+
+<!-- モーダル：サッシプレゼン・開口部リスト作成依頼 -->
+<div id="sashRequestModal" class="modal">
+  <div class="modal-content" style="max-width: 1100px;">
+    <div class="modal-header">
+      <h2 class="modal-title">🪟 サッシプレゼン・開口部リスト作成依頼</h2>
+      <button class="close" onclick="closeSashRequestModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+        <!-- 左カラム：入力フォーム -->
+        <div>
+          <h3 style="margin-bottom: 16px; font-size: 15px; color: var(--text-primary); border-bottom: 2px solid var(--primary-light); padding-bottom: 8px;">📝 依頼内容</h3>
+
+          <div class="form-group">
+            <label class="form-label">物件名（お客様名） *</label>
+            <input type="text" class="form-input" id="sashCustomerName" placeholder="例：山田" oninput="updateSashEmail()">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">担当者名 *</label>
+            <input type="text" class="form-input" id="sashStaffName" placeholder="例：田中" oninput="updateSashEmail()">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">期日</label>
+            <input type="date" class="form-input" id="sashDueDate" oninput="updateSashEmail()">
+            <div class="form-hint">自動で次の金曜日が設定されます</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">地域</label>
+            <select class="form-select" id="sashRegion" onchange="updateSashEmail()">
+              <!-- オプションはJSで動的生成 -->
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">玄関ドア</label>
+            <input type="text" class="form-input" id="sashEntranceDoor" placeholder="例：C10 カームブラック" oninput="updateSashEmail()">
+            <div class="form-hint">決まっていれば打合せ通りのものを入力</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">サッシ色</label>
+            <input type="text" class="form-input" id="sashColor" placeholder="例：内外ブラック" oninput="updateSashEmail()">
+            <div class="form-hint">決まっていれば打合せ通りのものを入力</div>
+          </div>
+
+          <div style="margin-top: 16px; padding: 12px; background: var(--warning-light); border-radius: 8px;">
+            <div style="font-weight: 600; margin-bottom: 8px; color: var(--warning-color);">📎 添付必要図面</div>
+            <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: var(--text-secondary);">
+              <li>配置図</li>
+              <li>平面図（サッシ記号が入っているもの）</li>
+              <li>立面図</li>
+            </ul>
+            <div style="font-size: 12px; color: var(--text-muted); margin-top: 8px;">
+              ※高所用すべり出し窓の場合は開閉仕様を記載すること
+            </div>
+          </div>
+        </div>
+
+        <!-- 右カラム：プレビュー -->
+        <div>
+          <h3 style="margin-bottom: 16px; font-size: 15px; color: var(--text-primary); border-bottom: 2px solid var(--primary-light); padding-bottom: 8px;">📬 生成されたメール</h3>
+
+          <div class="form-group">
+            <label class="form-label">宛先（To）</label>
+            <div id="sashEmailTo" style="padding: 10px; background: var(--bg-secondary); border-radius: 6px; font-size: 13px;"></div>
+            <button class="btn btn-ghost btn-small" onclick="copySashText('sashEmailTo')" style="margin-top: 6px;">📋 コピー</button>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">CC</label>
+            <div id="sashEmailCc" style="padding: 10px; background: var(--bg-secondary); border-radius: 6px; font-size: 13px;"></div>
+            <button class="btn btn-ghost btn-small" onclick="copySashText('sashEmailCc')" style="margin-top: 6px;">📋 コピー</button>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">件名</label>
+            <div id="sashEmailSubject" style="padding: 10px; background: var(--bg-secondary); border-radius: 6px; font-weight: 500;"></div>
+            <button class="btn btn-ghost btn-small" onclick="copySashText('sashEmailSubject')" style="margin-top: 6px;">📋 コピー</button>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">本文</label>
+            <div id="sashEmailBody" style="padding: 12px; background: var(--bg-secondary); border-radius: 6px; white-space: pre-wrap; line-height: 1.7; font-size: 13px; max-height: 350px; overflow-y: auto;"></div>
+            <button class="btn btn-ghost btn-small" onclick="copySashText('sashEmailBody')" style="margin-top: 6px;">📋 コピー</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+      <div style="font-size: 12px; color: var(--text-muted);">
+        💡 メールアドレス・件名・本文をコピーしてメールソフトに貼り付けてください
+      </div>
+      <div style="display: flex; gap: 12px;">
+        <button class="btn btn-ghost" onclick="closeSashRequestModal()">閉じる</button>
+        <button class="btn btn-primary" id="sashMarkRequestedBtn" onclick="markSashAsRequested()">依頼済みにする</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- モーダル：ダンパー（evoltz）依頼 -->
+<div id="damperRequestModal" class="modal">
+  <div class="modal-content" style="max-width: 1100px;">
+    <div class="modal-header">
+      <h2 class="modal-title">🔧 ダンパー（evoltz）依頼</h2>
+      <button class="close" onclick="closeDamperRequestModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+        <!-- 左カラム：入力フォーム -->
+        <div>
+          <h3 style="margin-bottom: 16px; font-size: 15px; color: var(--text-primary); border-bottom: 2px solid var(--primary-light); padding-bottom: 8px;">📝 依頼内容</h3>
+
+          <div class="form-group">
+            <label class="form-label">物件名（お客様名） *</label>
+            <input type="text" class="form-input" id="damperCustomerName" placeholder="例：山田" oninput="updateDamperEmail()">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">担当者名 *</label>
+            <input type="text" class="form-input" id="damperStaffName" placeholder="例：田中" oninput="updateDamperEmail()">
+          </div>
+
+          <div style="margin-top: 16px; padding: 12px; background: var(--warning-light); border-radius: 8px;">
+            <div style="font-weight: 600; margin-bottom: 8px; color: var(--warning-color);">📎 添付必要図面</div>
+            <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: var(--text-secondary);">
+              <li>平面図</li>
+              <li>立面図</li>
+              <li>配置図（PDF）</li>
+              <li>基礎伏図</li>
+              <li>耐力壁図</li>
+              <li>金物図</li>
+            </ul>
+          </div>
+
+          <div style="margin-top: 16px; padding: 12px; background: var(--danger-light); border-radius: 8px;">
+            <div style="font-weight: 600; margin-bottom: 8px; color: var(--danger-color);">⚠️ 注意事項</div>
+            <ul style="margin: 0; padding-left: 20px; font-size: 12px; color: var(--text-secondary);">
+              <li>構造チェック2回目完了後に依頼すること</li>
+              <li>筋交いがたすき掛けで入っている場所には施工不可<br>（断熱材の欠損や施工性が悪いため）</li>
+              <li>外部で片筋交いの部分も同様<br>（やむを得ない場合はOK）</li>
+            </ul>
+          </div>
+
+          <div style="margin-top: 16px; padding: 12px; background: var(--info-light); border-radius: 8px;">
+            <div style="font-weight: 600; margin-bottom: 8px; color: var(--info-color);">📁 保存先</div>
+            <div style="font-size: 11px; color: var(--text-secondary); word-break: break-all;">
+              G:\共有ドライブ\０２-１｜お客様資料\02.請負契約済\各物件\06.見積・プレゼン・承認図\11 エボルツ
+            </div>
+            <div style="font-size: 12px; color: var(--text-muted); margin-top: 6px;">
+              保存資料：見積・配置図・発注書 ※エアコンの資料がある場合は、そちらも
+            </div>
+          </div>
+        </div>
+
+        <!-- 右カラム：プレビュー -->
+        <div>
+          <h3 style="margin-bottom: 16px; font-size: 15px; color: var(--text-primary); border-bottom: 2px solid var(--primary-light); padding-bottom: 8px;">📬 生成されたメール</h3>
+
+          <div class="form-group">
+            <label class="form-label">宛先（To）</label>
+            <div id="damperEmailTo" style="padding: 10px; background: var(--bg-secondary); border-radius: 6px; font-size: 13px;"></div>
+            <button class="btn btn-ghost btn-small" onclick="copyDamperText('damperEmailTo')" style="margin-top: 6px;">📋 コピー</button>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">CC</label>
+            <div id="damperEmailCc" style="padding: 10px; background: var(--bg-secondary); border-radius: 6px; font-size: 13px;"></div>
+            <button class="btn btn-ghost btn-small" onclick="copyDamperText('damperEmailCc')" style="margin-top: 6px;">📋 コピー</button>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">件名</label>
+            <div id="damperEmailSubject" style="padding: 10px; background: var(--bg-secondary); border-radius: 6px; font-weight: 500;"></div>
+            <button class="btn btn-ghost btn-small" onclick="copyDamperText('damperEmailSubject')" style="margin-top: 6px;">📋 コピー</button>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">本文</label>
+            <div id="damperEmailBody" style="padding: 12px; background: var(--bg-secondary); border-radius: 6px; white-space: pre-wrap; line-height: 1.7; font-size: 13px; max-height: 400px; overflow-y: auto;"></div>
+            <button class="btn btn-ghost btn-small" onclick="copyDamperText('damperEmailBody')" style="margin-top: 6px;">📋 コピー</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+      <div style="font-size: 12px; color: var(--text-muted);">
+        💡 メールアドレス・件名・本文をコピーしてメールソフトに貼り付けてください
+      </div>
+      <div style="display: flex; gap: 12px;">
+        <button class="btn btn-ghost" onclick="closeDamperRequestModal()">閉じる</button>
+        <button class="btn btn-primary" id="damperMarkRequestedBtn" onclick="markDamperAsRequested()">依頼済みにする</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- モーダル：換気システム依頼（標準パナソニック） -->
+<div id="ventilationRequestModal" class="modal">
+  <div class="modal-content" style="max-width: 1100px;">
+    <div class="modal-header">
+      <h2 class="modal-title">🌀 換気システム依頼（標準パナソニック）</h2>
+      <button class="close" onclick="closeVentilationRequestModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+        <!-- 左カラム：入力フォーム -->
+        <div>
+          <h3 style="margin-bottom: 16px; font-size: 15px; color: var(--text-primary); border-bottom: 2px solid var(--primary-light); padding-bottom: 8px;">📝 依頼内容</h3>
+
+          <div class="form-group">
+            <label class="form-label">物件名（お客様名） *</label>
+            <input type="text" class="form-input" id="ventilationCustomerName" placeholder="例：山田" oninput="updateVentilationEmail()">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">担当者名 *</label>
+            <input type="text" class="form-input" id="ventilationStaffName" placeholder="例：田中" oninput="updateVentilationEmail()">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">期日</label>
+            <input type="date" class="form-input" id="ventilationDueDate" oninput="updateVentilationEmail()">
+            <div class="form-hint">自動で翌週の金曜日が設定されます（5〜7営業日）</div>
+          </div>
+
+          <div style="margin-top: 16px; padding: 12px; background: var(--warning-light); border-radius: 8px;">
+            <div style="font-weight: 600; margin-bottom: 8px; color: var(--warning-color);">📎 添付必要図面</div>
+            <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: var(--text-secondary);">
+              <li>平面図</li>
+              <li>立面図（ファサード確認用）</li>
+            </ul>
+          </div>
+
+          <div style="margin-top: 16px; padding: 12px; background: var(--info-light); border-radius: 8px;">
+            <div style="font-weight: 600; margin-bottom: 8px; color: var(--info-color);">💡 注意事項</div>
+            <ul style="margin: 0; padding-left: 20px; font-size: 12px; color: var(--text-secondary);">
+              <li>ファサードにフードが出ないように指示</li>
+              <li>外部フードはすべてFD付き</li>
+              <li>DSDDの場合は別途マニュアル確認</li>
+            </ul>
+          </div>
+
+          <div style="margin-top: 16px; padding: 12px; background: var(--danger-light); border-radius: 8px;">
+            <div style="font-weight: 600; margin-bottom: 8px; color: var(--danger-color);">⚠️ DSDD（オプション）の場合</div>
+            <ul style="margin: 0; padding-left: 20px; font-size: 11px; color: var(--text-secondary);">
+              <li>基礎の仕様が標準(400㎜)とは違い450㎜ → 構造図注意</li>
+              <li>床断熱→基礎断熱になる</li>
+              <li>DSが必須、床面に排気口設置が必要</li>
+              <li>床下点検口が3〜4個入る → 事前にお客様にお伝え</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- 右カラム：プレビュー -->
+        <div>
+          <h3 style="margin-bottom: 16px; font-size: 15px; color: var(--text-primary); border-bottom: 2px solid var(--primary-light); padding-bottom: 8px;">📬 生成されたメール</h3>
+
+          <div class="form-group">
+            <label class="form-label">宛先（To）</label>
+            <div id="ventilationEmailTo" style="padding: 10px; background: var(--bg-secondary); border-radius: 6px; font-size: 13px;"></div>
+            <button class="btn btn-ghost btn-small" onclick="copyVentilationText('ventilationEmailTo')" style="margin-top: 6px;">📋 コピー</button>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">CC</label>
+            <div id="ventilationEmailCc" style="padding: 10px; background: var(--bg-secondary); border-radius: 6px; font-size: 13px;"></div>
+            <button class="btn btn-ghost btn-small" onclick="copyVentilationText('ventilationEmailCc')" style="margin-top: 6px;">📋 コピー</button>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">件名</label>
+            <div id="ventilationEmailSubject" style="padding: 10px; background: var(--bg-secondary); border-radius: 6px; font-weight: 500;"></div>
+            <button class="btn btn-ghost btn-small" onclick="copyVentilationText('ventilationEmailSubject')" style="margin-top: 6px;">📋 コピー</button>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">本文</label>
+            <div id="ventilationEmailBody" style="padding: 12px; background: var(--bg-secondary); border-radius: 6px; white-space: pre-wrap; line-height: 1.7; font-size: 13px; max-height: 350px; overflow-y: auto;"></div>
+            <button class="btn btn-ghost btn-small" onclick="copyVentilationText('ventilationEmailBody')" style="margin-top: 6px;">📋 コピー</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+      <div style="font-size: 12px; color: var(--text-muted);">
+        💡 メールアドレス・件名・本文をコピーしてメールソフトに貼り付けてください
+      </div>
+      <div style="display: flex; gap: 12px;">
+        <button class="btn btn-ghost" onclick="closeVentilationRequestModal()">閉じる</button>
+        <button class="btn btn-primary" id="ventilationMarkRequestedBtn" onclick="markVentilationAsRequested()">依頼済みにする</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- モーダル：地盤調査依頼 -->
+<div id="groundSurveyRequestModal" class="modal">
+  <div class="modal-content" style="max-width: 1100px;">
+    <div class="modal-header">
+      <h2 class="modal-title">🔍 地盤調査依頼</h2>
+      <button class="close" onclick="closeGroundSurveyRequestModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+        <!-- 左カラム：入力フォーム -->
+        <div>
+          <h3 style="margin-bottom: 16px; font-size: 15px; color: var(--text-primary); border-bottom: 2px solid var(--primary-light); padding-bottom: 8px;">📝 依頼内容</h3>
+
+          <div class="form-group">
+            <label class="form-label">物件名（お客様名） *</label>
+            <input type="text" class="form-input" id="groundSurveyCustomerName" placeholder="例：山田" oninput="updateGroundSurveyEmail()">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">担当者名 *</label>
+            <input type="text" class="form-input" id="groundSurveyStaffName" placeholder="例：田中" oninput="updateGroundSurveyEmail()">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">期日</label>
+            <input type="date" class="form-input" id="groundSurveyDueDate" oninput="updateGroundSurveyEmail()">
+            <div class="form-hint">自動で次の金曜日が設定されます</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">エリア（業者選択） *</label>
+            <select class="form-select" id="groundSurveyVendor" onchange="updateGroundSurveyEmail()">
+              <option value="">選択してください</option>
+              <!-- オプションはJSで動的生成 -->
+            </select>
+          </div>
+
+          <div style="margin-top: 16px; padding: 12px; background: var(--warning-light); border-radius: 8px;">
+            <div style="font-weight: 600; margin-bottom: 8px; color: var(--warning-color);">📎 添付必要図面</div>
+            <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: var(--text-secondary);">
+              <li>配置図（寸法が記載されているもの）</li>
+              <li>平面図</li>
+              <li>立面図</li>
+              <li>依頼書</li>
+            </ul>
+          </div>
+
+          <div style="margin-top: 16px; padding: 12px; background: var(--danger-light); border-radius: 8px;">
+            <div style="font-weight: 600; margin-bottom: 8px; color: var(--danger-color);">⚠️ 調査可能条件の確認</div>
+            <ul style="margin: 0; padding-left: 20px; font-size: 11px; color: var(--text-secondary);">
+              <li>建て替えで所有が親族もしくは建築主の場合 → OK</li>
+              <li>分譲地や仲介物件で土地決済がまだ → 担当に確認</li>
+              <li>解体前であれば解体日程の確認</li>
+              <li>草刈り状況など現場が調査可能な状態か確認</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- 右カラム：プレビュー -->
+        <div>
+          <h3 style="margin-bottom: 16px; font-size: 15px; color: var(--text-primary); border-bottom: 2px solid var(--primary-light); padding-bottom: 8px;">📬 生成されたメール</h3>
+
+          <div class="form-group">
+            <label class="form-label">宛先（To）</label>
+            <div id="groundSurveyEmailTo" style="padding: 10px; background: var(--bg-secondary); border-radius: 6px; font-size: 13px;"></div>
+            <button class="btn btn-ghost btn-small" onclick="copyGroundSurveyText('groundSurveyEmailTo')" style="margin-top: 6px;">📋 コピー</button>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">CC</label>
+            <div id="groundSurveyEmailCc" style="padding: 10px; background: var(--bg-secondary); border-radius: 6px; font-size: 13px;"></div>
+            <button class="btn btn-ghost btn-small" onclick="copyGroundSurveyText('groundSurveyEmailCc')" style="margin-top: 6px;">📋 コピー</button>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">件名</label>
+            <div id="groundSurveyEmailSubject" style="padding: 10px; background: var(--bg-secondary); border-radius: 6px; font-weight: 500;"></div>
+            <button class="btn btn-ghost btn-small" onclick="copyGroundSurveyText('groundSurveyEmailSubject')" style="margin-top: 6px;">📋 コピー</button>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">本文</label>
+            <div id="groundSurveyEmailBody" style="padding: 12px; background: var(--bg-secondary); border-radius: 6px; white-space: pre-wrap; line-height: 1.7; font-size: 13px; max-height: 350px; overflow-y: auto;"></div>
+            <button class="btn btn-ghost btn-small" onclick="copyGroundSurveyText('groundSurveyEmailBody')" style="margin-top: 6px;">📋 コピー</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+      <div style="font-size: 12px; color: var(--text-muted);">
+        💡 メールアドレス・件名・本文をコピーしてメールソフトに貼り付けてください
+      </div>
+      <div style="display: flex; gap: 12px;">
+        <button class="btn btn-ghost" onclick="closeGroundSurveyRequestModal()">閉じる</button>
+        <button class="btn btn-primary" onclick="markGroundSurveyAsRequested()">依頼済みにする</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- モーダル：外部給排水経路図依頼 -->
+<div id="plumbingRequestModal" class="modal">
+  <div class="modal-content" style="max-width: 1100px;">
+    <div class="modal-header">
+      <h2 class="modal-title">🚰 外部給排水経路図依頼</h2>
+      <button class="close" onclick="closePlumbingRequestModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+        <!-- 左カラム：入力フォーム -->
+        <div>
+          <h3 style="margin-bottom: 16px; font-size: 15px; color: var(--text-primary); border-bottom: 2px solid var(--primary-light); padding-bottom: 8px;">📝 依頼内容</h3>
+
+          <div class="form-group">
+            <label class="form-label">物件名（お客様名） *</label>
+            <input type="text" class="form-input" id="plumbingCustomerName" placeholder="例：山田" oninput="updatePlumbingEmail()">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">担当者名 *</label>
+            <input type="text" class="form-input" id="plumbingStaffName" placeholder="例：田中" oninput="updatePlumbingEmail()">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">期日</label>
+            <input type="date" class="form-input" id="plumbingDueDate" oninput="updatePlumbingEmail()">
+            <div class="form-hint">自動で次の金曜日が設定されます</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">案件タイプ *</label>
+            <select class="form-select" id="plumbingProjectType" onchange="updatePlumbingVendorOptions()">
+              <option value="">選択してください</option>
+              <option value="fabless">ファブレス案件（現場監督が自社でない）</option>
+              <option value="internal">自社監督案件</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">業者選択 *</label>
+            <select class="form-select" id="plumbingVendor" onchange="updatePlumbingEmail()">
+              <option value="">先に案件タイプを選択してください</option>
+            </select>
+          </div>
+
+          <div style="margin-top: 16px; padding: 12px; background: var(--warning-light); border-radius: 8px;">
+            <div style="font-weight: 600; margin-bottom: 8px; color: var(--warning-color);">📎 添付必要図面</div>
+            <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: var(--text-secondary);">
+              <li>配置図</li>
+              <li>平面図</li>
+              <li>立面図</li>
+              <li>契約時の見積</li>
+            </ul>
+          </div>
+
+          <div style="margin-top: 16px; padding: 12px; background: var(--info-light); border-radius: 8px;">
+            <div style="font-weight: 600; margin-bottom: 8px; color: var(--info-color);">📁 保存先</div>
+            <div style="font-size: 10px; color: var(--text-secondary); word-break: break-all;">
+              G:\共有ドライブ\０２-１｜お客様資料\０２｜請負契約済\○○○○様邸\06.見積・プレゼン・承認図\02 上下水道引き込み
+            </div>
+          </div>
+        </div>
+
+        <!-- 右カラム：プレビュー -->
+        <div>
+          <h3 style="margin-bottom: 16px; font-size: 15px; color: var(--text-primary); border-bottom: 2px solid var(--primary-light); padding-bottom: 8px;">📬 生成されたメール</h3>
+
+          <div class="form-group">
+            <label class="form-label">宛先（To）</label>
+            <div id="plumbingEmailTo" style="padding: 10px; background: var(--bg-secondary); border-radius: 6px; font-size: 13px;"></div>
+            <button class="btn btn-ghost btn-small" onclick="copyPlumbingText('plumbingEmailTo')" style="margin-top: 6px;">📋 コピー</button>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">CC</label>
+            <div id="plumbingEmailCc" style="padding: 10px; background: var(--bg-secondary); border-radius: 6px; font-size: 13px;"></div>
+            <button class="btn btn-ghost btn-small" onclick="copyPlumbingText('plumbingEmailCc')" style="margin-top: 6px;">📋 コピー</button>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">件名</label>
+            <div id="plumbingEmailSubject" style="padding: 10px; background: var(--bg-secondary); border-radius: 6px; font-weight: 500;"></div>
+            <button class="btn btn-ghost btn-small" onclick="copyPlumbingText('plumbingEmailSubject')" style="margin-top: 6px;">📋 コピー</button>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">本文</label>
+            <div id="plumbingEmailBody" style="padding: 12px; background: var(--bg-secondary); border-radius: 6px; white-space: pre-wrap; line-height: 1.7; font-size: 13px; max-height: 350px; overflow-y: auto;"></div>
+            <button class="btn btn-ghost btn-small" onclick="copyPlumbingText('plumbingEmailBody')" style="margin-top: 6px;">📋 コピー</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+      <div style="font-size: 12px; color: var(--text-muted);">
+        💡 メールアドレス・件名・本文をコピーしてメールソフトに貼り付けてください
+      </div>
+      <div style="display: flex; gap: 12px;">
+        <button class="btn btn-ghost" onclick="closePlumbingRequestModal()">閉じる</button>
+        <button class="btn btn-primary" onclick="markPlumbingAsRequested()">依頼済みにする</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -6606,6 +7243,70 @@ function removeDepartment(index) {
 const IC_MAKER_TASKS = ['ic_kitchen', 'ic_bath', 'ic_washroom', 'ic_toilet', 'ic_lighting', 'ic_tategu', 'ic_curtain', 'ic_zousaku', 'ic_furniture', 'ic_iron', 'ic_other_estimate'];
 const INTERNAL_STATUSES = ['オリジナル', 'GRAFTECT', '-', '']; // 社内対応ステータス（メール不要）
 
+// ============================================
+// 日付計算ヘルパー関数
+// ============================================
+
+// 次の金曜日を計算する関数
+function getNextFriday() {
+  const today = new Date();
+  const dayOfWeek = today.getDay(); // 0=日, 1=月, ..., 5=金, 6=土
+  let daysUntilFriday;
+
+  if (dayOfWeek === 5) {
+    // 今日が金曜日の場合、来週の金曜日（7日後）
+    daysUntilFriday = 7;
+  } else if (dayOfWeek === 6) {
+    // 土曜日の場合、6日後の金曜日
+    daysUntilFriday = 6;
+  } else {
+    // 日〜木の場合、今週の金曜日
+    daysUntilFriday = 5 - dayOfWeek;
+  }
+
+  const nextFriday = new Date(today);
+  nextFriday.setDate(today.getDate() + daysUntilFriday);
+
+  // YYYY-MM-DD形式で返す
+  return nextFriday.toISOString().split('T')[0];
+}
+
+// 日付を日本語表記に変換
+function formatDateJapanese(dateStr) {
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
+  const weekday = weekdays[date.getDay()];
+  return `${year}年${month}月${day}日（${weekday}）`;
+}
+
+// 翌週の金曜日を計算する関数（換気システム依頼用）
+function getNextWeekFriday() {
+  const today = new Date();
+  const dayOfWeek = today.getDay(); // 0=日, 1=月, ..., 5=金, 6=土
+
+  // まず今週の金曜日までの日数を計算
+  let daysUntilThisFriday;
+  if (dayOfWeek <= 5) {
+    daysUntilThisFriday = 5 - dayOfWeek;
+  } else {
+    // 土曜日の場合は6日後が金曜日
+    daysUntilThisFriday = 6;
+  }
+
+  // 翌週の金曜日なので+7日
+  const daysUntilNextWeekFriday = daysUntilThisFriday + 7;
+
+  const nextWeekFriday = new Date(today);
+  nextWeekFriday.setDate(today.getDate() + daysUntilNextWeekFriday);
+
+  // YYYY-MM-DD形式で返す
+  return nextWeekFriday.toISOString().split('T')[0];
+}
+
 // IC回別タスクグループ定義（1回目〜5回目）
 const IC_ROUNDS = [
   {
@@ -7196,7 +7897,7 @@ async function checkAuth() {
 
     // メインコンテナを表示
     document.getElementById('mainContainer').classList.add('show');
-    updateUserDisplay(currentUser.email.split('@')[0]);
+    updateUserDisplay(currentDesigner?.name || currentUser.email.split('@')[0]);
     await init();
 
     if (!window.location.hash || window.location.hash === '#') {
@@ -7226,7 +7927,7 @@ supabase.auth.onAuthStateChange(async (event, session) => {
     if (currentUser.email === 'admin@ghouse.jp') {
       currentUserCategory = 'admin';
       document.getElementById('mainContainer').classList.add('show');
-      updateUserDisplay(currentUser.email.split('@')[0]);
+      updateUserDisplay('管理者');
       await init();
       isAuthProcessing = false;
       return;
@@ -7245,7 +7946,7 @@ supabase.auth.onAuthStateChange(async (event, session) => {
     }
 
     document.getElementById('mainContainer').classList.add('show');
-    updateUserDisplay(currentUser.email.split('@')[0]);
+    updateUserDisplay(currentDesigner?.name || currentUser.email.split('@')[0]);
     await init();
     isAuthProcessing = false;
   } else if (event === 'PASSWORD_RECOVERY') {
@@ -7264,7 +7965,7 @@ async function selectAccountType(category) {
   document.getElementById('mainContainer').classList.add('show');
 
   // ユーザー名・アバターを表示（デモモード対応）
-  const displayName = currentUser?.email ? currentUser.email.split('@')[0] : 'demo';
+  const displayName = currentDesigner?.name || (currentUser?.email ? currentUser.email.split('@')[0] : 'demo');
   updateUserDisplay(displayName);
 
   // 切り替えボタンを表示
@@ -10940,27 +11641,8 @@ function switchSubTab(panelName, element) {
       renderDepartmentChips();
       updateDepartmentDropdowns();
       break;
-    case 'vendors':
-      renderCategoryFilters();
-      renderVendorsV2();
-      break;
-    case 'categories':
-      renderCategoriesList();
-      break;
-    case 'tasks':
-      renderTasksManagement();
-      break;
-    case 'icTasks':
-      renderIcTasksManagement();
-      break;
-    case 'exteriorTasks':
-      renderExteriorTasksManagement();
-      break;
-    case 'realestateTasks':
-      renderRealestateTasksManagement();
-      break;
-    case 'constructionTasks':
-      renderConstructionTasksManagement();
+    case 'taskManagement':
+      switchDeptTab('設計');
       break;
     case 'products':
       renderProductsList();
@@ -10969,6 +11651,44 @@ function switchSubTab(panelName, element) {
       break;
     case 'kintone':
       loadKintoneSettings();
+      break;
+  }
+}
+
+// 部署タブ切り替え（統合業務管理用）
+function switchDeptTab(dept) {
+  // タブのアクティブ状態を切り替え
+  document.querySelectorAll('.dept-tab').forEach(tab => {
+    tab.classList.toggle('active', tab.dataset.dept === dept);
+  });
+
+  // コンテンツの表示を切り替え
+  document.querySelectorAll('.dept-content').forEach(content => {
+    content.classList.remove('active');
+    content.style.display = 'none';
+  });
+  const activeContent = document.getElementById(`deptContent_${dept}`);
+  if (activeContent) {
+    activeContent.classList.add('active');
+    activeContent.style.display = 'block';
+  }
+
+  // 対応するタスク一覧を描画
+  switch(dept) {
+    case '設計':
+      renderTasksManagement();
+      break;
+    case 'IC':
+      renderIcTasksManagement();
+      break;
+    case '外構':
+      renderExteriorTasksManagement();
+      break;
+    case '不動産':
+      renderRealestateTasksManagement();
+      break;
+    case '工事':
+      renderConstructionTasksManagement();
       break;
   }
 }
@@ -10998,27 +11718,9 @@ function openSettingsPanel(panelName) {
       renderDepartmentChips();
       updateDepartmentDropdowns();
       break;
-    case 'vendors':
-      renderCategoryFilters();
-      renderVendorsV2();
-      break;
-    case 'categories':
-      renderCategoriesList();
-      break;
-    case 'tasks':
-      renderTasksManagement();
-      break;
-    case 'icTasks':
-      renderIcTasksManagement();
-      break;
-    case 'exteriorTasks':
-      renderExteriorTasksManagement();
-      break;
-    case 'realestateTasks':
-      renderRealestateTasksManagement();
-      break;
-    case 'constructionTasks':
-      renderConstructionTasksManagement();
+    case 'taskManagement':
+      // デフォルトで設計タブを表示
+      switchDeptTab('設計');
       break;
     case 'products':
       renderProductsList();
@@ -11028,8 +11730,8 @@ function openSettingsPanel(panelName) {
     case 'kintone':
       loadKintoneSettings();
       break;
-    case 'account':
-      renderAccountInfo();
+    case 'requestTemplates':
+      renderRequestTemplatesGrid();
       break;
   }
 }
@@ -11064,13 +11766,6 @@ function switchTab(tabName, element) {
 
   // タブ切り替え時に対応する描画関数を実行
   switch(tabName) {
-    case 'vendors':
-      renderCategoryFilters();
-      renderVendorsV2();
-      break;
-    case 'categories':
-      renderCategoriesList();
-      break;
     case 'tasks':
       renderTasksManagement();
       break;
@@ -14679,6 +15374,810 @@ async function markTaskAsRequested(projectId, taskKey) {
 function closeEmailModal() {
   ModalManager.close(document.getElementById('emailModal'));
   window.__currentEmailData = null;
+}
+
+// ============================================
+// 統一メールテンプレートユーティリティ
+// DBテンプレートを使用してメールを生成
+// ============================================
+const EmailTemplateUtil = {
+  // DBからテンプレートを取得
+  getTemplate(templateId) {
+    return emailTemplates.find(t => t.template_id === templateId);
+  },
+
+  // 業者一覧を取得（複数業者選択テンプレート用）
+  getVendors(templateId) {
+    return vendors.filter(v => v.template_id === templateId);
+  },
+
+  // 担当者情報を取得
+  getStaffInfo(project) {
+    const designer = designers.find(d => d.id === project.designer_id);
+    return {
+      name: designer?.name || '',
+      phone: designer?.phone || '',
+      email: designer?.email || ''
+    };
+  },
+
+  // テンプレート変数を置換
+  replaceVariables(text, variables) {
+    if (!text) return '';
+    let result = text;
+    for (const [key, value] of Object.entries(variables)) {
+      const regex = new RegExp(`\\{${key}\\}`, 'g');
+      result = result.replace(regex, value || '');
+    }
+    return result;
+  },
+
+  // メール本文を生成（標準形式）
+  generateEmail(templateId, project, options = {}) {
+    const template = this.getTemplate(templateId);
+    if (!template) {
+      console.error('テンプレートが見つかりません:', templateId);
+      return null;
+    }
+
+    const staff = this.getStaffInfo(project);
+    const dueDate = options.dueDate || getNextFriday();
+    const dueDateFormatted = formatDateJapanese(dueDate);
+
+    // 業者情報（サブオプション用）
+    let company = template.company || '';
+    let contact = template.contact || '';
+    let email = template.email || '';
+
+    if (template.has_sub_options && options.vendorId) {
+      const vendor = this.getVendors(templateId).find(v => v.vendor_id === options.vendorId);
+      if (vendor) {
+        company = vendor.company;
+        contact = vendor.contact;
+        email = vendor.email;
+      }
+    }
+
+    // 変数マッピング
+    const variables = {
+      customerName: project.customer || '',
+      staffName: staff.name,
+      staffPhone: staff.phone,
+      staffEmail: staff.email,
+      dueDate: dueDateFormatted,
+      company: company,
+      contact: contact,
+      specialContent: options.specialContent || template.default_special_content || '',
+      // サッシ用の追加変数
+      region: options.region || '',
+      entranceDoor: options.entranceDoor || '',
+      sashColor: options.sashColor || '',
+      // 互換性のための追加変数
+      toCompany: company,
+      toName: contact.replace(/さま|様/g, ''),
+      toHonorific: contact.includes('さま') ? 'さま' : (contact.includes('様') ? '様' : '')
+    };
+
+    // 件名と本文を生成
+    const subject = this.replaceVariables(template.subject_format, variables);
+    const body = this.replaceVariables(template.template_text, variables);
+
+    return {
+      to: email,
+      cc: '', // CCは必要に応じて設定
+      subject,
+      body,
+      template,
+      variables
+    };
+  }
+};
+
+// ============================================
+// サッシプレゼン・開口部リスト作成依頼
+// ============================================
+let currentSashProjectId = null;
+let currentSashProject = null;
+
+// サッシ依頼モーダルを開く
+function openSashRequestModal(projectId) {
+  const project = projects.find(p => p.id === projectId);
+  if (!project) {
+    showToast('案件が見つかりません', 'error');
+    return;
+  }
+
+  currentSashProjectId = projectId;
+  currentSashProject = project;
+  const staff = EmailTemplateUtil.getStaffInfo(project);
+
+  // フォームにデータをセット
+  document.getElementById('sashCustomerName').value = project.customer || '';
+  document.getElementById('sashStaffName').value = staff.name;
+  document.getElementById('sashDueDate').value = getNextFriday();
+  document.getElementById('sashEntranceDoor').value = 'C10　カームブラック(仮)';
+  document.getElementById('sashColor').value = '内外ブラック(仮)';
+
+  // 地域オプションを動的生成
+  const regionOptions = ['準防火地域', '法22条地域', '指定なし'];
+  const regionSelect = document.getElementById('sashRegion');
+  regionSelect.innerHTML = regionOptions
+    .map(opt => `<option value="${escapeHtml(opt)}" ${opt === '準防火地域' ? 'selected' : ''}>${escapeHtml(opt)}</option>`)
+    .join('');
+
+  // メールプレビューを更新
+  updateSashEmail();
+
+  // モーダルを開く
+  ModalManager.open(document.getElementById('sashRequestModal'));
+}
+
+// サッシ依頼モーダルを閉じる
+function closeSashRequestModal() {
+  ModalManager.close(document.getElementById('sashRequestModal'));
+  currentSashProjectId = null;
+  currentSashProject = null;
+}
+
+// サッシ依頼メールを更新
+function updateSashEmail() {
+  const template = EmailTemplateUtil.getTemplate('ogura');
+  if (!template) {
+    console.error('ogumaテンプレートが見つかりません');
+    return;
+  }
+
+  // 入力値を取得
+  const customerName = document.getElementById('sashCustomerName')?.value || '{お客様名}';
+  const staffNameInput = document.getElementById('sashStaffName')?.value || '{担当者名}';
+  const dueDateRaw = document.getElementById('sashDueDate')?.value || '';
+  const dueDate = dueDateRaw ? formatDateJapanese(dueDateRaw) : '{期日}';
+  const region = document.getElementById('sashRegion')?.value || '準防火地域';
+  const entranceDoor = document.getElementById('sashEntranceDoor')?.value || '';
+  const sashColor = document.getElementById('sashColor')?.value || '';
+
+  // 担当者情報を取得
+  const staff = currentSashProject ? EmailTemplateUtil.getStaffInfo(currentSashProject) : { name: '', phone: '', email: '' };
+
+  // 業者情報を取得（template_vendorsから）
+  const oguravVendors = EmailTemplateUtil.getVendors('ogura');
+  const vendor = oguravVendors[0]; // 最初の業者を使用
+
+  // 宛先を設定（業者から取得、なければテンプレートから）
+  document.getElementById('sashEmailTo').textContent = vendor?.email || template.email || '';
+  document.getElementById('sashEmailCc').textContent = vendor?.cc_email || '';
+
+  // 変数マッピング
+  const variables = {
+    customerName,
+    staffName: staffNameInput || staff.name,
+    staffPhone: staff.phone || '',
+    staffEmail: staff.email || '',
+    dueDate,
+    company: vendor?.company || template.company || '',
+    contact: vendor?.contact || template.contact || '',
+    region,
+    entranceDoor,
+    sashColor
+  };
+
+  // 件名を生成
+  const subject = EmailTemplateUtil.replaceVariables(template.subject_format, variables);
+  document.getElementById('sashEmailSubject').textContent = subject;
+
+  // 本文を生成
+  const body = EmailTemplateUtil.replaceVariables(template.template_text, variables);
+  document.getElementById('sashEmailBody').textContent = body;
+}
+
+// サッシテキストをコピー
+function copySashText(elementId) {
+  const el = document.getElementById(elementId);
+  const text = el?.textContent;
+  if (!text || text.includes('{')) {
+    showToast('入力内容を確認してください', 'error');
+    return;
+  }
+
+  navigator.clipboard.writeText(text).then(() => {
+    showToast('コピーしました！', 'success');
+  }).catch(err => {
+    logError('コピーに失敗:', err);
+    showToast('コピーに失敗しました', 'error');
+  });
+}
+
+// サッシ依頼を依頼済みにする
+async function markSashAsRequested() {
+  if (!currentSashProjectId) return;
+
+  const project = projects.find(p => p.id === currentSashProjectId);
+  if (!project) return;
+
+  const progressData = project.progress || {};
+  if (!progressData['sash']) progressData['sash'] = {};
+  progressData['sash'].state = '依頼済';
+
+  showStatus('保存中...', 'saving');
+  const { error } = await supabase
+    .from('projects')
+    .update({ progress: progressData, updated_at: new Date().toISOString() })
+    .eq('id', currentSashProjectId);
+
+  if (error) {
+    logError('更新エラー:', error);
+    showStatus('エラー', 'error');
+    showToast('保存に失敗しました', 'error');
+    return;
+  }
+
+  project.progress = progressData;
+  markLocalUpdate(currentSashProjectId);
+  renderProjects();
+  closeSashRequestModal();
+  showStatus('保存済み', 'saved');
+  showToast('サッシ依頼を依頼済みにしました', 'success');
+}
+
+// ============================================
+// ダンパー（evoltz）依頼
+// ============================================
+let currentDamperProjectId = null;
+let currentDamperProject = null;
+
+// ダンパー依頼モーダルを開く
+function openDamperRequestModal(projectId) {
+  const project = projects.find(p => p.id === projectId);
+  if (!project) {
+    showToast('案件が見つかりません', 'error');
+    return;
+  }
+
+  currentDamperProjectId = projectId;
+  currentDamperProject = project;
+  const staff = EmailTemplateUtil.getStaffInfo(project);
+
+  // フォームにデータをセット
+  document.getElementById('damperCustomerName').value = project.customer || '';
+  document.getElementById('damperStaffName').value = staff.name;
+
+  // メールプレビューを更新
+  updateDamperEmail();
+
+  // モーダルを開く
+  ModalManager.open(document.getElementById('damperRequestModal'));
+}
+
+// ダンパー依頼モーダルを閉じる
+function closeDamperRequestModal() {
+  ModalManager.close(document.getElementById('damperRequestModal'));
+  currentDamperProjectId = null;
+  currentDamperProject = null;
+}
+
+// ダンパー依頼メールを更新
+function updateDamperEmail() {
+  const template = EmailTemplateUtil.getTemplate('senpaku');
+  if (!template) {
+    console.error('senpakuテンプレートが見つかりません');
+    return;
+  }
+
+  // 入力値を取得
+  const customerName = document.getElementById('damperCustomerName')?.value || '{お客様名}';
+  const staffNameInput = document.getElementById('damperStaffName')?.value || '{担当者名}';
+
+  // 担当者情報を取得
+  const staff = currentDamperProject ? EmailTemplateUtil.getStaffInfo(currentDamperProject) : { name: '', phone: '', email: '' };
+
+  // 業者情報を取得（template_vendorsから）
+  const senpakuVendors = EmailTemplateUtil.getVendors('senpaku');
+  const vendor = senpakuVendors[0]; // 最初の業者を使用
+
+  // 宛先を設定（業者から取得、なければテンプレートから）
+  document.getElementById('damperEmailTo').textContent = vendor?.email || template.email || '';
+  document.getElementById('damperEmailCc').textContent = vendor?.cc_email || '';
+
+  // 変数マッピング
+  const variables = {
+    customerName,
+    staffName: staffNameInput || staff.name,
+    staffPhone: staff.phone || '',
+    staffEmail: staff.email || '',
+    company: vendor?.company || template.company || '',
+    contact: vendor?.contact || template.contact || ''
+  };
+
+  // 件名を生成
+  const subject = EmailTemplateUtil.replaceVariables(template.subject_format, variables);
+  document.getElementById('damperEmailSubject').textContent = subject;
+
+  // 本文を生成
+  const body = EmailTemplateUtil.replaceVariables(template.template_text, variables);
+  document.getElementById('damperEmailBody').textContent = body;
+}
+
+// ダンパーテキストをコピー
+function copyDamperText(elementId) {
+  const el = document.getElementById(elementId);
+  const text = el?.textContent;
+  if (!text || text.includes('{')) {
+    showToast('入力内容を確認してください', 'error');
+    return;
+  }
+
+  navigator.clipboard.writeText(text).then(() => {
+    showToast('コピーしました！', 'success');
+  }).catch(err => {
+    logError('コピーに失敗:', err);
+    showToast('コピーに失敗しました', 'error');
+  });
+}
+
+// ダンパー依頼を依頼済みにする
+async function markDamperAsRequested() {
+  if (!currentDamperProjectId) return;
+
+  const project = projects.find(p => p.id === currentDamperProjectId);
+  if (!project) return;
+
+  const progressData = project.progress || {};
+  if (!progressData['damper']) progressData['damper'] = {};
+  progressData['damper'].state = '依頼済';
+
+  showStatus('保存中...', 'saving');
+  const { error } = await supabase
+    .from('projects')
+    .update({ progress: progressData, updated_at: new Date().toISOString() })
+    .eq('id', currentDamperProjectId);
+
+  if (error) {
+    logError('更新エラー:', error);
+    showStatus('エラー', 'error');
+    showToast('保存に失敗しました', 'error');
+    return;
+  }
+
+  project.progress = progressData;
+  markLocalUpdate(currentDamperProjectId);
+  renderProjects();
+  closeDamperRequestModal();
+  showStatus('保存済み', 'saved');
+  showToast('ダンパー依頼を依頼済みにしました', 'success');
+}
+
+// ============================================
+// 換気システム依頼（標準パナソニック）
+// ============================================
+let currentVentilationProjectId = null;
+let currentVentilationProject = null;
+
+// 換気システム依頼モーダルを開く
+function openVentilationRequestModal(projectId) {
+  const project = projects.find(p => p.id === projectId);
+  if (!project) {
+    showToast('案件が見つかりません', 'error');
+    return;
+  }
+
+  currentVentilationProjectId = projectId;
+  currentVentilationProject = project;
+  const staff = EmailTemplateUtil.getStaffInfo(project);
+
+  // フォームにデータをセット
+  document.getElementById('ventilationCustomerName').value = project.customer || '';
+  document.getElementById('ventilationStaffName').value = staff.name;
+  document.getElementById('ventilationDueDate').value = getNextWeekFriday(); // 翌週金曜日
+
+  // メールプレビューを更新
+  updateVentilationEmail();
+
+  // モーダルを開く
+  ModalManager.open(document.getElementById('ventilationRequestModal'));
+}
+
+// 換気システム依頼モーダルを閉じる
+function closeVentilationRequestModal() {
+  ModalManager.close(document.getElementById('ventilationRequestModal'));
+  currentVentilationProjectId = null;
+  currentVentilationProject = null;
+}
+
+// 換気システム依頼メールを更新
+function updateVentilationEmail() {
+  const template = EmailTemplateUtil.getTemplate('panasonic');
+  if (!template) {
+    console.error('panasonicテンプレートが見つかりません');
+    return;
+  }
+
+  // 入力値を取得
+  const customerName = document.getElementById('ventilationCustomerName')?.value || '{お客様名}';
+  const staffNameInput = document.getElementById('ventilationStaffName')?.value || '{担当者名}';
+  const dueDateRaw = document.getElementById('ventilationDueDate')?.value || '';
+  const dueDate = dueDateRaw ? formatDateJapanese(dueDateRaw) : '{期日}';
+
+  // 担当者情報を取得
+  const staff = currentVentilationProject ? EmailTemplateUtil.getStaffInfo(currentVentilationProject) : { name: '', phone: '', email: '' };
+
+  // 業者情報を取得（template_vendorsから）
+  const panasonicVendors = EmailTemplateUtil.getVendors('panasonic');
+  const vendor = panasonicVendors[0]; // 最初の業者を使用
+
+  // 宛先を設定（業者から取得、なければテンプレートから）
+  document.getElementById('ventilationEmailTo').textContent = vendor?.email || template.email || '';
+  document.getElementById('ventilationEmailCc').textContent = vendor?.cc_email || '';
+
+  // 変数マッピング
+  const variables = {
+    customerName,
+    staffName: staffNameInput || staff.name,
+    staffPhone: staff.phone || '',
+    staffEmail: staff.email || '',
+    dueDate,
+    company: vendor?.company || template.company || '',
+    contact: vendor?.contact || template.contact || ''
+  };
+
+  // 件名を生成
+  const subject = EmailTemplateUtil.replaceVariables(template.subject_format, variables);
+  document.getElementById('ventilationEmailSubject').textContent = subject;
+
+  // 本文を生成
+  const body = EmailTemplateUtil.replaceVariables(template.template_text, variables);
+  document.getElementById('ventilationEmailBody').textContent = body;
+}
+
+// 換気システムテキストをコピー
+function copyVentilationText(elementId) {
+  const el = document.getElementById(elementId);
+  const text = el?.textContent;
+  if (!text || text.includes('{')) {
+    showToast('入力内容を確認してください', 'error');
+    return;
+  }
+
+  navigator.clipboard.writeText(text).then(() => {
+    showToast('コピーしました！', 'success');
+  }).catch(err => {
+    logError('コピーに失敗:', err);
+    showToast('コピーに失敗しました', 'error');
+  });
+}
+
+// 換気システム依頼を依頼済みにする
+async function markVentilationAsRequested() {
+  if (!currentVentilationProjectId) return;
+
+  const project = projects.find(p => p.id === currentVentilationProjectId);
+  if (!project) return;
+
+  const progressData = project.progress || {};
+  if (!progressData['ventilation']) progressData['ventilation'] = {};
+  progressData['ventilation'].state = '依頼済';
+
+  showStatus('保存中...', 'saving');
+  const { error } = await supabase
+    .from('projects')
+    .update({ progress: progressData, updated_at: new Date().toISOString() })
+    .eq('id', currentVentilationProjectId);
+
+  if (error) {
+    logError('更新エラー:', error);
+    showStatus('エラー', 'error');
+    showToast('保存に失敗しました', 'error');
+    return;
+  }
+
+  project.progress = progressData;
+  markLocalUpdate(currentVentilationProjectId);
+  renderProjects();
+  closeVentilationRequestModal();
+  showStatus('保存済み', 'saved');
+  showToast('換気システム依頼を依頼済みにしました', 'success');
+}
+
+// ============================================
+// 地盤調査依頼
+// ============================================
+let currentGroundSurveyProjectId = null;
+let currentGroundSurveyProject = null;
+
+// 地盤調査依頼モーダルを開く
+function openGroundSurveyRequestModal(projectId) {
+  const project = projects.find(p => p.id === projectId);
+  if (!project) {
+    showToast('案件が見つかりません', 'error');
+    return;
+  }
+
+  currentGroundSurveyProjectId = projectId;
+  currentGroundSurveyProject = project;
+  const staff = EmailTemplateUtil.getStaffInfo(project);
+
+  // フォームにデータをセット
+  document.getElementById('groundSurveyCustomerName').value = project.customer || '';
+  document.getElementById('groundSurveyStaffName').value = staff.name;
+  document.getElementById('groundSurveyDueDate').value = getNextFriday();
+
+  // エリアオプションを動的生成（DBから取得）
+  const groundSurveyVendors = EmailTemplateUtil.getVendors('ground_survey');
+  const vendorSelect = document.getElementById('groundSurveyVendor');
+  vendorSelect.innerHTML = groundSurveyVendors.map((v, i) =>
+    `<option value="${v.vendor_id}" ${i === 0 ? 'selected' : ''}>${escapeHtml(v.company)}</option>`
+  ).join('');
+
+  // メールプレビューを更新（最初の業者で自動生成）
+  updateGroundSurveyEmail();
+
+  // モーダルを開く
+  ModalManager.open(document.getElementById('groundSurveyRequestModal'));
+}
+
+// 地盤調査依頼モーダルを閉じる
+function closeGroundSurveyRequestModal() {
+  ModalManager.close(document.getElementById('groundSurveyRequestModal'));
+  currentGroundSurveyProjectId = null;
+  currentGroundSurveyProject = null;
+}
+
+// 地盤調査依頼メールを更新
+function updateGroundSurveyEmail() {
+  const template = EmailTemplateUtil.getTemplate('ground_survey');
+  if (!template) {
+    console.error('ground_surveyテンプレートが見つかりません');
+    return;
+  }
+
+  // 入力値を取得
+  const customerName = document.getElementById('groundSurveyCustomerName')?.value || '{お客様名}';
+  const staffNameInput = document.getElementById('groundSurveyStaffName')?.value || '{担当者名}';
+  const dueDateRaw = document.getElementById('groundSurveyDueDate')?.value || '';
+  const dueDate = dueDateRaw ? formatDateJapanese(dueDateRaw) : '{期日}';
+  const vendorId = document.getElementById('groundSurveyVendor')?.value || '';
+
+  // 担当者情報を取得
+  const staff = currentGroundSurveyProject ? EmailTemplateUtil.getStaffInfo(currentGroundSurveyProject) : { name: '', phone: '', email: '' };
+
+  // 業者情報を取得（DBから）
+  const groundSurveyVendors = EmailTemplateUtil.getVendors('ground_survey');
+  const vendor = groundSurveyVendors.find(v => v.vendor_id === vendorId);
+
+  if (vendor) {
+    document.getElementById('groundSurveyEmailTo').textContent = vendor.email;
+    document.getElementById('groundSurveyEmailCc').textContent = vendor.cc_email || '';
+  } else {
+    document.getElementById('groundSurveyEmailTo').textContent = 'エリアを選択してください';
+    document.getElementById('groundSurveyEmailCc').textContent = '';
+  }
+
+  // 変数マッピング
+  const variables = {
+    customerName,
+    staffName: staffNameInput || staff.name,
+    staffPhone: staff.phone || '',
+    staffEmail: staff.email || '',
+    dueDate,
+    company: vendor?.company || '',
+    contact: vendor?.contact || ''
+  };
+
+  // 件名を生成
+  const subject = EmailTemplateUtil.replaceVariables(template.subject_format, variables);
+  document.getElementById('groundSurveyEmailSubject').textContent = subject;
+
+  // 本文を生成
+  if (vendor) {
+    const body = EmailTemplateUtil.replaceVariables(template.template_text, variables);
+    document.getElementById('groundSurveyEmailBody').textContent = body;
+  } else {
+    document.getElementById('groundSurveyEmailBody').textContent = 'エリアを選択すると本文が生成されます';
+  }
+}
+
+// 地盤調査テキストをコピー
+function copyGroundSurveyText(elementId) {
+  const el = document.getElementById(elementId);
+  const text = el?.textContent;
+  if (!text || text.includes('{') || text.includes('選択してください')) {
+    showToast('入力内容を確認してください', 'error');
+    return;
+  }
+
+  navigator.clipboard.writeText(text).then(() => {
+    showToast('コピーしました！', 'success');
+  }).catch(err => {
+    logError('コピーに失敗:', err);
+    showToast('コピーに失敗しました', 'error');
+  });
+}
+
+// 地盤調査依頼を依頼済みにする
+async function markGroundSurveyAsRequested() {
+  if (!currentGroundSurveyProjectId) return;
+
+  const project = projects.find(p => p.id === currentGroundSurveyProjectId);
+  if (!project) return;
+
+  const progressData = project.progress || {};
+  if (!progressData['groundSurvey']) progressData['groundSurvey'] = {};
+  progressData['groundSurvey'].state = '依頼済';
+
+  showStatus('保存中...', 'saving');
+  const { error } = await supabase
+    .from('projects')
+    .update({ progress: progressData, updated_at: new Date().toISOString() })
+    .eq('id', currentGroundSurveyProjectId);
+
+  if (error) {
+    logError('更新エラー:', error);
+    showStatus('エラー', 'error');
+    showToast('保存に失敗しました', 'error');
+    return;
+  }
+
+  project.progress = progressData;
+  markLocalUpdate(currentGroundSurveyProjectId);
+  renderProjects();
+  closeGroundSurveyRequestModal();
+  showStatus('保存済み', 'saved');
+  showToast('地盤調査依頼を依頼済みにしました', 'success');
+}
+
+// ============================================
+// 外部給排水経路図依頼
+// ============================================
+let currentPlumbingProjectId = null;
+let currentPlumbingProject = null;
+
+// 外部給排水経路図依頼モーダルを開く
+function openPlumbingRequestModal(projectId) {
+  const project = projects.find(p => p.id === projectId);
+  if (!project) {
+    showToast('案件が見つかりません', 'error');
+    return;
+  }
+
+  currentPlumbingProjectId = projectId;
+  currentPlumbingProject = project;
+  const staff = EmailTemplateUtil.getStaffInfo(project);
+
+  // フォームにデータをセット
+  document.getElementById('plumbingCustomerName').value = project.customer || '';
+  document.getElementById('plumbingStaffName').value = staff.name;
+  document.getElementById('plumbingDueDate').value = getNextFriday();
+
+  // 業者選択を更新（DBから取得）
+  const plumbingVendors = EmailTemplateUtil.getVendors('plumbing');
+  const vendorSelect = document.getElementById('plumbingVendor');
+  vendorSelect.innerHTML = plumbingVendors.map((v, i) =>
+    `<option value="${v.vendor_id}" ${i === 0 ? 'selected' : ''}>${escapeHtml(v.company)}（${escapeHtml(v.contact)}）</option>`
+  ).join('');
+
+  // 案件タイプ選択は非表示にする（DB統合のため）
+  const projectTypeSelect = document.getElementById('plumbingProjectType');
+  if (projectTypeSelect) projectTypeSelect.style.display = 'none';
+
+  // メールプレビューを更新
+  updatePlumbingEmail();
+
+  // モーダルを開く
+  ModalManager.open(document.getElementById('plumbingRequestModal'));
+}
+
+// 外部給排水経路図依頼モーダルを閉じる
+function closePlumbingRequestModal() {
+  ModalManager.close(document.getElementById('plumbingRequestModal'));
+  currentPlumbingProjectId = null;
+  currentPlumbingProject = null;
+}
+
+// 案件タイプに応じて業者オプションを更新（DB統合後は不要だが互換性のため残す）
+function updatePlumbingVendorOptions() {
+  updatePlumbingEmail();
+}
+
+// 外部給排水経路図依頼メールを更新
+function updatePlumbingEmail() {
+  const template = EmailTemplateUtil.getTemplate('plumbing');
+  if (!template) {
+    console.error('plumbingテンプレートが見つかりません');
+    return;
+  }
+
+  // 入力値を取得
+  const customerName = document.getElementById('plumbingCustomerName')?.value || '{お客様名}';
+  const staffNameInput = document.getElementById('plumbingStaffName')?.value || '{担当者名}';
+  const dueDateRaw = document.getElementById('plumbingDueDate')?.value || '';
+  const dueDate = dueDateRaw ? formatDateJapanese(dueDateRaw) : '{期日}';
+  const vendorId = document.getElementById('plumbingVendor')?.value || '';
+
+  // 担当者情報を取得
+  const staff = currentPlumbingProject ? EmailTemplateUtil.getStaffInfo(currentPlumbingProject) : { name: '', phone: '', email: '' };
+
+  // 業者情報を取得（DBから）
+  const plumbingVendors = EmailTemplateUtil.getVendors('plumbing');
+  const vendor = plumbingVendors.find(v => v.vendor_id === vendorId);
+
+  if (vendor) {
+    document.getElementById('plumbingEmailTo').textContent = vendor.email;
+    document.getElementById('plumbingEmailCc').textContent = vendor.cc_email || '';
+  } else {
+    document.getElementById('plumbingEmailTo').textContent = '業者を選択してください';
+    document.getElementById('plumbingEmailCc').textContent = '';
+  }
+
+  // 変数マッピング
+  const variables = {
+    customerName,
+    staffName: staffNameInput || staff.name,
+    staffPhone: staff.phone || '',
+    staffEmail: staff.email || '',
+    dueDate,
+    company: vendor?.company || '',
+    contact: vendor?.contact || ''
+  };
+
+  // 件名を生成
+  const subject = EmailTemplateUtil.replaceVariables(template.subject_format, variables);
+  document.getElementById('plumbingEmailSubject').textContent = subject;
+
+  // 本文を生成
+  if (vendor) {
+    const body = EmailTemplateUtil.replaceVariables(template.template_text, variables);
+    document.getElementById('plumbingEmailBody').textContent = body;
+  } else {
+    document.getElementById('plumbingEmailBody').textContent = '業者を選択すると本文が生成されます';
+  }
+}
+
+// 外部給排水経路図テキストをコピー
+function copyPlumbingText(elementId) {
+  const el = document.getElementById(elementId);
+  const text = el?.textContent;
+  if (!text || text.includes('{') || text.includes('選択してください')) {
+    showToast('入力内容を確認してください', 'error');
+    return;
+  }
+
+  navigator.clipboard.writeText(text).then(() => {
+    showToast('コピーしました！', 'success');
+  }).catch(err => {
+    logError('コピーに失敗:', err);
+    showToast('コピーに失敗しました', 'error');
+  });
+}
+
+// 外部給排水経路図依頼を依頼済みにする
+async function markPlumbingAsRequested() {
+  if (!currentPlumbingProjectId) return;
+
+  const project = projects.find(p => p.id === currentPlumbingProjectId);
+  if (!project) return;
+
+  const progressData = project.progress || {};
+  if (!progressData['plumbing']) progressData['plumbing'] = {};
+  progressData['plumbing'].state = '依頼済';
+
+  showStatus('保存中...', 'saving');
+  const { error } = await supabase
+    .from('projects')
+    .update({ progress: progressData, updated_at: new Date().toISOString() })
+    .eq('id', currentPlumbingProjectId);
+
+  if (error) {
+    logError('更新エラー:', error);
+    showStatus('エラー', 'error');
+    showToast('保存に失敗しました', 'error');
+    return;
+  }
+
+  project.progress = progressData;
+  markLocalUpdate(currentPlumbingProjectId);
+  renderProjects();
+  closePlumbingRequestModal();
+  showStatus('保存済み', 'saved');
+  showToast('外部給排水経路図依頼を依頼済みにしました', 'success');
 }
 
 // ============================================
@@ -21266,6 +22765,318 @@ const FAB = {
     }
   }
 };
+
+// ============================================
+// 業者・依頼メール管理
+// ============================================
+
+// 部署とテンプレートのマッピング
+const deptTemplateMapping = {
+  '設計': ['ogura', 'senpaku', 'panasonic', 'ground_survey', 'plumbing'],
+  'IC': [],
+  '外構': [],
+  '不動産': [],
+  '工事': []
+};
+
+// 業者管理用の部署タブ切り替え
+function switchVendorDeptTab(dept) {
+  // タブのアクティブ状態を切り替え
+  document.querySelectorAll('[data-vendor-dept]').forEach(tab => {
+    tab.classList.toggle('active', tab.dataset.vendorDept === dept);
+  });
+
+  // コンテンツの表示を切り替え
+  document.querySelectorAll('.vendor-dept-content').forEach(content => {
+    content.classList.remove('active');
+    content.style.display = 'none';
+  });
+  const activeContent = document.getElementById(`vendorDeptContent_${dept}`);
+  if (activeContent) {
+    activeContent.classList.add('active');
+    activeContent.style.display = 'block';
+  }
+
+  // 対応する業者一覧を描画
+  renderVendorsByDepartment(dept);
+}
+
+// 部署別に業者カテゴリ・業者を描画
+function renderVendorsByDepartment(dept) {
+  const grid = document.getElementById(`vendorGrid_${dept}`);
+  if (!grid) return;
+
+  const templateIds = deptTemplateMapping[dept] || [];
+
+  if (templateIds.length === 0) {
+    grid.innerHTML = `
+      <div class="empty-state" style="padding: 40px;">
+        <div style="font-size: 48px; margin-bottom: 16px;">📭</div>
+        <p style="color: var(--text-secondary);">この部署にはまだカテゴリが登録されていません</p>
+        <button class="btn btn-primary" style="margin-top: 16px;" onclick="openAddVendorCategoryModal('${dept}')">+ カテゴリを追加</button>
+      </div>
+    `;
+    return;
+  }
+
+  // テンプレートごとにカードを生成
+  const templates = emailTemplates.filter(t => templateIds.includes(t.template_id));
+
+  grid.innerHTML = templates.map(template => {
+    // このテンプレートに紐づく業者を取得
+    const templateVendors = vendors.filter(v => v.template_id === template.template_id);
+
+    return `
+      <div class="vendor-category-card">
+        <div class="vendor-category-header">
+          <div>
+            <div class="vendor-category-title">${escapeHtml(template.display_name)}</div>
+            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">
+              ${templateVendors.length}件の業者
+            </div>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-ghost btn-sm" onclick="openEmailTemplateEditor('${escapeHtml(template.template_id)}')">
+              📧 メール設定
+            </button>
+            <button class="btn btn-ghost btn-sm" onclick="openAddVendorToCategory('${escapeHtml(template.template_id)}')">
+              + 業者追加
+            </button>
+          </div>
+        </div>
+
+        <div class="vendor-list">
+          ${templateVendors.length > 0 ? templateVendors.map(vendor => `
+            <div class="vendor-item">
+              <div>
+                <div style="font-weight: 500;">${escapeHtml(vendor.company || '-')}</div>
+                <div style="font-size: 12px; color: var(--text-secondary);">${escapeHtml(vendor.contact || '-')}</div>
+              </div>
+              <div style="font-size: 13px; color: var(--text-secondary);">${escapeHtml(vendor.tel || '-')}</div>
+              <div style="font-size: 13px;">${escapeHtml(vendor.email || '-')}</div>
+              <div style="font-size: 12px; color: var(--text-secondary);">${vendor.cc_email ? 'CC: ' + escapeHtml(vendor.cc_email) : ''}</div>
+              <div class="vendor-item-actions">
+                <button class="btn btn-ghost btn-sm" onclick="editVendorInCategory('${escapeHtml(template.template_id)}', '${escapeHtml(vendor.vendor_id)}')">編集</button>
+              </div>
+            </div>
+          `).join('') : `
+            <div style="padding: 20px; text-align: center; color: var(--text-secondary);">
+              業者が登録されていません
+            </div>
+          `}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// 初期化時に呼び出す関数を更新
+function renderRequestTemplatesGrid() {
+  // デフォルトで設計タブを表示
+  switchVendorDeptTab('設計');
+}
+
+// メールテンプレート編集モーダルを開く
+function openEmailTemplateEditor(templateId) {
+  openEditTemplateModal(templateId);
+}
+
+// カテゴリ追加モーダル（将来拡張用）
+function openAddVendorCategoryModal(dept) {
+  showToast(`${dept}部署へのカテゴリ追加機能は準備中です`, 'info');
+}
+
+// 業者追加モーダルを開く
+function openAddVendorToCategory(templateId) {
+  const template = emailTemplates.find(t => t.template_id === templateId);
+  if (!template) return;
+
+  // 既存のテンプレート編集モーダルを開く
+  openEditTemplateModal(templateId);
+}
+
+// 業者編集
+function editVendorInCategory(templateId, vendorId) {
+  openEditTemplateModal(templateId);
+}
+
+// 編集用の業者データを一時保存
+let editingTemplateVendors = [];
+
+// テンプレート編集モーダルを開く
+function openEditTemplateModal(templateId) {
+  const template = emailTemplates.find(t => t.template_id === templateId);
+  if (!template) {
+    showToast('テンプレートが見つかりません', 'error');
+    return;
+  }
+
+  // フォームに値をセット
+  document.getElementById('editTemplateId').value = template.template_id;
+  document.getElementById('editTemplateDisplayName').value = template.display_name || '';
+  document.getElementById('editTemplateCategory').value = template.category || '設計';
+  document.getElementById('editTemplateCompany').value = template.company || '';
+  document.getElementById('editTemplateContact').value = template.contact || '';
+  document.getElementById('editTemplateEmail').value = template.email || '';
+  document.getElementById('editTemplateSubject').value = template.subject_format || '';
+  document.getElementById('editTemplateBody').value = template.template_text || '';
+
+  // モーダルタイトルを設定
+  document.getElementById('editTemplateModalTitle').textContent = `${template.display_name} - 編集`;
+
+  // 複数業者セクションの表示/非表示
+  const vendorsSection = document.getElementById('editTemplateVendorsSection');
+  if (template.has_sub_options) {
+    vendorsSection.style.display = 'block';
+    // 業者一覧を読み込み
+    editingTemplateVendors = vendors.filter(v => v.template_id === templateId);
+    renderTemplateVendorsList();
+  } else {
+    vendorsSection.style.display = 'none';
+    editingTemplateVendors = [];
+  }
+
+  // モーダルを開く
+  document.getElementById('editRequestTemplateModal').classList.add('active');
+}
+
+// テンプレート編集モーダルを閉じる
+function closeEditTemplateModal() {
+  document.getElementById('editRequestTemplateModal').classList.remove('active');
+  editingTemplateVendors = [];
+}
+
+// 業者一覧を描画
+function renderTemplateVendorsList() {
+  const list = document.getElementById('templateVendorsList');
+  if (!list) return;
+
+  if (editingTemplateVendors.length === 0) {
+    list.innerHTML = '<p style="color: var(--text-secondary); font-size: 13px;">業者が登録されていません</p>';
+    return;
+  }
+
+  list.innerHTML = editingTemplateVendors.map((vendor, index) => `
+    <div style="display: grid; grid-template-columns: 1fr 120px 120px 1fr 1fr 40px; gap: 8px; margin-bottom: 8px; align-items: center;">
+      <input type="text" class="form-input" value="${escapeHtml(vendor.company || '')}"
+        onchange="editingTemplateVendors[${index}].company = this.value" placeholder="会社名">
+      <input type="text" class="form-input" value="${escapeHtml(vendor.contact || '')}"
+        onchange="editingTemplateVendors[${index}].contact = this.value" placeholder="担当者">
+      <input type="text" class="form-input" value="${escapeHtml(vendor.tel || '')}"
+        onchange="editingTemplateVendors[${index}].tel = this.value" placeholder="電話番号">
+      <input type="email" class="form-input" value="${escapeHtml(vendor.email || '')}"
+        onchange="editingTemplateVendors[${index}].email = this.value" placeholder="To（メール）">
+      <input type="email" class="form-input" value="${escapeHtml(vendor.cc_email || '')}"
+        onchange="editingTemplateVendors[${index}].cc_email = this.value" placeholder="CC（メール）">
+      <button class="btn btn-ghost btn-small" onclick="removeTemplateVendorRow(${index})" style="color: var(--danger);">✕</button>
+    </div>
+  `).join('');
+}
+
+// 業者行を追加
+function addTemplateVendorRow() {
+  const templateId = document.getElementById('editTemplateId').value;
+  const newVendorId = 'vendor_' + Date.now();
+  editingTemplateVendors.push({
+    template_id: templateId,
+    vendor_id: newVendorId,
+    company: '',
+    contact: '',
+    tel: '',
+    email: '',
+    cc_email: '',
+    isNew: true
+  });
+  renderTemplateVendorsList();
+}
+
+// 業者行を削除
+function removeTemplateVendorRow(index) {
+  editingTemplateVendors.splice(index, 1);
+  renderTemplateVendorsList();
+}
+
+// テンプレートを保存
+async function saveRequestTemplate() {
+  const templateId = document.getElementById('editTemplateId').value;
+  const displayName = document.getElementById('editTemplateDisplayName').value.trim();
+  const category = document.getElementById('editTemplateCategory').value;
+  const company = document.getElementById('editTemplateCompany').value.trim();
+  const contact = document.getElementById('editTemplateContact').value.trim();
+  const email = document.getElementById('editTemplateEmail').value.trim();
+  const subjectFormat = document.getElementById('editTemplateSubject').value.trim();
+  const templateText = document.getElementById('editTemplateBody').value.trim();
+
+  if (!displayName) {
+    showToast('テンプレート名を入力してください', 'error');
+    return;
+  }
+
+  try {
+    // email_templatesテーブルを更新
+    const { error: updateError } = await supabase
+      .from('email_templates')
+      .update({
+        display_name: displayName,
+        category: category,
+        company: company,
+        contact: contact,
+        email: email,
+        subject_format: subjectFormat,
+        template_text: templateText
+      })
+      .eq('template_id', templateId);
+
+    if (updateError) {
+      throw updateError;
+    }
+
+    // 複数業者がある場合は業者情報も更新
+    const template = emailTemplates.find(t => t.template_id === templateId);
+    if (template && template.has_sub_options) {
+      // 既存の業者を削除
+      await supabase
+        .from('template_vendors')
+        .delete()
+        .eq('template_id', templateId);
+
+      // 新しい業者を挿入
+      if (editingTemplateVendors.length > 0) {
+        const vendorInserts = editingTemplateVendors.map((v, index) => ({
+          template_id: templateId,
+          vendor_id: v.vendor_id || `vendor_${index}`,
+          company: v.company,
+          contact: v.contact,
+          tel: v.tel,
+          email: v.email,
+          cc_email: v.cc_email || null
+        }));
+
+        const { error: vendorError } = await supabase
+          .from('template_vendors')
+          .insert(vendorInserts);
+
+        if (vendorError) {
+          throw vendorError;
+        }
+      }
+
+      // 業者一覧を再読み込み
+      await loadVendors();
+    }
+
+    // テンプレート一覧を再読み込み
+    await loadEmailTemplates();
+
+    showToast('テンプレートを保存しました', 'success');
+    closeEditTemplateModal();
+    renderRequestTemplatesGrid();
+
+  } catch (err) {
+    logError('テンプレート保存エラー:', err);
+    showToast('保存に失敗しました: ' + err.message, 'error');
+  }
+}
 
 // FAB初期化
 document.addEventListener('DOMContentLoaded', () => FAB.init());
