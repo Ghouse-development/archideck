@@ -23127,39 +23127,36 @@ async function saveRequestTemplate() {
       throw updateError;
     }
 
-    // 複数業者がある場合は業者情報も更新
-    const template = emailTemplates.find(t => t.template_id === templateId);
-    if (template && template.has_sub_options) {
-      // 既存の業者を削除
-      await supabase
+    // 業者情報を更新（全テンプレートで業者管理可能）
+    // 既存の業者を削除
+    await supabase
+      .from('template_vendors')
+      .delete()
+      .eq('template_id', templateId);
+
+    // 新しい業者を挿入
+    if (editingTemplateVendors.length > 0) {
+      const vendorInserts = editingTemplateVendors.map((v, index) => ({
+        template_id: templateId,
+        vendor_id: v.vendor_id || `vendor_${index}`,
+        company: v.company,
+        contact: v.contact,
+        tel: v.tel,
+        email: v.email,
+        cc_email: v.cc_email || null
+      }));
+
+      const { error: vendorError } = await supabase
         .from('template_vendors')
-        .delete()
-        .eq('template_id', templateId);
+        .insert(vendorInserts);
 
-      // 新しい業者を挿入
-      if (editingTemplateVendors.length > 0) {
-        const vendorInserts = editingTemplateVendors.map((v, index) => ({
-          template_id: templateId,
-          vendor_id: v.vendor_id || `vendor_${index}`,
-          company: v.company,
-          contact: v.contact,
-          tel: v.tel,
-          email: v.email,
-          cc_email: v.cc_email || null
-        }));
-
-        const { error: vendorError } = await supabase
-          .from('template_vendors')
-          .insert(vendorInserts);
-
-        if (vendorError) {
-          throw vendorError;
-        }
+      if (vendorError) {
+        throw vendorError;
       }
-
-      // 業者一覧を再読み込み
-      await loadVendors();
     }
+
+    // 業者一覧を再読み込み
+    await loadVendors();
 
     // テンプレート一覧を再読み込み
     await loadEmailTemplates();
