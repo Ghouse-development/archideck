@@ -5300,8 +5300,8 @@ textarea:focus-visible {
                 <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 12px;">データ整理</h4>
                 <div id="dataStatsInfo" style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px;"></div>
                 <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                  <button class="btn btn-ghost btn-sm" onclick="showDataStats()">📊 データ状況を確認</button>
-                  <button class="btn btn-ghost btn-sm" onclick="clearDemoDataConfirm()" style="color: var(--warning-color);">🗑️ デモデータを削除</button>
+                  <button class="btn btn-ghost btn-small" onclick="showDataStats()">📊 データ状況を確認</button>
+                  <button class="btn btn-ghost btn-small" onclick="clearDemoDataConfirm()" style="color: var(--warning-color);">🗑️ デモデータを削除</button>
                 </div>
               </div>
             </div>
@@ -22919,10 +22919,10 @@ function renderVendorsByDepartment(dept) {
             </div>
           </div>
           <div style="display: flex; gap: 8px;">
-            <button class="btn btn-ghost btn-sm" onclick="openEmailTemplateEditor('${escapeHtml(template.template_id)}')">
+            <button class="btn btn-ghost btn-small" onclick="openEmailTemplateEditor('${escapeHtml(template.template_id)}')">
               📧 メール設定
             </button>
-            <button class="btn btn-ghost btn-sm" onclick="openAddVendorToCategory('${escapeHtml(template.template_id)}')">
+            <button class="btn btn-ghost btn-small" onclick="openAddVendorToCategory('${escapeHtml(template.template_id)}')">
               + 業者追加
             </button>
           </div>
@@ -22939,7 +22939,7 @@ function renderVendorsByDepartment(dept) {
               <div style="font-size: 13px;">${escapeHtml(vendor.email || '-')}</div>
               <div style="font-size: 12px; color: var(--text-secondary);">${vendor.cc_email ? 'CC: ' + escapeHtml(vendor.cc_email) : ''}</div>
               <div class="vendor-item-actions">
-                <button class="btn btn-ghost btn-sm" onclick="editVendorInCategory('${escapeHtml(template.template_id)}', '${escapeHtml(vendor.vendor_id)}')">編集</button>
+                <button class="btn btn-ghost btn-small" onclick="editVendorInCategory('${escapeHtml(template.template_id)}', '${escapeHtml(vendor.vendor_id)}')">編集</button>
               </div>
             </div>
           `).join('') : `
@@ -22974,14 +22974,17 @@ function openAddVendorCategoryModal(dept) {
   showToast(`${dept}部署へのカテゴリ追加機能は準備中です`, 'info');
 }
 
-// 業者追加モーダルを開く
+// 業者追加モーダルを開く（新規業者行を自動追加）
 function openAddVendorToCategory(templateId) {
   log('➕ openAddVendorToCategory:', templateId);
   if (!templateId) {
     showToast('テンプレートIDが指定されていません', 'error');
     return;
   }
+  // モーダルを開く
   openEditTemplateModal(templateId);
+  // 新規業者行を自動追加
+  addTemplateVendorRow();
 }
 
 // 業者編集
