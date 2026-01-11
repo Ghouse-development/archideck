@@ -10493,7 +10493,7 @@ function renderIcTasksManagement() {
 
 function renderTaskRow(task) {
   // 業者登録状況を確認（template_vendorsから）
-  const templateId = taskMappings[task.task_key] || task.task_key;
+  const templateId = task.task_key;
   const taskVendors = vendors.filter(v => v.template_id === templateId);
   const hasVendors = taskVendors.length > 0;
   const hasEmailVendor = taskVendors.some(v => v.email);
@@ -22935,7 +22935,7 @@ function renderTasksWithVendors(dept) {
   // タスクごとにカードを生成
   grid.innerHTML = deptTasks.map(task => {
     // タスクに紐づくテンプレートIDを取得
-    const templateId = taskMappings[task.task_key] || task.task_key;
+    const templateId = task.task_key;
     // このテンプレートに紐づく業者を取得
     const taskVendors = vendors.filter(v => v.template_id === templateId);
     // メールが必要かどうか（業者にメール設定があるか）
@@ -23007,7 +23007,7 @@ function openTaskVendorManager(taskKey) {
   const taskName = task?.task_name || taskKey;
 
   // テンプレートIDを取得
-  const templateId = taskMappings[taskKey] || taskKey;
+  const templateId = taskKey;
   // このタスクに紐づく業者を取得
   const taskVendors = vendors.filter(v => v.template_id === templateId);
 
@@ -23126,7 +23126,7 @@ function editVendorInfo(taskKey, vendorId) {
   editingVendorId = vendorId;
 
   // テンプレートIDを取得
-  const templateId = taskMappings[taskKey] || taskKey;
+  const templateId = taskKey;
   // 業者データを取得
   const vendor = vendors.find(v => v.template_id === templateId && v.vendor_id === vendorId);
   if (!vendor) {
@@ -23173,7 +23173,8 @@ async function saveVendorForm() {
     return;
   }
 
-  const templateId = taskMappings[taskKey] || taskKey;
+  // task_keyをそのままtemplate_idとして使用（シンプルな1:1対応）
+  const templateId = taskKey;
 
   try {
     if (editingVendorId) {
@@ -23208,6 +23209,14 @@ async function saveVendorForm() {
 
       if (error) throw error;
       showToast('業者を追加しました', 'success');
+
+      // task_template_mappingsにマッピングがなければ作成
+      if (!taskMappings[taskKey]) {
+        await supabase
+          .from('task_template_mappings')
+          .upsert({ task_key: taskKey, template_id: templateId }, { onConflict: 'task_key' });
+        taskMappings[taskKey] = templateId;
+      }
     }
 
     // データを再読み込み
@@ -23231,7 +23240,7 @@ async function saveVendorForm() {
 async function deleteVendorFromTask(taskKey, vendorId) {
   if (!confirm('この業者を削除しますか？')) return;
 
-  const templateId = taskMappings[taskKey] || taskKey;
+  const templateId = taskKey;
 
   try {
     const { error } = await supabase
@@ -23521,7 +23530,7 @@ function openVendorEmailSettings(taskKey, vendorId) {
   editingTaskKey = taskKey;
   editingVendorId = vendorId;
 
-  const templateId = taskMappings[taskKey] || taskKey;
+  const templateId = taskKey;
   const vendor = vendors.find(v => v.template_id === templateId && v.vendor_id === vendorId);
   if (!vendor) {
     showToast('業者が見つかりません', 'error');
@@ -23566,7 +23575,7 @@ async function saveVendorEmailSettings() {
   const templateText = document.getElementById('emailSettingsBody').value.trim();
   const signature = document.getElementById('emailSettingsSignature').value.trim();
 
-  const templateId = taskMappings[taskKey] || taskKey;
+  const templateId = taskKey;
 
   try {
     const { error } = await supabase
