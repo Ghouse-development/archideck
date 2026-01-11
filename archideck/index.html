@@ -5402,7 +5402,7 @@ textarea:focus-visible {
           <div style="max-width: 1200px; margin: 0 auto;">
             <h2 style="margin-bottom: 20px; font-size: 24px; font-weight: 700;">📧 業者・依頼メール管理</h2>
             <p style="margin-bottom: 24px; color: var(--text-secondary);">
-              部署別に業者情報・メールテンプレートを管理できます。宛先、CC、件名、本文を設定すると、メール作成時に反映されます。
+              各タスクに業者を追加し、メールが必要な業者には宛先・CC・件名・本文・署名を設定できます。
             </p>
 
             <!-- 部署タブ -->
@@ -5416,52 +5416,27 @@ textarea:focus-visible {
 
             <!-- 設計タブ内容 -->
             <div id="vendorDeptContent_設計" class="vendor-dept-content active">
-              <div class="toolbar" style="padding-bottom: 16px; margin-bottom: 16px;">
-                <div class="toolbar-right">
-                  <button class="btn btn-primary" onclick="openAddVendorCategoryModal('設計')">+ カテゴリ追加</button>
-                </div>
-              </div>
-              <div id="vendorGrid_設計" class="cards-grid"></div>
+              <div id="vendorGrid_設計"></div>
             </div>
 
             <!-- ICタブ内容 -->
             <div id="vendorDeptContent_IC" class="vendor-dept-content" style="display: none;">
-              <div class="toolbar" style="padding-bottom: 16px; margin-bottom: 16px;">
-                <div class="toolbar-right">
-                  <button class="btn btn-primary" onclick="openAddVendorCategoryModal('IC')">+ カテゴリ追加</button>
-                </div>
-              </div>
-              <div id="vendorGrid_IC" class="cards-grid"></div>
+              <div id="vendorGrid_IC"></div>
             </div>
 
             <!-- 外構タブ内容 -->
             <div id="vendorDeptContent_外構" class="vendor-dept-content" style="display: none;">
-              <div class="toolbar" style="padding-bottom: 16px; margin-bottom: 16px;">
-                <div class="toolbar-right">
-                  <button class="btn btn-primary" onclick="openAddVendorCategoryModal('外構')">+ カテゴリ追加</button>
-                </div>
-              </div>
-              <div id="vendorGrid_外構" class="cards-grid"></div>
+              <div id="vendorGrid_外構"></div>
             </div>
 
             <!-- 不動産タブ内容 -->
             <div id="vendorDeptContent_不動産" class="vendor-dept-content" style="display: none;">
-              <div class="toolbar" style="padding-bottom: 16px; margin-bottom: 16px;">
-                <div class="toolbar-right">
-                  <button class="btn btn-primary" onclick="openAddVendorCategoryModal('不動産')">+ カテゴリ追加</button>
-                </div>
-              </div>
-              <div id="vendorGrid_不動産" class="cards-grid"></div>
+              <div id="vendorGrid_不動産"></div>
             </div>
 
             <!-- 工事タブ内容 -->
             <div id="vendorDeptContent_工事" class="vendor-dept-content" style="display: none;">
-              <div class="toolbar" style="padding-bottom: 16px; margin-bottom: 16px;">
-                <div class="toolbar-right">
-                  <button class="btn btn-primary" onclick="openAddVendorCategoryModal('工事')">+ カテゴリ追加</button>
-                </div>
-              </div>
-              <div id="vendorGrid_工事" class="cards-grid"></div>
+              <div id="vendorGrid_工事"></div>
             </div>
           </div>
         </div>
@@ -5470,7 +5445,117 @@ textarea:focus-visible {
   </div>
 </div>
 
-<!-- モーダル：依頼テンプレート編集 -->
+<!-- モーダル：業者追加・編集 -->
+<div id="vendorFormModal" class="modal">
+  <div class="modal-content" style="max-width: 600px;">
+    <div class="modal-header">
+      <h2 class="modal-title" id="vendorFormModalTitle">業者追加</h2>
+      <button class="close" onclick="closeVendorFormModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="vendorFormTaskKey">
+      <input type="hidden" id="vendorFormVendorId">
+
+      <div class="form-group">
+        <label class="form-label">会社名 *</label>
+        <input type="text" class="form-input" id="vendorFormCompany" placeholder="例：株式会社〇〇">
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <div class="form-group">
+          <label class="form-label">担当者名</label>
+          <input type="text" class="form-input" id="vendorFormContact" placeholder="例：山田様">
+        </div>
+        <div class="form-group">
+          <label class="form-label">電話番号</label>
+          <input type="text" class="form-input" id="vendorFormTel" placeholder="例：090-1234-5678">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">メールアドレス（To）</label>
+        <input type="email" class="form-input" id="vendorFormEmail" placeholder="例：sample@example.com">
+        <p style="margin: 4px 0 0; font-size: 12px; color: var(--text-secondary);">
+          メール送信が必要な場合に入力してください
+        </p>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">CC</label>
+        <input type="text" class="form-input" id="vendorFormCcEmail" placeholder="例：cc1@example.com; cc2@example.com">
+        <p style="margin: 4px 0 0; font-size: 12px; color: var(--text-secondary);">
+          複数ある場合はセミコロン(;)で区切ってください
+        </p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeVendorFormModal()">キャンセル</button>
+      <button class="btn btn-primary" onclick="saveVendorForm()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- モーダル：業者メール設定 -->
+<div id="vendorEmailSettingsModal" class="modal">
+  <div class="modal-content" style="max-width: 800px;">
+    <div class="modal-header">
+      <h2 class="modal-title" id="emailSettingsModalTitle">メール設定</h2>
+      <button class="close" onclick="closeVendorEmailSettingsModal()">&times;</button>
+    </div>
+    <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+      <input type="hidden" id="emailSettingsTaskKey">
+      <input type="hidden" id="emailSettingsVendorId">
+
+      <!-- 宛先設定 -->
+      <div class="card" style="padding: 16px; margin-bottom: 24px; background: var(--bg-secondary);">
+        <h3 style="margin: 0 0 16px; font-size: 16px; font-weight: 600;">📬 宛先設定</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div class="form-group">
+            <label class="form-label">宛先（To）</label>
+            <input type="email" class="form-input" id="emailSettingsTo" placeholder="例：sample@example.com">
+          </div>
+          <div class="form-group">
+            <label class="form-label">CC</label>
+            <input type="text" class="form-input" id="emailSettingsCc" placeholder="例：cc1@example.com; cc2@example.com">
+          </div>
+        </div>
+      </div>
+
+      <!-- 件名 -->
+      <div class="form-group" style="margin-bottom: 16px;">
+        <label class="form-label">件名テンプレート</label>
+        <input type="text" class="form-input" id="emailSettingsSubject" placeholder="例：【〇〇依頼】{customerName}様邸">
+        <p style="margin: 4px 0 0; font-size: 12px; color: var(--text-secondary);">
+          使用可能な変数: {customerName}=お客様名, {staffName}=担当者名, {dueDate}=期日
+        </p>
+      </div>
+
+      <!-- 本文 -->
+      <div class="form-group" style="margin-bottom: 16px;">
+        <label class="form-label">本文テンプレート</label>
+        <textarea class="form-input" id="emailSettingsBody" rows="12" style="font-family: monospace; font-size: 13px;" placeholder="メール本文を入力..."></textarea>
+        <p style="margin: 4px 0 0; font-size: 12px; color: var(--text-secondary);">
+          使用可能な変数: {company}=会社名, {contact}=担当者名, {customerName}=お客様名, {staffName}=スタッフ名, {dueDate}=期日
+        </p>
+      </div>
+
+      <!-- 署名 -->
+      <div class="form-group">
+        <label class="form-label">署名</label>
+        <textarea class="form-input" id="emailSettingsSignature" rows="6" style="font-family: monospace; font-size: 13px;" placeholder="──────────────────────────&#10;株式会社〇〇&#10;設計部　{staffName}&#10;TEL: {staffPhone}&#10;Email: {staffEmail}&#10;──────────────────────────"></textarea>
+        <p style="margin: 4px 0 0; font-size: 12px; color: var(--text-secondary);">
+          使用可能な変数: {staffName}=スタッフ名, {staffPhone}=電話番号, {staffEmail}=メールアドレス
+        </p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeVendorEmailSettingsModal()">キャンセル</button>
+      <button class="btn btn-primary" onclick="saveVendorEmailSettings()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- モーダル：依頼テンプレート編集（旧） -->
 <div id="editRequestTemplateModal" class="modal">
   <div class="modal-content" style="max-width: 900px;">
     <div class="modal-header">
@@ -22850,17 +22935,8 @@ const FAB = {
 };
 
 // ============================================
-// 業者・依頼メール管理
+// 業者・依頼メール管理（タスクベース）
 // ============================================
-
-// 部署とテンプレートのマッピング
-const deptTemplateMapping = {
-  '設計': ['ogura', 'senpaku', 'panasonic', 'ground_survey', 'plumbing'],
-  'IC': [],
-  '外構': [],
-  '不動産': [],
-  '工事': []
-};
 
 // 業者管理用の部署タブ切り替え
 function switchVendorDeptTab(dept) {
@@ -22880,66 +22956,73 @@ function switchVendorDeptTab(dept) {
     activeContent.style.display = 'block';
   }
 
-  // 対応する業者一覧を描画
-  renderVendorsByDepartment(dept);
+  // 対応するタスク・業者一覧を描画
+  renderTasksWithVendors(dept);
 }
 
-// 部署別に業者カテゴリ・業者を描画
-function renderVendorsByDepartment(dept) {
+// 部署別にタスクと業者を描画
+function renderTasksWithVendors(dept) {
   const grid = document.getElementById(`vendorGrid_${dept}`);
   if (!grid) return;
 
-  const templateIds = deptTemplateMapping[dept] || [];
+  // 部署のタスクを取得
+  const deptTasks = tasksV2.filter(t => t.category === dept).sort((a, b) => a.display_order - b.display_order);
 
-  if (templateIds.length === 0) {
+  if (deptTasks.length === 0) {
     grid.innerHTML = `
       <div class="empty-state" style="padding: 40px;">
         <div style="font-size: 48px; margin-bottom: 16px;">📭</div>
-        <p style="color: var(--text-secondary);">この部署にはまだカテゴリが登録されていません</p>
-        <button class="btn btn-primary" style="margin-top: 16px;" onclick="openAddVendorCategoryModal('${dept}')">+ カテゴリを追加</button>
+        <p style="color: var(--text-secondary);">この部署にはタスクが登録されていません</p>
+        <p style="color: var(--text-secondary); font-size: 13px; margin-top: 8px;">業務管理画面でタスクを追加してください</p>
       </div>
     `;
     return;
   }
 
-  // テンプレートごとにカードを生成
-  const templates = emailTemplates.filter(t => templateIds.includes(t.template_id));
-
-  grid.innerHTML = templates.map(template => {
+  // タスクごとにカードを生成
+  grid.innerHTML = deptTasks.map(task => {
+    // タスクに紐づくテンプレートIDを取得
+    const templateId = taskMappings[task.task_key] || task.task_key;
     // このテンプレートに紐づく業者を取得
-    const templateVendors = vendors.filter(v => v.template_id === template.template_id);
+    const taskVendors = vendors.filter(v => v.template_id === templateId);
+    // メールが必要かどうか（業者にメール設定があるか）
+    const hasEmailVendors = taskVendors.some(v => v.email);
 
     return `
-      <div class="vendor-category-card">
+      <div class="vendor-category-card" style="margin-bottom: 16px;">
         <div class="vendor-category-header">
           <div>
-            <div class="vendor-category-title">${escapeHtml(template.display_name)}</div>
+            <div class="vendor-category-title">${escapeHtml(task.task_name)}</div>
             <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">
-              ${templateVendors.length}件の業者
+              ${taskVendors.length}件の業者${hasEmailVendors ? ' / メール設定あり' : ''}
             </div>
           </div>
           <div style="display: flex; gap: 8px;">
-            <button class="btn btn-ghost btn-small" onclick="openEmailTemplateEditor('${escapeHtml(template.template_id)}')">
-              📧 メール設定
-            </button>
-            <button class="btn btn-ghost btn-small" onclick="openAddVendorToCategory('${escapeHtml(template.template_id)}')">
+            <button class="btn btn-primary btn-small" onclick="openAddVendorToTask('${escapeHtml(task.task_key)}')">
               + 業者追加
             </button>
           </div>
         </div>
 
         <div class="vendor-list">
-          ${templateVendors.length > 0 ? templateVendors.map(vendor => `
-            <div class="vendor-item">
-              <div>
-                <div style="font-weight: 500;">${escapeHtml(vendor.company || '-')}</div>
-                <div style="font-size: 12px; color: var(--text-secondary);">${escapeHtml(vendor.contact || '-')}</div>
+          ${taskVendors.length > 0 ? taskVendors.map(vendor => `
+            <div class="vendor-item" style="display: grid; grid-template-columns: 1fr auto; gap: 16px; padding: 12px; border-bottom: 1px solid var(--border-color);">
+              <div style="display: grid; grid-template-columns: 200px 120px 1fr; gap: 12px; align-items: center;">
+                <div>
+                  <div style="font-weight: 500;">${escapeHtml(vendor.company || '-')}</div>
+                  <div style="font-size: 12px; color: var(--text-secondary);">${escapeHtml(vendor.contact || '-')}</div>
+                </div>
+                <div style="font-size: 13px; color: var(--text-secondary);">${escapeHtml(vendor.tel || '-')}</div>
+                <div>
+                  <div style="font-size: 13px;">${vendor.email ? '📧 ' + escapeHtml(vendor.email) : '<span style="color: var(--text-secondary);">メールなし</span>'}</div>
+                  ${vendor.cc_email ? `<div style="font-size: 12px; color: var(--text-secondary);">CC: ${escapeHtml(vendor.cc_email)}</div>` : ''}
+                  ${vendor.subject_format ? `<div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">件名: ${escapeHtml(vendor.subject_format.substring(0, 30))}...</div>` : ''}
+                </div>
               </div>
-              <div style="font-size: 13px; color: var(--text-secondary);">${escapeHtml(vendor.tel || '-')}</div>
-              <div style="font-size: 13px;">${escapeHtml(vendor.email || '-')}</div>
-              <div style="font-size: 12px; color: var(--text-secondary);">${vendor.cc_email ? 'CC: ' + escapeHtml(vendor.cc_email) : ''}</div>
-              <div class="vendor-item-actions">
-                <button class="btn btn-ghost btn-small" onclick="editVendorInCategory('${escapeHtml(template.template_id)}', '${escapeHtml(vendor.vendor_id)}')">編集</button>
+              <div class="vendor-item-actions" style="display: flex; gap: 8px;">
+                ${vendor.email ? `<button class="btn btn-ghost btn-small" onclick="openVendorEmailSettings('${escapeHtml(task.task_key)}', '${escapeHtml(vendor.vendor_id)}')">📧 メール設定</button>` : ''}
+                <button class="btn btn-ghost btn-small" onclick="editVendorInfo('${escapeHtml(task.task_key)}', '${escapeHtml(vendor.vendor_id)}')">編集</button>
+                <button class="btn btn-ghost btn-small" style="color: var(--danger);" onclick="deleteVendorFromTask('${escapeHtml(task.task_key)}', '${escapeHtml(vendor.vendor_id)}')">削除</button>
               </div>
             </div>
           `).join('') : `
@@ -22959,14 +23042,252 @@ function renderRequestTemplatesGrid() {
   switchVendorDeptTab('設計');
 }
 
-// メールテンプレート編集モーダルを開く
-function openEmailTemplateEditor(templateId) {
-  log('📧 openEmailTemplateEditor:', templateId);
-  if (!templateId) {
-    showToast('テンプレートIDが指定されていません', 'error');
+// 現在編集中のタスクキーと業者ID
+let editingTaskKey = null;
+let editingVendorId = null;
+
+// タスクに業者を追加するモーダルを開く
+function openAddVendorToTask(taskKey) {
+  log('➕ openAddVendorToTask:', taskKey);
+  editingTaskKey = taskKey;
+  editingVendorId = null;
+
+  // フォームをリセット
+  document.getElementById('vendorFormTaskKey').value = taskKey;
+  document.getElementById('vendorFormVendorId').value = '';
+  document.getElementById('vendorFormCompany').value = '';
+  document.getElementById('vendorFormContact').value = '';
+  document.getElementById('vendorFormTel').value = '';
+  document.getElementById('vendorFormEmail').value = '';
+  document.getElementById('vendorFormCcEmail').value = '';
+
+  // タスク名を取得してタイトルに表示
+  const task = tasksV2.find(t => t.task_key === taskKey);
+  document.getElementById('vendorFormModalTitle').textContent = `${task?.task_name || taskKey} - 業者追加`;
+
+  const modal = document.getElementById('vendorFormModal');
+  ModalManager.open(modal, '#vendorFormCompany');
+}
+
+// 業者情報を編集
+function editVendorInfo(taskKey, vendorId) {
+  log('✏️ editVendorInfo:', taskKey, vendorId);
+  editingTaskKey = taskKey;
+  editingVendorId = vendorId;
+
+  // テンプレートIDを取得
+  const templateId = taskMappings[taskKey] || taskKey;
+  // 業者データを取得
+  const vendor = vendors.find(v => v.template_id === templateId && v.vendor_id === vendorId);
+  if (!vendor) {
+    showToast('業者が見つかりません', 'error');
     return;
   }
-  openEditTemplateModal(templateId);
+
+  // フォームに値をセット
+  document.getElementById('vendorFormTaskKey').value = taskKey;
+  document.getElementById('vendorFormVendorId').value = vendorId;
+  document.getElementById('vendorFormCompany').value = vendor.company || '';
+  document.getElementById('vendorFormContact').value = vendor.contact || '';
+  document.getElementById('vendorFormTel').value = vendor.tel || '';
+  document.getElementById('vendorFormEmail').value = vendor.email || '';
+  document.getElementById('vendorFormCcEmail').value = vendor.cc_email || '';
+
+  // タスク名を取得してタイトルに表示
+  const task = tasksV2.find(t => t.task_key === taskKey);
+  document.getElementById('vendorFormModalTitle').textContent = `${task?.task_name || taskKey} - 業者編集`;
+
+  const modal = document.getElementById('vendorFormModal');
+  ModalManager.open(modal, '#vendorFormCompany');
+}
+
+// 業者フォームモーダルを閉じる
+function closeVendorFormModal() {
+  ModalManager.close(document.getElementById('vendorFormModal'));
+  editingTaskKey = null;
+  editingVendorId = null;
+}
+
+// 業者を保存
+async function saveVendorForm() {
+  const taskKey = document.getElementById('vendorFormTaskKey').value;
+  const vendorId = document.getElementById('vendorFormVendorId').value || 'vendor_' + Date.now();
+  const company = document.getElementById('vendorFormCompany').value.trim();
+  const contact = document.getElementById('vendorFormContact').value.trim();
+  const tel = document.getElementById('vendorFormTel').value.trim();
+  const email = document.getElementById('vendorFormEmail').value.trim();
+  const ccEmail = document.getElementById('vendorFormCcEmail').value.trim();
+
+  if (!company) {
+    showToast('会社名を入力してください', 'error');
+    return;
+  }
+
+  const templateId = taskMappings[taskKey] || taskKey;
+
+  try {
+    if (editingVendorId) {
+      // 更新
+      const { error } = await supabase
+        .from('template_vendors')
+        .update({
+          company,
+          contact,
+          tel,
+          email,
+          cc_email: ccEmail || null
+        })
+        .eq('template_id', templateId)
+        .eq('vendor_id', editingVendorId);
+
+      if (error) throw error;
+      showToast('業者を更新しました', 'success');
+    } else {
+      // 新規追加
+      const { error } = await supabase
+        .from('template_vendors')
+        .insert({
+          template_id: templateId,
+          vendor_id: vendorId,
+          company,
+          contact,
+          tel,
+          email,
+          cc_email: ccEmail || null
+        });
+
+      if (error) throw error;
+      showToast('業者を追加しました', 'success');
+    }
+
+    // データを再読み込み
+    await loadVendors();
+    closeVendorFormModal();
+
+    // 現在のタブを再描画
+    const activeTab = document.querySelector('[data-vendor-dept].active');
+    if (activeTab) {
+      renderTasksWithVendors(activeTab.dataset.vendorDept);
+    }
+
+  } catch (err) {
+    logError('業者保存エラー:', err);
+    showToast('保存に失敗しました: ' + err.message, 'error');
+  }
+}
+
+// 業者を削除
+async function deleteVendorFromTask(taskKey, vendorId) {
+  if (!confirm('この業者を削除しますか？')) return;
+
+  const templateId = taskMappings[taskKey] || taskKey;
+
+  try {
+    const { error } = await supabase
+      .from('template_vendors')
+      .delete()
+      .eq('template_id', templateId)
+      .eq('vendor_id', vendorId);
+
+    if (error) throw error;
+
+    showToast('業者を削除しました', 'success');
+
+    // データを再読み込み
+    await loadVendors();
+
+    // 現在のタブを再描画
+    const activeTab = document.querySelector('[data-vendor-dept].active');
+    if (activeTab) {
+      renderTasksWithVendors(activeTab.dataset.vendorDept);
+    }
+
+  } catch (err) {
+    logError('業者削除エラー:', err);
+    showToast('削除に失敗しました: ' + err.message, 'error');
+  }
+}
+
+// 業者のメール設定を開く
+function openVendorEmailSettings(taskKey, vendorId) {
+  log('📧 openVendorEmailSettings:', taskKey, vendorId);
+  editingTaskKey = taskKey;
+  editingVendorId = vendorId;
+
+  const templateId = taskMappings[taskKey] || taskKey;
+  const vendor = vendors.find(v => v.template_id === templateId && v.vendor_id === vendorId);
+  if (!vendor) {
+    showToast('業者が見つかりません', 'error');
+    return;
+  }
+
+  // フォームに値をセット
+  document.getElementById('emailSettingsTaskKey').value = taskKey;
+  document.getElementById('emailSettingsVendorId').value = vendorId;
+  document.getElementById('emailSettingsTo').value = vendor.email || '';
+  document.getElementById('emailSettingsCc').value = vendor.cc_email || '';
+  document.getElementById('emailSettingsSubject').value = vendor.subject_format || '';
+  document.getElementById('emailSettingsBody').value = vendor.template_text || '';
+  document.getElementById('emailSettingsSignature').value = vendor.signature || '';
+
+  // タスク名と会社名をタイトルに表示
+  const task = tasksV2.find(t => t.task_key === taskKey);
+  document.getElementById('emailSettingsModalTitle').textContent = `${vendor.company} - メール設定`;
+
+  const modal = document.getElementById('vendorEmailSettingsModal');
+  ModalManager.open(modal, '#emailSettingsSubject');
+}
+
+// メール設定モーダルを閉じる
+function closeVendorEmailSettingsModal() {
+  ModalManager.close(document.getElementById('vendorEmailSettingsModal'));
+  editingTaskKey = null;
+  editingVendorId = null;
+}
+
+// メール設定を保存
+async function saveVendorEmailSettings() {
+  const taskKey = document.getElementById('emailSettingsTaskKey').value;
+  const vendorId = document.getElementById('emailSettingsVendorId').value;
+  const email = document.getElementById('emailSettingsTo').value.trim();
+  const ccEmail = document.getElementById('emailSettingsCc').value.trim();
+  const subjectFormat = document.getElementById('emailSettingsSubject').value.trim();
+  const templateText = document.getElementById('emailSettingsBody').value.trim();
+  const signature = document.getElementById('emailSettingsSignature').value.trim();
+
+  const templateId = taskMappings[taskKey] || taskKey;
+
+  try {
+    const { error } = await supabase
+      .from('template_vendors')
+      .update({
+        email,
+        cc_email: ccEmail || null,
+        subject_format: subjectFormat || null,
+        template_text: templateText || null,
+        signature: signature || null
+      })
+      .eq('template_id', templateId)
+      .eq('vendor_id', vendorId);
+
+    if (error) throw error;
+
+    showToast('メール設定を保存しました', 'success');
+
+    // データを再読み込み
+    await loadVendors();
+    closeVendorEmailSettingsModal();
+
+    // 現在のタブを再描画
+    const activeTab = document.querySelector('[data-vendor-dept].active');
+    if (activeTab) {
+      renderTasksWithVendors(activeTab.dataset.vendorDept);
+    }
+
+  } catch (err) {
+    logError('メール設定保存エラー:', err);
+    showToast('保存に失敗しました: ' + err.message, 'error');
+  }
 }
 
 // カテゴリ追加モーダル（将来拡張用）
@@ -22974,27 +23295,22 @@ function openAddVendorCategoryModal(dept) {
   showToast(`${dept}部署へのカテゴリ追加機能は準備中です`, 'info');
 }
 
-// 業者追加モーダルを開く（新規業者行を自動追加）
+// 旧関数（互換性のため残す）
 function openAddVendorToCategory(templateId) {
-  log('➕ openAddVendorToCategory:', templateId);
-  if (!templateId) {
-    showToast('テンプレートIDが指定されていません', 'error');
-    return;
-  }
-  // モーダルを開く
-  openEditTemplateModal(templateId);
-  // 新規業者行を自動追加
-  addTemplateVendorRow();
+  log('➕ openAddVendorToCategory (legacy):', templateId);
+  // 新しい関数にリダイレクト
+  openAddVendorToTask(templateId);
 }
 
-// 業者編集
 function editVendorInCategory(templateId, vendorId) {
-  log('✏️ editVendorInCategory:', templateId, vendorId);
-  if (!templateId) {
-    showToast('テンプレートIDが指定されていません', 'error');
-    return;
-  }
-  openEditTemplateModal(templateId);
+  log('✏️ editVendorInCategory (legacy):', templateId, vendorId);
+  editVendorInfo(templateId, vendorId);
+}
+
+function openEmailTemplateEditor(templateId) {
+  log('📧 openEmailTemplateEditor (legacy):', templateId);
+  // 旧モーダルは使わない
+  showToast('メール設定は各業者の「📧 メール設定」ボタンから行ってください', 'info');
 }
 
 // 編集用の業者データを一時保存
