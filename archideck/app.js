@@ -17209,3 +17209,26 @@ async function saveRequestTemplate() {
 
 // FAB初期化
 document.addEventListener('DOMContentLoaded', () => FAB.init());
+
+// ============================================
+// デバッグ用: タスク-業者マッピング確認
+// ============================================
+// ブラウザコンソールで debugVendorMapping('evoltz') を実行
+window.debugVendorMapping = function(taskKey) {
+  console.log('=== タスク-業者マッピング デバッグ ===');
+  console.log('taskKey:', taskKey);
+
+  const templateId = taskMappings[taskKey] || taskKey;
+  console.log('taskMappings[taskKey]:', taskMappings[taskKey]);
+  console.log('templateId (使用される値):', templateId);
+
+  console.log('全taskMappings:', taskMappings);
+
+  const taskVendors = vendors.filter(v => v.template_id === templateId);
+  console.log('マッチした業者数:', taskVendors.length);
+  console.log('マッチした業者:', taskVendors);
+
+  console.log('全vendors (template_idのみ):', vendors.map(v => ({ template_id: v.template_id, vendor_id: v.vendor_id, company: v.company })));
+
+  return { taskKey, templateId, taskVendors, allMappings: taskMappings };
+};
