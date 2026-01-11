@@ -4967,11 +4967,6 @@ textarea:focus-visible {
             <div class="settings-card-title">FC管理</div>
             <div class="settings-card-description">フランチャイズ組織を管理</div>
           </div>
-          <div class="settings-card" onclick="openSettingsPanel('requestTemplates')">
-            <div class="settings-card-icon">📧</div>
-            <div class="settings-card-title">業者・依頼メール管理</div>
-            <div class="settings-card-description">業者情報・CC・メールテンプレートを管理</div>
-          </div>
         </div>
 
         <!-- 担当管理 -->
@@ -5021,9 +5016,9 @@ textarea:focus-visible {
         <!-- 統合業務管理 -->
         <div id="taskManagementPanel" class="sub-tab-panel">
           <button class="settings-back-btn" onclick="closeSettingsPanel()">← 設定に戻る</button>
-          <div style="max-width: 1200px; margin: 0 auto;">
+          <div style="max-width: 1400px; margin: 0 auto;">
             <h2 style="margin-bottom: 20px; font-size: 24px; font-weight: 700;">📋 業務管理</h2>
-            <p style="margin-bottom: 24px; color: var(--text-secondary);">各部署のタスクを管理します。部署タブを選択してタスクを追加・編集してください。</p>
+            <p style="margin-bottom: 24px; color: var(--text-secondary);">各部署のタスクと業者・メール設定を管理します。</p>
 
             <!-- 部署タブ -->
             <div class="department-tabs" style="display: flex; gap: 8px; margin-bottom: 24px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
@@ -5036,63 +5031,123 @@ textarea:focus-visible {
 
             <!-- 設計タブ内容 -->
             <div id="deptContent_設計" class="dept-content active">
-              <div class="toolbar" style="padding-bottom: 16px; margin-bottom: 16px;">
-                <div class="toolbar-right">
-                  <button class="btn btn-primary" onclick="openTaskModal('設計')">+ タスク追加</button>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                <!-- 左側: タスク一覧 -->
+                <div>
+                  <div class="toolbar" style="padding-bottom: 16px; margin-bottom: 16px;">
+                    <h3 style="margin: 0; font-size: 16px; font-weight: 600;">📝 タスク一覧</h3>
+                    <div class="toolbar-right">
+                      <button class="btn btn-primary btn-small" onclick="openTaskModal('設計')">+ タスク追加</button>
+                    </div>
+                  </div>
+                  <div id="tasksGrid"></div>
+                </div>
+                <!-- 右側: 業者・メール管理 -->
+                <div>
+                  <div class="toolbar" style="padding-bottom: 16px; margin-bottom: 16px;">
+                    <h3 style="margin: 0; font-size: 16px; font-weight: 600;">📧 業者・メール設定</h3>
+                  </div>
+                  <div id="vendorGrid_設計"></div>
                 </div>
               </div>
-              <div id="tasksGrid"></div>
             </div>
 
             <!-- ICタブ内容 -->
             <div id="deptContent_IC" class="dept-content" style="display: none;">
-              <div class="toolbar" style="padding-bottom: 16px; margin-bottom: 16px;">
-                <div class="toolbar-right">
-                  <button class="btn btn-warning" onclick="runICTasksMigration()" title="21項目のICタスクに更新">🔄 21項目に更新</button>
-                  <button class="btn btn-primary" onclick="openTaskModal('IC')">+ タスク追加</button>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                <!-- 左側: タスク一覧 -->
+                <div>
+                  <div class="toolbar" style="padding-bottom: 16px; margin-bottom: 16px;">
+                    <h3 style="margin: 0; font-size: 16px; font-weight: 600;">📝 タスク一覧</h3>
+                    <div class="toolbar-right">
+                      <button class="btn btn-warning btn-small" onclick="runICTasksMigration()" title="21項目のICタスクに更新">🔄 21項目に更新</button>
+                      <button class="btn btn-primary btn-small" onclick="openTaskModal('IC')">+ タスク追加</button>
+                    </div>
+                  </div>
+                  <div id="icMigrationNotice" style="display: none; margin-bottom: 16px; padding: 12px; background: var(--warning-light); border-radius: var(--radius-md); border-left: 4px solid var(--warning-color);">
+                    <p style="margin: 0; font-size: 13px; color: var(--warning-color);">
+                      ⚠️ <strong>ICタスクが古い形式です</strong>: 「21項目に更新」ボタンで更新してください。
+                    </p>
+                  </div>
+                  <div id="icTasksGrid"></div>
+                </div>
+                <!-- 右側: 業者・メール管理 -->
+                <div>
+                  <div class="toolbar" style="padding-bottom: 16px; margin-bottom: 16px;">
+                    <h3 style="margin: 0; font-size: 16px; font-weight: 600;">📧 業者・メール設定</h3>
+                  </div>
+                  <div id="vendorGrid_IC"></div>
                 </div>
               </div>
-              <div id="icMigrationNotice" style="display: none; margin-bottom: 16px; padding: 12px; background: var(--warning-light); border-radius: var(--radius-md); border-left: 4px solid var(--warning-color);">
-                <p style="margin: 0; font-size: 13px; color: var(--warning-color);">
-                  ⚠️ <strong>ICタスクが古い形式です</strong>: 「21項目に更新」ボタンをクリックして、新しい21項目のICタスクに更新してください。
-                </p>
-              </div>
-              <div style="margin-bottom: 16px; padding: 12px; background: var(--primary-light); border-radius: var(--radius-md); border-left: 4px solid var(--primary-color);">
-                <p style="margin: 0; font-size: 13px; color: var(--primary-color);">
-                  💡 <strong>メール送信機能の設定</strong>: 「📧 業者・依頼メール管理」で各業者のメールアドレスを設定してください。
-                </p>
-              </div>
-              <div id="icTasksGrid"></div>
             </div>
 
             <!-- 外構タブ内容 -->
             <div id="deptContent_外構" class="dept-content" style="display: none;">
-              <div class="toolbar" style="padding-bottom: 16px; margin-bottom: 16px;">
-                <div class="toolbar-right">
-                  <button class="btn btn-primary" onclick="openExteriorTaskModal()">+ タスク追加</button>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                <!-- 左側: タスク一覧 -->
+                <div>
+                  <div class="toolbar" style="padding-bottom: 16px; margin-bottom: 16px;">
+                    <h3 style="margin: 0; font-size: 16px; font-weight: 600;">📝 タスク一覧</h3>
+                    <div class="toolbar-right">
+                      <button class="btn btn-primary btn-small" onclick="openExteriorTaskModal()">+ タスク追加</button>
+                    </div>
+                  </div>
+                  <div id="exteriorTasksGrid"></div>
+                </div>
+                <!-- 右側: 業者・メール管理 -->
+                <div>
+                  <div class="toolbar" style="padding-bottom: 16px; margin-bottom: 16px;">
+                    <h3 style="margin: 0; font-size: 16px; font-weight: 600;">📧 業者・メール設定</h3>
+                  </div>
+                  <div id="vendorGrid_外構"></div>
                 </div>
               </div>
-              <div id="exteriorTasksGrid"></div>
             </div>
 
             <!-- 不動産タブ内容 -->
             <div id="deptContent_不動産" class="dept-content" style="display: none;">
-              <div class="toolbar" style="padding-bottom: 16px; margin-bottom: 16px;">
-                <div class="toolbar-right">
-                  <button class="btn btn-primary" onclick="openRealestateTaskModal()">+ タスク追加</button>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                <!-- 左側: タスク一覧 -->
+                <div>
+                  <div class="toolbar" style="padding-bottom: 16px; margin-bottom: 16px;">
+                    <h3 style="margin: 0; font-size: 16px; font-weight: 600;">📝 タスク一覧</h3>
+                    <div class="toolbar-right">
+                      <button class="btn btn-primary btn-small" onclick="openRealestateTaskModal()">+ タスク追加</button>
+                    </div>
+                  </div>
+                  <div id="realestateTasksGrid"></div>
+                </div>
+                <!-- 右側: 業者・メール管理 -->
+                <div>
+                  <div class="toolbar" style="padding-bottom: 16px; margin-bottom: 16px;">
+                    <h3 style="margin: 0; font-size: 16px; font-weight: 600;">📧 業者・メール設定</h3>
+                  </div>
+                  <div id="vendorGrid_不動産"></div>
                 </div>
               </div>
-              <div id="realestateTasksGrid"></div>
             </div>
 
             <!-- 工事タブ内容 -->
             <div id="deptContent_工事" class="dept-content" style="display: none;">
-              <div class="toolbar" style="padding-bottom: 16px; margin-bottom: 16px;">
-                <div class="toolbar-right">
-                  <button class="btn btn-primary" onclick="openConstructionTaskModal()">+ タスク追加</button>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                <!-- 左側: タスク一覧 -->
+                <div>
+                  <div class="toolbar" style="padding-bottom: 16px; margin-bottom: 16px;">
+                    <h3 style="margin: 0; font-size: 16px; font-weight: 600;">📝 タスク一覧</h3>
+                    <div class="toolbar-right">
+                      <button class="btn btn-primary btn-small" onclick="openConstructionTaskModal()">+ タスク追加</button>
+                    </div>
+                  </div>
+                  <div id="constructionTasksGrid"></div>
+                </div>
+                <!-- 右側: 業者・メール管理 -->
+                <div>
+                  <div class="toolbar" style="padding-bottom: 16px; margin-bottom: 16px;">
+                    <h3 style="margin: 0; font-size: 16px; font-weight: 600;">📧 業者・メール設定</h3>
+                  </div>
+                  <div id="vendorGrid_工事"></div>
                 </div>
               </div>
-              <div id="constructionTasksGrid"></div>
             </div>
           </div>
         </div>
@@ -5396,50 +5451,6 @@ textarea:focus-visible {
           </div>
         </div>
 
-        <!-- 業者・依頼メール管理 -->
-        <div id="requestTemplatesPanel" class="sub-tab-panel">
-          <button class="settings-back-btn" onclick="closeSettingsPanel()">← 設定に戻る</button>
-          <div style="max-width: 1200px; margin: 0 auto;">
-            <h2 style="margin-bottom: 20px; font-size: 24px; font-weight: 700;">📧 業者・依頼メール管理</h2>
-            <p style="margin-bottom: 24px; color: var(--text-secondary);">
-              各タスクに業者を追加し、メールが必要な業者には宛先・CC・件名・本文・署名を設定できます。
-            </p>
-
-            <!-- 部署タブ -->
-            <div class="department-tabs" style="display: flex; gap: 8px; margin-bottom: 24px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
-              <button class="dept-tab active" onclick="switchVendorDeptTab('設計')" data-vendor-dept="設計">📐 設計</button>
-              <button class="dept-tab" onclick="switchVendorDeptTab('IC')" data-vendor-dept="IC">🎨 IC</button>
-              <button class="dept-tab" onclick="switchVendorDeptTab('外構')" data-vendor-dept="外構">🌳 外構</button>
-              <button class="dept-tab" onclick="switchVendorDeptTab('不動産')" data-vendor-dept="不動産">🏢 不動産</button>
-              <button class="dept-tab" onclick="switchVendorDeptTab('工事')" data-vendor-dept="工事">🔨 工事</button>
-            </div>
-
-            <!-- 設計タブ内容 -->
-            <div id="vendorDeptContent_設計" class="vendor-dept-content active">
-              <div id="vendorGrid_設計"></div>
-            </div>
-
-            <!-- ICタブ内容 -->
-            <div id="vendorDeptContent_IC" class="vendor-dept-content" style="display: none;">
-              <div id="vendorGrid_IC"></div>
-            </div>
-
-            <!-- 外構タブ内容 -->
-            <div id="vendorDeptContent_外構" class="vendor-dept-content" style="display: none;">
-              <div id="vendorGrid_外構"></div>
-            </div>
-
-            <!-- 不動産タブ内容 -->
-            <div id="vendorDeptContent_不動産" class="vendor-dept-content" style="display: none;">
-              <div id="vendorGrid_不動産"></div>
-            </div>
-
-            <!-- 工事タブ内容 -->
-            <div id="vendorDeptContent_工事" class="vendor-dept-content" style="display: none;">
-              <div id="vendorGrid_工事"></div>
-            </div>
-          </div>
-        </div>
       </div>
     </main>
   </div>
@@ -10492,8 +10503,7 @@ function renderTasksManagement() {
             <th style="width: 60px;"></th>
             <th>タスク名</th>
             <th style="width: 100px;">状態管理</th>
-            <th style="width: 120px;">📧ボタン</th>
-            <th>紐づけ業者</th>
+            <th style="width: 100px;">業者</th>
             <th style="width: 180px;">操作</th>
           </tr>
         </thead>
@@ -10524,8 +10534,7 @@ function renderIcTasksManagement() {
             <th style="width: 60px;"></th>
             <th>タスク名</th>
             <th style="width: 100px;">状態管理</th>
-            <th style="width: 120px;">📧ボタン</th>
-            <th>紐づけ業者</th>
+            <th style="width: 100px;">業者</th>
             <th style="width: 180px;">操作</th>
           </tr>
         </thead>
@@ -10543,27 +10552,32 @@ function renderIcTasksManagement() {
 }
 
 function renderTaskRow(task) {
-  const mappings = taskVendorMappings.filter(m => m.task_id === task.id);
-  const vendorNames = mappings.map(m => {
-    const vendor = vendorsV2.find(v => v.id === m.vendor_id);
-    return vendor ? vendor.company : '不明';
-  }).join(', ');
+  // 業者登録状況を確認（template_vendorsから）
+  const templateId = taskMappings[task.task_key] || task.task_key;
+  const taskVendors = vendors.filter(v => v.template_id === templateId);
+  const hasVendors = taskVendors.length > 0;
+  const hasEmailVendor = taskVendors.some(v => v.email);
 
   const stateInfo = task.has_state ?
     `<span class="badge badge-success">あり</span>` :
     `<span class="badge badge-secondary">なし</span>`;
 
-  const emailButtonInfo = task.has_email_button ?
-    `<span class="badge badge-success">表示</span>` :
-    `<span class="badge badge-secondary">非表示</span>`;
+  // 業者登録状況
+  const vendorInfo = hasVendors ?
+    `<span class="badge badge-success">${taskVendors.length}社</span>` :
+    `<span class="badge badge-secondary">未登録</span>`;
+
+  // メール設定状況
+  const emailInfo = hasEmailVendor ?
+    `<span class="badge badge-primary" title="メール設定あり">📧</span>` :
+    '';
 
   return `
     <tr draggable="true" ondragstart="handleTaskDragStart(event, '${task.id}')" ondragover="handleTaskDragOver(event)" ondrop="handleTaskDrop(event, '${task.id}')" style="cursor: move;">
       <td><span style="color: var(--text-muted);">⋮⋮</span></td>
-      <td><strong>${escapeHtml(task.task_name)}</strong></td>
+      <td><strong>${escapeHtml(task.task_name)}</strong> ${emailInfo}</td>
       <td>${stateInfo}</td>
-      <td>${emailButtonInfo}</td>
-      <td>${escapeHtml(vendorNames || '-')}</td>
+      <td>${vendorInfo}</td>
       <td>
         <button class="btn btn-secondary btn-small" onclick="editTask('${task.id}')">編集</button>
         <button class="btn btn-danger btn-small" onclick="deleteTask('${task.id}')">削除</button>
@@ -11854,6 +11868,9 @@ function switchDeptTab(dept) {
       renderConstructionTasksManagement();
       break;
   }
+
+  // 業者一覧も描画
+  renderTasksWithVendors(dept);
 }
 
 // 設定パネルを開く（カード式UI用）
@@ -18300,7 +18317,7 @@ function handleHashChange() {
     if (subTab) {
       setTimeout(() => {
         // 有効なパネル名のリスト
-        const validPanels = ['staff', 'taskManagement', 'products', 'customize', 'kintone', 'backup', 'fcManagement', 'requestTemplates'];
+        const validPanels = ['staff', 'taskManagement', 'products', 'customize', 'kintone', 'backup', 'fcManagement'];
         if (validPanels.includes(subTab)) {
           openSettingsPanel(subTab);
         }
@@ -23207,6 +23224,258 @@ async function deleteVendorFromTask(taskKey, vendorId) {
   }
 }
 
+// デフォルトメールテンプレートを取得
+function getDefaultEmailTemplate(taskKey, templateId) {
+  // タスク名を取得
+  const task = tasksV2.find(t => t.task_key === taskKey);
+  const taskName = task ? task.task_name : taskKey;
+
+  // 依頼内容別のテンプレート
+  const templates = {
+    // サッシ・開口部関連
+    ogura: {
+      subject: '【サッシ依頼】{customerName}様邸',
+      body: `{company}
+{contact}様
+
+平素より大変お世話になっております。
+
+この度、下記物件のサッシ・開口部リストをご依頼させていただきたく、ご連絡いたしました。
+
+■ 物件情報
+・お客様名：{customerName}様邸
+・担当設計：{staffName}
+
+■ ご依頼内容
+サッシプレゼン資料および開口部リストの作成をお願いいたします。
+
+■ ご提出期日
+{dueDate}まで
+
+ご多忙のところ恐れ入りますが、ご対応のほどよろしくお願いいたします。
+ご不明点がございましたら、お気軽にお問い合わせください。`
+    },
+    // 換気システム関連
+    panasonic: {
+      subject: '【換気設備依頼】{customerName}様邸',
+      body: `{company}
+{contact}様
+
+平素より大変お世話になっております。
+
+この度、下記物件の換気設備配置図をご依頼させていただきたく、ご連絡いたしました。
+
+■ 物件情報
+・お客様名：{customerName}様邸
+・担当設計：{staffName}
+
+■ ご依頼内容
+24時間換気システムの配置計画および換気計算書の作成をお願いいたします。
+
+■ ご提出期日
+{dueDate}まで
+
+ご多忙のところ恐れ入りますが、ご対応のほどよろしくお願いいたします。`
+    },
+    // ダンパー・制振装置関連
+    senpaku: {
+      subject: '【ダンパー配置依頼】{customerName}様邸',
+      body: `{company}
+{contact}様
+
+平素より大変お世話になっております。
+
+この度、下記物件のダンパー配置計画をご依頼させていただきたく、ご連絡いたしました。
+
+■ 物件情報
+・お客様名：{customerName}様邸
+・担当設計：{staffName}
+
+■ ご依頼内容
+制振ダンパーの配置計画および必要本数のご提案をお願いいたします。
+
+■ ご提出期日
+{dueDate}まで
+
+図面データを添付いたしますので、ご確認のほどよろしくお願いいたします。`
+    },
+    // 地盤調査関連
+    ground_survey: {
+      subject: '【地盤調査依頼】{customerName}様邸',
+      body: `{company}
+{contact}様
+
+平素より大変お世話になっております。
+
+この度、下記物件の地盤調査をご依頼させていただきたく、ご連絡いたしました。
+
+■ 物件情報
+・お客様名：{customerName}様邸
+・担当設計：{staffName}
+
+■ ご依頼内容
+スウェーデン式サウンディング試験（SWS試験）による地盤調査をお願いいたします。
+
+■ 調査希望日
+{dueDate}頃
+
+現地の地図データを添付いたします。
+調査日程のご調整をお願いいたします。`
+    },
+    // 給排水関連
+    plumbing: {
+      subject: '【給排水設備依頼】{customerName}様邸',
+      body: `{company}
+{contact}様
+
+平素より大変お世話になっております。
+
+この度、下記物件の給排水設備図をご依頼させていただきたく、ご連絡いたしました。
+
+■ 物件情報
+・お客様名：{customerName}様邸
+・担当設計：{staffName}
+
+■ ご依頼内容
+給排水・衛生設備配管図および設備機器リストの作成をお願いいたします。
+
+■ ご提出期日
+{dueDate}まで
+
+平面図を添付いたしますので、ご確認のほどよろしくお願いいたします。`
+    },
+    // 電気設備関連
+    electric: {
+      subject: '【電気設備依頼】{customerName}様邸',
+      body: `{company}
+{contact}様
+
+平素より大変お世話になっております。
+
+この度、下記物件の電気設備図をご依頼させていただきたく、ご連絡いたしました。
+
+■ 物件情報
+・お客様名：{customerName}様邸
+・担当設計：{staffName}
+
+■ ご依頼内容
+電気配線図・コンセント配置図・照明配置図の作成をお願いいたします。
+
+■ ご提出期日
+{dueDate}まで
+
+平面図およびお客様のご要望リストを添付いたしますので、ご確認のほどよろしくお願いいたします。`
+    },
+    // 構造計算関連
+    structure: {
+      subject: '【構造計算依頼】{customerName}様邸',
+      body: `{company}
+{contact}様
+
+平素より大変お世話になっております。
+
+この度、下記物件の構造計算をご依頼させていただきたく、ご連絡いたしました。
+
+■ 物件情報
+・お客様名：{customerName}様邸
+・担当設計：{staffName}
+
+■ ご依頼内容
+許容応力度計算および構造計算書の作成をお願いいたします。
+
+■ ご提出期日
+{dueDate}まで
+
+設計図面一式を添付いたします。
+ご不明点がございましたら、お気軽にお問い合わせください。`
+    },
+    // 外構・エクステリア関連
+    exterior: {
+      subject: '【外構計画依頼】{customerName}様邸',
+      body: `{company}
+{contact}様
+
+平素より大変お世話になっております。
+
+この度、下記物件の外構計画をご依頼させていただきたく、ご連絡いたしました。
+
+■ 物件情報
+・お客様名：{customerName}様邸
+・担当設計：{staffName}
+
+■ ご依頼内容
+外構計画図およびお見積りの作成をお願いいたします。
+
+■ ご提出期日
+{dueDate}まで
+
+配置図および敷地資料を添付いたしますので、ご確認のほどよろしくお願いいたします。`
+    },
+    // プレカット関連
+    precut: {
+      subject: '【プレカット依頼】{customerName}様邸',
+      body: `{company}
+{contact}様
+
+平素より大変お世話になっております。
+
+この度、下記物件のプレカット図をご依頼させていただきたく、ご連絡いたしました。
+
+■ 物件情報
+・お客様名：{customerName}様邸
+・担当設計：{staffName}
+
+■ ご依頼内容
+構造材プレカット図の作成をお願いいたします。
+
+■ ご提出期日
+{dueDate}まで
+
+構造図面一式を添付いたします。
+プレカット図完成後、確認をお願いいたします。`
+    }
+  };
+
+  // テンプレートIDまたはタスクキーでマッチング
+  const key = templateId || taskKey;
+  if (templates[key]) {
+    return templates[key];
+  }
+
+  // マッチしない場合は汎用テンプレート
+  return {
+    subject: `【${taskName}】{customerName}様邸`,
+    body: `{company}
+{contact}様
+
+平素より大変お世話になっております。
+
+この度、下記物件の件でご連絡いたしました。
+
+■ 物件情報
+・お客様名：{customerName}様邸
+・担当設計：{staffName}
+
+■ ご依頼内容
+${taskName}についてご対応をお願いいたします。
+
+■ ご希望期日
+{dueDate}まで
+
+ご多忙のところ恐れ入りますが、ご対応のほどよろしくお願いいたします。`
+  };
+}
+
+// デフォルト署名を取得
+function getDefaultSignature() {
+  return `──────────────────────────
+{staffName}
+
+TEL: {staffPhone}
+Email: {staffEmail}
+──────────────────────────`;
+}
+
 // 業者のメール設定を開く
 function openVendorEmailSettings(taskKey, vendorId) {
   log('📧 openVendorEmailSettings:', taskKey, vendorId);
@@ -23220,14 +23489,18 @@ function openVendorEmailSettings(taskKey, vendorId) {
     return;
   }
 
-  // フォームに値をセット
+  // デフォルトテンプレートを取得
+  const defaultTemplate = getDefaultEmailTemplate(taskKey, templateId);
+  const defaultSignature = getDefaultSignature();
+
+  // フォームに値をセット（既存の値があればそれを使用、なければデフォルト）
   document.getElementById('emailSettingsTaskKey').value = taskKey;
   document.getElementById('emailSettingsVendorId').value = vendorId;
   document.getElementById('emailSettingsTo').value = vendor.email || '';
   document.getElementById('emailSettingsCc').value = vendor.cc_email || '';
-  document.getElementById('emailSettingsSubject').value = vendor.subject_format || '';
-  document.getElementById('emailSettingsBody').value = vendor.template_text || '';
-  document.getElementById('emailSettingsSignature').value = vendor.signature || '';
+  document.getElementById('emailSettingsSubject').value = vendor.subject_format || defaultTemplate.subject;
+  document.getElementById('emailSettingsBody').value = vendor.template_text || defaultTemplate.body;
+  document.getElementById('emailSettingsSignature').value = vendor.signature || defaultSignature;
 
   // タスク名と会社名をタイトルに表示
   const task = tasksV2.find(t => t.task_key === taskKey);
