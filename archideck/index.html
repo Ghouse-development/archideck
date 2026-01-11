@@ -23042,9 +23042,8 @@ function renderRequestTemplatesGrid() {
   switchVendorDeptTab('設計');
 }
 
-// 現在編集中のタスクキーと業者ID
+// 現在編集中のタスクキー（editingVendorIdは既に宣言済み）
 let editingTaskKey = null;
-let editingVendorId = null;
 
 // タスクに業者を追加するモーダルを開く
 function openAddVendorToTask(taskKey) {
