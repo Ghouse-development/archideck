@@ -11652,6 +11652,14 @@ function switchSubTab(panelName, element) {
     case 'kintone':
       loadKintoneSettings();
       break;
+    case 'backup':
+      break;
+    case 'fcManagement':
+      renderFcList();
+      break;
+    case 'requestTemplates':
+      renderRequestTemplatesGrid();
+      break;
   }
 }
 
@@ -11729,6 +11737,13 @@ function openSettingsPanel(panelName) {
       break;
     case 'kintone':
       loadKintoneSettings();
+      break;
+    case 'backup':
+      // バックアップ画面の初期化
+      break;
+    case 'fcManagement':
+      // FC管理画面の初期化
+      renderFcList();
       break;
     case 'requestTemplates':
       renderRequestTemplatesGrid();
@@ -14841,7 +14856,7 @@ async function openEmailFromTask(projectId, taskKey) {
   // 現在日付から期日を設定（デフォルト：7日後）
   const today = new Date();
   const dueDate = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
-  const dueDateStr = dueDate.toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' });
+  const dueDateStr = dueDate.toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' });
 
   // 選択中のメーカーに対応した業者（または最初の業者）のテンプレートを使用
   const vendor = taskVendors[0];
@@ -18132,7 +18147,7 @@ function handleHashChange() {
     if (subTab) {
       setTimeout(() => {
         // 有効なパネル名のリスト
-        const validPanels = ['staff', 'vendors', 'categories', 'tasks', 'icTasks', 'exteriorTasks', 'realestateTasks', 'constructionTasks', 'products', 'customize', 'kintone', 'account'];
+        const validPanels = ['staff', 'taskManagement', 'products', 'customize', 'kintone', 'backup', 'fcManagement', 'requestTemplates'];
         if (validPanels.includes(subTab)) {
           openSettingsPanel(subTab);
         }
@@ -22878,6 +22893,11 @@ function renderRequestTemplatesGrid() {
 
 // メールテンプレート編集モーダルを開く
 function openEmailTemplateEditor(templateId) {
+  log('📧 openEmailTemplateEditor:', templateId);
+  if (!templateId) {
+    showToast('テンプレートIDが指定されていません', 'error');
+    return;
+  }
   openEditTemplateModal(templateId);
 }
 
@@ -22888,15 +22908,21 @@ function openAddVendorCategoryModal(dept) {
 
 // 業者追加モーダルを開く
 function openAddVendorToCategory(templateId) {
-  const template = emailTemplates.find(t => t.template_id === templateId);
-  if (!template) return;
-
-  // 既存のテンプレート編集モーダルを開く
+  log('➕ openAddVendorToCategory:', templateId);
+  if (!templateId) {
+    showToast('テンプレートIDが指定されていません', 'error');
+    return;
+  }
   openEditTemplateModal(templateId);
 }
 
 // 業者編集
 function editVendorInCategory(templateId, vendorId) {
+  log('✏️ editVendorInCategory:', templateId, vendorId);
+  if (!templateId) {
+    showToast('テンプレートIDが指定されていません', 'error');
+    return;
+  }
   openEditTemplateModal(templateId);
 }
 
@@ -22905,11 +22931,16 @@ let editingTemplateVendors = [];
 
 // テンプレート編集モーダルを開く
 function openEditTemplateModal(templateId) {
+  log('📝 openEditTemplateModal:', templateId, 'emailTemplates:', emailTemplates.length);
+
   const template = emailTemplates.find(t => t.template_id === templateId);
   if (!template) {
-    showToast('テンプレートが見つかりません', 'error');
+    logError('❌ テンプレートが見つかりません:', templateId, '利用可能:', emailTemplates.map(t => t.template_id));
+    showToast('テンプレートが見つかりません: ' + templateId, 'error');
     return;
   }
+
+  log('✅ テンプレート取得:', template.display_name);
 
   // フォームに値をセット
   document.getElementById('editTemplateId').value = template.template_id;
@@ -22924,17 +22955,13 @@ function openEditTemplateModal(templateId) {
   // モーダルタイトルを設定
   document.getElementById('editTemplateModalTitle').textContent = `${template.display_name} - 編集`;
 
-  // 複数業者セクションの表示/非表示
+  // 業者セクションを常に表示（全テンプレートで業者管理可能）
   const vendorsSection = document.getElementById('editTemplateVendorsSection');
-  if (template.has_sub_options) {
-    vendorsSection.style.display = 'block';
-    // 業者一覧を読み込み
-    editingTemplateVendors = vendors.filter(v => v.template_id === templateId);
-    renderTemplateVendorsList();
-  } else {
-    vendorsSection.style.display = 'none';
-    editingTemplateVendors = [];
-  }
+  vendorsSection.style.display = 'block';
+  // 業者一覧を読み込み
+  editingTemplateVendors = vendors.filter(v => v.template_id === templateId);
+  log('📋 業者一覧:', editingTemplateVendors.length, '件');
+  renderTemplateVendorsList();
 
   // モーダルを開く
   document.getElementById('editRequestTemplateModal').classList.add('active');
