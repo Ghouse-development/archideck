@@ -23032,12 +23032,13 @@ function openEditTemplateModal(templateId) {
   renderTemplateVendorsList();
 
   // モーダルを開く
-  document.getElementById('editRequestTemplateModal').classList.add('active');
+  const modal = document.getElementById('editRequestTemplateModal');
+  ModalManager.open(modal, '#editTemplateDisplayName');
 }
 
 // テンプレート編集モーダルを閉じる
 function closeEditTemplateModal() {
-  document.getElementById('editRequestTemplateModal').classList.remove('active');
+  ModalManager.close(document.getElementById('editRequestTemplateModal'));
   editingTemplateVendors = [];
 }
 
