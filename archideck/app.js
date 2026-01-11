@@ -5883,7 +5883,8 @@ function renderProjectCard(project) {
     const key = taskDef.task_key;
     const task = progressData[key] || { completed: false, date: '', state: '', due_date: '' };
 
-    const hasVendor = taskVendorMappings.some(m => m.task_id === taskDef.id);
+    const templateId = taskMappings[key] || key;
+    const hasVendor = vendors.some(v => v.template_id === templateId);
     const isInternalStatus = INTERNAL_STATUSES.includes(task.state);
     const showEmailButton = taskDef.has_email_button !== false && hasVendor && !isInternalStatus;
     const emailBtn = showEmailButton ?
@@ -5908,7 +5909,8 @@ function renderProjectCard(project) {
     const key = taskDef.task_key;
     const task = progressData[key] || { completed: false, date: '', state: '', due_date: '' };
 
-    const hasVendor = taskVendorMappings.some(m => m.task_id === taskDef.id);
+    const templateId = taskMappings[key] || key;
+    const hasVendor = vendors.some(v => v.template_id === templateId);
     const isInternalStatus = INTERNAL_STATUSES.includes(task.state);
     const showEmailButton = taskDef.has_email_button !== false && hasVendor && !isInternalStatus;
     const emailBtn = showEmailButton ?
@@ -5933,7 +5935,8 @@ function renderProjectCard(project) {
     const key = taskDef.task_key;
     const task = progressData[key] || { completed: false, date: '', state: '', due_date: '' };
 
-    const hasVendor = taskVendorMappings.some(m => m.task_id === taskDef.id);
+    const templateId = taskMappings[key] || key;
+    const hasVendor = vendors.some(v => v.template_id === templateId);
     const isInternalStatus = INTERNAL_STATUSES.includes(task.state);
     const showEmailButton = taskDef.has_email_button !== false && hasVendor && !isInternalStatus;
     const emailBtn = showEmailButton ?
@@ -6629,7 +6632,8 @@ function generateICRoundCards(project, progressData) {
       if (!taskDef) return '';
 
       const task = progressData[taskKey] || { completed: false, date: '', state: '', due_date: '' };
-      const hasVendor = taskVendorMappings.some(m => m.task_id === taskDef.id);
+      const templateId = taskMappings[taskKey] || taskKey;
+      const hasVendor = vendors.some(v => v.template_id === templateId);
       const isInternalStatus = INTERNAL_STATUSES.includes(task.state);
       const showEmailButton = taskDef.has_email_button !== false && hasVendor && !isInternalStatus;
       const emailBtn = showEmailButton ?
@@ -8317,20 +8321,12 @@ async function openEmailFromTask(projectId, taskKey) {
     return;
   }
 
-  // タスクに紐づいた業者を取得
-  const mappings = taskVendorMappings.filter(m => m.task_id === taskDef.id);
-  if (mappings.length === 0) {
-    showToast('このタスクに業者が紐づけられていません', 'error');
-    return;
-  }
-
-  // 業者情報を取得
-  let taskVendors = mappings
-    .map(m => vendorsV2.find(v => v.id === m.vendor_id))
-    .filter(v => v != null);
+  // タスクに紐づいた業者を取得（taskMappings + vendorsを使用）
+  const templateId = taskMappings[taskKey] || taskKey;
+  let taskVendors = vendors.filter(v => v.template_id === templateId);
 
   if (taskVendors.length === 0) {
-    showToast('業者情報が見つかりません', 'error');
+    showToast('このタスクに業者が紐づけられていません', 'error');
     return;
   }
 
@@ -8428,9 +8424,12 @@ function quickEmail(projectId) {
   quickModal.className = 'modal-overlay';
   quickModal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 10000;';
 
-  // タスクリストを取得
+  // タスクリストを取得（taskMappings + vendorsを使用）
   const tasks = getTasksForAssignee(project.assigned_to);
-  const tasksWithVendors = tasks.filter(t => taskVendorMappings.some(m => m.task_id === t.id));
+  const tasksWithVendors = tasks.filter(t => {
+    const templateId = taskMappings[t.task_key] || t.task_key;
+    return vendors.some(v => v.template_id === templateId);
+  });
 
   const taskOptions = tasksWithVendors.map(t =>
     `<button class="quick-email-btn" onclick="openEmailFromTask('${projectId}', '${t.task_key}'); document.getElementById('quickEmailModal').remove();" style="display: flex; align-items: center; gap: 12px; padding: 16px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; width: 100%; text-align: left; transition: all 0.2s;" onmouseover="this.style.background='var(--primary-light)'; this.style.borderColor='var(--primary-color)'" onmouseout="this.style.background='var(--bg-secondary)'; this.style.borderColor='var(--border-color)'">
