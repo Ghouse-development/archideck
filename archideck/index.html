@@ -7247,7 +7247,63 @@ const INTERNAL_STATUSES = ['オリジナル', 'GRAFTECT', '-', '']; // 社内対
 // 日付計算ヘルパー関数
 // ============================================
 
-// 次の金曜日を計算する関数
+// 日本の祝日リスト（2025年・2026年）
+const japaneseHolidays = [
+  // 2025年
+  '2025-01-01', // 元日
+  '2025-01-13', // 成人の日
+  '2025-02-11', // 建国記念の日
+  '2025-02-23', // 天皇誕生日
+  '2025-02-24', // 振替休日
+  '2025-03-20', // 春分の日
+  '2025-04-29', // 昭和の日
+  '2025-05-03', // 憲法記念日
+  '2025-05-04', // みどりの日
+  '2025-05-05', // こどもの日
+  '2025-05-06', // 振替休日
+  '2025-07-21', // 海の日
+  '2025-08-11', // 山の日
+  '2025-09-15', // 敬老の日
+  '2025-09-23', // 秋分の日
+  '2025-10-13', // スポーツの日
+  '2025-11-03', // 文化の日
+  '2025-11-23', // 勤労感謝の日
+  '2025-11-24', // 振替休日
+  // 2026年
+  '2026-01-01', // 元日
+  '2026-01-12', // 成人の日
+  '2026-02-11', // 建国記念の日
+  '2026-02-23', // 天皇誕生日
+  '2026-03-20', // 春分の日
+  '2026-04-29', // 昭和の日
+  '2026-05-03', // 憲法記念日
+  '2026-05-04', // みどりの日
+  '2026-05-05', // こどもの日
+  '2026-05-06', // 振替休日
+  '2026-07-20', // 海の日
+  '2026-08-11', // 山の日
+  '2026-09-21', // 敬老の日
+  '2026-09-22', // 国民の休日
+  '2026-09-23', // 秋分の日
+  '2026-10-12', // スポーツの日
+  '2026-11-03', // 文化の日
+  '2026-11-23', // 勤労感謝の日
+];
+
+// 祝日かどうかを判定
+function isJapaneseHoliday(dateStr) {
+  return japaneseHolidays.includes(dateStr);
+}
+
+// 日付をYYYY-MM-DD形式に変換
+function formatDateISO(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+// 次の金曜日を計算する関数（金曜日が祝日なら木曜日）
 function getNextFriday() {
   const today = new Date();
   const dayOfWeek = today.getDay(); // 0=日, 1=月, ..., 5=金, 6=土
@@ -7266,9 +7322,16 @@ function getNextFriday() {
 
   const nextFriday = new Date(today);
   nextFriday.setDate(today.getDate() + daysUntilFriday);
+  const fridayStr = formatDateISO(nextFriday);
 
-  // YYYY-MM-DD形式で返す
-  return nextFriday.toISOString().split('T')[0];
+  // 金曜日が祝日の場合は木曜日にする
+  if (isJapaneseHoliday(fridayStr)) {
+    const thursday = new Date(nextFriday);
+    thursday.setDate(nextFriday.getDate() - 1);
+    return formatDateISO(thursday);
+  }
+
+  return fridayStr;
 }
 
 // 日付を日本語表記に変換
@@ -7283,7 +7346,7 @@ function formatDateJapanese(dateStr) {
   return `${year}年${month}月${day}日（${weekday}）`;
 }
 
-// 翌週の金曜日を計算する関数（換気システム依頼用）
+// 翌週の金曜日を計算する関数（換気システム依頼用、金曜日が祝日なら木曜日）
 function getNextWeekFriday() {
   const today = new Date();
   const dayOfWeek = today.getDay(); // 0=日, 1=月, ..., 5=金, 6=土
@@ -7302,9 +7365,16 @@ function getNextWeekFriday() {
 
   const nextWeekFriday = new Date(today);
   nextWeekFriday.setDate(today.getDate() + daysUntilNextWeekFriday);
+  const fridayStr = formatDateISO(nextWeekFriday);
 
-  // YYYY-MM-DD形式で返す
-  return nextWeekFriday.toISOString().split('T')[0];
+  // 金曜日が祝日の場合は木曜日にする
+  if (isJapaneseHoliday(fridayStr)) {
+    const thursday = new Date(nextWeekFriday);
+    thursday.setDate(nextWeekFriday.getDate() - 1);
+    return formatDateISO(thursday);
+  }
+
+  return fridayStr;
 }
 
 // IC回別タスクグループ定義（1回目〜5回目）
@@ -14853,10 +14923,8 @@ async function openEmailFromTask(projectId, taskKey) {
   const staffPhone = currentDesigner?.phone || '';
   const staffDepartment = currentDesigner?.department || '';
 
-  // 現在日付から期日を設定（デフォルト：7日後）
-  const today = new Date();
-  const dueDate = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
-  const dueDateStr = dueDate.toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' });
+  // 期日を設定（次の金曜日、祝日なら木曜日）
+  const dueDateStr = formatDateJapanese(getNextFriday());
 
   // 選択中のメーカーに対応した業者（または最初の業者）のテンプレートを使用
   const vendor = taskVendors[0];
