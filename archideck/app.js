@@ -2251,6 +2251,9 @@ async function init() {
     // ICタスク自動マイグレーション
     await autoMigrateICTasks();
 
+    // ICメールボタン設定の強制同期
+    await syncICEmailButtonSettings();
+
     log('🎨 画面描画開始...');
     renderSidebar();
 
@@ -3222,6 +3225,63 @@ async function autoMigrateICTasks() {
   } catch (error) {
     logError('ICタスク自動マイグレーションエラー:', error);
     // エラーでも続行（既存機能に影響させない）
+  }
+}
+
+// ICタスクのメールボタン設定を強制同期
+// 特定のタスクは必ずhas_email_button: trueにする
+const IC_EMAIL_REQUIRED_TASKS = [
+  'ic_kitchen', 'ic_bath', 'ic_washroom_1f', 'ic_washroom_2f',
+  'ic_toilet_1f', 'ic_toilet_2f', 'ic_lighting', 'ic_tategu',
+  'ic_tile_pres', 'ic_curtain', 'ic_zousaku', 'ic_furniture'
+];
+
+async function syncICEmailButtonSettings() {
+  try {
+    // 対象タスクを取得
+    const { data: tasks, error: fetchError } = await supabase
+      .from('tasks')
+      .select('id, task_key, has_email_button')
+      .in('task_key', IC_EMAIL_REQUIRED_TASKS);
+
+    if (fetchError) {
+      logError('❌ ICメールボタン設定取得エラー:', fetchError);
+      return;
+    }
+
+    if (!tasks || tasks.length === 0) {
+      log('ℹ️ 対象ICタスクが見つかりません（マイグレーション前の可能性）');
+      return;
+    }
+
+    // has_email_button が false または null のタスクを抽出
+    const tasksToUpdate = tasks.filter(t => t.has_email_button !== true);
+
+    if (tasksToUpdate.length === 0) {
+      log('✅ ICメールボタン設定は正常です');
+      return;
+    }
+
+    log('🔧 ICメールボタン設定を修正:', tasksToUpdate.map(t => t.task_key));
+
+    // 一括更新
+    for (const task of tasksToUpdate) {
+      const { error: updateError } = await supabase
+        .from('tasks')
+        .update({ has_email_button: true })
+        .eq('id', task.id);
+
+      if (updateError) {
+        logError(`❌ ${task.task_key}のメールボタン設定更新エラー:`, updateError);
+      }
+    }
+
+    // タスクデータを再読み込み
+    await loadTasksV2();
+    log('✅ ICメールボタン設定の同期完了');
+
+  } catch (error) {
+    logError('❌ syncICEmailButtonSettings エラー:', error);
   }
 }
 
