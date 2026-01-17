@@ -700,6 +700,12 @@ const IC_MAKER_TASKS = [
 const IC_REQUEST_TASKS = ['ic_iron_pres', 'ic_tile_pres', 'ic_exterior_meeting', 'ic_curtain', 'ic_zousaku', 'ic_furniture'];
 const INTERNAL_STATUSES = ['オリジナル', 'GRAFTECT', '-', '']; // 社内対応ステータス（メール不要）
 
+// 新旧タスクキーのマッピング（旧キーから新キーへのフォールバック用）
+const TASK_KEY_MAPPING = {
+  'ic_washroom': ['ic_washroom_1f', 'ic_washroom_2f'],
+  'ic_toilet': ['ic_toilet_1f', 'ic_toilet_2f']
+};
+
 // ============================================
 // 変更履歴機能（無制限保持）
 // ============================================
@@ -2264,6 +2270,9 @@ async function init() {
     // ICタスク自動マイグレーション
     await autoMigrateICTasks();
 
+    // 進捗データの旧キー→新キーマイグレーション（常に実行）
+    await migrateProgressDataKeys();
+
     // ICメールボタン設定の強制同期
     await syncICEmailButtonSettings();
 
@@ -3254,9 +3263,6 @@ async function autoMigrateICTasks() {
     // タスクデータを再読み込み
     await loadTasksV2();
     await loadVendorCategories();
-
-    // 進捗データのマイグレーション（旧キー→新キー）
-    await migrateProgressDataKeys();
 
     log('✅ ICタスク自動マイグレーション完了 (25項目)');
     showToast('✅ ICタスクを25項目に自動更新しました', 'success');
@@ -7049,13 +7055,6 @@ function selectStatusCard(cardEl, projectId, taskKey) {
     setTimeout(() => checkAllTasksCompletionForArchive(projectId), 500);
   }
 }
-
-// 新旧タスクキーのマッピング（旧キーから新キーへ、または新キーに対応する旧キー群）
-const TASK_KEY_MAPPING = {
-  // 新キー → 旧キー群（フォールバック用）
-  'ic_washroom': ['ic_washroom_1f', 'ic_washroom_2f'],
-  'ic_toilet': ['ic_toilet_1f', 'ic_toilet_2f']
-};
 
 // progressDataからタスク状態を取得（新旧キー両方をチェック）
 function getTaskStateFromProgress(progressData, taskKey) {
