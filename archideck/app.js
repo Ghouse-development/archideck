@@ -4957,7 +4957,10 @@ function renderCalendar() {
     html += `<div class="calendar-day ${isToday ? 'today' : ''}">
       <div class="calendar-day-number">${day}</div>
       <div class="calendar-events">
-        ${dayEvents.slice(0, 3).map(e => `<div class="calendar-event ${e.category}" title="${escapeHtml(e.customer.replace(/様$/, ''))}様邸: ${escapeHtml(e.taskName)}">${escapeHtml(e.customer.slice(0, 3))} ${escapeHtml(e.taskName.slice(0, 4))}</div>`).join('')}
+        ${dayEvents.slice(0, 3).map(e => {
+          const familyName = e.customer.replace(/様$/, '').split(/[\s　]+/)[0];
+          return `<div class="calendar-event ${e.category}" title="${escapeHtml(e.customer.replace(/様$/, ''))}様邸: ${escapeHtml(e.taskName)}">${escapeHtml(familyName)}様 ${escapeHtml(e.taskName)}</div>`;
+        }).join('')}
         ${dayEvents.length > 3 ? `<div class="calendar-event" style="background:#ddd;color:#666;">+${dayEvents.length - 3}件</div>` : ''}
       </div>
     </div>`;
