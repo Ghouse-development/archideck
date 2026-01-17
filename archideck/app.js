@@ -3023,11 +3023,11 @@ async function loadTasksV2() {
     tasksV2 = data || [];
     log('✅ タスク読み込み完了:', tasksV2.length, '件');
 
-    // ICタスクが21項目未満の場合は警告表示
+    // ICタスクが27項目未満の場合は警告表示
     const icTasks = tasksV2.filter(t => t.category === 'IC');
     const notice = document.getElementById('icMigrationNotice');
     if (notice) {
-      notice.style.display = icTasks.length < 21 ? 'block' : 'none';
+      notice.style.display = icTasks.length < 27 ? 'block' : 'none';
     }
   } catch (e) {
     logError('❌ loadTasksV2タイムアウト:', e);
@@ -3101,9 +3101,10 @@ async function runICTasksMigration() {
       { task_key: 'ic_iron', task_name: 'アイアン依頼', category: 'IC', display_order: 21, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: true },
       { task_key: 'ic_other_estimate', task_name: 'その他見積依頼', category: 'IC', display_order: 22, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: true, has_memo: true },
       { task_key: 'ic_final_checklist', task_name: '確定図チェックリスト', category: 'IC', display_order: 23, has_state: true, state_options: '["-", "実施済"]', has_email_button: false },
-      { task_key: 'ic_op_check', task_name: 'OP見積チェック', category: 'IC', display_order: 24, has_state: true, state_options: '["-", "依頼済", "保存済"]', has_email_button: false },
-      { task_key: 'ic_meeting_followup', task_name: '会議後確認事項送付', category: 'IC', display_order: 25, has_state: true, state_options: '["-", "送付済"]', has_email_button: false },
-      { task_key: 'ic_final_approval', task_name: '確定図承認', category: 'IC', display_order: 26, has_state: true, state_options: '["-", "依頼中", "ダンドリワーク保存済"]', has_email_button: false }
+      { task_key: 'ic_meeting_drawing', task_name: '会議図面渡し', category: 'IC', display_order: 24, has_state: true, state_options: '["-", "送付済"]', has_email_button: false },
+      { task_key: 'ic_op_check', task_name: 'OP見積チェック', category: 'IC', display_order: 25, has_state: true, state_options: '["-", "依頼済", "保存済"]', has_email_button: false },
+      { task_key: 'ic_meeting_followup', task_name: '会議後確認事項送付', category: 'IC', display_order: 26, has_state: true, state_options: '["-", "送付済"]', has_email_button: false },
+      { task_key: 'ic_final_approval', task_name: '確定図承認', category: 'IC', display_order: 27, has_state: true, state_options: '["-", "依頼中", "ダンドリワーク保存済"]', has_email_button: false }
     ];
 
     const { error: insertError } = await supabase
@@ -3120,7 +3121,7 @@ async function runICTasksMigration() {
     await loadVendorCategories();
     renderTasksManagement();
 
-    showToast('✅ ICタスクを21項目に更新しました！', 'success');
+    showToast('✅ ICタスクを27項目に更新しました！', 'success');
 
     // 警告を非表示
     const notice = document.getElementById('icMigrationNotice');
@@ -3132,13 +3133,13 @@ async function runICTasksMigration() {
   }
 }
 
-// ICタスク自動マイグレーション（起動時に21項目未満なら自動実行）
+// ICタスク自動マイグレーション（起動時に27項目未満なら自動実行）
 async function autoMigrateICTasks() {
   const icTasks = tasksV2.filter(t => t.category === 'IC');
 
-  // 既に21項目以上ある場合はスキップ
-  if (icTasks.length >= 21) {
-    log('✅ ICタスクは既に21項目以上あります:', icTasks.length);
+  // 既に27項目以上ある場合はスキップ
+  if (icTasks.length >= 27) {
+    log('✅ ICタスクは既に27項目以上あります:', icTasks.length);
     return;
   }
 
@@ -3197,9 +3198,10 @@ async function autoMigrateICTasks() {
       { task_key: 'ic_iron', task_name: 'アイアン依頼', category: 'IC', display_order: 21, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: true },
       { task_key: 'ic_other_estimate', task_name: 'その他見積依頼', category: 'IC', display_order: 22, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: true, has_memo: true },
       { task_key: 'ic_final_checklist', task_name: '確定図チェックリスト', category: 'IC', display_order: 23, has_state: true, state_options: '["-", "実施済"]', has_email_button: false },
-      { task_key: 'ic_op_check', task_name: 'OP見積チェック', category: 'IC', display_order: 24, has_state: true, state_options: '["-", "依頼済", "保存済"]', has_email_button: false },
-      { task_key: 'ic_meeting_followup', task_name: '会議後確認事項送付', category: 'IC', display_order: 25, has_state: true, state_options: '["-", "送付済"]', has_email_button: false },
-      { task_key: 'ic_final_approval', task_name: '確定図承認', category: 'IC', display_order: 26, has_state: true, state_options: '["-", "依頼中", "ダンドリワーク保存済"]', has_email_button: false }
+      { task_key: 'ic_meeting_drawing', task_name: '会議図面渡し', category: 'IC', display_order: 24, has_state: true, state_options: '["-", "送付済"]', has_email_button: false },
+      { task_key: 'ic_op_check', task_name: 'OP見積チェック', category: 'IC', display_order: 25, has_state: true, state_options: '["-", "依頼済", "保存済"]', has_email_button: false },
+      { task_key: 'ic_meeting_followup', task_name: '会議後確認事項送付', category: 'IC', display_order: 26, has_state: true, state_options: '["-", "送付済"]', has_email_button: false },
+      { task_key: 'ic_final_approval', task_name: '確定図承認', category: 'IC', display_order: 27, has_state: true, state_options: '["-", "依頼中", "ダンドリワーク保存済"]', has_email_button: false }
     ];
 
     const { error: insertError } = await supabase
@@ -3214,8 +3216,8 @@ async function autoMigrateICTasks() {
     await loadTasksV2();
     await loadVendorCategories();
 
-    log('✅ ICタスク自動マイグレーション完了 (21項目)');
-    showToast('✅ ICタスクを21項目に自動更新しました', 'success');
+    log('✅ ICタスク自動マイグレーション完了 (27項目)');
+    showToast('✅ ICタスクを27項目に自動更新しました', 'success');
 
   } catch (error) {
     logError('ICタスク自動マイグレーションエラー:', error);
@@ -6119,9 +6121,17 @@ function renderProjectCard(project) {
     const templateId = taskMappings[key] || key;
     const hasVendor = vendors.some(v => v.template_id === templateId);
     const isInternalStatus = INTERNAL_STATUSES.includes(task.state);
-    const showEmailButton = taskDef.has_email_button !== false && hasVendor && !isInternalStatus;
+    // ICタスクの場合: メーカーが選択されていれば(内部ステータス以外)メールボタンを表示
+    const isICMakerTask = IC_MAKER_TASKS.includes(key);
+    const isICRequestTask = IC_REQUEST_TASKS.includes(key);
+    const hasMakerSelected = isICMakerTask && task.state && !isInternalStatus && task.state !== '-';
+    // 依頼系タスク（依頼済/保存済の場合にメールボタン表示）
+    const hasRequestStatus = isICRequestTask && task.state && (task.state === '依頼済' || task.state === '保存済');
+    // has_email_button: true のICタスクで、ステータスが設定されていればメールボタンを表示
+    const showICEmail = taskDef.has_email_button && task.state && task.state !== '-' && task.state !== '無し' && !isInternalStatus;
+    const showEmailButton = showICEmail || (taskDef.has_email_button !== false && hasVendor && !isInternalStatus);
     const emailBtn = showEmailButton ?
-      `<button class="task-email-btn" onclick="openEmailFromTask('${project.id}', '${key}')" title="メール作成">📧</button>` : '';
+      `<button class="task-email-btn" onclick="openEmailFromTask('${project.id}', '${key}')" title="${escapeHtml(task.state)}にメール作成">📧</button>` : '';
 
     // ステータスカード生成
     const stateOptions = getTaskStateOptions(key);
@@ -6132,10 +6142,13 @@ function renderProjectCard(project) {
       ? `<span class="request-date-badge" title="依頼日: ${task.request_date}">${formatDateShort(task.request_date)}</span>`
       : '';
 
-    // kintone日付バッジ（変更契約前会議のみ表示）
+    // kintone日付バッジ（変更契約前会議・会議図面渡し）
     let kintoneDate = '';
     if (key === 'ic_pre_change_meeting' && project.pre_contract_meeting_date) {
       kintoneDate = `<span class="kintone-date-badge" title="kintone: 変更契約前会議">${formatDateShort(project.pre_contract_meeting_date)}</span>`;
+    }
+    if (key === 'ic_meeting_drawing' && project.meeting_drawing_date) {
+      kintoneDate = `<span class="kintone-date-badge" title="kintone: 会議図面渡し日">${formatDateShort(project.meeting_drawing_date)}</span>`;
     }
 
     return `<div class="task-item">
@@ -6229,7 +6242,41 @@ function renderProjectCard(project) {
   const isOverdue = deadline && new Date(deadline) < today && !project.is_archived;
   const isDueSoon = deadline && !isOverdue && (new Date(deadline) - today) <= 3 * 24 * 60 * 60 * 1000 && !project.is_archived;
 
-  return `<div class="project-card ${isSelected ? 'selected' : ''} ${isOverdue ? 'overdue' : ''} ${isDueSoon ? 'due-soon' : ''}" data-project-id="${project.id}" draggable="true" ondragstart="handleDragStart(event)" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" ondragend="handleDragEnd(event)">
+  // 間取確定日が過ぎているのに「間取確定」が済になっていない場合は赤カード
+  let isLayoutOverdue = false;
+  if (project.layout_confirmed_date && !project.is_archived) {
+    const layoutDate = new Date(project.layout_confirmed_date);
+    layoutDate.setHours(0, 0, 0, 0);
+    if (layoutDate < today) {
+      // 間取確定タスクの状態をチェック
+      const layoutTaskState = progressData['layout_confirmed']?.state || '';
+      const layoutTaskDef = tasksV2.find(t => t.task_key === 'layout_confirmed');
+      if (layoutTaskDef) {
+        const isComplete = isTaskStateBlue('layout_confirmed', layoutTaskState, layoutTaskDef.state_options);
+        if (!isComplete) {
+          isLayoutOverdue = true;
+        }
+      }
+    }
+  }
+
+  // 会議図面渡し日が過ぎているのに「会議図面渡し」が済になっていない場合も赤カード
+  let isMeetingDrawingOverdue = false;
+  if (project.meeting_drawing_date && !project.is_archived) {
+    const meetingDate = new Date(project.meeting_drawing_date);
+    meetingDate.setHours(0, 0, 0, 0);
+    if (meetingDate < today) {
+      // 会議図面渡しタスクの状態をチェック
+      const meetingTaskState = progressData['ic_meeting_drawing']?.state || '';
+      if (meetingTaskState !== '送付済') {
+        isMeetingDrawingOverdue = true;
+      }
+    }
+  }
+
+  const isTaskOverdue = isLayoutOverdue || isMeetingDrawingOverdue;
+
+  return `<div class="project-card ${isSelected ? 'selected' : ''} ${isOverdue || isTaskOverdue ? 'overdue' : ''} ${isDueSoon ? 'due-soon' : ''}" data-project-id="${project.id}" draggable="true" ondragstart="handleDragStart(event)" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" ondragend="handleDragEnd(event)">
     <div class="card-header">
       <div style="display: flex; align-items: flex-start; gap: 8px;">
         <input type="checkbox" class="batch-checkbox" data-project-id="${project.id}" ${isSelected ? 'checked' : ''} onclick="event.stopPropagation(); BatchOperations.toggle('${project.id}')" title="選択">
@@ -6257,7 +6304,6 @@ function renderProjectCard(project) {
             完了
           </label>
         `}
-        <button class="btn btn-ghost btn-small" onclick="quickEmail('${project.id}')" title="メール作成">📧</button>
         <button class="btn btn-ghost btn-small" onclick="showChangeHistory('${project.id}')" title="変更履歴">📜</button>
         <button class="btn btn-ghost btn-small" onclick="editProject('${project.id}')">編集</button>
       </div>
@@ -6769,14 +6815,28 @@ function selectStatusCard(cardEl, projectId, taskKey) {
       }
     }
   } else {
-    // 単一選択モード（従来の動作）
+    // 単一選択モード
+    const isCurrentlyActive = cardEl.classList.contains('active');
+
+    // 全ての選択を解除
     container.querySelectorAll('.status-card').forEach(c => {
       c.classList.remove('active', 'state-blue', 'state-yellow', 'state-red');
     });
-    cardEl.classList.add('active');
-    const stateClass = getStateColorClass(clickedState, lastOption, taskKey);
-    if (stateClass) cardEl.classList.add(stateClass);
-    finalState = clickedState;
+
+    if (isCurrentlyActive && clickedState !== '-') {
+      // 既に選択されていたらトグルで解除 → 「-」に戻す
+      const dashCard = container.querySelector('.status-card[data-value="-"]');
+      if (dashCard) {
+        dashCard.classList.add('active');
+      }
+      finalState = '-';
+    } else {
+      // 選択を追加
+      cardEl.classList.add('active');
+      const stateClass = getStateColorClass(clickedState, lastOption, taskKey);
+      if (stateClass) cardEl.classList.add(stateClass);
+      finalState = clickedState;
+    }
   }
 
   // メールボタンの表示/非表示を更新（設計タスクは常に表示）
@@ -6831,22 +6891,28 @@ async function checkAllTasksCompletionForArchive(projectId) {
     }
   }
 
+  log('📋 設計完了チェック:', { allDesignComplete, incompleteDesignTasks, designTasksCount: designTasks.length });
+
   if (!allDesignComplete) {
     return; // 設計タスクが未完了なら終了
   }
 
-  // 2. IC担当案件の場合はICタスクもチェック
+  // 2. IC担当案件の場合はICタスクもチェック（has_stateがtrueのタスクのみ）
   if (project.layout_confirmed_date) {
-    const icTasks = tasksV2.filter(t => t.category === 'IC');
+    const icTasks = tasksV2.filter(t => t.category === 'IC' && t.has_state);
     let allICComplete = true;
+    let incompleteICTasks = [];
 
     for (const task of icTasks) {
       const taskState = progressData[task.task_key]?.state || '';
       let isComplete = isTaskStateBlue(task.task_key, taskState, task.state_options);
       if (!isComplete) {
         allICComplete = false;
+        incompleteICTasks.push(task.task_name);
       }
     }
+
+    log('📋 IC完了チェック:', { allICComplete, incompleteICTasks, icTasksCount: icTasks.length });
 
     if (!allICComplete) {
       return; // ICタスクが未完了なら終了
@@ -12815,11 +12881,11 @@ async function executeApplicationGo() {
     progressData['application'].date = new Date().toISOString().split('T')[0];
 
     showStatus('保存中...', 'saving');
+    // 注意: updated_at は更新しない（案件の位置を変えないため）
     const { error } = await supabase
       .from('projects')
       .update({
-        progress: progressData,
-        updated_at: new Date().toISOString()
+        progress: progressData
       })
       .eq('id', applicationGoProjectId);
 
@@ -12830,7 +12896,7 @@ async function executeApplicationGo() {
     }
 
     project.progress = progressData;
-    project.updated_at = new Date().toISOString();
+    // updated_at は変更しない（案件の位置を維持）
 
     closeApplicationGoModal();
     renderProjects();
