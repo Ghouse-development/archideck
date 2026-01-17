@@ -6097,8 +6097,17 @@ function renderProjectCard(project) {
       ? `<span class="request-date-badge" title="依頼日: ${task.request_date}">${formatDateShort(task.request_date)}</span>`
       : '';
 
+    // kintone日付バッジ（設計タスク: 間取確定・変更契約前会議）
+    let kintoneDate = '';
+    if (key === 'layout_confirmed' && project.layout_confirmed_date) {
+      kintoneDate = `<span class="kintone-date-badge" title="kintone: 間取確定日">${formatDateShort(project.layout_confirmed_date)}</span>`;
+    }
+    if (key === 'pre_change_meeting' && project.pre_contract_meeting_date) {
+      kintoneDate = `<span class="kintone-date-badge" title="kintone: 変更契約前会議">${formatDateShort(project.pre_contract_meeting_date)}</span>`;
+    }
+
     return `<div class="task-item">
-      <span class="task-label">${taskDef.task_name}</span>${stateCards}${requestDateBadge}${emailBtn}</div>`;
+      <span class="task-label">${taskDef.task_name}</span>${kintoneDate}${stateCards}${requestDateBadge}${emailBtn}</div>`;
   }).join('');
 
   // IC業務内容を生成（設計と同じグリッド形式）
@@ -6123,13 +6132,10 @@ function renderProjectCard(project) {
       ? `<span class="request-date-badge" title="依頼日: ${task.request_date}">${formatDateShort(task.request_date)}</span>`
       : '';
 
-    // kintone日付バッジ（変更契約前会議・間取確定）
+    // kintone日付バッジ（変更契約前会議のみ表示）
     let kintoneDate = '';
     if (key === 'ic_pre_change_meeting' && project.pre_contract_meeting_date) {
       kintoneDate = `<span class="kintone-date-badge" title="kintone: 変更契約前会議">${formatDateShort(project.pre_contract_meeting_date)}</span>`;
-    }
-    if (key === 'ic_funding_check' && project.layout_confirmed_date) {
-      kintoneDate = `<span class="kintone-date-badge" title="kintone: 間取確定日">${formatDateShort(project.layout_confirmed_date)}</span>`;
     }
 
     return `<div class="task-item">
