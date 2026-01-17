@@ -3255,12 +3255,78 @@ async function autoMigrateICTasks() {
     await loadTasksV2();
     await loadVendorCategories();
 
+    // 進捗データのマイグレーション（旧キー→新キー）
+    await migrateProgressDataKeys();
+
     log('✅ ICタスク自動マイグレーション完了 (25項目)');
     showToast('✅ ICタスクを25項目に自動更新しました', 'success');
 
   } catch (error) {
     logError('ICタスク自動マイグレーションエラー:', error);
     // エラーでも続行（既存機能に影響させない）
+  }
+}
+
+// 進捗データのキーマイグレーション（旧キー→新キーへ統合）
+async function migrateProgressDataKeys() {
+  try {
+    const { data: allProjects, error } = await supabase
+      .from('projects')
+      .select('id, progress');
+
+    if (error) {
+      logError('進捗データ取得エラー:', error);
+      return;
+    }
+
+    let migratedCount = 0;
+    for (const project of allProjects) {
+      if (!project.progress) continue;
+
+      const progress = project.progress;
+      let needsUpdate = false;
+
+      // 洗面: ic_washroom_1f/2f → ic_washroom
+      if ((progress.ic_washroom_1f || progress.ic_washroom_2f) && !progress.ic_washroom) {
+        const oldData1 = progress.ic_washroom_1f || {};
+        const oldData2 = progress.ic_washroom_2f || {};
+        // 両方の状態をマージ（1F優先、無ければ2F）
+        progress.ic_washroom = {
+          state: oldData1.state || oldData2.state || '',
+          completed: oldData1.completed || oldData2.completed || false,
+          date: oldData1.date || oldData2.date || '',
+          request_date: oldData1.request_date || oldData2.request_date || null
+        };
+        needsUpdate = true;
+      }
+
+      // トイレ: ic_toilet_1f/2f → ic_toilet
+      if ((progress.ic_toilet_1f || progress.ic_toilet_2f) && !progress.ic_toilet) {
+        const oldData1 = progress.ic_toilet_1f || {};
+        const oldData2 = progress.ic_toilet_2f || {};
+        progress.ic_toilet = {
+          state: oldData1.state || oldData2.state || '',
+          completed: oldData1.completed || oldData2.completed || false,
+          date: oldData1.date || oldData2.date || '',
+          request_date: oldData1.request_date || oldData2.request_date || null
+        };
+        needsUpdate = true;
+      }
+
+      if (needsUpdate) {
+        await supabase
+          .from('projects')
+          .update({ progress })
+          .eq('id', project.id);
+        migratedCount++;
+      }
+    }
+
+    if (migratedCount > 0) {
+      log(`📋 進捗データマイグレーション: ${migratedCount}件の案件を更新`);
+    }
+  } catch (e) {
+    logError('進捗データマイグレーションエラー:', e);
   }
 }
 
@@ -6216,7 +6282,21 @@ function renderProjectCard(project) {
   const icTasks = tasksV2.filter(t => t.category === 'IC').sort((a, b) => a.display_order - b.display_order);
   const icTasksHtml = icTasks.map(taskDef => {
     const key = taskDef.task_key;
-    const task = progressData[key] || { completed: false, date: '', state: '', due_date: '' };
+    // 旧キーから新キーへのフォールバック対応
+    let task = progressData[key];
+    if (!task || (!task.state && !task.completed)) {
+      // 旧キーをチェック
+      const oldKeys = TASK_KEY_MAPPING[key];
+      if (oldKeys) {
+        for (const oldKey of oldKeys) {
+          if (progressData[oldKey] && (progressData[oldKey].state || progressData[oldKey].completed)) {
+            task = progressData[oldKey];
+            break;
+          }
+        }
+      }
+    }
+    task = task || { completed: false, date: '', state: '', due_date: '' };
 
     const templateId = taskMappings[key] || key;
     const hasVendor = vendors.some(v => v.template_id === templateId);
@@ -13004,6 +13084,9 @@ async function executeApplicationGo() {
     if (!progressData['application']) progressData['application'] = {};
     progressData['application'].completed = true;
     progressData['application'].date = new Date().toISOString().split('T')[0];
+
+    // 位置維持のため、自分の更新としてマーク（リアルタイム同期で処理されないようにする）
+    markLocalUpdate(applicationGoProjectId);
 
     showStatus('保存中...', 'saving');
     // 重要: updated_at を現在の値に保持して、案件の位置を変えない
