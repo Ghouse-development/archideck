@@ -672,9 +672,9 @@ function removeDepartment(index) {
 
 // IC関連定数
 // メーカー選択タスク（選択すると青色になる）
-const IC_MAKER_SELECT_TASKS = ['ic_kitchen', 'ic_bath', 'ic_washroom_1f', 'ic_washroom_2f', 'ic_toilet_1f', 'ic_toilet_2f', 'ic_lighting'];
+const IC_MAKER_SELECT_TASKS = ['ic_kitchen', 'ic_bath', 'ic_washroom', 'ic_washroom_1f', 'ic_washroom_2f', 'ic_toilet', 'ic_toilet_1f', 'ic_toilet_2f', 'ic_lighting'];
 // メールボタン表示対象タスク
-const IC_MAKER_TASKS = ['ic_kitchen', 'ic_bath', 'ic_washroom_1f', 'ic_washroom_2f', 'ic_toilet_1f', 'ic_toilet_2f', 'ic_lighting', 'ic_tategu', 'ic_tile_pres', 'ic_curtain', 'ic_zousaku', 'ic_furniture'];
+const IC_MAKER_TASKS = ['ic_kitchen', 'ic_bath', 'ic_washroom', 'ic_washroom_1f', 'ic_washroom_2f', 'ic_toilet', 'ic_toilet_1f', 'ic_toilet_2f', 'ic_lighting', 'ic_tategu', 'ic_tile_pres', 'ic_curtain', 'ic_zousaku', 'ic_furniture'];
 // 「無し」「保存済」が青、「依頼済」が黄色のタスク
 const IC_REQUEST_TASKS = ['ic_iron_pres', 'ic_tile_pres', 'ic_exterior_meeting', 'ic_curtain', 'ic_zousaku', 'ic_furniture'];
 const INTERNAL_STATUSES = ['オリジナル', 'GRAFTECT', '-', '']; // 社内対応ステータス（メール不要）
