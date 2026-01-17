@@ -6657,15 +6657,16 @@ async function checkICCompletionForArchive(projectId) {
   const project = projects.find(p => p.id === projectId);
   if (!project || project.is_archived) return;
 
+  const progressData = project.progress || {};
+
   // 登録タスクの未完了チェック
-  const hasIncompleteTasks = await checkHasIncompleteTasks(projectId);
+  const hasIncompleteTasks = checkHasIncompleteTasks(project, progressData);
   if (hasIncompleteTasks) {
     showToast('⚠️ 未完了の登録タスクがあります', 'warning');
     return;
   }
 
   // IC業務タスクの完了チェック
-  const progressData = project.progress || {};
   const icTasks = tasksV2.filter(t => t.category === 'IC');
 
   let allComplete = true;
