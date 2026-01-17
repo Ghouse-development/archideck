@@ -673,6 +673,8 @@ function removeDepartment(index) {
 // IC関連定数
 // メーカー選択タスク（選択すると青色になる）
 const IC_MAKER_SELECT_TASKS = ['ic_kitchen', 'ic_bath', 'ic_washroom', 'ic_washroom_1f', 'ic_washroom_2f', 'ic_toilet', 'ic_toilet_1f', 'ic_toilet_2f', 'ic_lighting'];
+// 水廻りタスク（複数選択可能）
+const IC_MULTI_SELECT_TASKS = ['ic_kitchen', 'ic_bath', 'ic_washroom', 'ic_washroom_1f', 'ic_washroom_2f', 'ic_toilet', 'ic_toilet_1f', 'ic_toilet_2f'];
 // メールボタン表示対象タスク
 const IC_MAKER_TASKS = ['ic_kitchen', 'ic_bath', 'ic_washroom', 'ic_washroom_1f', 'ic_washroom_2f', 'ic_toilet', 'ic_toilet_1f', 'ic_toilet_2f', 'ic_lighting', 'ic_tategu', 'ic_tile_pres', 'ic_curtain', 'ic_zousaku', 'ic_furniture'];
 // 「無し」「保存済」が青、「依頼済」が黄色のタスク
@@ -3064,7 +3066,7 @@ async function runICTasksMigration() {
     }
     log('✅ 業者カテゴリ追加完了');
 
-    // ステップ3: 新しいICタスク22項目を挿入（v14更新）
+    // ステップ3: 新しいICタスク22項目を挿入（v16更新: 外構への打合せ依頼を長期資料送付の下に移動）
     const newICTasks = [
       { task_key: 'ic_funding_check', task_name: '資金計画・引継書確認', category: 'IC', display_order: 1, has_state: true, state_options: '["-", "確認済"]', has_email_button: false },
       { task_key: 'ic_kitchen', task_name: 'キッチン・カップボード', category: 'IC', display_order: 2, has_state: true, state_options: '["-", "GRAFTECT", "オリジナル", "Lixil", "Panasonic", "Takarastandard"]', has_email_button: true },
@@ -3076,13 +3078,13 @@ async function runICTasksMigration() {
       { task_key: 'ic_lighting', task_name: '照明プラン', category: 'IC', display_order: 8, has_state: true, state_options: '["-", "ODELIC", "DAIKO", "KOIZUMI", "Panasonic"]', has_email_button: true },
       { task_key: 'ic_spec_doc', task_name: '仕様書作成', category: 'IC', display_order: 9, has_state: true, state_options: '["-", "作成済"]', has_email_button: false },
       { task_key: 'ic_longterm_doc', task_name: '長期資料送付', category: 'IC', display_order: 10, has_state: true, state_options: '["-", "送付済"]', has_email_button: false },
-      { task_key: 'ic_execution_drawing', task_name: '実施図', category: 'IC', display_order: 11, has_state: true, state_options: '["-", "修正依頼済", "図面チェック済"]', has_email_button: false },
-      { task_key: 'ic_exterior_pres', task_name: '外装プレゼン', category: 'IC', display_order: 12, has_state: true, state_options: '["-", "作成済"]', has_email_button: false },
-      { task_key: 'ic_interior_pres', task_name: '内装プレゼン', category: 'IC', display_order: 13, has_state: true, state_options: '["-", "作成済"]', has_email_button: false },
-      { task_key: 'ic_tategu', task_name: '建具プレゼン', category: 'IC', display_order: 14, has_state: true, state_options: '["-", "依頼済", "保存済"]', has_email_button: true },
-      { task_key: 'ic_iron_pres', task_name: 'アイアンプレゼン', category: 'IC', display_order: 15, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: false },
-      { task_key: 'ic_tile_pres', task_name: 'タイルプレゼン', category: 'IC', display_order: 16, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: true },
-      { task_key: 'ic_exterior_meeting', task_name: '外構への打合せ依頼', category: 'IC', display_order: 17, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: false },
+      { task_key: 'ic_exterior_meeting', task_name: '外構への打合せ依頼', category: 'IC', display_order: 11, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: false },
+      { task_key: 'ic_execution_drawing', task_name: '実施図', category: 'IC', display_order: 12, has_state: true, state_options: '["-", "修正依頼済", "図面チェック済"]', has_email_button: false },
+      { task_key: 'ic_exterior_pres', task_name: '外装プレゼン', category: 'IC', display_order: 13, has_state: true, state_options: '["-", "作成済"]', has_email_button: false },
+      { task_key: 'ic_interior_pres', task_name: '内装プレゼン', category: 'IC', display_order: 14, has_state: true, state_options: '["-", "作成済"]', has_email_button: false },
+      { task_key: 'ic_tategu', task_name: '建具プレゼン', category: 'IC', display_order: 15, has_state: true, state_options: '["-", "依頼済", "保存済"]', has_email_button: true },
+      { task_key: 'ic_iron_pres', task_name: 'アイアンプレゼン', category: 'IC', display_order: 16, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: false },
+      { task_key: 'ic_tile_pres', task_name: 'タイルプレゼン', category: 'IC', display_order: 17, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: true },
       { task_key: 'ic_curtain', task_name: 'カーテン紹介', category: 'IC', display_order: 18, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: true },
       { task_key: 'ic_zousaku', task_name: '造作業者紹介', category: 'IC', display_order: 19, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: true },
       { task_key: 'ic_furniture', task_name: '家具見積依頼', category: 'IC', display_order: 20, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: true },
@@ -3160,7 +3162,7 @@ async function autoMigrateICTasks() {
       await supabase.from('vendor_categories').upsert(cat, { onConflict: 'name' });
     }
 
-    // 22項目のICタスクを挿入（v14更新）
+    // 22項目のICタスクを挿入（v16更新: 外構への打合せ依頼を長期資料送付の下に移動）
     const newICTasks = [
       { task_key: 'ic_funding_check', task_name: '資金計画・引継書確認', category: 'IC', display_order: 1, has_state: true, state_options: '["-", "確認済"]', has_email_button: false },
       { task_key: 'ic_kitchen', task_name: 'キッチン・カップボード', category: 'IC', display_order: 2, has_state: true, state_options: '["-", "GRAFTECT", "オリジナル", "Lixil", "Panasonic", "Takarastandard"]', has_email_button: true },
@@ -3172,13 +3174,13 @@ async function autoMigrateICTasks() {
       { task_key: 'ic_lighting', task_name: '照明プラン', category: 'IC', display_order: 8, has_state: true, state_options: '["-", "ODELIC", "DAIKO", "KOIZUMI", "Panasonic"]', has_email_button: true },
       { task_key: 'ic_spec_doc', task_name: '仕様書作成', category: 'IC', display_order: 9, has_state: true, state_options: '["-", "作成済"]', has_email_button: false },
       { task_key: 'ic_longterm_doc', task_name: '長期資料送付', category: 'IC', display_order: 10, has_state: true, state_options: '["-", "送付済"]', has_email_button: false },
-      { task_key: 'ic_execution_drawing', task_name: '実施図', category: 'IC', display_order: 11, has_state: true, state_options: '["-", "修正依頼済", "図面チェック済"]', has_email_button: false },
-      { task_key: 'ic_exterior_pres', task_name: '外装プレゼン', category: 'IC', display_order: 12, has_state: true, state_options: '["-", "作成済"]', has_email_button: false },
-      { task_key: 'ic_interior_pres', task_name: '内装プレゼン', category: 'IC', display_order: 13, has_state: true, state_options: '["-", "作成済"]', has_email_button: false },
-      { task_key: 'ic_tategu', task_name: '建具プレゼン', category: 'IC', display_order: 14, has_state: true, state_options: '["-", "依頼済", "保存済"]', has_email_button: true },
-      { task_key: 'ic_iron_pres', task_name: 'アイアンプレゼン', category: 'IC', display_order: 15, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: false },
-      { task_key: 'ic_tile_pres', task_name: 'タイルプレゼン', category: 'IC', display_order: 16, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: true },
-      { task_key: 'ic_exterior_meeting', task_name: '外構への打合せ依頼', category: 'IC', display_order: 17, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: false },
+      { task_key: 'ic_exterior_meeting', task_name: '外構への打合せ依頼', category: 'IC', display_order: 11, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: false },
+      { task_key: 'ic_execution_drawing', task_name: '実施図', category: 'IC', display_order: 12, has_state: true, state_options: '["-", "修正依頼済", "図面チェック済"]', has_email_button: false },
+      { task_key: 'ic_exterior_pres', task_name: '外装プレゼン', category: 'IC', display_order: 13, has_state: true, state_options: '["-", "作成済"]', has_email_button: false },
+      { task_key: 'ic_interior_pres', task_name: '内装プレゼン', category: 'IC', display_order: 14, has_state: true, state_options: '["-", "作成済"]', has_email_button: false },
+      { task_key: 'ic_tategu', task_name: '建具プレゼン', category: 'IC', display_order: 15, has_state: true, state_options: '["-", "依頼済", "保存済"]', has_email_button: true },
+      { task_key: 'ic_iron_pres', task_name: 'アイアンプレゼン', category: 'IC', display_order: 16, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: false },
+      { task_key: 'ic_tile_pres', task_name: 'タイルプレゼン', category: 'IC', display_order: 17, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: true },
       { task_key: 'ic_curtain', task_name: 'カーテン紹介', category: 'IC', display_order: 18, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: true },
       { task_key: 'ic_zousaku', task_name: '造作業者紹介', category: 'IC', display_order: 19, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: true },
       { task_key: 'ic_furniture', task_name: '家具見積依頼', category: 'IC', display_order: 20, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: true },
@@ -6688,8 +6690,13 @@ function getStateColorClass(state, lastOption, taskKey = '') {
 function generateStatusCards(stateOptions, currentState, projectId, taskKey) {
   if (!stateOptions || !Array.isArray(stateOptions)) return '';
   const lastOption = stateOptions[stateOptions.length - 1];
-  return `<div class="status-cards" data-project-id="${projectId}" data-task-key="${taskKey}" data-last-option="${lastOption}">${stateOptions.map(state => {
-    const isActive = currentState === state;
+  const isMultiSelect = IC_MULTI_SELECT_TASKS.includes(taskKey);
+
+  // 複数選択の場合、currentStateはカンマ区切りの可能性がある
+  const selectedStates = isMultiSelect && currentState ? currentState.split(',').map(s => s.trim()) : [currentState];
+
+  return `<div class="status-cards${isMultiSelect ? ' multi-select' : ''}" data-project-id="${projectId}" data-task-key="${taskKey}" data-last-option="${lastOption}" data-multi-select="${isMultiSelect}">${stateOptions.map(state => {
+    const isActive = selectedStates.includes(state);
     const stateClass = isActive ? getStateColorClass(state, lastOption, taskKey) : '';
     const displayText = state || '-';
     return `<span class="status-card${isActive ? ' active' : ''}${stateClass ? ' ' + stateClass : ''}" data-value="${state}" onclick="selectStatusCard(this, '${projectId}', '${taskKey}')">${displayText}</span>`;
@@ -6700,25 +6707,66 @@ function generateStatusCards(stateOptions, currentState, projectId, taskKey) {
 function selectStatusCard(cardEl, projectId, taskKey) {
   const container = cardEl.closest('.status-cards');
   const lastOption = container.dataset.lastOption || '';
-  const state = cardEl.dataset.value;
+  const clickedState = cardEl.dataset.value;
+  const isMultiSelect = container.dataset.multiSelect === 'true';
 
-  // すべてのカードからactiveを外す
-  container.querySelectorAll('.status-card').forEach(c => {
-    c.classList.remove('active', 'state-blue', 'state-yellow', 'state-red');
-  });
+  let finalState;
 
-  // クリックしたカードをactiveに
-  cardEl.classList.add('active');
-  const stateClass = getStateColorClass(state, lastOption, taskKey);
-  if (stateClass) {
-    cardEl.classList.add(stateClass);
+  if (isMultiSelect) {
+    // 複数選択モード
+    const isCurrentlyActive = cardEl.classList.contains('active');
+
+    if (clickedState === '-') {
+      // 「-」をクリックした場合は他の選択を全解除
+      container.querySelectorAll('.status-card').forEach(c => {
+        c.classList.remove('active', 'state-blue', 'state-yellow', 'state-red');
+      });
+      cardEl.classList.add('active');
+      finalState = '-';
+    } else {
+      // 「-」以外をクリック
+      // 「-」の選択を解除
+      container.querySelector('.status-card[data-value="-"]')?.classList.remove('active');
+
+      if (isCurrentlyActive) {
+        // 既に選択されていたらトグルで解除
+        cardEl.classList.remove('active', 'state-blue', 'state-yellow', 'state-red');
+      } else {
+        // 選択を追加
+        cardEl.classList.add('active');
+        const stateClass = getStateColorClass(clickedState, lastOption, taskKey);
+        if (stateClass) cardEl.classList.add(stateClass);
+      }
+
+      // 現在選択されているものを収集
+      const selectedCards = container.querySelectorAll('.status-card.active');
+      const selectedStates = Array.from(selectedCards)
+        .map(c => c.dataset.value)
+        .filter(v => v && v !== '-');
+
+      finalState = selectedStates.length > 0 ? selectedStates.join(',') : '-';
+
+      // 何も選択されていなければ「-」を選択
+      if (finalState === '-') {
+        container.querySelector('.status-card[data-value="-"]')?.classList.add('active');
+      }
+    }
+  } else {
+    // 単一選択モード（従来の動作）
+    container.querySelectorAll('.status-card').forEach(c => {
+      c.classList.remove('active', 'state-blue', 'state-yellow', 'state-red');
+    });
+    cardEl.classList.add('active');
+    const stateClass = getStateColorClass(clickedState, lastOption, taskKey);
+    if (stateClass) cardEl.classList.add(stateClass);
+    finalState = clickedState;
   }
 
   // メールボタンの表示/非表示を更新（設計タスクは常に表示）
   const taskItem = cardEl.closest('.task-item');
   const taskDef = tasksV2.find(t => t.task_key === taskKey);
   const isDesignTask = taskDef?.category === '設計';
-  const isInternalStatus = INTERNAL_STATUSES.includes(state);
+  const isInternalStatus = !finalState || finalState === '-' || INTERNAL_STATUSES.some(s => finalState.includes(s));
   if (taskItem && !isDesignTask) {
     const emailBtn = taskItem.querySelector('.task-email-btn');
     if (emailBtn) {
@@ -6727,24 +6775,25 @@ function selectStatusCard(cardEl, projectId, taskKey) {
   }
 
   // ICメーカータスクのツールチップ更新
-  if (IC_MAKER_TASKS.includes(taskKey) && state && state !== '-') {
+  if (IC_MAKER_TASKS.includes(taskKey) && finalState && finalState !== '-') {
     if (!isInternalStatus) {
-      cardEl.title = `📧 ${state}にメール送信可能`;
+      cardEl.title = `📧 ${finalState}にメール送信可能`;
     } else {
       cardEl.removeAttribute('title');
     }
   }
 
   // 進捗データを保存
-  updateTaskState(projectId, taskKey, state);
+  updateTaskState(projectId, taskKey, finalState);
 
-  // 確定図承認が「ダンドリワーク保存済」になったら自動アーカイブチェック
-  if (taskKey === 'ic_final_approval' && state === 'ダンドリワーク保存済') {
+  // ICタスクの場合、全て完了したらアーカイブチェック
+  const isICTask = taskDef?.category === 'IC';
+  if (isICTask) {
     setTimeout(() => checkICCompletionForArchive(projectId), 500);
   }
 }
 
-// IC全タスク完了チェック＆アーカイブ確認
+// IC全タスク完了チェック＆アーカイブ確認（全て青色になったら完了）
 async function checkICCompletionForArchive(projectId) {
   const project = projects.find(p => p.id === projectId);
   if (!project || project.is_archived) return;
@@ -6754,11 +6803,11 @@ async function checkICCompletionForArchive(projectId) {
   // 登録タスクの未完了チェック
   const hasIncompleteTasks = checkHasIncompleteTasks(project, progressData);
   if (hasIncompleteTasks) {
-    showToast('⚠️ 未完了の登録タスクがあります', 'warning');
+    // 未完了タスクがある場合は通知しない（静かに終了）
     return;
   }
 
-  // IC業務タスクの完了チェック
+  // IC業務タスクの完了チェック（青色=完了）
   const icTasks = tasksV2.filter(t => t.category === 'IC');
 
   let allComplete = true;
@@ -6767,24 +6816,8 @@ async function checkICCompletionForArchive(projectId) {
   for (const task of icTasks) {
     const taskState = progressData[task.task_key]?.state || '';
 
-    // タスクが完了しているか判定
-    let isComplete = false;
-    if (task.state_options) {
-      let options = task.state_options;
-      if (typeof options === 'string') {
-        try { options = JSON.parse(options); } catch (e) { options = []; }
-      }
-      const lastOption = options[options.length - 1];
-
-      // 完了条件: 最終状態 or 「無し」
-      isComplete = taskState === lastOption ||
-        taskState === '無' || taskState === '無し';
-    }
-
-    // 未入力（-や空）は未完了
-    if (!taskState || taskState === '-' || taskState === '') {
-      isComplete = false;
-    }
+    // タスクが完了しているか判定（青色かどうか）
+    let isComplete = isTaskStateBlue(task.task_key, taskState, task.state_options);
 
     if (!isComplete) {
       allComplete = false;
@@ -6793,13 +6826,49 @@ async function checkICCompletionForArchive(projectId) {
   }
 
   if (allComplete) {
-    // 全タスク完了 → アーカイブ確認
+    // 全タスク完了（全て青色）→ アーカイブ確認
     if (confirm(`🎉 IC業務が全て完了しました！\n\n「${project.customer}」を完了済み案件に移動しますか？`)) {
       await archiveProjectDirect(projectId);
     }
-  } else if (incompleteList.length <= 5) {
-    showToast(`未完了: ${incompleteList.join(', ')}`, 'info', 5000);
   }
+}
+
+// タスクの状態が青色（完了）かどうか判定
+function isTaskStateBlue(taskKey, taskState, stateOptions) {
+  // 未入力（-や空）は未完了
+  if (!taskState || taskState === '-' || taskState === '') {
+    return false;
+  }
+
+  // 水廻りタスク（複数選択可能）：「-」以外が選択されていれば完了（青色）
+  if (IC_MULTI_SELECT_TASKS.includes(taskKey)) {
+    // カンマ区切りの複数選択も対応
+    const selectedStates = taskState.split(',').map(s => s.trim()).filter(s => s && s !== '-');
+    return selectedStates.length > 0;
+  }
+
+  // メーカー選択タスク（照明プラン）：「-」以外が選択されていれば完了
+  if (IC_MAKER_SELECT_TASKS.includes(taskKey)) {
+    return taskState !== '-' && taskState !== '';
+  }
+
+  // 依頼系タスク（タイルプレゼン・外構・カーテン・造作・家具等）：
+  // 「無し」「保存済」が青色=完了
+  if (IC_REQUEST_TASKS.includes(taskKey)) {
+    return taskState === '無し' || taskState === '無' || taskState === '保存済';
+  }
+
+  // その他のタスク：最終状態 or 「無し」で完了
+  let options = stateOptions;
+  if (typeof options === 'string') {
+    try { options = JSON.parse(options); } catch (e) { options = []; }
+  }
+  if (Array.isArray(options) && options.length > 0) {
+    const lastOption = options[options.length - 1];
+    return taskState === lastOption || taskState === '無' || taskState === '無し';
+  }
+
+  return false;
 }
 
 // 直接アーカイブ実行（確認なし）

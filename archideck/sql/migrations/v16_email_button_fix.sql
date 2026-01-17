@@ -71,6 +71,23 @@ UPDATE tasks SET has_email_button = false WHERE task_key IN (
 );
 
 -- ============================================
+-- 4. 外構への打合せ依頼の位置変更（長期資料送付の下へ）
+-- ============================================
+-- 現在: display_order=17 → 新: display_order=11
+
+-- まず11以上のタスクを+1（外構への打合せ依頼を除く）
+UPDATE tasks
+SET display_order = display_order + 1
+WHERE category = 'IC'
+  AND display_order >= 11
+  AND task_key != 'ic_exterior_meeting';
+
+-- 外構への打合せ依頼を11に設定
+UPDATE tasks
+SET display_order = 11
+WHERE task_key = 'ic_exterior_meeting';
+
+-- ============================================
 -- 確認クエリ
 -- ============================================
--- SELECT task_key, task_name, has_email_button FROM tasks WHERE category = 'IC' ORDER BY display_order;
+-- SELECT task_key, task_name, display_order, has_email_button FROM tasks WHERE category = 'IC' ORDER BY display_order;
