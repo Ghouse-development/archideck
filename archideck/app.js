@@ -1,7 +1,13 @@
 // ============================================
 // デバッグモード設定
 // ============================================
-const DEBUG_MODE = false; // 本番環境では false
+// 本番環境（Vercel / 本番ドメイン）では強制的にfalse
+const IS_PRODUCTION = window.location.hostname.includes('vercel.app') ||
+                      window.location.hostname.includes('.com') ||
+                      window.location.hostname.includes('.jp') ||
+                      (!window.location.hostname.includes('localhost') &&
+                       !window.location.hostname.includes('127.0.0.1'));
+const DEBUG_MODE = IS_PRODUCTION ? false : true; // 開発時のみtrue、本番は強制false
 const log = DEBUG_MODE ? console.log.bind(console) : () => {};
 const warn = DEBUG_MODE ? console.warn.bind(console) : () => {};
 const logError = DEBUG_MODE ? console.error.bind(console) : () => {};
@@ -1290,6 +1296,8 @@ function showSetPasswordModal() {
 
 // 新しいパスワードを保存（初回設定用）
 async function saveNewPassword() {
+  if (SaveGuard.isLocked('saveNewPassword')) return;
+
   const newPassword = document.getElementById('setNewPassword').value;
   const confirmPassword = document.getElementById('setConfirmPassword').value;
 
@@ -1317,6 +1325,7 @@ async function saveNewPassword() {
     return;
   }
 
+  await SaveGuard.run('saveNewPassword', async () => {
   try {
     // セッション状態を確認
     const { data: { session } } = await supabase.auth.getSession();
@@ -1350,6 +1359,7 @@ async function saveNewPassword() {
     logError('パスワード設定例外:', e);
     showToast('エラーが発生しました', 'error');
   }
+  }); // SaveGuard.run
 }
 
 async function signIn() {
@@ -7296,13 +7306,21 @@ function editProject(projectId) {
 }
 
 async function deleteProject(projectId) {
-  if (!confirm('この案件を削除しますか？')) return;
+  const project = projects.find(p => p.id === projectId);
+  if (!project) return;
+
+  if (!confirm(`「${project.customer}」を削除しますか？\n\n※削除した案件は「完了済み」フィルターで確認できます`)) return;
 
   await SaveGuard.run(`deleteProject_${projectId}`, async () => {
     showStatus('削除中...', 'saving');
+    // 論理削除: deleted_atを設定し、is_archivedをtrueにする
     const { error } = await supabase
       .from('projects')
-      .delete()
+      .update({
+        is_archived: true,
+        deleted_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
       .eq('id', projectId);
 
     if (error) {
@@ -7311,11 +7329,15 @@ async function deleteProject(projectId) {
       return;
     }
 
-    projects = projects.filter(p => p.id !== projectId);
+    // メモリ上も更新（削除ではなくアーカイブ）
+    if (project) {
+      project.is_archived = true;
+      project.deleted_at = new Date().toISOString();
+    }
     renderDesignerTabs();
     renderProjects();
     showStatus('保存済み', 'saved');
-    showToast('案件を削除しました', 'success');
+    showToast('案件を削除しました（復元可能）', 'success');
   });
 }
 
@@ -7484,6 +7506,7 @@ async function restoreFromArchive(projectId) {
     .update({
       is_archived: false,
       archived_at: null,
+      deleted_at: null,  // 削除フラグもクリア
       updated_at: new Date().toISOString()
     })
     .eq('id', projectId);
@@ -7497,6 +7520,7 @@ async function restoreFromArchive(projectId) {
 
   project.is_archived = false;
   project.archived_at = null;
+  project.deleted_at = null;  // メモリ上もクリア
   project.updated_at = new Date().toISOString();
   markLocalUpdate(projectId); // リアルタイム同期の二重更新防止
 
@@ -7553,6 +7577,8 @@ function renderDesignerList() {
 }
 
 async function addDesigner() {
+  if (SaveGuard.isLocked('addDesigner')) return;
+
   const name = document.getElementById('newDesignerName')?.value?.trim() || '';
   const category = document.getElementById('newDesignerCategory')?.value || '';
 
@@ -7566,6 +7592,7 @@ async function addDesigner() {
     return;
   }
 
+  await SaveGuard.run('addDesigner', async () => {
   showStatus('追加中...', 'saving');
 
   // 同じカテゴリの最大display_orderを取得して+1
@@ -7593,6 +7620,7 @@ async function addDesigner() {
   renderSidebar();
   showStatus('保存済み', 'saved');
   showToast('担当を追加しました', 'success');
+  }); // SaveGuard.run
 }
 
 async function deleteDesigner(designerId) {
@@ -7808,6 +7836,8 @@ function closeEditDesignerModal() {
 }
 
 async function saveEditDesigner() {
+  if (SaveGuard.isLocked('saveEditDesigner')) return;
+
   const designerId = document.getElementById('editDesignerId').value;
   const name = document.getElementById('editDesignerName').value.trim();
   const email = document.getElementById('editDesignerEmail').value.trim();
@@ -7835,6 +7865,7 @@ async function saveEditDesigner() {
     return;
   }
 
+  await SaveGuard.run('saveEditDesigner', async () => {
   showStatus('保存中...', 'saving');
 
   const oldName = designer.name;
@@ -7884,9 +7915,12 @@ async function saveEditDesigner() {
   renderProjects();
   showStatus('保存済み', 'saved');
   showToast('担当情報を更新しました', 'success');
+  }); // SaveGuard.run
 }
 
 async function addDesignerInline() {
+  if (SaveGuard.isLocked('addDesignerInline')) return;
+
   const name = document.getElementById('newDesignerNameInline').value.trim();
   const email = document.getElementById('newDesignerEmailInline').value.trim();
   const phone = document.getElementById('newDesignerPhoneInline').value.trim();
@@ -7926,6 +7960,7 @@ async function addDesignerInline() {
     return;
   }
 
+  await SaveGuard.run('addDesignerInline', async () => {
   showStatus('追加中...', 'saving');
 
   try {
@@ -7990,6 +8025,7 @@ async function addDesignerInline() {
     showStatus('エラー', 'error');
     showToast(err.message, 'error');
   }
+  }); // SaveGuard.run
 }
 
 // 既存担当者に招待メールを再送信
@@ -12465,6 +12501,8 @@ async function deleteProjectTask(taskId, projectId) {
 
 // 案件にタスクを追加
 async function addProjectTask(projectId, taskName, dueDate) {
+  if (SaveGuard.isLocked(`addProjectTask_${projectId}`)) return;
+
   if (!taskName.trim()) {
     showToast('タスク名を入力してください', 'error');
     return;
@@ -12472,6 +12510,7 @@ async function addProjectTask(projectId, taskName, dueDate) {
 
   const project = projects.find(p => p.id === projectId);
 
+  await SaveGuard.run(`addProjectTask_${projectId}`, async () => {
   try {
     const { data, error } = await supabase
       .from('project_tasks')
@@ -12521,6 +12560,7 @@ async function addProjectTask(projectId, taskName, dueDate) {
     logError('タスク追加例外:', err);
     showToast('タスク追加中にエラーが発生しました', 'error');
   }
+  }); // SaveGuard.run
 }
 
 // 主要タスクのステータスを動的に取得（レポート用）
@@ -14688,13 +14728,17 @@ function updatePreview() {
 }
 
 async function saveCustomization() {
+  // 二重クリック防止
+  if (SaveGuard.isLocked('saveCustomization')) return;
+
   if (!currentOrganization) {
     showToast('組織情報が見つかりません', 'error');
     return;
   }
 
-  const statusEl = document.getElementById('customizeStatus');
-  statusEl.innerHTML = '<span style="color: var(--text-muted);">保存中...</span>';
+  await SaveGuard.run('saveCustomization', async () => {
+    const statusEl = document.getElementById('customizeStatus');
+    statusEl.innerHTML = '<span style="color: var(--text-muted);">保存中...</span>';
 
   const updates = {
     name: document.getElementById('customOrgName').value,
@@ -14727,6 +14771,7 @@ async function saveCustomization() {
   setTimeout(() => {
     statusEl.innerHTML = '';
   }, 3000);
+  }); // SaveGuard.run
 }
 
 function resetCustomization() {
@@ -15085,6 +15130,10 @@ function getSelectedKintoneAppIds() {
 
 // kintone連携設定保存
 async function saveKintoneSettings() {
+  // 二重クリック防止
+  if (SaveGuard.isLocked('saveKintoneSettings')) return;
+
+  await SaveGuard.run('saveKintoneSettings', async () => {
   try {
     // 年度別アプリを取得
     const apps = getKintoneAppsFromUI();
@@ -15188,6 +15237,7 @@ async function saveKintoneSettings() {
     console.error('kintone設定保存エラー:', e);
     showToast('設定保存中にエラーが発生しました', 'error');
   }
+  }); // SaveGuard.run
 }
 
 // kintone接続テスト（Edge Function経由）
@@ -15315,6 +15365,10 @@ async function validateKintoneImport() {
 
 // kintoneから直接インポート - 完全修正版 v2
 async function importFromKintoneDirect() {
+  // 二重クリック防止
+  if (SaveGuard.isLocked('importFromKintoneDirect')) return;
+
+  await SaveGuard.run('importFromKintoneDirect', async () => {
   const statusEl = document.getElementById('kintoneImportStatus');
   statusEl.innerHTML = '<span style="color: var(--text-muted);">📥 インポート準備中...</span>';
 
@@ -15618,6 +15672,7 @@ async function importFromKintoneDirect() {
     console.error('Import error:', e);
     statusEl.innerHTML = `<span style="color: var(--danger-color);">❌ エラー: ${e.message}</span>`;
   }
+  }); // SaveGuard.run
 }
 
 // kintoneレコードIDを抽出（複数のフィールド名に対応）
@@ -15986,13 +16041,29 @@ async function autoSyncKintone() {
     const meetingDrawingField = fieldMappings.meetingDrawing || '';
     const productField = fieldMappings.product || '';
 
-    // kintoneからレコード取得
-    const result = await callKintoneProxy('getAllRecords');
+    // kintoneからレコード取得（30秒タイムアウト）
+    const KINTONE_TIMEOUT = 30000;
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('kintone同期タイムアウト（30秒）')), KINTONE_TIMEOUT)
+    );
+    const result = await Promise.race([
+      callKintoneProxy('getAllRecords'),
+      timeoutPromise
+    ]);
 
     if (!result.success) {
       log('❌ kintone自動同期失敗:', result.error);
+      // 失敗カウントを増加
+      window._kintoneSyncFailCount = (window._kintoneSyncFailCount || 0) + 1;
+      // 3回連続失敗でユーザーに通知
+      if (window._kintoneSyncFailCount >= 3) {
+        showToast('kintone同期に複数回失敗しています。設定を確認してください。', 'warning', 5000);
+        window._kintoneSyncFailCount = 0; // リセット
+      }
       return;
     }
+    // 成功時は失敗カウントをリセット
+    window._kintoneSyncFailCount = 0;
 
     const records = result.data?.records || [];
     if (records.length === 0) {
