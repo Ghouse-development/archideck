@@ -5922,9 +5922,31 @@ function renderProjectCard(project) {
       <span class="task-label">${taskDef.task_name}</span>${stateCards}${requestDateBadge}${emailBtn}</div>`;
   }).join('');
 
-  // IC業務内容を生成（新しい回別カード形式）
+  // IC業務内容を生成（設計と同じグリッド形式）
   const icTasks = tasksV2.filter(t => t.category === 'IC').sort((a, b) => a.display_order - b.display_order);
-  const icRoundCardsHtml = generateICRoundCards(project, progressData);
+  const icTasksHtml = icTasks.map(taskDef => {
+    const key = taskDef.task_key;
+    const task = progressData[key] || { completed: false, date: '', state: '', due_date: '' };
+
+    const templateId = taskMappings[key] || key;
+    const hasVendor = vendors.some(v => v.template_id === templateId);
+    const isInternalStatus = INTERNAL_STATUSES.includes(task.state);
+    const showEmailButton = taskDef.has_email_button !== false && hasVendor && !isInternalStatus;
+    const emailBtn = showEmailButton ?
+      `<button class="task-email-btn" onclick="openEmailFromTask('${project.id}', '${key}')" title="メール作成">📧</button>` : '';
+
+    // ステータスカード生成
+    const stateOptions = getTaskStateOptions(key);
+    const stateCards = generateStatusCards(stateOptions, task.state, project.id, key);
+
+    // 依頼日バッジ
+    const requestDateBadge = task.request_date
+      ? `<span class="request-date-badge" title="依頼日: ${task.request_date}">${formatDateShort(task.request_date)}</span>`
+      : '';
+
+    return `<div class="task-item">
+      <span class="task-label">${taskDef.task_name}</span>${stateCards}${requestDateBadge}${emailBtn}</div>`;
+  }).join('');
 
   // 外構業務内容を生成
   const exteriorTasksList = getTasksForCategory('外構');
@@ -6092,7 +6114,7 @@ function renderProjectCard(project) {
         return `<div class="biz-sections-group">
     ${getBizContent('不動産業務内容', '🏢', realestateTasksList.length > 0 ? `<div class="tasks-grid">${realestateTasksHtml}</div>` : '<p class="empty-task-message">不動産タスクが登録されていません</p>', realestateCount)}
     ${getBizContent('設計業務内容', '📐', `<div class="tasks-grid">${tasksHtml}</div>`, designCount)}
-    ${getBizContent('IC業務内容', '🎨', icTasks.length > 0 ? icRoundCardsHtml : '<p class="empty-task-message">ICタスクが登録されていません</p>', icCount)}
+    ${getBizContent('IC業務内容', '🎨', icTasks.length > 0 ? `<div class="tasks-grid">${icTasksHtml}</div>` : '<p class="empty-task-message">ICタスクが登録されていません</p>', icCount)}
     ${getBizContent('工事業務内容', '🔨', constructionTasksList.length > 0 ? `<div class="tasks-grid">${constructionTasksHtml}</div>` : '<p class="empty-task-message">工事タスクが登録されていません</p>', constructionCount)}
     ${getBizContent('外構業務内容', '🏡', exteriorTasksList.length > 0 ? `<div class="tasks-grid">${exteriorTasksHtml}</div>` : '<p class="empty-task-message">外構タスクが登録されていません</p>', exteriorCount)}</div>`;
       } else if (viewCategory === '設計') {
@@ -6100,7 +6122,7 @@ function renderProjectCard(project) {
         return getSimpleBizContent('設計業務内容', '📐', `<div class="tasks-grid">${tasksHtml}</div>`, designCount);
       } else if (viewCategory === 'IC') {
         // IC担当: IC業務内容のみ、アコーディオンなし
-        return getSimpleBizContent('IC業務内容', '🎨', icTasks.length > 0 ? icRoundCardsHtml : '<p class="empty-task-message">ICタスクが登録されていません</p>', icCount);
+        return getSimpleBizContent('IC業務内容', '🎨', icTasks.length > 0 ? `<div class="tasks-grid">${icTasksHtml}</div>` : '<p class="empty-task-message">ICタスクが登録されていません</p>', icCount);
       } else if (viewCategory === '外構') {
         // 外構担当: 外構業務内容のみ、アコーディオンなし
         return getSimpleBizContent('外構業務内容', '🏡', exteriorTasksList.length > 0 ? `<div class="tasks-grid">${exteriorTasksHtml}</div>` : '<p class="empty-task-message">外構タスクが登録されていません</p>', exteriorCount);
