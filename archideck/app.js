@@ -7116,9 +7116,10 @@ async function checkAllTasksCompletionForArchive(projectId) {
     }
   }
 
-  log('📋 設計完了チェック:', { allDesignComplete, incompleteDesignTasks, designTasksCount: designTasks.length });
+  console.log('📋 設計完了チェック:', { allDesignComplete, incompleteDesignTasks, designTasksCount: designTasks.length });
 
   if (!allDesignComplete) {
+    console.log('❌ 設計タスク未完了のため終了:', incompleteDesignTasks);
     return; // 設計タスクが未完了なら終了
   }
 
@@ -7137,14 +7138,18 @@ async function checkAllTasksCompletionForArchive(projectId) {
       }
     }
 
-    log('📋 IC完了チェック:', { allICComplete, incompleteICTasks, icTasksCount: icTasks.length });
+    console.log('📋 IC完了チェック:', { allICComplete, incompleteICTasks, icTasksCount: icTasks.length });
 
     if (!allICComplete) {
+      console.log('❌ ICタスク未完了のため終了:', incompleteICTasks);
       return; // ICタスクが未完了なら終了
     }
+  } else {
+    console.log('ℹ️ IC担当案件ではないためICチェックをスキップ');
   }
 
   // 全タスク完了 → 派手な完了モーダルを表示
+  console.log('🎉 全タスク完了！モーダル表示');
   showCompletionCelebration(project);
 }
 
