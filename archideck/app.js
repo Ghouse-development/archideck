@@ -715,7 +715,7 @@ async function saveChangeHistory(projectId, changeType, fieldName, oldValue, new
   try {
     const userName = currentUser?.email || 'unknown';
 
-    await supabase.from('change_history').insert({
+    const { data, error } = await supabase.from('change_history').insert({
       project_id: projectId,
       user_name: userName,
       change_type: changeType,
@@ -723,12 +723,17 @@ async function saveChangeHistory(projectId, changeType, fieldName, oldValue, new
       old_value: oldValue?.toString() || '',
       new_value: newValue?.toString() || '',
       description: description
-    });
+    }).select();
+
+    if (error) {
+      logError('変更履歴保存エラー:', error.message);
+      return;
+    }
 
     log('📝 変更履歴を保存:', { changeType, fieldName, oldValue, newValue });
   } catch (e) {
     // 変更履歴の保存失敗は無視（メイン処理に影響させない）
-    logError('変更履歴保存エラー:', e);
+    logError('変更履歴保存例外:', e);
   }
 }
 
@@ -2308,8 +2313,8 @@ async function init() {
     // 期限リマインダーのチェック（3秒後）
     setTimeout(() => DeadlineManager.checkReminders(), 3000);
 
-    // kintone自動同期（5秒後）
-    setTimeout(() => autoSyncKintone(), 5000);
+    // kintone自動同期（即時実行 - ログイン・リフレッシュごとに最新データを取得）
+    autoSyncKintone();
 
     // 変更履歴は無制限保持（クリーンアップなし）
 
@@ -2389,12 +2394,12 @@ function handleProjectChange(payload) {
   const { eventType, new: newRecord, old: oldRecord } = payload;
   log(`📡 リアルタイム: projects ${eventType}`, payload);
 
-  // 自分自身の変更は無視（二重更新防止）
+  // 自分自身の変更は無視（二重更新防止）- 5秒以内
   const lastLocalUpdate = localStorage.getItem('lastProjectUpdate');
   if (lastLocalUpdate && newRecord?.id) {
     const parsed = safeJsonParse(lastLocalUpdate, {});
-    if (parsed.id === newRecord.id && Date.now() - parsed.time < 2000) {
-      log('⏭️ 自分の変更をスキップ');
+    if (parsed.id === newRecord.id && Date.now() - parsed.time < 5000) {
+      log('⏭️ 自分の変更をスキップ（5秒以内）');
       return;
     }
   }
@@ -6316,8 +6321,9 @@ function renderProjectCard(project) {
     // has_email_button: true のICタスクで、ステータスが設定されていればメールボタンを表示
     const showICEmail = taskDef.has_email_button && task.state && task.state !== '-' && task.state !== '無し' && !isInternalStatus;
     const showEmailButton = showICEmail || (taskDef.has_email_button !== false && hasVendor && !isInternalStatus);
-    const emailBtn = showEmailButton ?
-      `<button class="task-email-btn" onclick="openEmailFromTask('${project.id}', '${key}')" title="${escapeHtml(task.state)}にメール作成">📧</button>` : '';
+    // メールボタンは常に生成し、表示/非表示はstyleで制御（ステータス選択後に動的に表示するため）
+    const emailBtn = taskDef.has_email_button ?
+      `<button class="task-email-btn" onclick="openEmailFromTask('${project.id}', '${key}')" title="${escapeHtml(task.state || '')}にメール作成" style="display: ${showEmailButton ? '' : 'none'};">📧</button>` : '';
 
     // ステータスカード生成
     const stateOptions = getTaskStateOptions(key);
@@ -7050,7 +7056,8 @@ function selectStatusCard(cardEl, projectId, taskKey) {
   updateTaskState(projectId, taskKey, finalState);
 
   // 設計またはICタスクの場合、全て完了したらアーカイブチェック
-  const isDesignOrICTask = taskDef?.category === '設計' || taskDef?.category === 'IC';
+  // taskDefが見つからない場合でもチェックを実行（旧キーの互換性のため）
+  const isDesignOrICTask = taskDef?.category === '設計' || taskDef?.category === 'IC' || !taskDef;
   if (isDesignOrICTask) {
     setTimeout(() => checkAllTasksCompletionForArchive(projectId), 500);
   }
@@ -13088,13 +13095,14 @@ async function executeApplicationGo() {
     markLocalUpdate(applicationGoProjectId);
 
     showStatus('保存中...', 'saving');
-    // 重要: updated_at を現在の値に保持して、案件の位置を変えない
-    // DBトリガーが自動更新しないよう、明示的に同じ値をセット
+    // 重要: updated_at を変更しない（案件の位置を維持するため）
+    // progressのみを更新し、updated_atは送信しない
+    const originalUpdatedAt = project.updated_at; // 元の値を保持
     const { error } = await supabase
       .from('projects')
       .update({
-        progress: progressData,
-        updated_at: project.updated_at // 現在の値を保持
+        progress: progressData
+        // updated_at は意図的に含めない（位置を変えないため）
       })
       .eq('id', applicationGoProjectId);
 
@@ -13105,7 +13113,7 @@ async function executeApplicationGo() {
     }
 
     project.progress = progressData;
-    // updated_at は変更しない（案件の位置を維持）
+    project.updated_at = originalUpdatedAt; // ローカルでも元の値を維持
 
     closeApplicationGoModal();
     renderProjects();
