@@ -3936,10 +3936,10 @@ input:checked + .toggle-slider:before {
   }
 }
 
-/* クイックアクションボタン（4カラム横並び） */
+/* クイックアクションボタン（3カラム横並び） */
 .card-quick-actions {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 8px;
   margin-bottom: 12px;
 }
