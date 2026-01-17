@@ -8822,11 +8822,11 @@ function openOutlookFromModal() {
     }
   }
 
-  // Outlook Web URLを生成
-  const outlookUrl = `https://outlook.office.com/mail/deeplink/compose?to=${encodeURIComponent(addresses)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  // mailto: URLを生成（PCのOutlookアプリが開く）
+  const mailtoUrl = `mailto:${encodeURIComponent(addresses)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 
-  // Outlookを新しいタブで開く
-  window.open(outlookUrl, '_blank');
+  // PCのデフォルトメールアプリを開く
+  window.location.href = mailtoUrl;
 
   // 送信履歴を記録
   logEmailSent('outlook', addresses, subject);
