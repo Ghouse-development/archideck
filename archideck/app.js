@@ -6113,8 +6113,17 @@ function renderProjectCard(project) {
       ? `<span class="request-date-badge" title="依頼日: ${task.request_date}">${formatDateShort(task.request_date)}</span>`
       : '';
 
+    // kintone日付バッジ（変更契約前会議・間取確定）
+    let kintoneDate = '';
+    if (key === 'ic_pre_change_meeting' && project.pre_contract_meeting_date) {
+      kintoneDate = `<span class="kintone-date-badge" title="kintone: 変更契約前会議">${formatDateShort(project.pre_contract_meeting_date)}</span>`;
+    }
+    if (key === 'ic_funding_check' && project.layout_confirmed_date) {
+      kintoneDate = `<span class="kintone-date-badge" title="kintone: 間取確定日">${formatDateShort(project.layout_confirmed_date)}</span>`;
+    }
+
     return `<div class="task-item">
-      <span class="task-label">${taskDef.task_name}</span>${stateCards}${requestDateBadge}${emailBtn}</div>`;
+      <span class="task-label">${taskDef.task_name}</span>${kintoneDate}${stateCards}${requestDateBadge}${emailBtn}</div>`;
   }).join('');
 
   // 外構業務内容を生成
@@ -6824,6 +6833,11 @@ async function checkICCompletionForArchive(projectId) {
 function isTaskStateBlue(taskKey, taskState, stateOptions) {
   // 未入力（-や空）は未完了
   if (!taskState || taskState === '-' || taskState === '') {
+    return false;
+  }
+
+  // 申請GOは控えめに（完了済でも黄色のまま、青色にしない）
+  if (taskKey === 'application') {
     return false;
   }
 

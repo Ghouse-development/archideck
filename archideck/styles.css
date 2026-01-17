@@ -1977,6 +1977,20 @@ input:checked + .toggle-slider:before {
   font-weight: 500;
 }
 
+/* kintone日付バッジ */
+.kintone-date-badge {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: #FFF7ED;
+  color: #EA580C;
+  white-space: nowrap;
+  cursor: help;
+  flex-shrink: 0;
+  font-weight: 500;
+  margin-left: 4px;
+}
+
 /* タスクメモ入力 */
 .task-memo-input {
   width: 100px;
