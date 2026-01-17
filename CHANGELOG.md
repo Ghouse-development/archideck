@@ -1,5 +1,28 @@
 # ArchiDeck 開発履歴
 
+## v4.99.60 (2026-01-17)
+
+### 本番投入前セーフティ対応
+
+#### セキュリティ強化
+- **SaveGuard二重送信防止**: 11関数に追加（saveKintoneSettings, saveCustomization, importFromKintoneDirect, addDesigner, saveEditDesigner, addDesignerInline, saveNewPassword, addProjectTask等）
+- **DEBUG_MODE制御**: 本番環境（vercel.app, .com, .jp）で強制false
+- **kintone APIトークン**: Edge Function経由で安全（確認済み）
+
+#### 障害対策
+- **kintone同期タイムアウト**: 30秒でタイムアウト
+- **kintone失敗通知**: 3回連続失敗でユーザーに警告表示
+- **論理削除**: 案件削除をUPDATE（is_archived + deleted_at）に変更
+- **復元機能強化**: restoreFromArchiveでdeleted_atもクリア
+
+#### ドキュメント
+- CLAUDE.mdに「出荷・完遂契約」を追加
+
+#### DBマイグレーション
+- v17_production_safety.sql追加（deleted_at, last_sync_at等）
+
+---
+
 ## v4.99.62 (2026-01-17)
 
 ### 設計タスク大幅更新
