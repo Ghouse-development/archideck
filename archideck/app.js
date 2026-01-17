@@ -13117,7 +13117,7 @@ async function executeApplicationGo() {
 
     closeApplicationGoModal();
     renderProjects();
-    updateSidebar();
+    renderSidebar();
     showStatus('保存済み', 'saved');
     showToast(`${project.customer} の申請GOを完了しました`, 'success');
   });
