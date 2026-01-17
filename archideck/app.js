@@ -692,7 +692,7 @@ const IC_MULTI_SELECT_TASKS = [
 // メールボタン表示対象タスク
 const IC_MAKER_TASKS = [
   'ic_kitchen', 'ic_bath', 'ic_washroom', 'ic_toilet', 'ic_lighting',
-  'ic_tategu', 'ic_tile_pres', 'ic_curtain', 'ic_zousaku', 'ic_furniture',
+  'ic_tategu', 'ic_tile_pres', 'ic_curtain', 'ic_zousaku', 'ic_furniture', 'ic_iron',
   // 旧キー
   'ic_washroom_1f', 'ic_washroom_2f', 'ic_toilet_1f', 'ic_toilet_2f'
 ];
