@@ -6701,7 +6701,7 @@ function generateStatusCards(stateOptions, currentState, projectId, taskKey) {
     const isActive = selectedStates.includes(state);
     const stateClass = isActive ? getStateColorClass(state, lastOption, taskKey) : '';
     const displayText = state || '-';
-    return `<span class="status-card${isActive ? ' active' : ''}${stateClass ? ' ' + stateClass : ''}" data-value="${state}" onclick="selectStatusCard(this, '${projectId}', '${taskKey}')">${displayText}</span>`;
+    return `<span class="status-card${isActive ? ' active' : ''}${stateClass ? ' ' + stateClass : ''}" data-value="${escapeHtml(state)}" onclick="selectStatusCard(this, '${escapeHtml(projectId)}', '${escapeHtml(taskKey)}')">${escapeHtml(displayText)}</span>`;
   }).join('')}</div>`;
 }
 
@@ -7788,18 +7788,18 @@ function openEditDesignerModal(designerId) {
         <button class="close" onclick="closeEditDesignerModal()">&times;</button>
       </div>
       <div class="modal-body">
-        <input type="hidden" id="editDesignerId" value="${designer.id}">
+        <input type="hidden" id="editDesignerId" value="${escapeHtml(designer.id)}">
         <div class="form-group">
           <label class="form-label">担当名 *</label>
-          <input type="text" class="form-input" id="editDesignerName" value="${designer.name}" style="width: 100%;">
+          <input type="text" class="form-input" id="editDesignerName" value="${escapeHtml(designer.name)}" style="width: 100%;">
         </div>
         <div class="form-group">
           <label class="form-label">メールアドレス</label>
-          <input type="email" class="form-input" id="editDesignerEmail" value="${designer.email && !designer.email.includes('@temp.local') ? designer.email : ''}" placeholder="例: staff@example.com" style="width: 100%;">
+          <input type="email" class="form-input" id="editDesignerEmail" value="${escapeHtml(designer.email && !designer.email.includes('@temp.local') ? designer.email : '')}" placeholder="例: staff@example.com" style="width: 100%;">
         </div>
         <div class="form-group">
           <label class="form-label">携帯電話番号（11桁・ハイフンなし）</label>
-          <input type="tel" class="form-input" id="editDesignerPhone" value="${designer.phone || ''}" placeholder="例: 09012345678" maxlength="11" pattern="[0-9]{11}" style="width: 100%;">
+          <input type="tel" class="form-input" id="editDesignerPhone" value="${escapeHtml(designer.phone || '')}" placeholder="例: 09012345678" maxlength="11" pattern="[0-9]{11}" style="width: 100%;">
         </div>
         <div class="form-group">
           <label class="form-label">部署</label>
@@ -8989,11 +8989,11 @@ function createEmailComposer(project, template, staffName, taskKey) {
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
         <div class="form-group">
           <label class="form-label">お客様名:</label>
-          <input type="text" class="form-input" id="modalCustomerName" value="${project.customer}" readonly style="background: #f5f5f5;">
+          <input type="text" class="form-input" id="modalCustomerName" value="${escapeHtml(project.customer)}" readonly style="background: #f5f5f5;">
         </div>
         <div class="form-group">
           <label class="form-label">担当者名:</label>
-          <input type="text" class="form-input" id="modalStaffName" value="${staffName}" oninput="updateModalEmail()">
+          <input type="text" class="form-input" id="modalStaffName" value="${escapeHtml(staffName)}" oninput="updateModalEmail()">
         </div>
       </div>
 
@@ -10997,7 +10997,7 @@ const BatchOperations = {
 
     const stateOptions = getTaskStateOptions(taskKey);
     if (stateOptions && Array.isArray(stateOptions)) {
-      stateSelect.innerHTML = stateOptions.map(state => `<option value="${state}">${state || '-'}</option>`).join('');
+      stateSelect.innerHTML = stateOptions.map(state => `<option value="${escapeHtml(state)}">${escapeHtml(state) || '-'}</option>`).join('');
       stateSelect.disabled = false;
     } else {
       stateSelect.innerHTML = '<option value="">ステータスなし</option>';
