@@ -6716,17 +6716,21 @@ function selectStatusCard(cardEl, projectId, taskKey) {
     // 複数選択モード
     const isCurrentlyActive = cardEl.classList.contains('active');
 
-    if (clickedState === '-') {
-      // 「-」をクリックした場合は他の選択を全解除
+    if (clickedState === '-' || clickedState === '無し') {
+      // 「-」または「無し」をクリックした場合は他の選択を全解除（単独選択）
       container.querySelectorAll('.status-card').forEach(c => {
         c.classList.remove('active', 'state-blue', 'state-yellow', 'state-red');
       });
       cardEl.classList.add('active');
-      finalState = '-';
+      if (clickedState === '無し') {
+        cardEl.classList.add('state-blue'); // 「無し」は青色
+      }
+      finalState = clickedState;
     } else {
-      // 「-」以外をクリック
-      // 「-」の選択を解除
+      // メーカーをクリック
+      // 「-」と「無し」の選択を解除
       container.querySelector('.status-card[data-value="-"]')?.classList.remove('active');
+      container.querySelector('.status-card[data-value="無し"]')?.classList.remove('active', 'state-blue');
 
       if (isCurrentlyActive) {
         // 既に選択されていたらトグルで解除
