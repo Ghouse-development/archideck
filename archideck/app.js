@@ -6817,22 +6817,17 @@ async function checkAllTasksCompletionForArchive(projectId) {
 
   const progressData = project.progress || {};
 
-  // 登録タスクの未完了チェック
-  const hasIncompleteTasks = checkHasIncompleteTasks(project, progressData);
-  if (hasIncompleteTasks) {
-    return;
-  }
-
   // 1. 設計タスクの完了チェック（青色=完了）
-  const designTasks = tasksV2.filter(t => t.category === '設計' && t.has_state);
+  const designTasks = tasksV2.filter(t => t.category === '設計' && t.has_state && t.task_key !== 'application');
   let allDesignComplete = true;
+  let incompleteDesignTasks = [];
 
   for (const task of designTasks) {
     const taskState = progressData[task.task_key]?.state || '';
     let isComplete = isTaskStateBlue(task.task_key, taskState, task.state_options);
     if (!isComplete) {
       allDesignComplete = false;
-      break;
+      incompleteDesignTasks.push(task.task_name);
     }
   }
 
@@ -6850,7 +6845,6 @@ async function checkAllTasksCompletionForArchive(projectId) {
       let isComplete = isTaskStateBlue(task.task_key, taskState, task.state_options);
       if (!isComplete) {
         allICComplete = false;
-        break;
       }
     }
 
@@ -6859,10 +6853,8 @@ async function checkAllTasksCompletionForArchive(projectId) {
     }
   }
 
-  // 全タスク完了（全て青色）→ アーカイブ確認
-  if (confirm(`🎉 全てのタスクが完了しました！\n\n「${project.customer}」を完了済み案件に移動しますか？`)) {
-    await archiveProjectDirect(projectId);
-  }
+  // 全タスク完了 → 派手な完了モーダルを表示
+  showCompletionCelebration(project);
 }
 
 // タスクの状態が青色（完了）かどうか判定
@@ -6906,6 +6898,83 @@ function isTaskStateBlue(taskKey, taskState, stateOptions) {
   }
 
   return false;
+}
+
+// 🎊 派手な完了祝福モーダル表示
+function showCompletionCelebration(project) {
+  // 既存のモーダルがあれば削除
+  const existingModal = document.getElementById('completionCelebrationModal');
+  if (existingModal) existingModal.remove();
+
+  // 紙吹雪を生成
+  const confettiColors = ['#f94144', '#f3722c', '#f8961e', '#f9c74f', '#90be6d', '#43aa8b', '#577590', '#277da1', '#ff006e', '#8338ec'];
+  let confettiHtml = '';
+  for (let i = 0; i < 100; i++) {
+    const color = confettiColors[Math.floor(Math.random() * confettiColors.length)];
+    const left = Math.random() * 100;
+    const delay = Math.random() * 3;
+    const duration = 3 + Math.random() * 2;
+    const size = 8 + Math.random() * 8;
+    confettiHtml += `<div class="confetti" style="left:${left}%;background:${color};animation-delay:${delay}s;animation-duration:${duration}s;width:${size}px;height:${size}px;"></div>`;
+  }
+
+  const modal = document.createElement('div');
+  modal.id = 'completionCelebrationModal';
+  modal.className = 'celebration-modal';
+  modal.innerHTML = `
+    <div class="celebration-confetti">${confettiHtml}</div>
+    <div class="celebration-content">
+      <div class="celebration-fireworks">
+        <span>🎆</span><span>🎇</span><span>🎆</span>
+      </div>
+      <div class="celebration-icon">🎉</div>
+      <h2 class="celebration-title">おめでとうございます！</h2>
+      <p class="celebration-subtitle">全てのタスクが完了しました！</p>
+      <div class="celebration-project">
+        <span class="celebration-customer">${escapeHtml(project.customer)}</span>
+        <span class="celebration-specs">${escapeHtml(project.specifications || 'LIFE')}</span>
+      </div>
+      <p class="celebration-message">
+        素晴らしいお仕事でした！<br>
+        お疲れ様でした！🌟
+      </p>
+      <div class="celebration-buttons">
+        <button class="btn btn-ghost celebration-btn-later" onclick="closeCompletionCelebration()">
+          あとで移動する
+        </button>
+        <button class="btn celebration-btn-complete" onclick="completeAndArchive('${project.id}')">
+          🏆 完了済みに移動する
+        </button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+
+  // アニメーションのためのクラス追加
+  requestAnimationFrame(() => {
+    modal.classList.add('show');
+  });
+
+  // 効果音的なバイブレーション（対応デバイスのみ）
+  if (navigator.vibrate) {
+    navigator.vibrate([100, 50, 100, 50, 200]);
+  }
+}
+
+// 完了祝福モーダルを閉じる
+function closeCompletionCelebration() {
+  const modal = document.getElementById('completionCelebrationModal');
+  if (modal) {
+    modal.classList.remove('show');
+    setTimeout(() => modal.remove(), 300);
+  }
+}
+
+// 完了処理してアーカイブ
+async function completeAndArchive(projectId) {
+  closeCompletionCelebration();
+  await archiveProjectDirect(projectId);
+  showToast('🎊 案件を完了済みに移動しました！お疲れ様でした！', 'success', 5000);
 }
 
 // 直接アーカイブ実行（確認なし）
