@@ -35,7 +35,7 @@
     <p>メールアドレスとパスワードでログインしてください</p>
     <form onsubmit="signIn(); return false;" style="margin-bottom: 20px;">
       <input type="email" class="form-input" id="loginEmail" placeholder="メールアドレス" style="width: 100%; margin-bottom: 12px;" inputmode="email">
-      <input type="password" class="form-input" id="loginPassword" placeholder="パスワード" style="width: 100%; margin-bottom: 12px;">
+      <input type="password" class="form-input" id="loginPassword" placeholder="パスワード" style="width: 100%; margin-bottom: 12px;" autocomplete="current-password">
       <div style="text-align: right; margin-bottom: 16px;">
         <a href="#" onclick="showForgotPassword(); return false;" style="font-size: 13px; color: var(--primary-color);">パスワードを忘れた方</a>
       </div>
@@ -59,11 +59,11 @@
     <form onsubmit="saveNewPassword(); return false;" style="margin-bottom: 20px;">
       <div class="form-group" style="margin-bottom: 16px;">
         <label class="form-label">新しいパスワード</label>
-        <input type="password" class="form-input" id="setNewPassword" placeholder="英数字混合8文字以上" style="width: 100%;">
+        <input type="password" class="form-input" id="setNewPassword" placeholder="英数字混合8文字以上" style="width: 100%;" autocomplete="new-password">
       </div>
       <div class="form-group" style="margin-bottom: 16px;">
         <label class="form-label">新しいパスワード（確認）</label>
-        <input type="password" class="form-input" id="setConfirmPassword" placeholder="もう一度入力" style="width: 100%;">
+        <input type="password" class="form-input" id="setConfirmPassword" placeholder="もう一度入力" style="width: 100%;" autocomplete="new-password">
       </div>
       <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">
         ※ パスワードは英字と数字を含む8文字以上で設定してください
@@ -518,7 +518,7 @@
 
             <div class="form-group">
               <label class="form-label">APIトークン</label>
-              <input type="password" class="form-input" id="kintoneApiToken" placeholder="APIトークンを入力" style="width: 100%;">
+              <input type="password" class="form-input" id="kintoneApiToken" placeholder="APIトークンを入力" style="width: 100%;" autocomplete="off">
               <div class="form-hint" style="font-size: 11px; margin-top: 4px;">kintoneアプリの設定からAPIトークンを発行してください（複数アプリで共通のトークンを使用）</div>
             </div>
 
@@ -1852,13 +1852,13 @@
 
         <div class="form-group">
           <label class="form-label">パスワード *</label>
-          <input type="password" class="form-input" id="authDesignerPassword" placeholder="8文字以上" required>
+          <input type="password" class="form-input" id="authDesignerPassword" placeholder="8文字以上" required autocomplete="new-password">
           <div class="form-hint">8文字以上で設定してください</div>
         </div>
 
         <div class="form-group">
           <label class="form-label">パスワード（確認） *</label>
-          <input type="password" class="form-input" id="authDesignerPasswordConfirm" placeholder="もう一度入力">
+          <input type="password" class="form-input" id="authDesignerPasswordConfirm" placeholder="もう一度入力" autocomplete="new-password">
         </div>
       </form>
     </div>

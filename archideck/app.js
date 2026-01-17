@@ -700,6 +700,22 @@ const IC_MAKER_TASKS = [
 const IC_REQUEST_TASKS = ['ic_iron_pres', 'ic_tile_pres', 'ic_exterior_meeting', 'ic_curtain', 'ic_zousaku', 'ic_furniture'];
 const INTERNAL_STATUSES = ['オリジナル', 'GRAFTECT', '-', '']; // 社内対応ステータス（メール不要）
 
+// ICタスクのメールボタン表示デフォルト設定（DBにhas_email_buttonがない場合のフォールバック）
+const IC_EMAIL_BUTTON_DEFAULTS = {
+  'ic_kitchen': true,
+  'ic_bath': true,
+  'ic_washroom': true,
+  'ic_toilet': true,
+  'ic_lighting': true,
+  'ic_tategu': true,
+  'ic_tile_pres': true,
+  'ic_curtain': true,
+  'ic_zousaku': true,
+  'ic_furniture': true,
+  'ic_iron': true,
+  'ic_other_estimate': true
+};
+
 // 新旧タスクキーのマッピング（旧キーから新キーへのフォールバック用）
 const TASK_KEY_MAPPING = {
   'ic_washroom': ['ic_washroom_1f', 'ic_washroom_2f'],
@@ -6318,11 +6334,13 @@ function renderProjectCard(project) {
     const hasMakerSelected = isICMakerTask && task.state && !isInternalStatus && task.state !== '-';
     // 依頼系タスク（依頼済/保存済の場合にメールボタン表示）
     const hasRequestStatus = isICRequestTask && task.state && (task.state === '依頼済' || task.state === '保存済');
-    // has_email_button: true のICタスクで、ステータスが設定されていればメールボタンを表示
-    const showICEmail = taskDef.has_email_button && task.state && task.state !== '-' && task.state !== '無し' && !isInternalStatus;
-    const showEmailButton = showICEmail || (taskDef.has_email_button !== false && hasVendor && !isInternalStatus);
+    // has_email_button: DBから取得、なければデフォルト設定を使用
+    const hasEmailButton = taskDef.has_email_button !== undefined ? taskDef.has_email_button : (IC_EMAIL_BUTTON_DEFAULTS[key] || false);
+    // ICタスクで、ステータスが設定されていればメールボタンを表示
+    const showICEmail = hasEmailButton && task.state && task.state !== '-' && task.state !== '無し' && !isInternalStatus;
+    const showEmailButton = showICEmail || (hasEmailButton && hasVendor && !isInternalStatus);
     // メールボタンは常に生成し、表示/非表示はstyleで制御（ステータス選択後に動的に表示するため）
-    const emailBtn = taskDef.has_email_button ?
+    const emailBtn = hasEmailButton ?
       `<button class="task-email-btn" onclick="openEmailFromTask('${project.id}', '${key}')" title="${escapeHtml(task.state || '')}にメール作成" style="display: ${showEmailButton ? '' : 'none'};">📧</button>` : '';
 
     // ステータスカード生成
@@ -13095,14 +13113,13 @@ async function executeApplicationGo() {
     markLocalUpdate(applicationGoProjectId);
 
     showStatus('保存中...', 'saving');
-    // 重要: updated_at を変更しない（案件の位置を維持するため）
-    // progressのみを更新し、updated_atは送信しない
-    const originalUpdatedAt = project.updated_at; // 元の値を保持
+    // 重要: updated_at を明示的に元の値で送信（トリガーによる自動更新を上書き）
+    const originalUpdatedAt = project.updated_at;
     const { error } = await supabase
       .from('projects')
       .update({
-        progress: progressData
-        // updated_at は意図的に含めない（位置を変えないため）
+        progress: progressData,
+        updated_at: originalUpdatedAt // 元の値を明示的に送信して位置を維持
       })
       .eq('id', applicationGoProjectId);
 
