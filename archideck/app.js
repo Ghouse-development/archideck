@@ -2088,11 +2088,12 @@ async function init() {
       loadVendorsV2(),
       loadTaskVendorMappings(),
       loadProducts(),
-      loadFcOrganizations()
+      loadFcOrganizations(),
+      loadAllProjectTasks()
     ]);
 
     // 各結果を確認
-    const names = ['スタッフ', '現在のスタッフ', '案件', 'テンプレート', '業者', 'タスク設定', 'カテゴリ', 'タスクV2', '業者V2', 'タスク業者紐づけ', '商品', 'FC組織'];
+    const names = ['スタッフ', '現在のスタッフ', '案件', 'テンプレート', '業者', 'タスク設定', 'カテゴリ', 'タスクV2', '業者V2', 'タスク業者紐づけ', '商品', 'FC組織', '案件タスク'];
     results.forEach((result, index) => {
       if (result.status === 'rejected') {
         logError(`❌ ${names[index]}の読み込み失敗:`, result.reason);
@@ -2333,6 +2334,15 @@ function handleTaskChange(payload) {
       loadProjectTasks(newRecord.project_id);
     }
   }
+
+  // カレンダー用のタスクデータを更新
+  loadAllProjectTasks().then(() => {
+    // カレンダーが表示中なら再描画
+    const calendarTab = document.getElementById('calendarTab');
+    if (calendarTab && calendarTab.classList.contains('active')) {
+      renderCalendar();
+    }
+  });
 }
 
 // 議事録変更ハンドラー
@@ -5002,11 +5012,14 @@ function collectCalendarEvents() {
 
   console.log('📅 collectCalendarEvents: フィルタ後', { filteredCount: filteredProjects.length });
 
+  // カレンダー表示から除外するタスク
+  const excludedFromCalendar = ['area_check', 'evoltz'];
+
   filteredProjects.forEach(project => {
     const progressData = project.progress || {};
 
-    // 設計タスクの期限と依頼日
-    tasksV2.filter(t => t.category === '設計').forEach(task => {
+    // 設計タスクの期限と依頼日（面積チェック、evoltzは除外）
+    tasksV2.filter(t => t.category === '設計' && !excludedFromCalendar.includes(t.task_key)).forEach(task => {
       const taskData = progressData[task.task_key];
       if (taskData?.due_date) {
         events.push({
@@ -5106,6 +5119,30 @@ function collectCalendarEvents() {
         customer: project.customer,
         taskName: '変更契約前会議',
         category: 'design',
+        projectId: project.id
+      });
+    }
+
+    if (project.meeting_drawing_date) {
+      events.push({
+        date: project.meeting_drawing_date,
+        customer: project.customer,
+        taskName: '会議図面渡し日',
+        category: 'ic',
+        projectId: project.id
+      });
+    }
+  });
+
+  // 登録タスクの期限を追加
+  projectTasks.forEach(task => {
+    const project = filteredProjects.find(p => p.id === task.project_id);
+    if (project && task.due_date) {
+      events.push({
+        date: task.due_date,
+        customer: project.customer,
+        taskName: task.task_name + '(期限)',
+        category: 'task',
         projectId: project.id
       });
     }
@@ -5835,15 +5872,24 @@ function renderProjectCard(project) {
           <div class="application-go-arrow">→</div>
         </div>`;
       } else {
-        // 条件が揃っていない場合：無効表示（動的にツールチップ生成）
+        // 条件が揃っていない場合：無効表示（条件を明示）
         const requiredTasks = getApplicationGoRequiredTasks();
-        const tooltip = requiredTasks.length > 0
-          ? requiredTasks.map(r => `${r.task_name}:${r.finalState}`).join('、') + ' が必要'
-          : '太陽光:営業共有済、給排水:保存済、換気:保存済、サッシ:保存済 が必要';
-        return `<div class="application-go-container application-go-disabled" title="${tooltip}">
+        const conditionsList = requiredTasks.length > 0
+          ? requiredTasks.map(r => {
+              const currentState = progressData[r.task_key]?.state || '-';
+              const isOk = currentState === r.finalState;
+              return `<div style="display:flex;align-items:center;gap:4px;font-size:11px;color:${isOk ? '#10b981' : '#ef4444'};">
+                <span>${isOk ? '✓' : '✗'}</span>
+                <span>${r.task_name.replace(/依頼$/, '')}:</span>
+                <span>${currentState}</span>
+              </div>`;
+            }).join('')
+          : '';
+        return `<div class="application-go-container application-go-disabled">
           <div class="application-go-icon">🔒</div>
           <div class="application-go-text">${taskDef.task_name}</div>
           <div class="application-go-status">条件未達</div>
+          <div class="application-go-conditions" style="margin-top:6px;">${conditionsList}</div>
         </div>`;
       }
     }
@@ -5998,7 +6044,6 @@ function renderProjectCard(project) {
     </div>
     <div class="card-quick-actions">
       <button class="quick-action-btn" onclick="openCardModal('${project.id}', 'tasks')">✅ タスク<span class="section-badge badge-primary" id="taskBadge_${project.id}" style="display:none">0</span></button>
-      <button class="quick-action-btn" onclick="openCardModal('${project.id}', 'memo')">📝 メモ<span class="section-badge badge-primary" id="memoBadge_${project.id}" style="display:${project.shared_memo ? 'inline-flex' : 'none'}">1</span></button>
       <button class="quick-action-btn" onclick="openCardModal('${project.id}', 'minutes')">📄 議事録<span class="section-badge badge-primary" id="minutesBadge_${project.id}" style="display:none">0</span></button>
       <button class="quick-action-btn" onclick="openCardModal('${project.id}', 'handover')">📋 引継書<span class="section-badge badge-primary" id="handoverBadge_${project.id}" style="display:none">1</span></button>
     </div>
@@ -6067,7 +6112,7 @@ function renderProjectCard(project) {
       }
     })()}
 
-    <div class="project-card-footer"><span class="update-time">更新: ${formatDateTime(project.updated_at)}</span><button class="btn btn-danger btn-small" onclick="deleteProject('${project.id}')">削除</button></div>
+    <div class="project-card-footer"><span class="update-time">更新: ${formatDateTime(project.updated_at)}</span></div>
   </div>`;
 }
 
@@ -6828,15 +6873,24 @@ async function updateTaskState(projectId, taskKey, state) {
           <div class="application-go-arrow">→</div>
         </div>`;
       } else {
-        // 条件未達
+        // 条件未達（条件を明示）
         const requiredTasks = getApplicationGoRequiredTasks();
-        const tooltip = requiredTasks.length > 0
-          ? requiredTasks.map(r => `${r.task_name}:${r.finalState}`).join('、') + ' が必要'
-          : '太陽光:営業共有済、給排水:保存済、換気:保存済、サッシ:保存済 が必要';
-        applicationGoContainer.outerHTML = `<div class="application-go-container application-go-disabled" title="${tooltip}">
+        const conditionsList = requiredTasks.length > 0
+          ? requiredTasks.map(r => {
+              const currentState = progressData[r.task_key]?.state || '-';
+              const isOk = currentState === r.finalState;
+              return `<div style="display:flex;align-items:center;gap:4px;font-size:11px;color:${isOk ? '#10b981' : '#ef4444'};">
+                <span>${isOk ? '✓' : '✗'}</span>
+                <span>${r.task_name.replace(/依頼$/, '')}:</span>
+                <span>${currentState}</span>
+              </div>`;
+            }).join('')
+          : '';
+        applicationGoContainer.outerHTML = `<div class="application-go-container application-go-disabled">
           <div class="application-go-icon">🔒</div>
           <div class="application-go-text">${taskDef?.task_name || '申請GO'}</div>
           <div class="application-go-status">条件未達</div>
+          <div class="application-go-conditions" style="margin-top:6px;">${conditionsList}</div>
         </div>`;
       }
     }
@@ -11684,6 +11738,28 @@ let projectMinutes = [];
 let kintoneSettings = null;
 let currentTaskSort = 'due';
 
+// 全案件タスクを読み込み（カレンダー用）
+async function loadAllProjectTasks() {
+  try {
+    const { data, error } = await supabase
+      .from('project_tasks')
+      .select('*')
+      .eq('is_completed', false)
+      .not('due_date', 'is', null);
+
+    if (error) {
+      console.error('project_tasks読み込みエラー:', error);
+      projectTasks = [];
+      return;
+    }
+    projectTasks = data || [];
+    log('✅ project_tasks読み込み完了:', projectTasks.length, '件');
+  } catch (err) {
+    console.error('loadAllProjectTasks error:', err);
+    projectTasks = [];
+  }
+}
+
 // デザイナーカテゴリ別取得ヘルパー関数
 function getDesignersByCategory(category) {
   return designers.filter(d => d.category === category).sort((a, b) => (a.display_order || 999) - (b.display_order || 999));
@@ -12414,11 +12490,26 @@ async function executeApplicationGo() {
     progressData['application'].completed = true;
     progressData['application'].date = new Date().toISOString().split('T')[0];
 
+    // 未完了タスクがあるか確認
+    const hasIncompleteTasks = checkHasIncompleteTasks(project, progressData);
+
+    // 未完了の登録タスク（project_tasks）があるか確認
+    const { data: incompleteProjTasks } = await supabase
+      .from('project_tasks')
+      .select('id')
+      .eq('project_id', applicationGoProjectId)
+      .eq('is_completed', false)
+      .limit(1);
+    const hasIncompleteProjectTasks = incompleteProjTasks && incompleteProjTasks.length > 0;
+
+    // 案件を完了済みにするかどうか（未完了タスクがなければ完了）
+    const shouldArchive = !hasIncompleteTasks && !hasIncompleteProjectTasks;
+
     showStatus('保存中...', 'saving');
     const { error } = await supabase
       .from('projects')
       .update({
-        is_archived: true,
+        is_archived: shouldArchive,
         progress: progressData,
         updated_at: new Date().toISOString()
       })
@@ -12430,7 +12521,7 @@ async function executeApplicationGo() {
       return;
     }
 
-    project.is_archived = true;
+    project.is_archived = shouldArchive;
     project.progress = progressData;
     project.updated_at = new Date().toISOString();
 
@@ -12438,8 +12529,47 @@ async function executeApplicationGo() {
     renderProjects();
     updateSidebar();
     showStatus('保存済み', 'saved');
-    showToast(`${project.customer} を完了済みに移動しました`, 'success');
+
+    if (shouldArchive) {
+      showToast(`${project.customer} を完了済みに移動しました`, 'success');
+    } else {
+      showToast(`${project.customer} の申請GOを完了しました（未完了タスクがあるため、完了済みには移動しません）`, 'info');
+    }
   });
+}
+
+// 未完了タスクがあるかチェック
+function checkHasIncompleteTasks(project, progressData) {
+  // 設計タスクをチェック
+  const designTasks = tasksV2.filter(t => t.category === '設計' && t.has_state && t.task_key !== 'application');
+  for (const task of designTasks) {
+    const stateOptions = getTaskStateOptions(task.task_key);
+    if (stateOptions && stateOptions.length > 0) {
+      const finalState = stateOptions[stateOptions.length - 1];
+      const currentState = progressData[task.task_key]?.state || '';
+      // 未完了（最終状態でない）タスクがある場合
+      if (currentState !== finalState && currentState !== '') {
+        return true;
+      }
+    }
+  }
+
+  // ICタスクをチェック（間取確定済みの案件のみ）
+  if (project.layout_confirmed_date) {
+    const icTasks = tasksV2.filter(t => t.category === 'IC' && t.has_state);
+    for (const task of icTasks) {
+      const stateOptions = getTaskStateOptions(task.task_key);
+      if (stateOptions && stateOptions.length > 0) {
+        const finalState = stateOptions[stateOptions.length - 1];
+        const currentState = progressData[task.task_key]?.state || '';
+        if (currentState !== finalState && currentState !== '') {
+          return true;
+        }
+      }
+    }
+  }
+
+  return false;
 }
 
 // カードモーダル機能
@@ -12460,13 +12590,6 @@ function openCardModal(projectId, type) {
           <input type="date" id="modalNewTaskDue_${projectId}" style="padding:10px;border:1px solid var(--border-color);border-radius:6px;">
           <button class="btn btn-primary" onclick="addProjectTaskFromModal('${projectId}')">追加</button>
         </div>
-      `;
-      break;
-    case 'memo':
-      title = `📝 メモ - ${project.customer}`;
-      content = `
-        <textarea class="shared-memo-area" id="modalSharedMemo_${projectId}" placeholder="メモを入力..." style="width:100%;min-height:200px;padding:12px;border:1px solid var(--border-color);border-radius:8px;resize:vertical;">${escapeHtml(project.shared_memo || '')}</textarea>
-        <button class="btn btn-primary" style="margin-top:12px;" onclick="saveSharedMemoFromModal('${projectId}')">メモを保存</button>
       `;
       break;
     case 'minutes':
@@ -12657,7 +12780,18 @@ async function loadModalMinutesList(projectId) {
       const firstMinuteId = groupMinutes[0].id; // グループの代表ID
       // カスタム名称があれば表示（meeting_nameフィールドを使用）
       const customName = groupMinutes[0].meeting_name || '';
-      const displayTitle = customName ? `📋 ${customName}（${formattedDate}）` : `📋 第${meetingNumber}回打合せ（${formattedDate}）`;
+      // 「0回目」「０回目」は「第０回目打合せ」に変換
+      let displayTitle;
+      if (customName) {
+        const normalizedName = customName.replace(/０/g, '0');
+        if (normalizedName === '0回目') {
+          displayTitle = `📋 第０回目打合せ（${formattedDate}）`;
+        } else {
+          displayTitle = `📋 ${customName}（${formattedDate}）`;
+        }
+      } else {
+        displayTitle = `📋 第${meetingNumber}回打合せ（${formattedDate}）`;
+      }
 
       return `
         <div class="minutes-group" style="margin-bottom: 16px; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;">
@@ -14787,6 +14921,7 @@ async function saveKintoneSettings() {
       layout: document.getElementById('kintoneFieldLayout')?.value || '',
       permit: document.getElementById('kintoneFieldPermit')?.value || '',
       meeting: document.getElementById('kintoneFieldMeeting')?.value || '',
+      meetingDrawing: document.getElementById('kintoneFieldMeetingDrawing')?.value || '',
       product: document.getElementById('kintoneFieldProduct')?.value || '',
       sales: settings.field_sales,
       design: settings.field_design,
@@ -15032,10 +15167,11 @@ async function importFromKintoneDirect() {
     const layoutField = fieldMappings.layout || '';
     const permitField = fieldMappings.permit || '';
     const meetingField = fieldMappings.meeting || '';
+    const meetingDrawingField = fieldMappings.meetingDrawing || '';
     // 商品フィールド
     const productField = fieldMappings.product || '';
 
-    console.log('Field mappings:', { customerField, salesField, designField, icField, constructionField, exteriorField, layoutField, permitField, meetingField, productField });
+    console.log('Field mappings:', { customerField, salesField, designField, icField, constructionField, exteriorField, layoutField, permitField, meetingField, meetingDrawingField, productField });
 
     // 2. kintoneからレコード取得（全件取得 - 500件制限回避）
     const result = await callKintoneProxy('getAllRecords');
@@ -15168,6 +15304,7 @@ async function importFromKintoneDirect() {
         const layoutDate = parseDateValue(record, layoutField);
         const permitDate = parseDateValue(record, permitField);
         const meetingDate = parseDateValue(record, meetingField);
+        const meetingDrawingDate = parseDateValue(record, meetingDrawingField);
 
         // 商品フィールド値
         const productVal = productField ? getValue(productField) : null;
@@ -15187,6 +15324,7 @@ async function importFromKintoneDirect() {
           if (layoutDate) updateData.layout_confirmed_date = layoutDate;
           if (permitDate) updateData.construction_permit_date = permitDate;
           if (meetingDate) updateData.pre_contract_meeting_date = meetingDate;
+          if (meetingDrawingDate) updateData.meeting_drawing_date = meetingDrawingDate;
           if (productVal) updateData.specifications = productVal;
 
           const { error } = await supabase
@@ -15221,6 +15359,7 @@ async function importFromKintoneDirect() {
           if (layoutDate) insertData.layout_confirmed_date = layoutDate;
           if (permitDate) insertData.construction_permit_date = permitDate;
           if (meetingDate) insertData.pre_contract_meeting_date = meetingDate;
+          if (meetingDrawingDate) insertData.meeting_drawing_date = meetingDrawingDate;
 
           const { data: newProject, error } = await supabase
             .from('projects')
@@ -15655,6 +15794,7 @@ async function autoSyncKintone() {
     const layoutField = fieldMappings.layout || '';
     const permitField = fieldMappings.permit || '';
     const meetingField = fieldMappings.meeting || '';
+    const meetingDrawingField = fieldMappings.meetingDrawing || '';
     const productField = fieldMappings.product || '';
 
     // kintoneからレコード取得
@@ -15736,6 +15876,15 @@ async function autoSyncKintone() {
             }
           }
 
+          // 会議図面渡し日
+          if (meetingDrawingField) {
+            const meetingDrawingDate = getValue(meetingDrawingField);
+            if (meetingDrawingDate && meetingDrawingDate !== existingProject.meeting_drawing_date) {
+              updates.meeting_drawing_date = meetingDrawingDate;
+              hasChanges = true;
+            }
+          }
+
           // 商品
           if (productField) {
             const product = getValue(productField);
@@ -15807,6 +15956,7 @@ async function autoSyncKintone() {
             layout_confirmed_date: getValue(layoutField),
             construction_permit_date: getValue(permitField),
             pre_contract_meeting_date: getValue(meetingField),
+            meeting_drawing_date: getValue(meetingDrawingField),
             progress: {},
             is_archived: false
           };

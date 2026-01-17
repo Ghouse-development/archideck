@@ -553,6 +553,10 @@
                   <input type="text" class="form-input" id="kintoneFieldMeeting" placeholder="日付_IC_変更契約前会議_予定手入力" style="width: 100%;">
                 </div>
                 <div class="form-group" style="margin-bottom: 0;">
+                  <label class="form-label" style="font-size: 12px;">⑩会議図面渡し日</label>
+                  <input type="text" class="form-input" id="kintoneFieldMeetingDrawing" placeholder="日付_IC_会議_図面_渡し日_予定手入力" style="width: 100%;">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
                   <label class="form-label" style="font-size: 12px;">⑨商品</label>
                   <input type="text" class="form-input" id="kintoneFieldProduct" placeholder="ドロップダウン_営業_契約後_商品" style="width: 100%;">
                 </div>
@@ -963,11 +967,7 @@
         <select class="form-select" id="projectSpecifications"></select>
       </div>
     </div>
-    <div class="modal-footer" style="display: flex; justify-content: space-between;">
-      <div id="templateButtons" style="display: none;">
-        <button class="btn btn-ghost btn-small" onclick="TemplateManager.createFromProject(editingProjectId)" title="現在の設定をテンプレートとして保存">📋 テンプレート保存</button>
-        <button class="btn btn-ghost btn-small" onclick="TemplateManager.showSelectModal(editingProjectId)" title="保存済みテンプレートを適用">📋 テンプレート適用</button>
-      </div>
+    <div class="modal-footer" style="display: flex; justify-content: flex-end;">
       <div style="display: flex; gap: 12px;">
         <button class="btn btn-ghost" onclick="closeProjectModal()">キャンセル</button>
         <button class="btn btn-primary" onclick="saveProject()">保存</button>
