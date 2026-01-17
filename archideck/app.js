@@ -680,6 +680,70 @@ const IC_REQUEST_TASKS = ['ic_iron_pres', 'ic_tile_pres', 'ic_exterior_meeting',
 const INTERNAL_STATUSES = ['オリジナル', 'GRAFTECT', '-', '']; // 社内対応ステータス（メール不要）
 
 // ============================================
+// 変更履歴機能（7日間保持）
+// ============================================
+
+// 変更履歴を保存
+async function saveChangeHistory(projectId, changeType, fieldName, oldValue, newValue, description = '') {
+  try {
+    const userName = currentUser?.email || 'unknown';
+
+    await supabase.from('change_history').insert({
+      project_id: projectId,
+      user_name: userName,
+      change_type: changeType,
+      field_name: fieldName,
+      old_value: oldValue?.toString() || '',
+      new_value: newValue?.toString() || '',
+      description: description
+    });
+
+    log('📝 変更履歴を保存:', { changeType, fieldName, oldValue, newValue });
+  } catch (e) {
+    // 変更履歴の保存失敗は無視（メイン処理に影響させない）
+    logError('変更履歴保存エラー:', e);
+  }
+}
+
+// 7日以上前の変更履歴を削除
+async function cleanupOldChangeHistory() {
+  try {
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    const { error } = await supabase
+      .from('change_history')
+      .delete()
+      .lt('created_at', sevenDaysAgo.toISOString());
+
+    if (!error) {
+      log('🗑️ 古い変更履歴を削除しました');
+    }
+  } catch (e) {
+    // クリーンアップ失敗は無視
+    logError('変更履歴クリーンアップエラー:', e);
+  }
+}
+
+// 案件の変更履歴を取得
+async function getProjectChangeHistory(projectId) {
+  try {
+    const { data, error } = await supabase
+      .from('change_history')
+      .select('*')
+      .eq('project_id', projectId)
+      .order('created_at', { ascending: false })
+      .limit(100);
+
+    if (error) throw error;
+    return data || [];
+  } catch (e) {
+    logError('変更履歴取得エラー:', e);
+    return [];
+  }
+}
+
+// ============================================
 // 日付計算ヘルパー関数
 // ============================================
 
@@ -2125,6 +2189,9 @@ async function init() {
 
     // kintone自動同期（5秒後）
     setTimeout(() => autoSyncKintone(), 5000);
+
+    // 古い変更履歴を削除（7日後）
+    setTimeout(() => cleanupOldChangeHistory(), 6000);
 
     log('✅ 初期化完了');
     showStatus('保存済み', 'saved');
@@ -6789,6 +6856,18 @@ async function updateTaskState(projectId, taskKey, state) {
     oldValue: { progress: oldProgress },
     newValue: { progress: progressData }
   });
+
+  // 変更履歴を保存（7日間保持）
+  if (oldState !== state) {
+    saveChangeHistory(
+      projectId,
+      'task_update',
+      taskDef?.task_name || taskKey,
+      oldState || '-',
+      state || '-',
+      `${project.customer}: ${taskDef?.task_name || taskKey}`
+    );
+  }
 
   project.progress = progressData;
   project.updated_at = new Date().toISOString();
