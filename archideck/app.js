@@ -6686,6 +6686,11 @@ function getStateColorClass(state, lastOption, taskKey = '') {
     }
   }
 
+  // 「無し」「無」は常に青色（完了扱い）
+  if (state === '無し' || state === '無') {
+    return 'state-blue';
+  }
+
   // 最後の選択肢（完了状態）→ 青
   if (state === lastOption) {
     return 'state-blue';
