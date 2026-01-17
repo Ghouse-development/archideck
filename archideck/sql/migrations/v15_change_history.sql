@@ -1,5 +1,6 @@
--- v15: 変更履歴テーブル（7日間保持）
+-- v15: 変更履歴テーブル（無制限保持）
 -- 実行日: 2026-01-17
+-- 更新: 7日制限を削除
 
 -- 変更履歴テーブル
 CREATE TABLE IF NOT EXISTS change_history (
@@ -19,14 +20,8 @@ CREATE INDEX IF NOT EXISTS idx_change_history_project_id ON change_history(proje
 CREATE INDEX IF NOT EXISTS idx_change_history_created_at ON change_history(created_at);
 CREATE INDEX IF NOT EXISTS idx_change_history_user_name ON change_history(user_name);
 
--- 7日以上経過した履歴を自動削除するための関数
-CREATE OR REPLACE FUNCTION cleanup_old_change_history()
-RETURNS void AS $$
-BEGIN
-  DELETE FROM change_history
-  WHERE created_at < NOW() - INTERVAL '7 days';
-END;
-$$ LANGUAGE plpgsql;
+-- 履歴は無制限保持（自動削除なし）
+-- 注: 以前の7日制限は削除されました
 
 -- RLSを有効化（認証ユーザーのみアクセス可能）
 ALTER TABLE change_history ENABLE ROW LEVEL SECURITY;

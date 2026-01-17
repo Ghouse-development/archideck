@@ -680,7 +680,7 @@ const IC_REQUEST_TASKS = ['ic_iron_pres', 'ic_tile_pres', 'ic_exterior_meeting',
 const INTERNAL_STATUSES = ['オリジナル', 'GRAFTECT', '-', '']; // 社内対応ステータス（メール不要）
 
 // ============================================
-// 変更履歴機能（7日間保持）
+// 変更履歴機能（無制限保持）
 // ============================================
 
 // 変更履歴を保存
@@ -705,27 +705,7 @@ async function saveChangeHistory(projectId, changeType, fieldName, oldValue, new
   }
 }
 
-// 7日以上前の変更履歴を削除
-async function cleanupOldChangeHistory() {
-  try {
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-
-    const { error } = await supabase
-      .from('change_history')
-      .delete()
-      .lt('created_at', sevenDaysAgo.toISOString());
-
-    if (!error) {
-      log('🗑️ 古い変更履歴を削除しました');
-    }
-  } catch (e) {
-    // クリーンアップ失敗は無視
-    logError('変更履歴クリーンアップエラー:', e);
-  }
-}
-
-// 案件の変更履歴を取得
+// 案件の変更履歴を取得（無制限）
 async function getProjectChangeHistory(projectId) {
   try {
     const { data, error } = await supabase
@@ -741,6 +721,110 @@ async function getProjectChangeHistory(projectId) {
     logError('変更履歴取得エラー:', e);
     return [];
   }
+}
+
+// 変更履歴を表示するモーダル
+async function showChangeHistory(projectId) {
+  const project = projects.find(p => p.id === projectId);
+  if (!project) {
+    showToast('案件が見つかりません', 'error');
+    return;
+  }
+
+  // 履歴を取得
+  const history = await getProjectChangeHistory(projectId);
+
+  // モーダルを表示
+  const modalHtml = `
+    <div class="modal-backdrop" onclick="closeChangeHistoryModal()">
+      <div class="modal-content" style="max-width: 700px; max-height: 80vh;" onclick="event.stopPropagation()">
+        <div class="modal-header">
+          <h3>📜 変更履歴 - ${escapeHtml(project.customer)}</h3>
+          <button class="btn btn-ghost" onclick="closeChangeHistoryModal()">&times;</button>
+        </div>
+        <div class="modal-body" style="overflow-y: auto; max-height: 60vh;">
+          ${history.length > 0 ? `
+            <table class="table" style="font-size: 13px;">
+              <thead>
+                <tr>
+                  <th style="width: 150px;">日時</th>
+                  <th style="width: 120px;">ユーザー</th>
+                  <th style="width: 100px;">変更種別</th>
+                  <th>内容</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${history.map(h => `
+                  <tr>
+                    <td style="white-space: nowrap; color: var(--text-secondary);">${formatDateTime(h.created_at)}</td>
+                    <td style="font-weight: 500;">${escapeHtml(h.user_name?.replace(/@.*$/, '') || '不明')}</td>
+                    <td><span class="badge ${getChangeTypeBadgeClass(h.change_type)}">${getChangeTypeLabel(h.change_type)}</span></td>
+                    <td>
+                      <div><strong>${escapeHtml(h.field_name || '')}</strong></div>
+                      ${h.old_value || h.new_value ? `
+                        <div style="font-size: 12px; color: var(--text-muted);">
+                          ${h.old_value ? `<span style="text-decoration: line-through; color: #ef4444;">${escapeHtml(h.old_value)}</span>` : ''}
+                          ${h.old_value && h.new_value ? ' → ' : ''}
+                          ${h.new_value ? `<span style="color: #10b981;">${escapeHtml(h.new_value)}</span>` : ''}
+                        </div>
+                      ` : ''}
+                      ${h.description ? `<div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">${escapeHtml(h.description)}</div>` : ''}
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          ` : `
+            <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+              <p>変更履歴がありません</p>
+            </div>
+          `}
+        </div>
+      </div>
+    </div>
+  `;
+
+  // 既存の履歴モーダルがあれば削除
+  const existingModal = document.getElementById('changeHistoryModal');
+  if (existingModal) existingModal.remove();
+
+  // モーダルを追加
+  const modalDiv = document.createElement('div');
+  modalDiv.id = 'changeHistoryModal';
+  modalDiv.innerHTML = modalHtml;
+  document.body.appendChild(modalDiv);
+}
+
+// 変更履歴モーダルを閉じる
+function closeChangeHistoryModal() {
+  const modal = document.getElementById('changeHistoryModal');
+  if (modal) modal.remove();
+}
+
+// 変更種別のラベルを取得
+function getChangeTypeLabel(changeType) {
+  const labels = {
+    'task_update': 'タスク',
+    'status_change': 'ステータス',
+    'project_update': '案件情報',
+    'archive': 'アーカイブ',
+    'assignee_change': '担当者',
+    'date_change': '日付'
+  };
+  return labels[changeType] || changeType || '変更';
+}
+
+// 変更種別のバッジクラスを取得
+function getChangeTypeBadgeClass(changeType) {
+  const classes = {
+    'task_update': 'badge-primary',
+    'status_change': 'badge-warning',
+    'project_update': 'badge-secondary',
+    'archive': 'badge-success',
+    'assignee_change': 'badge-info',
+    'date_change': 'badge-secondary'
+  };
+  return classes[changeType] || 'badge-secondary';
 }
 
 // ============================================
@@ -2190,8 +2274,7 @@ async function init() {
     // kintone自動同期（5秒後）
     setTimeout(() => autoSyncKintone(), 5000);
 
-    // 古い変更履歴を削除（7日後）
-    setTimeout(() => cleanupOldChangeHistory(), 6000);
+    // 変更履歴は無制限保持（クリーンアップなし）
 
     log('✅ 初期化完了');
     showStatus('保存済み', 'saved');
@@ -3892,9 +3975,10 @@ function renderTasksManagement() {
           <tr>
             <th style="width: 30px;"></th>
             <th style="text-align: left;">タスク名</th>
-            <th style="width: 80px; text-align: center;">状態管理</th>
-            <th style="width: 120px; text-align: center;">業者</th>
-            <th style="width: 140px; text-align: right;">操作</th>
+            <th style="width: 80px; text-align: center;">状態</th>
+            <th style="width: 80px; text-align: center;">📧必須</th>
+            <th style="width: 100px; text-align: center;">業者</th>
+            <th style="width: 120px; text-align: right;">操作</th>
           </tr>
         </thead>
         <tbody id="sekkeiTasksBody">
@@ -3921,11 +4005,12 @@ function renderIcTasksManagement() {
       <table class="table">
         <thead>
           <tr>
-            <th style="width: 60px;"></th>
+            <th style="width: 30px;"></th>
             <th>タスク名</th>
-            <th style="width: 100px;">状態管理</th>
-            <th style="width: 100px;">業者</th>
-            <th style="width: 180px;">操作</th>
+            <th style="width: 80px; text-align: center;">状態</th>
+            <th style="width: 80px; text-align: center;">📧必須</th>
+            <th style="width: 100px; text-align: center;">業者</th>
+            <th style="width: 120px; text-align: right;">操作</th>
           </tr>
         </thead>
         <tbody id="icTasksBody">
@@ -3953,6 +4038,11 @@ function renderTaskRow(task) {
     `<span class="badge badge-success">あり</span>` :
     `<span class="badge badge-secondary">なし</span>`;
 
+  // メールボタン必須
+  const emailRequired = task.has_email_button ?
+    `<span class="badge badge-primary">必須</span>` :
+    `<span class="badge badge-secondary">-</span>`;
+
   // 業者登録状況（クリックで業者管理モーダルを開く）
   const vendorBtnClass = hasVendors ? 'btn-secondary' : 'btn-ghost';
   const vendorCount = hasVendors ? `${taskVendors.length}社` : '未登録';
@@ -3963,12 +4053,13 @@ function renderTaskRow(task) {
       <td style="width: 30px; text-align: center;"><span style="color: var(--text-muted);">⋮⋮</span></td>
       <td style="min-width: 200px;"><strong>${escapeHtml(task.task_name)}</strong></td>
       <td style="width: 80px; text-align: center;">${stateInfo}</td>
-      <td style="width: 120px; text-align: center;">
+      <td style="width: 80px; text-align: center;">${emailRequired}</td>
+      <td style="width: 100px; text-align: center;">
         <button class="btn ${vendorBtnClass} btn-small" onclick="openTaskVendorManager('${task.task_key}')" title="業者を管理">
           ${vendorCount}${emailIcon}
         </button>
       </td>
-      <td style="width: 140px; text-align: right; white-space: nowrap;">
+      <td style="width: 120px; text-align: right; white-space: nowrap;">
         <button class="btn btn-ghost btn-small" onclick="editTask('${task.id}')" title="編集">編集</button>
         <button class="btn btn-ghost btn-small" onclick="deleteTask('${task.id}')" title="削除" style="color: var(--danger-color);">削除</button>
       </td>
@@ -6157,6 +6248,7 @@ function renderProjectCard(project) {
           </label>
         `}
         <button class="btn btn-ghost btn-small" onclick="quickEmail('${project.id}')" title="メール作成">📧</button>
+        <button class="btn btn-ghost btn-small" onclick="showChangeHistory('${project.id}')" title="変更履歴">📜</button>
         <button class="btn btn-ghost btn-small" onclick="editProject('${project.id}')">編集</button>
       </div>
     </div>
