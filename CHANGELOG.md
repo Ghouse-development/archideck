@@ -1,5 +1,17 @@
 # ArchiDeck 開発履歴
 
+## v4.99.61 (2026-01-17)
+
+### セキュリティ修正
+
+#### XSS脆弱性修正
+- **generateStatusCards**: state, projectId, taskKeyをescapeHtml()でエスケープ
+- **openEditDesignerModal**: designer.id, name, email, phoneをescapeHtml()でエスケープ
+- **createEmailComposer**: customer, staffNameをescapeHtml()でエスケープ
+- **BatchOperations**: stateSelectのオプション値をescapeHtml()でエスケープ
+
+---
+
 ## v4.99.60 (2026-01-17)
 
 ### 本番投入前セーフティ対応
