@@ -3025,9 +3025,9 @@ async function loadTasksV2() {
   }
 }
 
-// ICタスク21項目マイグレーション実行
+// ICタスク26項目マイグレーション実行（メールボタン設定含む）
 async function runICTasksMigration() {
-  if (!confirm('ICタスクを21項目に更新します。既存のICタスクは置き換えられます。続行しますか？')) {
+  if (!confirm('ICタスクを26項目に更新します（メールボタン設定含む）。既存のICタスクは置き換えられます。続行しますか？')) {
     return;
   }
 
