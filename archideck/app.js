@@ -676,13 +676,26 @@ function removeDepartment(index) {
   showToast('部署を削除しました', 'success');
 }
 
-// IC関連定数
+// IC関連定数（新旧両方のキーに対応）
 // メーカー選択タスク（選択すると青色になる）
-const IC_MAKER_SELECT_TASKS = ['ic_kitchen', 'ic_bath', 'ic_washroom', 'ic_toilet', 'ic_lighting'];
+const IC_MAKER_SELECT_TASKS = [
+  'ic_kitchen', 'ic_bath', 'ic_washroom', 'ic_toilet', 'ic_lighting',
+  // 旧キー
+  'ic_washroom_1f', 'ic_washroom_2f', 'ic_toilet_1f', 'ic_toilet_2f'
+];
 // 水廻りタスク（複数選択可能）
-const IC_MULTI_SELECT_TASKS = ['ic_kitchen', 'ic_bath', 'ic_washroom', 'ic_toilet'];
+const IC_MULTI_SELECT_TASKS = [
+  'ic_kitchen', 'ic_bath', 'ic_washroom', 'ic_toilet',
+  // 旧キー
+  'ic_washroom_1f', 'ic_washroom_2f', 'ic_toilet_1f', 'ic_toilet_2f'
+];
 // メールボタン表示対象タスク
-const IC_MAKER_TASKS = ['ic_kitchen', 'ic_bath', 'ic_washroom', 'ic_toilet', 'ic_lighting', 'ic_tategu', 'ic_tile_pres', 'ic_curtain', 'ic_zousaku', 'ic_furniture'];
+const IC_MAKER_TASKS = [
+  'ic_kitchen', 'ic_bath', 'ic_washroom', 'ic_toilet', 'ic_lighting',
+  'ic_tategu', 'ic_tile_pres', 'ic_curtain', 'ic_zousaku', 'ic_furniture',
+  // 旧キー
+  'ic_washroom_1f', 'ic_washroom_2f', 'ic_toilet_1f', 'ic_toilet_2f'
+];
 // 「無し」「保存済」が青、「依頼済」が黄色のタスク
 const IC_REQUEST_TASKS = ['ic_iron_pres', 'ic_tile_pres', 'ic_exterior_meeting', 'ic_curtain', 'ic_zousaku', 'ic_furniture'];
 const INTERNAL_STATUSES = ['オリジナル', 'GRAFTECT', '-', '']; // 社内対応ステータス（メール不要）
@@ -3026,11 +3039,15 @@ async function loadTasksV2() {
     tasksV2 = data || [];
     log('✅ タスク読み込み完了:', tasksV2.length, '件');
 
-    // ICタスクが25項目未満の場合は警告表示
+    // ICタスクが最新でない場合は警告表示
     const icTasks = tasksV2.filter(t => t.category === 'IC');
+    const icTaskKeys = icTasks.map(t => t.task_key);
+    const hasNewTasks = ['ic_washroom', 'ic_toilet', 'ic_meeting_drawing'].every(k => icTaskKeys.includes(k));
+    const hasOldTasks = ['ic_washroom_1f', 'ic_washroom_2f', 'ic_toilet_1f', 'ic_toilet_2f'].some(k => icTaskKeys.includes(k));
+    const needsMigration = !hasNewTasks || hasOldTasks;
     const notice = document.getElementById('icMigrationNotice');
     if (notice) {
-      notice.style.display = icTasks.length < 25 ? 'block' : 'none';
+      notice.style.display = needsMigration ? 'block' : 'none';
     }
   } catch (e) {
     logError('❌ loadTasksV2タイムアウト:', e);
@@ -3134,17 +3151,40 @@ async function runICTasksMigration() {
   }
 }
 
-// ICタスク自動マイグレーション（起動時に25項目未満なら自動実行）
+// ICタスク自動マイグレーション（必須タスクキーが存在しない場合に実行）
 async function autoMigrateICTasks() {
   const icTasks = tasksV2.filter(t => t.category === 'IC');
+  const icTaskKeys = icTasks.map(t => t.task_key);
 
-  // 既に25項目以上ある場合はスキップ
-  if (icTasks.length >= 25) {
-    log('✅ ICタスクは既に25項目以上あります:', icTasks.length);
+  // 必須タスクキー（これらが全て存在すればマイグレーション不要）
+  const requiredTaskKeys = [
+    'ic_washroom',      // 洗面（統合版）
+    'ic_toilet',        // トイレ（統合版）
+    'ic_meeting_drawing' // 会議図面渡し（新規）
+  ];
+
+  // 旧タスクキー（これらが存在する場合はマイグレーション必要）
+  const oldTaskKeys = [
+    'ic_washroom_1f', 'ic_washroom_2f',
+    'ic_toilet_1f', 'ic_toilet_2f'
+  ];
+
+  // 必須タスクが全て存在するかチェック
+  const hasAllRequired = requiredTaskKeys.every(key => icTaskKeys.includes(key));
+  // 旧タスクが存在するかチェック
+  const hasOldTasks = oldTaskKeys.some(key => icTaskKeys.includes(key));
+
+  // 必須タスクが全て存在し、旧タスクがなければスキップ
+  if (hasAllRequired && !hasOldTasks) {
+    log('✅ ICタスクは最新状態です:', icTasks.length, '項目');
     return;
   }
 
-  log('🔄 ICタスク自動マイグレーション開始... (現在:', icTasks.length, '項目)');
+  log('🔄 ICタスク自動マイグレーション開始...', {
+    現在: icTasks.length,
+    必須タスク存在: hasAllRequired,
+    旧タスク存在: hasOldTasks
+  });
 
   try {
     // 既存ICタスクを削除
@@ -3226,10 +3266,14 @@ async function autoMigrateICTasks() {
 
 // ICタスクのメールボタン設定を強制同期
 // 特定のタスクは必ずhas_email_button: trueにする
+// 新旧両方のキーを含める（マイグレーション前後の両方に対応）
 const IC_EMAIL_REQUIRED_TASKS = [
-  'ic_kitchen', 'ic_bath', 'ic_washroom', 'ic_toilet',
-  'ic_lighting', 'ic_tategu', 'ic_tile_pres', 'ic_curtain',
-  'ic_zousaku', 'ic_furniture'
+  'ic_kitchen', 'ic_bath', 'ic_lighting', 'ic_tategu',
+  'ic_tile_pres', 'ic_curtain', 'ic_zousaku', 'ic_furniture',
+  // 新キー
+  'ic_washroom', 'ic_toilet',
+  // 旧キー（マイグレーション前のDB用）
+  'ic_washroom_1f', 'ic_washroom_2f', 'ic_toilet_1f', 'ic_toilet_2f'
 ];
 
 async function syncICEmailButtonSettings() {
@@ -6926,6 +6970,31 @@ function selectStatusCard(cardEl, projectId, taskKey) {
   }
 }
 
+// 新旧タスクキーのマッピング（旧キーから新キーへ、または新キーに対応する旧キー群）
+const TASK_KEY_MAPPING = {
+  // 新キー → 旧キー群（フォールバック用）
+  'ic_washroom': ['ic_washroom_1f', 'ic_washroom_2f'],
+  'ic_toilet': ['ic_toilet_1f', 'ic_toilet_2f']
+};
+
+// progressDataからタスク状態を取得（新旧キー両方をチェック）
+function getTaskStateFromProgress(progressData, taskKey) {
+  // まず直接のキーをチェック
+  if (progressData[taskKey]?.state) {
+    return progressData[taskKey].state;
+  }
+  // 旧キーのフォールバック
+  const oldKeys = TASK_KEY_MAPPING[taskKey];
+  if (oldKeys) {
+    for (const oldKey of oldKeys) {
+      if (progressData[oldKey]?.state && progressData[oldKey].state !== '-') {
+        return progressData[oldKey].state;
+      }
+    }
+  }
+  return '';
+}
+
 // 全タスク完了チェック＆アーカイブ確認（設計+IC全て青色になったら完了）
 async function checkAllTasksCompletionForArchive(projectId) {
   const project = projects.find(p => p.id === projectId);
@@ -6939,7 +7008,7 @@ async function checkAllTasksCompletionForArchive(projectId) {
   let incompleteDesignTasks = [];
 
   for (const task of designTasks) {
-    const taskState = progressData[task.task_key]?.state || '';
+    const taskState = getTaskStateFromProgress(progressData, task.task_key);
     let isComplete = isTaskStateBlue(task.task_key, taskState, task.state_options);
     if (!isComplete) {
       allDesignComplete = false;
@@ -6960,7 +7029,7 @@ async function checkAllTasksCompletionForArchive(projectId) {
     let incompleteICTasks = [];
 
     for (const task of icTasks) {
-      const taskState = progressData[task.task_key]?.state || '';
+      const taskState = getTaskStateFromProgress(progressData, task.task_key);
       let isComplete = isTaskStateBlue(task.task_key, taskState, task.state_options);
       if (!isComplete) {
         allICComplete = false;

@@ -1,5 +1,30 @@
 # ArchiDeck 開発履歴
 
+## v4.99.69 (2026-01-17)
+
+### マイグレーション条件の抜本的修正
+
+**問題**: 旧DBに27タスクがあると新タスク追加がスキップされていた
+
+**修正内容**:
+- マイグレーション条件を「タスク数」から「必須タスクキーの存在」に変更
+- 必須キー: `ic_washroom`, `ic_toilet`, `ic_meeting_drawing`
+- 旧キー: `ic_washroom_1f/2f`, `ic_toilet_1f/2f` が存在する場合も実行
+
+### 新旧タスクキーの後方互換性
+
+- `IC_MAKER_SELECT_TASKS`, `IC_MULTI_SELECT_TASKS`, `IC_MAKER_TASKS` に旧キー追加
+- `IC_EMAIL_REQUIRED_TASKS` に旧キー追加
+- `TASK_KEY_MAPPING` を追加（新キー→旧キーのフォールバック）
+- `getTaskStateFromProgress()` で新旧両方のキーをチェック
+
+### 完了モーダルの互換性修正
+
+- `checkAllTasksCompletionForArchive()` が新旧両方のキーを参照
+- マイグレーション後もprogressデータの旧キーを正しく認識
+
+---
+
 ## v4.99.68 (2026-01-17)
 
 ### 洗面・トイレを1つに統合
