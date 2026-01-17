@@ -5847,26 +5847,9 @@ function renderProjects() {
     const archiveFilter = document.getElementById('archiveFilter').value;
     const isArchived = p.is_archived || p.status === 'completed';
 
-    // IC担当者として選択されている場合、申請GO済みでもIC進捗100%未満はアクティブ扱い
-    const isICDesigner = designers.some(d => d.category === 'IC' && d.name.trim() === currentDesignerTab.trim());
-    if (isICDesigner) {
-      const icProgress = calculateICProgress(p);
-      // IC担当者がいてIC進捗100%（またはタスクなし）なら完了、IC担当者がいない場合は通常のアーカイブ判定に従う
-      const hasICAssignee = !!p.ic_assignee;
-      // icProgressがnull（タスクなし）の場合も完了扱い
-      const isICComplete = hasICAssignee ? (icProgress === null || icProgress === 100) : true;
-      if (archiveFilter === 'active') {
-        // アクティブ表示: 未アーカイブ、またはアーカイブ済みだがIC未完了
-        if (isArchived && isICComplete) return false;
-      } else if (archiveFilter === 'archived') {
-        // 完了済表示: アーカイブ済みかつIC完了
-        if (!isArchived || !isICComplete) return false;
-      }
-    } else {
-      // 通常の担当者: 従来のロジック
-      if (archiveFilter === 'active' && isArchived) return false;
-      if (archiveFilter === 'archived' && !isArchived) return false;
-    }
+    // 全担当者共通: アーカイブ済みはアクティブ一覧から除外
+    if (archiveFilter === 'active' && isArchived) return false;
+    if (archiveFilter === 'archived' && !isArchived) return false;
     const query = document.getElementById('searchQuery').value.toLowerCase();
     if (query && !p.customer.toLowerCase().includes(query) && !(p.memo || '').toLowerCase().includes(query)) return false;
 
