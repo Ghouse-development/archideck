@@ -678,11 +678,11 @@ function removeDepartment(index) {
 
 // IC関連定数
 // メーカー選択タスク（選択すると青色になる）
-const IC_MAKER_SELECT_TASKS = ['ic_kitchen', 'ic_bath', 'ic_washroom', 'ic_washroom_1f', 'ic_washroom_2f', 'ic_toilet', 'ic_toilet_1f', 'ic_toilet_2f', 'ic_lighting'];
+const IC_MAKER_SELECT_TASKS = ['ic_kitchen', 'ic_bath', 'ic_washroom', 'ic_toilet', 'ic_lighting'];
 // 水廻りタスク（複数選択可能）
-const IC_MULTI_SELECT_TASKS = ['ic_kitchen', 'ic_bath', 'ic_washroom', 'ic_washroom_1f', 'ic_washroom_2f', 'ic_toilet', 'ic_toilet_1f', 'ic_toilet_2f'];
+const IC_MULTI_SELECT_TASKS = ['ic_kitchen', 'ic_bath', 'ic_washroom', 'ic_toilet'];
 // メールボタン表示対象タスク
-const IC_MAKER_TASKS = ['ic_kitchen', 'ic_bath', 'ic_washroom', 'ic_washroom_1f', 'ic_washroom_2f', 'ic_toilet', 'ic_toilet_1f', 'ic_toilet_2f', 'ic_lighting', 'ic_tategu', 'ic_tile_pres', 'ic_curtain', 'ic_zousaku', 'ic_furniture'];
+const IC_MAKER_TASKS = ['ic_kitchen', 'ic_bath', 'ic_washroom', 'ic_toilet', 'ic_lighting', 'ic_tategu', 'ic_tile_pres', 'ic_curtain', 'ic_zousaku', 'ic_furniture'];
 // 「無し」「保存済」が青、「依頼済」が黄色のタスク
 const IC_REQUEST_TASKS = ['ic_iron_pres', 'ic_tile_pres', 'ic_exterior_meeting', 'ic_curtain', 'ic_zousaku', 'ic_furniture'];
 const INTERNAL_STATUSES = ['オリジナル', 'GRAFTECT', '-', '']; // 社内対応ステータス（メール不要）
@@ -3026,11 +3026,11 @@ async function loadTasksV2() {
     tasksV2 = data || [];
     log('✅ タスク読み込み完了:', tasksV2.length, '件');
 
-    // ICタスクが27項目未満の場合は警告表示
+    // ICタスクが25項目未満の場合は警告表示
     const icTasks = tasksV2.filter(t => t.category === 'IC');
     const notice = document.getElementById('icMigrationNotice');
     if (notice) {
-      notice.style.display = icTasks.length < 27 ? 'block' : 'none';
+      notice.style.display = icTasks.length < 25 ? 'block' : 'none';
     }
   } catch (e) {
     logError('❌ loadTasksV2タイムアウト:', e);
@@ -3079,35 +3079,33 @@ async function runICTasksMigration() {
     }
     log('✅ 業者カテゴリ追加完了');
 
-    // ステップ3: 新しいICタスク22項目を挿入（v16更新: 外構への打合せ依頼を長期資料送付の下に移動）
+    // ステップ3: 新しいICタスク25項目を挿入（洗面・トイレは各1つに統合）
     const newICTasks = [
       { task_key: 'ic_funding_check', task_name: '資金計画・引継書確認', category: 'IC', display_order: 1, has_state: true, state_options: '["-", "確認済"]', has_email_button: false },
       { task_key: 'ic_kitchen', task_name: 'キッチン・カップボード', category: 'IC', display_order: 2, has_state: true, state_options: '["-", "GRAFTECT", "オリジナル", "Lixil", "Panasonic", "Takarastandard"]', has_email_button: true },
       { task_key: 'ic_bath', task_name: 'お風呂', category: 'IC', display_order: 3, has_state: true, state_options: '["-", "Lixil", "Panasonic", "Takarastandard"]', has_email_button: true },
-      { task_key: 'ic_washroom_1f', task_name: '洗面1階', category: 'IC', display_order: 4, has_state: true, state_options: '["-", "無し", "TOTO", "AICA", "Lixil", "Panasonic", "Takarastandard"]', has_email_button: true },
-      { task_key: 'ic_washroom_2f', task_name: '洗面2階', category: 'IC', display_order: 5, has_state: true, state_options: '["-", "無し", "TOTO", "AICA", "Lixil", "Panasonic", "Takarastandard"]', has_email_button: true },
-      { task_key: 'ic_toilet_1f', task_name: 'トイレ1階', category: 'IC', display_order: 6, has_state: true, state_options: '["-", "無し", "TOTO", "Lixil", "Panasonic"]', has_email_button: true },
-      { task_key: 'ic_toilet_2f', task_name: 'トイレ2階', category: 'IC', display_order: 7, has_state: true, state_options: '["-", "無し", "TOTO", "Lixil", "Panasonic"]', has_email_button: true },
-      { task_key: 'ic_lighting', task_name: '照明プラン', category: 'IC', display_order: 8, has_state: true, state_options: '["-", "ODELIC", "DAIKO", "KOIZUMI", "Panasonic"]', has_email_button: true },
-      { task_key: 'ic_spec_doc', task_name: '仕様書作成', category: 'IC', display_order: 9, has_state: true, state_options: '["-", "作成済"]', has_email_button: false },
-      { task_key: 'ic_longterm_doc', task_name: '長期資料送付', category: 'IC', display_order: 10, has_state: true, state_options: '["-", "送付済"]', has_email_button: false },
-      { task_key: 'ic_exterior_meeting', task_name: '外構への打合せ依頼', category: 'IC', display_order: 11, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: false },
-      { task_key: 'ic_execution_drawing', task_name: '実施図', category: 'IC', display_order: 12, has_state: true, state_options: '["-", "修正依頼済", "図面チェック済"]', has_email_button: false },
-      { task_key: 'ic_exterior_pres', task_name: '外装プレゼン', category: 'IC', display_order: 13, has_state: true, state_options: '["-", "作成済"]', has_email_button: false },
-      { task_key: 'ic_interior_pres', task_name: '内装プレゼン', category: 'IC', display_order: 14, has_state: true, state_options: '["-", "作成済"]', has_email_button: false },
-      { task_key: 'ic_tategu', task_name: '建具プレゼン', category: 'IC', display_order: 15, has_state: true, state_options: '["-", "依頼済", "保存済"]', has_email_button: true },
-      { task_key: 'ic_iron_pres', task_name: 'アイアンプレゼン', category: 'IC', display_order: 16, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: false },
-      { task_key: 'ic_tile_pres', task_name: 'タイルプレゼン', category: 'IC', display_order: 17, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: true },
-      { task_key: 'ic_curtain', task_name: 'カーテン紹介', category: 'IC', display_order: 18, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: true },
-      { task_key: 'ic_zousaku', task_name: '造作業者紹介', category: 'IC', display_order: 19, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: true },
-      { task_key: 'ic_furniture', task_name: '家具見積依頼', category: 'IC', display_order: 20, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: true },
-      { task_key: 'ic_iron', task_name: 'アイアン依頼', category: 'IC', display_order: 21, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: true },
-      { task_key: 'ic_other_estimate', task_name: 'その他見積依頼', category: 'IC', display_order: 22, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: true, has_memo: true },
-      { task_key: 'ic_final_checklist', task_name: '確定図チェックリスト', category: 'IC', display_order: 23, has_state: true, state_options: '["-", "実施済"]', has_email_button: false },
-      { task_key: 'ic_meeting_drawing', task_name: '会議図面渡し', category: 'IC', display_order: 24, has_state: true, state_options: '["-", "送付済"]', has_email_button: false },
-      { task_key: 'ic_op_check', task_name: 'OP見積チェック', category: 'IC', display_order: 25, has_state: true, state_options: '["-", "依頼済", "保存済"]', has_email_button: false },
-      { task_key: 'ic_meeting_followup', task_name: '会議後確認事項送付', category: 'IC', display_order: 26, has_state: true, state_options: '["-", "送付済"]', has_email_button: false },
-      { task_key: 'ic_final_approval', task_name: '確定図承認', category: 'IC', display_order: 27, has_state: true, state_options: '["-", "依頼中", "ダンドリワーク保存済"]', has_email_button: false }
+      { task_key: 'ic_washroom', task_name: '洗面', category: 'IC', display_order: 4, has_state: true, state_options: '["-", "無し", "TOTO", "AICA", "Lixil", "Panasonic", "Takarastandard"]', has_email_button: true },
+      { task_key: 'ic_toilet', task_name: 'トイレ', category: 'IC', display_order: 5, has_state: true, state_options: '["-", "無し", "TOTO", "Lixil", "Panasonic"]', has_email_button: true },
+      { task_key: 'ic_lighting', task_name: '照明プラン', category: 'IC', display_order: 6, has_state: true, state_options: '["-", "ODELIC", "DAIKO", "KOIZUMI", "Panasonic"]', has_email_button: true },
+      { task_key: 'ic_spec_doc', task_name: '仕様書作成', category: 'IC', display_order: 7, has_state: true, state_options: '["-", "作成済"]', has_email_button: false },
+      { task_key: 'ic_longterm_doc', task_name: '長期資料送付', category: 'IC', display_order: 8, has_state: true, state_options: '["-", "送付済"]', has_email_button: false },
+      { task_key: 'ic_exterior_meeting', task_name: '外構への打合せ依頼', category: 'IC', display_order: 9, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: false },
+      { task_key: 'ic_execution_drawing', task_name: '実施図', category: 'IC', display_order: 10, has_state: true, state_options: '["-", "修正依頼済", "図面チェック済"]', has_email_button: false },
+      { task_key: 'ic_exterior_pres', task_name: '外装プレゼン', category: 'IC', display_order: 11, has_state: true, state_options: '["-", "作成済"]', has_email_button: false },
+      { task_key: 'ic_interior_pres', task_name: '内装プレゼン', category: 'IC', display_order: 12, has_state: true, state_options: '["-", "作成済"]', has_email_button: false },
+      { task_key: 'ic_tategu', task_name: '建具プレゼン', category: 'IC', display_order: 13, has_state: true, state_options: '["-", "依頼済", "保存済"]', has_email_button: true },
+      { task_key: 'ic_iron_pres', task_name: 'アイアンプレゼン', category: 'IC', display_order: 14, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: false },
+      { task_key: 'ic_tile_pres', task_name: 'タイルプレゼン', category: 'IC', display_order: 15, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: true },
+      { task_key: 'ic_curtain', task_name: 'カーテン紹介', category: 'IC', display_order: 16, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: true },
+      { task_key: 'ic_zousaku', task_name: '造作業者紹介', category: 'IC', display_order: 17, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: true },
+      { task_key: 'ic_furniture', task_name: '家具見積依頼', category: 'IC', display_order: 18, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: true },
+      { task_key: 'ic_iron', task_name: 'アイアン依頼', category: 'IC', display_order: 19, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: true },
+      { task_key: 'ic_other_estimate', task_name: 'その他見積依頼', category: 'IC', display_order: 20, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: true, has_memo: true },
+      { task_key: 'ic_final_checklist', task_name: '確定図チェックリスト', category: 'IC', display_order: 21, has_state: true, state_options: '["-", "実施済"]', has_email_button: false },
+      { task_key: 'ic_meeting_drawing', task_name: '会議図面渡し', category: 'IC', display_order: 22, has_state: true, state_options: '["-", "送付済"]', has_email_button: false },
+      { task_key: 'ic_op_check', task_name: 'OP見積チェック', category: 'IC', display_order: 23, has_state: true, state_options: '["-", "依頼済", "保存済"]', has_email_button: false },
+      { task_key: 'ic_meeting_followup', task_name: '会議後確認事項送付', category: 'IC', display_order: 24, has_state: true, state_options: '["-", "送付済"]', has_email_button: false },
+      { task_key: 'ic_final_approval', task_name: '確定図承認', category: 'IC', display_order: 25, has_state: true, state_options: '["-", "依頼中", "ダンドリワーク保存済"]', has_email_button: false }
     ];
 
     const { error: insertError } = await supabase
@@ -3136,13 +3134,13 @@ async function runICTasksMigration() {
   }
 }
 
-// ICタスク自動マイグレーション（起動時に27項目未満なら自動実行）
+// ICタスク自動マイグレーション（起動時に25項目未満なら自動実行）
 async function autoMigrateICTasks() {
   const icTasks = tasksV2.filter(t => t.category === 'IC');
 
-  // 既に27項目以上ある場合はスキップ
-  if (icTasks.length >= 27) {
-    log('✅ ICタスクは既に27項目以上あります:', icTasks.length);
+  // 既に25項目以上ある場合はスキップ
+  if (icTasks.length >= 25) {
+    log('✅ ICタスクは既に25項目以上あります:', icTasks.length);
     return;
   }
 
@@ -3176,35 +3174,33 @@ async function autoMigrateICTasks() {
       await supabase.from('vendor_categories').upsert(cat, { onConflict: 'name' });
     }
 
-    // 22項目のICタスクを挿入（v16更新: 外構への打合せ依頼を長期資料送付の下に移動）
+    // 25項目のICタスクを挿入（洗面・トイレは各1つに統合）
     const newICTasks = [
       { task_key: 'ic_funding_check', task_name: '資金計画・引継書確認', category: 'IC', display_order: 1, has_state: true, state_options: '["-", "確認済"]', has_email_button: false },
       { task_key: 'ic_kitchen', task_name: 'キッチン・カップボード', category: 'IC', display_order: 2, has_state: true, state_options: '["-", "GRAFTECT", "オリジナル", "Lixil", "Panasonic", "Takarastandard"]', has_email_button: true },
       { task_key: 'ic_bath', task_name: 'お風呂', category: 'IC', display_order: 3, has_state: true, state_options: '["-", "Lixil", "Panasonic", "Takarastandard"]', has_email_button: true },
-      { task_key: 'ic_washroom_1f', task_name: '洗面1階', category: 'IC', display_order: 4, has_state: true, state_options: '["-", "無し", "TOTO", "AICA", "Lixil", "Panasonic", "Takarastandard"]', has_email_button: true },
-      { task_key: 'ic_washroom_2f', task_name: '洗面2階', category: 'IC', display_order: 5, has_state: true, state_options: '["-", "無し", "TOTO", "AICA", "Lixil", "Panasonic", "Takarastandard"]', has_email_button: true },
-      { task_key: 'ic_toilet_1f', task_name: 'トイレ1階', category: 'IC', display_order: 6, has_state: true, state_options: '["-", "無し", "TOTO", "Lixil", "Panasonic"]', has_email_button: true },
-      { task_key: 'ic_toilet_2f', task_name: 'トイレ2階', category: 'IC', display_order: 7, has_state: true, state_options: '["-", "無し", "TOTO", "Lixil", "Panasonic"]', has_email_button: true },
-      { task_key: 'ic_lighting', task_name: '照明プラン', category: 'IC', display_order: 8, has_state: true, state_options: '["-", "ODELIC", "DAIKO", "KOIZUMI", "Panasonic"]', has_email_button: true },
-      { task_key: 'ic_spec_doc', task_name: '仕様書作成', category: 'IC', display_order: 9, has_state: true, state_options: '["-", "作成済"]', has_email_button: false },
-      { task_key: 'ic_longterm_doc', task_name: '長期資料送付', category: 'IC', display_order: 10, has_state: true, state_options: '["-", "送付済"]', has_email_button: false },
-      { task_key: 'ic_exterior_meeting', task_name: '外構への打合せ依頼', category: 'IC', display_order: 11, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: false },
-      { task_key: 'ic_execution_drawing', task_name: '実施図', category: 'IC', display_order: 12, has_state: true, state_options: '["-", "修正依頼済", "図面チェック済"]', has_email_button: false },
-      { task_key: 'ic_exterior_pres', task_name: '外装プレゼン', category: 'IC', display_order: 13, has_state: true, state_options: '["-", "作成済"]', has_email_button: false },
-      { task_key: 'ic_interior_pres', task_name: '内装プレゼン', category: 'IC', display_order: 14, has_state: true, state_options: '["-", "作成済"]', has_email_button: false },
-      { task_key: 'ic_tategu', task_name: '建具プレゼン', category: 'IC', display_order: 15, has_state: true, state_options: '["-", "依頼済", "保存済"]', has_email_button: true },
-      { task_key: 'ic_iron_pres', task_name: 'アイアンプレゼン', category: 'IC', display_order: 16, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: false },
-      { task_key: 'ic_tile_pres', task_name: 'タイルプレゼン', category: 'IC', display_order: 17, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: true },
-      { task_key: 'ic_curtain', task_name: 'カーテン紹介', category: 'IC', display_order: 18, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: true },
-      { task_key: 'ic_zousaku', task_name: '造作業者紹介', category: 'IC', display_order: 19, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: true },
-      { task_key: 'ic_furniture', task_name: '家具見積依頼', category: 'IC', display_order: 20, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: true },
-      { task_key: 'ic_iron', task_name: 'アイアン依頼', category: 'IC', display_order: 21, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: true },
-      { task_key: 'ic_other_estimate', task_name: 'その他見積依頼', category: 'IC', display_order: 22, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: true, has_memo: true },
-      { task_key: 'ic_final_checklist', task_name: '確定図チェックリスト', category: 'IC', display_order: 23, has_state: true, state_options: '["-", "実施済"]', has_email_button: false },
-      { task_key: 'ic_meeting_drawing', task_name: '会議図面渡し', category: 'IC', display_order: 24, has_state: true, state_options: '["-", "送付済"]', has_email_button: false },
-      { task_key: 'ic_op_check', task_name: 'OP見積チェック', category: 'IC', display_order: 25, has_state: true, state_options: '["-", "依頼済", "保存済"]', has_email_button: false },
-      { task_key: 'ic_meeting_followup', task_name: '会議後確認事項送付', category: 'IC', display_order: 26, has_state: true, state_options: '["-", "送付済"]', has_email_button: false },
-      { task_key: 'ic_final_approval', task_name: '確定図承認', category: 'IC', display_order: 27, has_state: true, state_options: '["-", "依頼中", "ダンドリワーク保存済"]', has_email_button: false }
+      { task_key: 'ic_washroom', task_name: '洗面', category: 'IC', display_order: 4, has_state: true, state_options: '["-", "無し", "TOTO", "AICA", "Lixil", "Panasonic", "Takarastandard"]', has_email_button: true },
+      { task_key: 'ic_toilet', task_name: 'トイレ', category: 'IC', display_order: 5, has_state: true, state_options: '["-", "無し", "TOTO", "Lixil", "Panasonic"]', has_email_button: true },
+      { task_key: 'ic_lighting', task_name: '照明プラン', category: 'IC', display_order: 6, has_state: true, state_options: '["-", "ODELIC", "DAIKO", "KOIZUMI", "Panasonic"]', has_email_button: true },
+      { task_key: 'ic_spec_doc', task_name: '仕様書作成', category: 'IC', display_order: 7, has_state: true, state_options: '["-", "作成済"]', has_email_button: false },
+      { task_key: 'ic_longterm_doc', task_name: '長期資料送付', category: 'IC', display_order: 8, has_state: true, state_options: '["-", "送付済"]', has_email_button: false },
+      { task_key: 'ic_exterior_meeting', task_name: '外構への打合せ依頼', category: 'IC', display_order: 9, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: false },
+      { task_key: 'ic_execution_drawing', task_name: '実施図', category: 'IC', display_order: 10, has_state: true, state_options: '["-", "修正依頼済", "図面チェック済"]', has_email_button: false },
+      { task_key: 'ic_exterior_pres', task_name: '外装プレゼン', category: 'IC', display_order: 11, has_state: true, state_options: '["-", "作成済"]', has_email_button: false },
+      { task_key: 'ic_interior_pres', task_name: '内装プレゼン', category: 'IC', display_order: 12, has_state: true, state_options: '["-", "作成済"]', has_email_button: false },
+      { task_key: 'ic_tategu', task_name: '建具プレゼン', category: 'IC', display_order: 13, has_state: true, state_options: '["-", "依頼済", "保存済"]', has_email_button: true },
+      { task_key: 'ic_iron_pres', task_name: 'アイアンプレゼン', category: 'IC', display_order: 14, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: false },
+      { task_key: 'ic_tile_pres', task_name: 'タイルプレゼン', category: 'IC', display_order: 15, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: true },
+      { task_key: 'ic_curtain', task_name: 'カーテン紹介', category: 'IC', display_order: 16, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: true },
+      { task_key: 'ic_zousaku', task_name: '造作業者紹介', category: 'IC', display_order: 17, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: true },
+      { task_key: 'ic_furniture', task_name: '家具見積依頼', category: 'IC', display_order: 18, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: true },
+      { task_key: 'ic_iron', task_name: 'アイアン依頼', category: 'IC', display_order: 19, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: true },
+      { task_key: 'ic_other_estimate', task_name: 'その他見積依頼', category: 'IC', display_order: 20, has_state: true, state_options: '["-", "無し", "依頼済", "保存済"]', has_email_button: true, has_memo: true },
+      { task_key: 'ic_final_checklist', task_name: '確定図チェックリスト', category: 'IC', display_order: 21, has_state: true, state_options: '["-", "実施済"]', has_email_button: false },
+      { task_key: 'ic_meeting_drawing', task_name: '会議図面渡し', category: 'IC', display_order: 22, has_state: true, state_options: '["-", "送付済"]', has_email_button: false },
+      { task_key: 'ic_op_check', task_name: 'OP見積チェック', category: 'IC', display_order: 23, has_state: true, state_options: '["-", "依頼済", "保存済"]', has_email_button: false },
+      { task_key: 'ic_meeting_followup', task_name: '会議後確認事項送付', category: 'IC', display_order: 24, has_state: true, state_options: '["-", "送付済"]', has_email_button: false },
+      { task_key: 'ic_final_approval', task_name: '確定図承認', category: 'IC', display_order: 25, has_state: true, state_options: '["-", "依頼中", "ダンドリワーク保存済"]', has_email_button: false }
     ];
 
     const { error: insertError } = await supabase
@@ -3219,8 +3215,8 @@ async function autoMigrateICTasks() {
     await loadTasksV2();
     await loadVendorCategories();
 
-    log('✅ ICタスク自動マイグレーション完了 (27項目)');
-    showToast('✅ ICタスクを27項目に自動更新しました', 'success');
+    log('✅ ICタスク自動マイグレーション完了 (25項目)');
+    showToast('✅ ICタスクを25項目に自動更新しました', 'success');
 
   } catch (error) {
     logError('ICタスク自動マイグレーションエラー:', error);
@@ -3231,9 +3227,9 @@ async function autoMigrateICTasks() {
 // ICタスクのメールボタン設定を強制同期
 // 特定のタスクは必ずhas_email_button: trueにする
 const IC_EMAIL_REQUIRED_TASKS = [
-  'ic_kitchen', 'ic_bath', 'ic_washroom_1f', 'ic_washroom_2f',
-  'ic_toilet_1f', 'ic_toilet_2f', 'ic_lighting', 'ic_tategu',
-  'ic_tile_pres', 'ic_curtain', 'ic_zousaku', 'ic_furniture'
+  'ic_kitchen', 'ic_bath', 'ic_washroom', 'ic_toilet',
+  'ic_lighting', 'ic_tategu', 'ic_tile_pres', 'ic_curtain',
+  'ic_zousaku', 'ic_furniture'
 ];
 
 async function syncICEmailButtonSettings() {
@@ -12941,11 +12937,13 @@ async function executeApplicationGo() {
     progressData['application'].date = new Date().toISOString().split('T')[0];
 
     showStatus('保存中...', 'saving');
-    // 注意: updated_at は更新しない（案件の位置を変えないため）
+    // 重要: updated_at を現在の値に保持して、案件の位置を変えない
+    // DBトリガーが自動更新しないよう、明示的に同じ値をセット
     const { error } = await supabase
       .from('projects')
       .update({
-        progress: progressData
+        progress: progressData,
+        updated_at: project.updated_at // 現在の値を保持
       })
       .eq('id', applicationGoProjectId);
 
