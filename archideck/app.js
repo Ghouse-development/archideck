@@ -6792,15 +6792,15 @@ function selectStatusCard(cardEl, projectId, taskKey) {
   // 進捗データを保存
   updateTaskState(projectId, taskKey, finalState);
 
-  // ICタスクの場合、全て完了したらアーカイブチェック
-  const isICTask = taskDef?.category === 'IC';
-  if (isICTask) {
-    setTimeout(() => checkICCompletionForArchive(projectId), 500);
+  // 設計またはICタスクの場合、全て完了したらアーカイブチェック
+  const isDesignOrICTask = taskDef?.category === '設計' || taskDef?.category === 'IC';
+  if (isDesignOrICTask) {
+    setTimeout(() => checkAllTasksCompletionForArchive(projectId), 500);
   }
 }
 
-// IC全タスク完了チェック＆アーカイブ確認（全て青色になったら完了）
-async function checkICCompletionForArchive(projectId) {
+// 全タスク完了チェック＆アーカイブ確認（設計+IC全て青色になったら完了）
+async function checkAllTasksCompletionForArchive(projectId) {
   const project = projects.find(p => p.id === projectId);
   if (!project || project.is_archived) return;
 
@@ -6809,33 +6809,48 @@ async function checkICCompletionForArchive(projectId) {
   // 登録タスクの未完了チェック
   const hasIncompleteTasks = checkHasIncompleteTasks(project, progressData);
   if (hasIncompleteTasks) {
-    // 未完了タスクがある場合は通知しない（静かに終了）
     return;
   }
 
-  // IC業務タスクの完了チェック（青色=完了）
-  const icTasks = tasksV2.filter(t => t.category === 'IC');
+  // 1. 設計タスクの完了チェック（青色=完了）
+  const designTasks = tasksV2.filter(t => t.category === '設計' && t.has_state);
+  let allDesignComplete = true;
 
-  let allComplete = true;
-  let incompleteList = [];
-
-  for (const task of icTasks) {
+  for (const task of designTasks) {
     const taskState = progressData[task.task_key]?.state || '';
-
-    // タスクが完了しているか判定（青色かどうか）
     let isComplete = isTaskStateBlue(task.task_key, taskState, task.state_options);
-
     if (!isComplete) {
-      allComplete = false;
-      incompleteList.push(task.task_name);
+      allDesignComplete = false;
+      break;
     }
   }
 
-  if (allComplete) {
-    // 全タスク完了（全て青色）→ アーカイブ確認
-    if (confirm(`🎉 IC業務が全て完了しました！\n\n「${project.customer}」を完了済み案件に移動しますか？`)) {
-      await archiveProjectDirect(projectId);
+  if (!allDesignComplete) {
+    return; // 設計タスクが未完了なら終了
+  }
+
+  // 2. IC担当案件の場合はICタスクもチェック
+  if (project.layout_confirmed_date) {
+    const icTasks = tasksV2.filter(t => t.category === 'IC');
+    let allICComplete = true;
+
+    for (const task of icTasks) {
+      const taskState = progressData[task.task_key]?.state || '';
+      let isComplete = isTaskStateBlue(task.task_key, taskState, task.state_options);
+      if (!isComplete) {
+        allICComplete = false;
+        break;
+      }
     }
+
+    if (!allICComplete) {
+      return; // ICタスクが未完了なら終了
+    }
+  }
+
+  // 全タスク完了（全て青色）→ アーカイブ確認
+  if (confirm(`🎉 全てのタスクが完了しました！\n\n「${project.customer}」を完了済み案件に移動しますか？`)) {
+    await archiveProjectDirect(projectId);
   }
 }
 
@@ -12713,32 +12728,16 @@ async function executeApplicationGo() {
   }
 
   await SaveGuard.run('executeApplicationGo', async () => {
-    // 申請タスクを完了としてマーク
+    // 申請タスクを完了としてマーク（完了済みには移動しない）
     const progressData = project.progress || {};
     if (!progressData['application']) progressData['application'] = {};
     progressData['application'].completed = true;
     progressData['application'].date = new Date().toISOString().split('T')[0];
 
-    // 未完了タスクがあるか確認
-    const hasIncompleteTasks = checkHasIncompleteTasks(project, progressData);
-
-    // 未完了の登録タスク（project_tasks）があるか確認
-    const { data: incompleteProjTasks } = await supabase
-      .from('project_tasks')
-      .select('id')
-      .eq('project_id', applicationGoProjectId)
-      .eq('is_completed', false)
-      .limit(1);
-    const hasIncompleteProjectTasks = incompleteProjTasks && incompleteProjTasks.length > 0;
-
-    // 案件を完了済みにするかどうか（未完了タスクがなければ完了）
-    const shouldArchive = !hasIncompleteTasks && !hasIncompleteProjectTasks;
-
     showStatus('保存中...', 'saving');
     const { error } = await supabase
       .from('projects')
       .update({
-        is_archived: shouldArchive,
         progress: progressData,
         updated_at: new Date().toISOString()
       })
@@ -12746,11 +12745,10 @@ async function executeApplicationGo() {
 
     if (error) {
       showStatus('エラー', 'error');
-      showToast('完了処理に失敗しました: ' + error.message, 'error');
+      showToast('申請GO処理に失敗しました: ' + error.message, 'error');
       return;
     }
 
-    project.is_archived = shouldArchive;
     project.progress = progressData;
     project.updated_at = new Date().toISOString();
 
@@ -12758,12 +12756,7 @@ async function executeApplicationGo() {
     renderProjects();
     updateSidebar();
     showStatus('保存済み', 'saved');
-
-    if (shouldArchive) {
-      showToast(`${project.customer} を完了済みに移動しました`, 'success');
-    } else {
-      showToast(`${project.customer} の申請GOを完了しました（未完了タスクがあるため、完了済みには移動しません）`, 'info');
-    }
+    showToast(`${project.customer} の申請GOを完了しました`, 'success');
   });
 }
 
