@@ -6291,11 +6291,6 @@ function renderProjectCard(project) {
     const stateOptions = getTaskStateOptions(key);
     const stateCards = generateStatusCards(stateOptions, task.state, project.id, key);
 
-    // 依頼日バッジ
-    const requestDateBadge = task.request_date
-      ? `<span class="request-date-badge" title="依頼日: ${task.request_date}">${formatDateShort(task.request_date)}</span>`
-      : '';
-
     // kintone日付バッジ（設計タスク: 間取確定・変更契約前会議）
     let kintoneDate = '';
     if (key === 'layout_confirmed' && project.layout_confirmed_date) {
@@ -6306,7 +6301,7 @@ function renderProjectCard(project) {
     }
 
     return `<div class="task-item">
-      <span class="task-label">${taskDef.task_name}</span>${kintoneDate}${stateCards}${requestDateBadge}${emailBtn}</div>`;
+      <span class="task-label">${taskDef.task_name}</span>${kintoneDate}${stateCards}${emailBtn}</div>`;
   }).join('');
 
   // IC業務内容を生成（設計と同じグリッド形式）
