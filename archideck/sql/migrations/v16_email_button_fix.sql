@@ -3,17 +3,9 @@
 -- 内容: ICタスクのhas_email_button設定を正しく反映
 
 -- ============================================
--- 1. has_email_buttonカラムが存在しない場合は追加
+-- 1. has_email_buttonカラムを追加（既にある場合は無視される）
 -- ============================================
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns
-    WHERE table_name = 'tasks' AND column_name = 'has_email_button'
-  ) THEN
-    ALTER TABLE tasks ADD COLUMN has_email_button BOOLEAN DEFAULT false;
-  END IF;
-END $$;
+ALTER TABLE tasks ADD COLUMN IF NOT EXISTS has_email_button BOOLEAN DEFAULT false;
 
 -- ============================================
 -- 2. メールボタン必須タスクを更新
