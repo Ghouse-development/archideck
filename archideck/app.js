@@ -802,10 +802,14 @@ async function showChangeHistory(projectId) {
                 </tr>
               </thead>
               <tbody>
-                ${history.map(h => `
+                ${history.map(h => {
+                  // メールアドレスからdesignersマスターで名前を検索
+                  const designer = designers.find(d => d.email === h.user_name);
+                  const displayName = designer?.name || h.user_name?.replace(/@.*$/, '') || '不明';
+                  return `
                   <tr>
                     <td style="white-space: nowrap; color: var(--text-secondary);">${formatDateTime(h.created_at)}</td>
-                    <td style="font-weight: 500;">${escapeHtml(h.user_name?.replace(/@.*$/, '') || '不明')}</td>
+                    <td style="font-weight: 500;">${escapeHtml(displayName)}</td>
                     <td><span class="badge ${getChangeTypeBadgeClass(h.change_type)}">${getChangeTypeLabel(h.change_type)}</span></td>
                     <td>
                       <div><strong>${escapeHtml(h.field_name || '')}</strong></div>
@@ -818,8 +822,8 @@ async function showChangeHistory(projectId) {
                       ` : ''}
                       ${h.description ? `<div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">${escapeHtml(h.description)}</div>` : ''}
                     </td>
-                  </tr>
-                `).join('')}
+                  </tr>`;
+                }).join('')}
               </tbody>
             </table>
           ` : `
@@ -6334,14 +6338,11 @@ function renderProjectCard(project) {
     const hasMakerSelected = isICMakerTask && task.state && !isInternalStatus && task.state !== '-';
     // 依頼系タスク（依頼済/保存済の場合にメールボタン表示）
     const hasRequestStatus = isICRequestTask && task.state && (task.state === '依頼済' || task.state === '保存済');
-    // has_email_button: DBから取得、なければデフォルト設定を使用
-    const hasEmailButton = taskDef.has_email_button !== undefined ? taskDef.has_email_button : (IC_EMAIL_BUTTON_DEFAULTS[key] || false);
-    // ICタスクで、ステータスが設定されていればメールボタンを表示
-    const showICEmail = hasEmailButton && task.state && task.state !== '-' && task.state !== '無し' && !isInternalStatus;
-    const showEmailButton = showICEmail || (hasEmailButton && hasVendor && !isInternalStatus);
-    // メールボタンは常に生成し、表示/非表示はstyleで制御（ステータス選択後に動的に表示するため）
-    const emailBtn = hasEmailButton ?
-      `<button class="task-email-btn" onclick="openEmailFromTask('${project.id}', '${key}')" title="${escapeHtml(task.state || '')}にメール作成" style="display: ${showEmailButton ? '' : 'none'};">📧</button>` : '';
+    // ICタスクのメールボタン表示（設計タスクと同様のシンプルなロジック）
+    // IC_MAKER_TASKSに含まれるタスクは常にメールボタンを表示
+    const isICMailTask = IC_MAKER_TASKS.includes(key) || IC_EMAIL_BUTTON_DEFAULTS[key];
+    const emailBtn = isICMailTask ?
+      `<button class="task-email-btn" onclick="openEmailFromTask('${project.id}', '${key}')" title="メール作成">📧</button>` : '';
 
     // ステータスカード生成
     const stateOptions = getTaskStateOptions(key);
